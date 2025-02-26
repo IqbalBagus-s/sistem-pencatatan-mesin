@@ -1,0 +1,50 @@
+# Direktori vendor dan dependensi
+/vendor
+/node_modules
+/public/storage
+/storage/*.key
+
+# Konfigurasi dan cache aplikasi
+.env
+.env.backup
+.env.local
+.env.*.local
+/phpunit.xml
+/.phpunit.result.cache
+/.idea
+/.vscode
+/.phpstorm.meta.php
+
+# Log dan database lokal
+/storage/logs
+/storage/framework/cache
+/storage/framework/sessions
+/storage/framework/testing
+/storage/framework/views
+/database/database.sqlite
+/database/database.sqlite-journal
+
+# File build dan cache
+/public/hot
+/public/storage
+/public/mix-manifest.json
+/public/js/*.map
+/public/css/*.map
+/public/build
+
+# File Composer dan NPM/Yarn
+/composer.lock
+/package-lock.json
+/yarn.lock
+/pnpm-lock.yaml
+
+# Direktori dan file Filament yang sebaiknya diabaikan
+/filament/*.json
+/filament/*.lock
+
+# Direktori Laravel Pint untuk format kode
+/.pint.json
+
+# Direktori IDE dan sistem
+.DS_Store
+Thumbs.db
