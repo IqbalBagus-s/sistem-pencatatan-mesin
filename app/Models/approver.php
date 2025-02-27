@@ -15,6 +15,7 @@ class Approver extends Authenticatable
     protected $fillable = [
         'username',
         'password',
+        'status', 
     ];
 
     protected $hidden = [
@@ -22,4 +23,8 @@ class Approver extends Authenticatable
     ];
 
     protected $dates = ['deleted_at']; // Untuk soft delete
+
+    protected $attributes = [
+        'status' => 'aktif', // Default status adalah 'aktif'
+    ];
 }

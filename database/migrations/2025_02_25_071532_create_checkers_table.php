@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('username')->unique(); // Username harus unik
             $table->string('password'); // Hash password (gunakan bcrypt saat menyimpan)
+            $table->enum('status', ['aktif', 'tidak_aktif'])->default('aktif');
             $table->timestamps();
             $table->softDeletes();
         });

@@ -6,9 +6,11 @@ use App\Filament\Resources\ApproverResource\Pages;
 use App\Models\Approver;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 
 class ApproverResource extends Resource
 {
@@ -23,13 +25,25 @@ class ApproverResource extends Resource
             TextInput::make('username')
                 ->label('Username')
                 ->required()
-                ->unique(Approver::class, 'username'),
+                ->unique(ignoreRecord: true),
 
             TextInput::make('password')
                 ->label('Password')
                 ->password()
-                ->required()
-                ->dehydrateStateUsing(fn ($state) => bcrypt($state)), // Hash password
+                ->nullable() // Password tidak wajib diisi saat update
+                ->dehydrateStateUsing(fn ($state) => filled($state) ? bcrypt($state) : null)
+                ->afterStateHydrated(fn ($state, $record) => $record ? '' : $state) // Kosongkan input saat form dimuat
+                ->helperText('Kosongkan jika tidak ingin mengubah password')
+                ->dehydrated(fn ($state) => filled($state)), // Hanya update jika diisi
+
+            Select::make('status')
+                ->label('Status')
+                ->options([
+                    'aktif' => 'Aktif',
+                    'tidak_aktif' => 'Tidak Aktif',
+                ])
+                ->default('aktif')
+                ->required(),
         ]);
     }
 
@@ -38,8 +52,22 @@ class ApproverResource extends Resource
         return $table->columns([
             TextColumn::make('id')->sortable(),
             TextColumn::make('username')->searchable(),
+            TextColumn::make('status')
+                ->label('Status')
+                ->badge()
+                ->colors([
+                    'success' => 'aktif',
+                    'danger' => 'tidak_aktif',
+                ]),
             TextColumn::make('created_at')->label('Dibuat Pada')->dateTime(),
-        ])->filters([]);
+        ])->filters([
+            SelectFilter::make('status')
+                ->label('Filter Status')
+                ->options([
+                    'aktif' => 'Aktif',
+                    'tidak_aktif' => 'Tidak Aktif',
+                ]),
+        ]);
     }
 
     public static function getPages(): array
