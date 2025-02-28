@@ -40,10 +40,12 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+    
         'approver' => [
             'driver' => 'session',
             'provider' => 'approvers',
         ],
+    
         'checker' => [
             'driver' => 'session',
             'provider' => 'checkers',

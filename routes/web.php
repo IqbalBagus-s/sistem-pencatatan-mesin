@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController; // Tambahkan ini
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AirDryerController;
 use App\Http\Middleware\RoleMiddleware;
 
 // Halaman Awal
@@ -19,4 +20,11 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth:approver,checker'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+});
+
+
+Route::middleware(['auth:checker'])->group(function () {
+    Route::get('/air-dryer', [AirDryerController::class, 'index'])->name('air-dryer.index');
+    Route::get('/air-dryer/create', [AirDryerController::class, 'create'])->name('air-dryer.create');
+    Route::post('/air-dryer', [AirDryerController::class, 'store'])->name('air-dryer.store');
 });

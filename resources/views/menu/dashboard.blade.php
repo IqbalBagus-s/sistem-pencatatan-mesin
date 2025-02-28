@@ -34,6 +34,17 @@
                     Logout
                 </button>
             </form>
+
+            @if(auth()->user() instanceof \App\Models\Checker)
+            <p class="text-center text-lg font-bold">Anda login sebagai <span class="text-green-500">Checker</span></p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <a href="{{ route('air-dryer.index') }}" class="p-6 text-center bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600">
+                    Pencatatan Mesin Air Dryer
+                </a>
+            </div>
+            @endif
+
         </div>
     </div>
 </body>
