@@ -18,6 +18,7 @@
                     <th class="border px-4 py-2">Tanggal</th>
                     <th class="border px-4 py-2">Hari</th>
                     <th class="border px-4 py-2">Checker</th>
+                    <th class="border px-4 py-2">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,10 +27,14 @@
                     <td class="border px-4 py-2">{{ $check->tanggal }}</td>
                     <td class="border px-4 py-2">{{ $check->hari }}</td>
                     <td class="border px-4 py-2">{{ $check->checked_by }}</td>
+                    <td class="border px-4 py-2">
+                        <a href="{{ route('air-dryer.edit', $check->id) }}" class="bg-blue-500 text-white px-4 py-2 rounded">Edit</a>
+                    </td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
+        
     </div>
 </body>
 </html>

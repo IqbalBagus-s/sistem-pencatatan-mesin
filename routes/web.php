@@ -27,4 +27,11 @@ Route::middleware(['auth:checker'])->group(function () {
     Route::get('/air-dryer', [AirDryerController::class, 'index'])->name('air-dryer.index');
     Route::get('/air-dryer/create', [AirDryerController::class, 'create'])->name('air-dryer.create');
     Route::post('/air-dryer', [AirDryerController::class, 'store'])->name('air-dryer.store');
+    Route::get('/air-dryer/{id}/edit', [AirDryerController::class, 'edit'])->name('air-dryer.edit');
+    Route::put('/air-dryer/{id}', [AirDryerController::class, 'update'])->name('air-dryer.update');
 });
+
+
+
+
+
