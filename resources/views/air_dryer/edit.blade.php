@@ -17,13 +17,14 @@
 
             <div class="mb-4">
                 <label class="block text-gray-700">Tanggal:</label>
-                <input type="date" name="tanggal" value="{{ $check->tanggal }}" class="w-full p-2 border border-gray-300 rounded" required>
+                <input type="date" name="tanggal" value="{{ $check->tanggal }}" class="w-full p-2 border border-gray-300 rounded bg-gray-100" readonly>
             </div>
-
+            
             <div class="mb-4">
                 <label class="block text-gray-700">Hari:</label>
                 <input type="text" name="hari" value="{{ $check->hari }}" class="w-full p-2 border border-gray-300 rounded bg-gray-100" readonly>
             </div>
+            
 
             <div class="overflow-x-auto">
                 <table class="min-w-full border border-gray-300">
@@ -92,6 +93,15 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Detail Mesin -->
+            <div class="mt-4 p-4 bg-gray-100 rounded w-1/2">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Detail Mesin:</h3>
+                <p class="text-gray-700">AD 1 : HIGH PRESS 1 &nbsp;&nbsp;&nbsp; AD 5 : SUPPLY INJECT</p>
+                <p class="text-gray-700">AD 2 : HIGH PRESS 2 &nbsp;&nbsp;&nbsp; AD 6 : LOW PRESS 3</p>
+                <p class="text-gray-700">AD 3 : LOW PRESS 1 &nbsp;&nbsp;&nbsp;&nbsp; AD 7 : LOW PRESS 4</p>
+                <p class="text-gray-700">AD 4 : LOW PRESS 2 &nbsp;&nbsp;&nbsp;&nbsp; AD 8 : LOW PRESS 5</p>
             </div>
 
             <button type="submit" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">

@@ -83,27 +83,27 @@
                 <td class="border border-gray-300 p-2">
                     <input type="text" name="temperatur_kompresor[${i}]" 
                         class="w-full p-1 border border-gray-300 rounded"
-                        placeholder="30°C - 60°C">
+                        placeholder="30°C - 60°C" required>
                 </td>
                 <td class="border border-gray-300 p-2">
                     <input type="text" name="temperatur_kabel[${i}]" 
                         class="w-full p-1 border border-gray-300 rounded"
-                        placeholder="30°C - 60°C">
+                        placeholder="30°C - 60°C" required>
                 </td>
                 <td class="border border-gray-300 p-2">
                     <input type="text" name="temperatur_mcb[${i}]" 
                         class="w-full p-1 border border-gray-300 rounded"
-                        placeholder="30°C - 60°C">
+                        placeholder="30°C - 60°C" required>
                 </td>
                 <td class="border border-gray-300 p-2">
                     <input type="text" name="temperatur_angin_in[${i}]" 
                         class="w-full p-1 border border-gray-300 rounded"
-                        placeholder="30°C - 60°C">
+                        placeholder="30°C - 60°C" required>
                 </td>
                 <td class="border border-gray-300 p-2">
                     <input type="text" name="temperatur_angin_out[${i}]" 
                         class="w-full p-1 border border-gray-300 rounded"
-                        placeholder="30°C - 60°C">
+                        placeholder="30°C - 60°C" required> 
                 </td>
                 <td class="border border-gray-300 p-2">
                     <select name="evaporator[${i}]" class="w-full p-1 border border-gray-300 rounded">

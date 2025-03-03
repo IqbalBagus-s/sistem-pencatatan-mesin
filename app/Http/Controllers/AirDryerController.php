@@ -9,11 +9,25 @@ use Illuminate\Support\Facades\Auth;
 
 class AirDryerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $checks = AirDryerCheck::where('checked_by', Auth::user()->username)->get();
+        $query = AirDryerCheck::where('checked_by', Auth::user()->username)
+                    ->orderBy('tanggal', 'desc');
+
+        // Filter berdasarkan bulan dan tahun
+        if ($request->filled('bulan')) {
+            $bulan = date('m', strtotime($request->bulan)); // Ambil bulan
+            $tahun = date('Y', strtotime($request->bulan)); // Ambil tahun
+            $query->whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun);
+        }
+
+        // Pagination (10 data per halaman)
+        $checks = $query->paginate(10)->appends(['bulan' => $request->bulan]);
+
         return view('air_dryer.index', compact('checks'));
     }
+
+
 
     public function create()
     {
