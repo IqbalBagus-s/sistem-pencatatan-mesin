@@ -61,9 +61,16 @@
                 <p class="text-gray-700">AD 4 : LOW PRESS 2 &nbsp;&nbsp;&nbsp;&nbsp; AD 8 : LOW PRESS 5</p>
             </div>
 
-            <button type="submit" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                Simpan
-            </button>
+            <div class="mt-4 flex justify-between">
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Simpan
+                </button>
+                <a href="{{ route('air-dryer.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded">
+                    Kembali
+                </a>
+            </div>
+            
+    
         </form>
     </div>
 

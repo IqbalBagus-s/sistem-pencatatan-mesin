@@ -11,22 +11,26 @@ class AirDryerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = AirDryerCheck::where('checked_by', Auth::user()->username)
-                    ->orderBy('tanggal', 'desc');
+        $query = AirDryerCheck::orderBy('tanggal', 'desc');
 
-        // Filter berdasarkan bulan dan tahun
+        // Cek apakah user adalah Approver atau Checker
+        if (Auth::user() instanceof \App\Models\Checker) {
+            // Jika user adalah Checker, hanya tampilkan data yang dia buat
+            $query->where('checked_by', Auth::user()->username);
+        }
+
+        // Filter berdasarkan bulan dan tahun jika parameter bulan dikirim
         if ($request->filled('bulan')) {
-            $bulan = date('m', strtotime($request->bulan)); // Ambil bulan
-            $tahun = date('Y', strtotime($request->bulan)); // Ambil tahun
+            $bulan = date('m', strtotime($request->bulan));
+            $tahun = date('Y', strtotime($request->bulan));
             $query->whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun);
         }
 
-        // Pagination (10 data per halaman)
+        // Ambil data dengan paginasi
         $checks = $query->paginate(10)->appends(['bulan' => $request->bulan]);
 
         return view('air_dryer.index', compact('checks'));
     }
-
 
 
     public function create()
@@ -112,4 +116,11 @@ class AirDryerController extends Controller
 
         return redirect()->route('air-dryer.index')->with('success', 'Data berhasil diperbarui!');
     }
+
+    public function show($id)
+    {
+        $check = AirDryerResult::findOrFail($id);
+        return view('air-dryer.show', compact('check'));
+    }
+
 }

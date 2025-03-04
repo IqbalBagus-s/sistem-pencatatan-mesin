@@ -10,7 +10,12 @@
     <div class="container mx-auto p-6">
         <h2 class="text-2xl font-bold mb-4">Pencatatan Mesin Air Dryer</h2>
 
-        <a href="{{ route('air-dryer.create') }}" class="bg-green-500 text-white px-4 py-2 rounded">Tambah Pencatatan</a>
+        <!-- Tampilkan tombol "Tambah Pencatatan" hanya jika user adalah Checker -->
+        @if(auth()->user() instanceof \App\Models\Checker)
+            <a href="{{ route('air-dryer.create') }}" class="bg-green-500 text-white px-4 py-2 rounded">
+                Tambah Pencatatan
+            </a>
+        @endif
 
         <form method="GET" action="{{ route('air-dryer.index') }}" class="mt-4">
             <label for="filter_bulan" class="block text-sm font-medium">Filter berdasarkan Bulan:</label>
@@ -46,7 +51,11 @@
                         @endif
                     </td>
                     <td class="border px-4 py-2">
-                        <a href="{{ route('air-dryer.edit', $check->id) }}" class="bg-blue-500 text-white px-4 py-2 rounded">Edit</a>
+                        @if(auth()->user() instanceof \App\Models\Approver)
+                            <a href="{{ route('air-dryer.show', $check->id) }}" class="bg-blue-500 text-white px-4 py-2 rounded">Lihat</a>
+                        @elseif(auth()->user() instanceof \App\Models\Checker)
+                            <a href="{{ route('air-dryer.edit', $check->id) }}" class="bg-yellow-500 text-white px-4 py-2 rounded">Edit</a>
+                        @endif
                     </td>
                 </tr>
                 @endforeach
@@ -60,7 +69,7 @@
         <!-- Tombol Kembali ke Dashboard -->
         <div class="mt-6">
             <a href="{{ route('dashboard') }}" class="bg-gray-500 text-white px-4 py-2 rounded">
-                Kembali ke Dashboard
+                Kembali
             </a>
         </div>
 
