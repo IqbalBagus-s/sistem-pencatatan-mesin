@@ -117,10 +117,26 @@ class AirDryerController extends Controller
         return redirect()->route('air-dryer.index')->with('success', 'Data berhasil diperbarui!');
     }
 
-    public function show($id)
+    public function show($check_id)
     {
-        $check = AirDryerResult::findOrFail($id);
-        return view('air-dryer.show', compact('check'));
+        $check = AirDryerCheck::findOrFail($check_id);
+        $results = AirDryerResult::where('check_id', $check_id)->get();
+        
+        return view('air_dryer.show', compact('check', 'results'));
     }
+
+    public function approve(Request $request, $check_id)
+    {
+        $check = AirDryerCheck::findOrFail($check_id);
+        
+        // Update approved_by field dengan username approver yang login
+        $check->update([
+            'approved_by' => Auth::user()->username
+        ]);
+        
+        return redirect()->route('air-dryer.index')
+            ->with('success', 'Data berhasil disetujui!');
+    }
+
 
 }
