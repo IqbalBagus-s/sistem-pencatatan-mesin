@@ -12,25 +12,25 @@
 
         <!-- Tampilkan tombol "Tambah Pencatatan" hanya jika user adalah Checker -->
         @if(auth()->user() instanceof \App\Models\Checker)
-            <a href="{{ route('air-dryer.create') }}" class="bg-green-500 text-white px-4 py-2 rounded">
+            <a href="{{ route('air-dryer.create') }}" class="bg-green-500 text-white px-4 py-2 rounded mb-10">
                 Tambah Pencatatan
             </a>
         @endif
 
         
-        
+        {{-- filtering table --}}
         <form method="GET" action="{{ route('air-dryer.index') }}">
+            @if(auth()->user() instanceof \App\Models\Approver)
             <input type="text" name="search" placeholder="Cari nama checker..." 
             value="{{ request('search') }}"
             class="border rounded px-4 py-2 w-64">
-            <label for="filter_bulan" class="block text-sm font-medium">Filter berdasarkan Bulan:</label>
+            @endif
+            <label for="filter_bulan" class="block text-sm font-medium mt-5">Filter berdasarkan Bulan:</label>
             <input type="month" name="bulan" id="filter_bulan" value="{{ request('bulan') }}" class="border rounded px-4 py-2">
             <button type="submit">Cari</button>
         </form>
         
-
-        
-        
+        {{-- tabel form --}}
         <table class="w-full mt-4 border bg-white shadow-md rounded-lg">
             <thead>
                 <tr class="bg-gray-200">
@@ -64,12 +64,18 @@
                                 @endif
                             </td>
                             <td class="border px-4 py-2">
+                                {{-- menu lihat --}}
                                 @if(auth()->user() instanceof \App\Models\Approver)
                                     <a href="{{ route('air-dryer.show', $check->id) }}" class="bg-blue-500 text-white px-4 py-2 rounded">Lihat</a>
+                                {{-- menu edit --}}
                                 @elseif(auth()->user() instanceof \App\Models\Checker)
-                                    <a href="{{ route('air-dryer.edit', $check->id) }}" class="bg-yellow-500 text-white px-4 py-2 rounded">Edit</a>
+                                    @if(!$check->approved_by)
+                                        <a href="{{ route('air-dryer.edit', $check->id) }}" class="bg-yellow-500 text-white px-4 py-2 rounded">Edit</a>
+                                    @else
+                                        <button class="bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed" disabled>Edit</button>
+                                    @endif
                                 @endif
-                            </td>
+                            </td>                            
                         </tr>
                     @endforeach
                 @endif

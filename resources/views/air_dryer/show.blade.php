@@ -80,9 +80,15 @@
             
 
             <div class="mt-4 flex justify-between">
+                @if(!$check->approved_by)
                 <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
                     Setujui
                 </button>
+                @else
+                <button type="submit" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700 cursor-not-allowed" disabled>
+                    Telah Disetujui
+                </button>
+                @endif
                 <a href="{{ route('air-dryer.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded">
                     Kembali
                 </a>
