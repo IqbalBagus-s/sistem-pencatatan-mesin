@@ -17,11 +17,19 @@
             </a>
         @endif
 
-        <form method="GET" action="{{ route('air-dryer.index') }}" class="mt-4">
+        
+        
+        <form method="GET" action="{{ route('air-dryer.index') }}">
+            <input type="text" name="search" placeholder="Cari nama checker..." 
+            value="{{ request('search') }}"
+            class="border rounded px-4 py-2 w-64">
             <label for="filter_bulan" class="block text-sm font-medium">Filter berdasarkan Bulan:</label>
             <input type="month" name="bulan" id="filter_bulan" value="{{ request('bulan') }}" class="border rounded px-4 py-2">
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Filter</button>
+            <button type="submit">Cari</button>
         </form>
+        
+
+        
         
         <table class="w-full mt-4 border bg-white shadow-md rounded-lg">
             <thead>
@@ -34,33 +42,40 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($checks as $check)
-                <tr class="text-center">
-                    <td class="border px-4 py-2">{{ $check->tanggal }}</td>
-                    <td class="border px-4 py-2">{{ $check->hari }}</td>
-                    <td class="border px-4 py-2">{{ $check->checked_by }}</td>
-                    <td class="border px-4 py-2">
-                        @if($check->approved_by)
-                            <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-green-800 bg-green-200 rounded-full">
-                                Disetujui
-                            </span>
-                        @else
-                            <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-red-800 bg-red-200 rounded-full">
-                                Belum Disetujui
-                            </span>
-                        @endif
-                    </td>
-                    <td class="border px-4 py-2">
-                        @if(auth()->user() instanceof \App\Models\Approver)
-                            <a href="{{ route('air-dryer.show', $check->id) }}" class="bg-blue-500 text-white px-4 py-2 rounded">Lihat</a>
-                        @elseif(auth()->user() instanceof \App\Models\Checker)
-                            <a href="{{ route('air-dryer.edit', $check->id) }}" class="bg-yellow-500 text-white px-4 py-2 rounded">Edit</a>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
+                @if($checks->isEmpty())
+                    <tr>
+                        <td colspan="5" class="text-center border px-4 py-2">Tidak ada data ditemukan.</td>
+                    </tr>
+                @else
+                    @foreach($checks as $check)
+                        <tr class="text-center">
+                            <td class="border px-4 py-2">{{ $check->tanggal }}</td>
+                            <td class="border px-4 py-2">{{ $check->hari }}</td>
+                            <td class="border px-4 py-2">{{ $check->checked_by }}</td>
+                            <td class="border px-4 py-2">
+                                @if($check->approved_by)
+                                    <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-green-800 bg-green-200 rounded-full">
+                                        Disetujui
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-red-800 bg-red-200 rounded-full">
+                                        Belum Disetujui
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="border px-4 py-2">
+                                @if(auth()->user() instanceof \App\Models\Approver)
+                                    <a href="{{ route('air-dryer.show', $check->id) }}" class="bg-blue-500 text-white px-4 py-2 rounded">Lihat</a>
+                                @elseif(auth()->user() instanceof \App\Models\Checker)
+                                    <a href="{{ route('air-dryer.edit', $check->id) }}" class="bg-yellow-500 text-white px-4 py-2 rounded">Edit</a>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                @endif
             </tbody>
         </table>
+        
         
         <div class="mt-4">
             {{ $checks->links() }}

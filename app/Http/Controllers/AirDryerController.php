@@ -13,21 +13,26 @@ class AirDryerController extends Controller
     {
         $query = AirDryerCheck::orderBy('tanggal', 'desc');
 
-        // Cek apakah user adalah Approver atau Checker
+        // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
         if (Auth::user() instanceof \App\Models\Checker) {
-            // Jika user adalah Checker, hanya tampilkan data yang dia buat
             $query->where('checked_by', Auth::user()->username);
         }
 
-        // Filter berdasarkan bulan dan tahun jika parameter bulan dikirim
+        // Filter berdasarkan bulan jika ada
         if ($request->filled('bulan')) {
             $bulan = date('m', strtotime($request->bulan));
             $tahun = date('Y', strtotime($request->bulan));
-            $query->whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun);
+            $query->whereMonth('tanggal', $bulan)
+                ->whereYear('tanggal', $tahun);
         }
 
-        // Ambil data dengan paginasi
-        $checks = $query->paginate(10)->appends(['bulan' => $request->bulan]);
+        // Filter berdasarkan nama checker jika ada
+        if ($request->filled('search')) {
+            $query->where('checked_by', 'LIKE', '%' . $request->search . '%');
+        }
+
+        // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
+        $checks = $query->paginate(10)->appends($request->query());
 
         return view('air_dryer.index', compact('checks'));
     }
