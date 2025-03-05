@@ -18,8 +18,16 @@ class AuthController extends Controller
         ]);
 
         $guard = $request->role;
-        
+
+        // **Logout semua sesi sebelumnya sebelum login baru**
+        Auth::guard('approver')->logout();
+        Auth::guard('checker')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        // **Coba login dengan user baru**
         if (Auth::guard($guard)->attempt(['username' => $request->username, 'password' => $request->password])) {
+            $request->session()->regenerate(); // Regenerasi session untuk keamanan
             return redirect()->route('dashboard');
         }
 

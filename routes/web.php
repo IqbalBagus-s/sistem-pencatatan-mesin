@@ -20,6 +20,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Dashboard 
 Route::middleware(['auth:approver,checker'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
     // Route yang bisa diakses oleh keduanya
     Route::get('/air-dryer', [AirDryerController::class, 'index'])->name('air-dryer.index');
     Route::get('/air-dryer/create', [AirDryerController::class, 'create'])->name('air-dryer.create');
@@ -28,4 +29,7 @@ Route::middleware(['auth:approver,checker'])->group(function () {
     Route::put('/air-dryer/{id}', [AirDryerController::class, 'update'])->name('air-dryer.update');
     Route::get('/air-dryer/{id}', [AirDryerController::class, 'show'])->name('air-dryer.show');
     Route::post('/air-dryer/{id}/approve', [AirDryerController::class, 'approve'])->name('air-dryer.approve');
+
+    // Route download PDF
+    Route::get('/air-dryer/{id}/download-pdf', [AirDryerController::class, 'downloadPdf'])->name('air-dryer.downloadPdf');
 });

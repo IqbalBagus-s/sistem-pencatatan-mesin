@@ -20,7 +20,12 @@
                     <span class="text-blue-600">{{ Auth::user()->username }}</span></p>
             </div>
 
-            
+            <!-- Tampilkan nama checker yang mengisi data -->
+            <div class="mb-4 p-4 bg-gray-200 rounded">
+                <p class="text-lg font-semibold text-gray-700">Checker: 
+                    <span class="text-green-600">{{ $check->checked_by }}</span></p>
+            </div>
+
 
             <div class="mb-4">
                 <label class="block text-gray-700">Tanggal:</label>
@@ -88,6 +93,10 @@
                 <button type="submit" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700 cursor-not-allowed" disabled>
                     Telah Disetujui
                 </button>
+
+                <a href="{{ route('air-dryer.downloadPdf', $check->id) }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Download PDF
+                </a>
                 @endif
                 <a href="{{ route('air-dryer.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded">
                     Kembali

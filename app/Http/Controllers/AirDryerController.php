@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\AirDryerCheck;
 use App\Models\AirDryerResult;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
 
 class AirDryerController extends Controller
 {
@@ -142,6 +143,21 @@ class AirDryerController extends Controller
         return redirect()->route('air-dryer.index')
             ->with('success', 'Data berhasil disetujui!');
     }
+
+    public function downloadPdf($id)
+    {
+        // Ambil data dari database berdasarkan ID
+        $check = AirDryerCheck::findOrFail($id);
+        $results = AirDryerResult::where('check_id', $id)->get();
+
+        // Load view untuk PDF dengan ukuran halaman yang sesuai
+        $pdf = Pdf::loadView('air_dryer.pdf', compact('check', 'results'))
+            ->setPaper('a4', 'landscape'); // Set ukuran kertas A4 landscape
+
+        // Mengembalikan file PDF untuk di-download
+        return $pdf->download('air_dryer_' . $id . '.pdf');
+    }
+
 
 
 }
