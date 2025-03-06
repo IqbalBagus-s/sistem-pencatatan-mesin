@@ -51,19 +51,19 @@
                                 <input type="text" name="nomor_mesin[{{ $result->id }}]" value="{{ $result->nomor_mesin }}" class="w-20 p-1 border border-gray-300 rounded bg-gray-100" readonly>
                             </td>
                             <td class="border border-gray-300 p-2">
-                                <input type="text" name="temperatur_kompresor[{{ $result->id }}]" value="{{ $result->temperatur_kompresor }}" class="w-full p-1 border border-gray-300 rounded">
+                                <input type="text" name="temperatur_kompresor[{{ $result->id }}]" value="{{ $result->temperatur_kompresor }}" class="w-full p-1 border border-gray-300 rounded" required>
                             </td>
                             <td class="border border-gray-300 p-2">
-                                <input type="text" name="temperatur_kabel[{{ $result->id }}]" value="{{ $result->temperatur_kabel }}" class="w-full p-1 border border-gray-300 rounded">
+                                <input type="text" name="temperatur_kabel[{{ $result->id }}]" value="{{ $result->temperatur_kabel }}" class="w-full p-1 border border-gray-300 rounded" required>
                             </td>
                             <td class="border border-gray-300 p-2">
-                                <input type="text" name="temperatur_mcb[{{ $result->id }}]" value="{{ $result->temperatur_mcb }}" class="w-full p-1 border border-gray-300 rounded">
+                                <input type="text" name="temperatur_mcb[{{ $result->id }}]" value="{{ $result->temperatur_mcb }}" class="w-full p-1 border border-gray-300 rounded" required>
                             </td>
                             <td class="border border-gray-300 p-2">
-                                <input type="text" name="temperatur_angin_in[{{ $result->id }}]" value="{{ $result->temperatur_angin_in }}" class="w-full p-1 border border-gray-300 rounded">
+                                <input type="text" name="temperatur_angin_in[{{ $result->id }}]" value="{{ $result->temperatur_angin_in }}" class="w-full p-1 border border-gray-300 rounded" required>
                             </td>
                             <td class="border border-gray-300 p-2">
-                                <input type="text" name="temperatur_angin_out[{{ $result->id }}]" value="{{ $result->temperatur_angin_out }}" class="w-full p-1 border border-gray-300 rounded">
+                                <input type="text" name="temperatur_angin_out[{{ $result->id }}]" value="{{ $result->temperatur_angin_out }}" class="w-full p-1 border border-gray-300 rounded" required>
                             </td>
                             <td class="border border-gray-300 p-2">
                                 <select name="evaporator[{{ $result->id }}]" class="w-full p-1 border border-gray-300 rounded">
