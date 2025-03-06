@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pencatatan Mesin Air Dryer</title>
+    <title>Pencatatan Mesin Water Chiller</title>
     
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -286,11 +286,11 @@
     </header>
 
     <div class="container">
-        <h2 class="page-title">Pencatatan Mesin Air Dryer</h2>
+        <h2 class="page-title">Pencatatan Mesin Water Chiller</h2>
 
         <!-- Form Pencarian dan Tombol Tambah -->
         <div class="card search-container">
-            <form method="GET" action="{{ route('air-dryer.index') }}">
+            <form method="GET" action="{{ route('water-chiller.index') }}">
                 <div class="search-and-add">
                     <div class="row g-3 align-items-end flex-grow-1">
                         @if(auth()->user() instanceof \App\Models\Approver)
@@ -311,7 +311,7 @@
                     
                     @if(auth()->user() instanceof \App\Models\Checker)
                         <div class="action-buttons">
-                            <a href="{{ route('air-dryer.create') }}" class="btn btn-add">
+                            <a href="{{ route('water-chiller.create') }}" class="btn btn-add">
                                 Tambah Pencatatan
                             </a>
                         </div>
@@ -357,7 +357,7 @@
                                 <td class="py-3">
                                     {{-- Menu lihat --}}
                                     @if(auth()->user() instanceof \App\Models\Approver)
-                                        <a href="{{ route('air-dryer.show', $check->id) }}" title="Lihat Detail">
+                                        <a href="{{ route('water-chiller.show', $check->id) }}" title="Lihat Detail">
                                             @if($check->approved_by)
                                                 <i class="fas fa-eye" style="color: #1565c0; opacity: 0.7;" title="Sudah disetujui"></i>
                                             @else
@@ -367,7 +367,7 @@
                                     {{-- Menu edit --}}
                                     @elseif(auth()->user() instanceof \App\Models\Checker)
                                         @if(!$check->approved_by)
-                                            <a href="{{ route('air-dryer.edit', $check->id) }}" title="Edit">
+                                            <a href="{{ route('water-chiller.edit', $check->id) }}" title="Edit">
                                                 <i class="fas fa-pen edit-icon"></i>
                                             </a>
                                         @else

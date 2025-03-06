@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Pencatatan Mesin Air Dryer</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
 </head>
 <body class="bg-gray-100 p-6">
 

@@ -10,6 +10,30 @@
     <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
 
     <style>
+        @font-face {
+            font-family: 'Poppins';
+            src: url("{{ asset('fonts/Poppins-Regular.ttf') }}") format('truetype');
+            font-weight: 400;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Poppins';
+            src: url("{{ asset('fonts/Poppins-Medium.ttf') }}") format('truetype');
+            font-weight: 500;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Poppins';
+            src: url("{{ asset('fonts/Poppins-SemiBold.ttf') }}") format('truetype');
+            font-weight: 600;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Poppins';
+            src: url("{{ asset('fonts/Poppins-Bold.ttf') }}") format('truetype');
+            font-weight: 700;
+            font-style: normal;
+        }
         html, body {
             height: 100%;
             margin: 0;
@@ -80,7 +104,8 @@
             @php
                 $machines = [
                     ['name' => 'Air Dryer', 'route' => 'air-dryer.index'],
-                    'Water Chiller', 'Compressor', 'Cooling Tower',
+                    ['name' => 'Water Chiller', 'route' => 'water-chiller.index'],
+                    'Compressor', 'Cooling Tower',
                     'Mesin B', 'Mesin C', 'Mesin D',
                     'Mesin E', 'Mesin F', 'Mesin G', 'Mesin H',
                     'Mesin I', 'Mesin J', 'Mesin K', 'Mesin L',

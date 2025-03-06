@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Pencatatan Mesin Air Dryer</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
 </head>
 <body class="bg-gray-100 p-6">
 
@@ -48,7 +49,81 @@
                             <th class="border border-gray-300 p-2">Keterangan</th>
                         </tr>
                     </thead>
-                    <tbody id="table-body"></tbody>
+                    <tbody id="table-body">
+                        @php
+                            $jumlahMesin = 8; // Sesuaikan jumlah mesin
+                            $hariIndonesia = [
+                                'Sunday' => 'Minggu',
+                                'Monday' => 'Senin',
+                                'Tuesday' => 'Selasa',
+                                'Wednesday' => 'Rabu',
+                                'Thursday' => 'Kamis',
+                                'Friday' => 'Jumat',
+                                'Saturday' => 'Sabtu',
+                            ];
+                        @endphp
+
+                        @for ($i = 1; $i <= $jumlahMesin; $i++)
+                            @php
+                                $nomorMesin = "AD{$i}";
+                            @endphp
+                            <tr class="bg-white">
+                                <td class="border border-gray-300 p-2 text-center">{{ $i }}</td>
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <input type="text" name="nomor_mesin[{{ $i }}]" value="{{ $nomorMesin }}" class="w-20 p-1 border border-gray-300 rounded bg-gray-100" readonly>
+                                </td>
+                                <td class="border border-gray-300 p-2">
+                                    <input type="text" name="temperatur_kompresor[{{ $i }}]" 
+                                        class="w-full p-1 border border-gray-300 rounded"
+                                        placeholder="30°C - 60°C" required>
+                                </td>
+                                <td class="border border-gray-300 p-2">
+                                    <input type="text" name="temperatur_kabel[{{ $i }}]" 
+                                        class="w-full p-1 border border-gray-300 rounded"
+                                        placeholder="30°C - 60°C" required>
+                                </td>
+                                <td class="border border-gray-300 p-2">
+                                    <input type="text" name="temperatur_mcb[{{ $i }}]" 
+                                        class="w-full p-1 border border-gray-300 rounded"
+                                        placeholder="30°C - 60°C" required>
+                                </td>
+                                <td class="border border-gray-300 p-2">
+                                    <input type="text" name="temperatur_angin_in[{{ $i }}]" 
+                                        class="w-full p-1 border border-gray-300 rounded"
+                                        placeholder="30°C - 60°C" required>
+                                </td>
+                                <td class="border border-gray-300 p-2">
+                                    <input type="text" name="temperatur_angin_out[{{ $i }}]" 
+                                        class="w-full p-1 border border-gray-300 rounded"
+                                        placeholder="30°C - 60°C" required> 
+                                </td>
+                                <td class="border border-gray-300 p-2">
+                                    <select name="evaporator[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded">
+                                        <option value="Bersih">Bersih</option>
+                                        <option value="Kotor">Kotor</option>
+                                        <option value="OFF">OFF</option>
+                                    </select>
+                                </td>
+                                <td class="border border-gray-300 p-2 w-40">
+                                    <select name="fan_evaporator[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded">
+                                        <option value="Suara Halus">Suara Halus</option>
+                                        <option value="Suara Kasar">Suara Kasar</option>
+                                        <option value="OFF">OFF</option>
+                                    </select>
+                                </td>
+                                <td class="border border-gray-300 p-2 w-40">
+                                    <select name="auto_drain[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded">
+                                        <option value="Berfungsi">Berfungsi</option>
+                                        <option value="Tidak Berfungsi">Tidak Berfungsi</option>
+                                        <option value="OFF">OFF</option>
+                                    </select>
+                                </td>
+                                <td class="border border-gray-300 p-2">
+                                    <input type="text" name="keterangan[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded">
+                                </td>
+                            </tr>
+                        @endfor
+                    </tbody>
                 </table>
             </div>
 
@@ -69,79 +144,11 @@
                     Kembali
                 </a>
             </div>
-            
-    
         </form>
     </div>
 
+    <!-- Script untuk mengisi hari berdasarkan tanggal -->
     <script>
-        // Data mesin air dryer
-        const jumlahMesin = 8; // Sesuaikan jumlah mesin
-        const tableBody = document.getElementById("table-body");
-
-        for (let i = 1; i <= jumlahMesin; i++) {
-            let nomorMesin = `AD${i}`;
-
-            let row = `<tr class="bg-white">
-                <td class="border border-gray-300 p-2 text-center">${i}</td>
-                <td class="border border-gray-300 p-2 text-center">
-                    <input type="text" name="nomor_mesin[${i}]" value="${nomorMesin}" class="w-20 p-1 border border-gray-300 rounded bg-gray-100" readonly>
-                </td>
-                <td class="border border-gray-300 p-2">
-                    <input type="text" name="temperatur_kompresor[${i}]" 
-                        class="w-full p-1 border border-gray-300 rounded"
-                        placeholder="30°C - 60°C" required>
-                </td>
-                <td class="border border-gray-300 p-2">
-                    <input type="text" name="temperatur_kabel[${i}]" 
-                        class="w-full p-1 border border-gray-300 rounded"
-                        placeholder="30°C - 60°C" required>
-                </td>
-                <td class="border border-gray-300 p-2">
-                    <input type="text" name="temperatur_mcb[${i}]" 
-                        class="w-full p-1 border border-gray-300 rounded"
-                        placeholder="30°C - 60°C" required>
-                </td>
-                <td class="border border-gray-300 p-2">
-                    <input type="text" name="temperatur_angin_in[${i}]" 
-                        class="w-full p-1 border border-gray-300 rounded"
-                        placeholder="30°C - 60°C" required>
-                </td>
-                <td class="border border-gray-300 p-2">
-                    <input type="text" name="temperatur_angin_out[${i}]" 
-                        class="w-full p-1 border border-gray-300 rounded"
-                        placeholder="30°C - 60°C" required> 
-                </td>
-                <td class="border border-gray-300 p-2">
-                    <select name="evaporator[${i}]" class="w-full p-1 border border-gray-300 rounded">
-                        <option value="Bersih">Bersih</option>
-                        <option value="Kotor">Kotor</option>
-                        <option value="OFF">OFF</option>
-                    </select>
-                </td>
-                <td class="border border-gray-300 p-2 w-40">
-                    <select name="fan_evaporator[${i}]" class="w-full p-1 border border-gray-300 rounded">
-                        <option value="Suara Halus">Suara Halus</option>
-                        <option value="Suara Kasar">Suara Kasar</option>
-                        <option value="OFF">OFF</option>
-                    </select>
-                </td>
-                <td class="border border-gray-300 p-2 w-40">
-                    <select name="auto_drain[${i}]" class="w-full p-1 border border-gray-300 rounded">
-                        <option value="Berfungsi">Berfungsi</option>
-                        <option value="Tidak Berfungsi">Tidak Berfungsi</option>
-                        <option value="OFF">OFF</option>
-                    </select>
-                </td>
-                <td class="border border-gray-300 p-2">
-                    <input type="text" name="keterangan[${i}]" class="w-full p-1 border border-gray-300 rounded">
-                </td>
-            </tr>`;
-
-            tableBody.innerHTML += row;
-        }
-
-        // Fungsi untuk mengubah tanggal menjadi hari otomatis
         document.getElementById("tanggal").addEventListener("change", function() {
             let tanggal = new Date(this.value);
             let hari = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(tanggal);
