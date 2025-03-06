@@ -4,157 +4,234 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Pencatatan Mesin Air Dryer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+
     <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f5ff;
+            font-family: Arial, sans-serif;
+            /* Added padding to the top to account for the fixed header */
+            padding-top: 70px;
+        }
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            touch-action: pan-y;
+        }
+        .logo {
+            font-weight: bold;
+            color: #2963B8;
+            font-size: 20px;
+        }
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .checker-section {
+            background-color: #f0f5ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .checker-label {
+            color: #6c757d;
+            font-weight: bold;
+        }
+        .checker-name {
+            font-weight: bold;
+            color: #2963B8;
+        }
+        .table th {
+            background-color: #f0f5ff;
+        }
+        .btn-primary {
+            background-color: #2963B8;
+            border-color: #2963B8;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .detail-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        .form-control, .form-select {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #fff;
+            border-color: #2963B8;
+            box-shadow: 0 0 0 0.25rem rgba(41, 99, 184, 0.25);
+        }
+    </style>
 </head>
-<body class="bg-gray-100 p-6">
-
-    <div class="max-w-7xl mx-auto bg-white p-6 rounded shadow-md">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Form Pencatatan Mesin Air Dryer</h2>
-
-        <!-- Menampilkan Nama Checker -->
-        <div class="mb-4 p-4 bg-gray-200 rounded">
-            <p class="text-lg font-semibold text-gray-700">Checker: <span class="text-blue-600">{{ Auth::user()->username }}</span></p>
-        </div>
-
-        <!-- Form Input -->
-        <form action="{{ route('air-dryer.store') }}" method="POST">
+<body>
+    <!-- Header -->
+    <header class="header d-flex justify-content-between align-items-center p-3">
+        <img src="{{ asset('images/logo.png') }}" alt="ASPRA Logo" height="40">
+        <form id="logout-form" action="{{ route('logout') }}" method="POST">
             @csrf
-            <div class="mb-4 grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-gray-700">Hari:</label>
-                    <input type="text" id="hari" name="hari" class="w-full p-2 border border-gray-300 rounded bg-gray-100" readonly>
-                </div>
-                <div>
-                    <label class="block text-gray-700">Tanggal:</label>
-                    <input type="date" id="tanggal" name="tanggal" class="w-full p-2 border border-gray-300 rounded" required>
-                </div>
-            </div>
-
-            <!-- Tabel Inspeksi -->
-            <div class="overflow-x-auto">
-                <table class="min-w-full border border-gray-300">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="border border-gray-300 p-2">No</th>
-                            <th class="border border-gray-300 p-2">Nomor Mesin</th>
-                            <th class="border border-gray-300 p-2">Temperatur Kompresor</th>
-                            <th class="border border-gray-300 p-2">Temperatur Kabel</th>
-                            <th class="border border-gray-300 p-2">Temperatur MCB</th>
-                            <th class="border border-gray-300 p-2">Temperatur Angin In</th>
-                            <th class="border border-gray-300 p-2">Temperatur Angin Out</th>
-                            <th class="border border-gray-300 p-2">Evaporator</th>
-                            <th class="border border-gray-300 p-2">Fan Evaporator</th>
-                            <th class="border border-gray-300 p-2">Auto Drain</th>
-                            <th class="border border-gray-300 p-2">Keterangan</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body">
-                        @php
-                            $jumlahMesin = 8; // Sesuaikan jumlah mesin
-                            $hariIndonesia = [
-                                'Sunday' => 'Minggu',
-                                'Monday' => 'Senin',
-                                'Tuesday' => 'Selasa',
-                                'Wednesday' => 'Rabu',
-                                'Thursday' => 'Kamis',
-                                'Friday' => 'Jumat',
-                                'Saturday' => 'Sabtu',
-                            ];
-                        @endphp
-
-                        @for ($i = 1; $i <= $jumlahMesin; $i++)
-                            @php
-                                $nomorMesin = "AD{$i}";
-                            @endphp
-                            <tr class="bg-white">
-                                <td class="border border-gray-300 p-2 text-center">{{ $i }}</td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <input type="text" name="nomor_mesin[{{ $i }}]" value="{{ $nomorMesin }}" class="w-20 p-1 border border-gray-300 rounded bg-gray-100" readonly>
-                                </td>
-                                <td class="border border-gray-300 p-2">
-                                    <input type="text" name="temperatur_kompresor[{{ $i }}]" 
-                                        class="w-full p-1 border border-gray-300 rounded"
-                                        placeholder="30°C - 60°C" required>
-                                </td>
-                                <td class="border border-gray-300 p-2">
-                                    <input type="text" name="temperatur_kabel[{{ $i }}]" 
-                                        class="w-full p-1 border border-gray-300 rounded"
-                                        placeholder="30°C - 60°C" required>
-                                </td>
-                                <td class="border border-gray-300 p-2">
-                                    <input type="text" name="temperatur_mcb[{{ $i }}]" 
-                                        class="w-full p-1 border border-gray-300 rounded"
-                                        placeholder="30°C - 60°C" required>
-                                </td>
-                                <td class="border border-gray-300 p-2">
-                                    <input type="text" name="temperatur_angin_in[{{ $i }}]" 
-                                        class="w-full p-1 border border-gray-300 rounded"
-                                        placeholder="30°C - 60°C" required>
-                                </td>
-                                <td class="border border-gray-300 p-2">
-                                    <input type="text" name="temperatur_angin_out[{{ $i }}]" 
-                                        class="w-full p-1 border border-gray-300 rounded"
-                                        placeholder="30°C - 60°C" required> 
-                                </td>
-                                <td class="border border-gray-300 p-2">
-                                    <select name="evaporator[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded">
-                                        <option value="Bersih">Bersih</option>
-                                        <option value="Kotor">Kotor</option>
-                                        <option value="OFF">OFF</option>
-                                    </select>
-                                </td>
-                                <td class="border border-gray-300 p-2 w-40">
-                                    <select name="fan_evaporator[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded">
-                                        <option value="Suara Halus">Suara Halus</option>
-                                        <option value="Suara Kasar">Suara Kasar</option>
-                                        <option value="OFF">OFF</option>
-                                    </select>
-                                </td>
-                                <td class="border border-gray-300 p-2 w-40">
-                                    <select name="auto_drain[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded">
-                                        <option value="Berfungsi">Berfungsi</option>
-                                        <option value="Tidak Berfungsi">Tidak Berfungsi</option>
-                                        <option value="OFF">OFF</option>
-                                    </select>
-                                </td>
-                                <td class="border border-gray-300 p-2">
-                                    <input type="text" name="keterangan[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded">
-                                </td>
-                            </tr>
-                        @endfor
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Detail Mesin -->
-            <div class="mt-4 p-4 bg-gray-100 rounded w-1/2">
-                <h3 class="text-lg font-semibold text-gray-700 mb-2">Detail Mesin:</h3>
-                <p class="text-gray-700">AD 1 : HIGH PRESS 1 &nbsp;&nbsp;&nbsp; AD 5 : SUPPLY INJECT</p>
-                <p class="text-gray-700">AD 2 : HIGH PRESS 2 &nbsp;&nbsp;&nbsp; AD 6 : LOW PRESS 3</p>
-                <p class="text-gray-700">AD 3 : LOW PRESS 1 &nbsp;&nbsp;&nbsp;&nbsp; AD 7 : LOW PRESS 4</p>
-                <p class="text-gray-700">AD 4 : LOW PRESS 2 &nbsp;&nbsp;&nbsp;&nbsp; AD 8 : LOW PRESS 5</p>
-            </div>
-
-            <div class="mt-4 flex justify-between">
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    Simpan
-                </button>
-                <a href="{{ route('air-dryer.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded">
-                    Kembali
-                </a>
-            </div>
+            <button type="submit" class="btn btn-outline-danger">Logout</button>
         </form>
+    </header>
+
+    <div class="container">
+        <h2 class="mb-4">Pencatatan Mesin Air Dryer</h2>
+
+        <div class="card">
+            <div class="card-body">
+                <!-- Menampilkan Nama Checker -->
+                <div class="checker-section">
+                    <span class="checker-label">Checker: </span>
+                    <span class="checker-name">{{ Auth::user()->username }}</span>
+                </div>
+
+                <!-- Form Input -->
+                <form action="{{ route('air-dryer.store') }}" method="POST">
+                    @csrf
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Hari:</label>
+                            <input type="text" id="hari" name="hari" class="form-control" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tanggal:</label>
+                            <input type="date" id="tanggal" name="tanggal" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Inspeksi -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Nomor Mesin</th>
+                                    <th>Temperatur Kompresor</th>
+                                    <th>Temperatur Kabel</th>
+                                    <th>Temperatur MCB</th>
+                                    <th>Temperatur Angin In</th>
+                                    <th>Temperatur Angin Out</th>
+                                    <th>Evaporator</th>
+                                    <th>Fan Evaporator</th>
+                                    <th>Auto Drain</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Detail Mesin -->
+                    <div class="detail-section col-md-6">
+                        <h5 class="mb-3">Detail Mesin:</h5>
+                        <p class="mb-1">AD 1 : HIGH PRESS 1 &nbsp;&nbsp;&nbsp; AD 5 : SUPPLY INJECT</p>
+                        <p class="mb-1">AD 2 : HIGH PRESS 2 &nbsp;&nbsp;&nbsp; AD 6 : LOW PRESS 3</p>
+                        <p class="mb-1">AD 3 : LOW PRESS 1 &nbsp;&nbsp;&nbsp;&nbsp; AD 7 : LOW PRESS 4</p>
+                        <p class="mb-1">AD 4 : LOW PRESS 2 &nbsp;&nbsp;&nbsp;&nbsp; AD 8 : LOW PRESS 5</p>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            Simpan
+                        </button>
+                        <a href="{{ route('air-dryer.index') }}" class="btn btn-secondary">
+                            Kembali
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
-    <!-- Script untuk mengisi hari berdasarkan tanggal -->
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Data mesin air dryer
+        const jumlahMesin = 8; // Sesuaikan jumlah mesin
+        const tableBody = document.getElementById("table-body");
+
+        for (let i = 1; i <= jumlahMesin; i++) {
+            let nomorMesin = `AD${i}`;
+
+            let row = `<tr>
+                <td class="text-center">${i}</td>
+                <td class="text-center">
+                    <input type="text" name="nomor_mesin[${i}]" value="${nomorMesin}" class="form-control form-control-sm bg-light" readonly>
+                </td>
+                <td>
+                    <input type="text" name="temperatur_kompresor[${i}]" 
+                        class="form-control form-control-sm"
+                        placeholder="30°C - 60°C" required>
+                </td>
+                <td>
+                    <input type="text" name="temperatur_kabel[${i}]" 
+                        class="form-control form-control-sm"
+                        placeholder="30°C - 60°C" required>
+                </td>
+                <td>
+                    <input type="text" name="temperatur_mcb[${i}]" 
+                        class="form-control form-control-sm"
+                        placeholder="30°C - 60°C" required>
+                </td>
+                <td>
+                    <input type="text" name="temperatur_angin_in[${i}]" 
+                        class="form-control form-control-sm"
+                        placeholder="30°C - 60°C" required>
+                </td>
+                <td>
+                    <input type="text" name="temperatur_angin_out[${i}]" 
+                        class="form-control form-control-sm"
+                        placeholder="30°C - 60°C" required> 
+                </td>
+                <td>
+                    <select name="evaporator[${i}]" class="form-select form-select-sm">
+                        <option value="Bersih">Bersih</option>
+                        <option value="Kotor">Kotor</option>
+                        <option value="OFF">OFF</option>
+                    </select>
+                </td>
+                <td>
+                    <select name="fan_evaporator[${i}]" class="form-select form-select-sm">
+                        <option value="Suara Halus">Suara Halus</option>
+                        <option value="Suara Kasar">Suara Kasar</option>
+                        <option value="OFF">OFF</option>
+                    </select>
+                </td>
+                <td>
+                    <select name="auto_drain[${i}]" class="form-select form-select-sm">
+                        <option value="Berfungsi">Berfungsi</option>
+                        <option value="Tidak Berfungsi">Tidak Berfungsi</option>
+                        <option value="OFF">OFF</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="keterangan[${i}]" class="form-control form-control-sm">
+                </td>
+            </tr>`;
+
+            tableBody.innerHTML += row;
+        }
+
+        // Fungsi untuk mengubah tanggal menjadi hari otomatis
         document.getElementById("tanggal").addEventListener("change", function() {
             let tanggal = new Date(this.value);
             let hari = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(tanggal);
             document.getElementById("hari").value = hari;
         });
     </script>
-
 </body>
 </html>

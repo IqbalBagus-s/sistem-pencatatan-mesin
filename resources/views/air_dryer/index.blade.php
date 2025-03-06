@@ -7,6 +7,7 @@
     
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
     
     <style>
         @font-face {
@@ -41,19 +42,9 @@
         }
         body {
             background-color: #e6f2ff;
-            padding-top: 80px;
+            padding-top: 20px; /* Mengurangi padding karena header sudah dihilangkan */
             overflow-y: auto;
             overscroll-behavior-y: none;
-        }
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #ffffff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            touch-action: pan-y;
         }
         .container {
             padding-bottom: 50px;
@@ -211,9 +202,7 @@
             justify-content: center;
             list-style: none;
             padding: 0;
-        }
-        .pagination .page-item {
-            margin: 0 3px;
+            gap: 5px;
         }
         .pagination .page-link {
             color: #1565c0;
@@ -223,12 +212,13 @@
             padding: 0.5rem 0.75rem;
             text-decoration: none;
         }
-        .pagination .page-item.active .page-link {
+        .pagination .page-link.active {
             background-color: #1565c0;
             color: white;
             border-color: #1565c0;
+            font-weight: bold;
         }
-        .pagination .page-link:hover {
+        .pagination .page-link:hover:not(.active):not([style*="pointer-events: none"]) {
             background-color: #e9ecef;
         }
         .search-and-add {
@@ -253,10 +243,7 @@
         }
         @media (max-width: 768px) {
             body {
-                padding-top: 60px;
-            }
-            .header {
-                padding: 10px !important;
+                padding-top: 20px; /* Mengurangi padding karena header sudah dihilangkan */
             }
             .search-container {
                 padding: 15px;
@@ -276,14 +263,6 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header d-flex justify-content-between align-items-center p-3">
-        <img src="{{ asset('images/logo.png') }}" alt="ASPRA Logo" height="40">
-        <form id="logout-form" action="{{ route('logout') }}" method="POST">
-            @csrf
-            <button type="submit" class="btn btn-outline-danger">Logout</button>
-        </form>
-    </header>
 
     <div class="container">
         <h2 class="page-title">Pencatatan Mesin Air Dryer</h2>
@@ -382,19 +361,22 @@
             </table>
         </div>
         
-        <!-- Pagination -->
+        <!-- Pagination - diperbarui untuk hilangkan tombol Previous/Next saat di penghujung halaman -->
         <div class="mt-4 d-flex justify-content-center">
             <div class="pagination">
+                <!-- Previous button - hanya muncul jika bukan halaman pertama -->
                 @if (!$checks->onFirstPage())
                     <a href="{{ $checks->previousPageUrl() }}" class="page-link" rel="prev">&laquo; Previous</a>
                 @endif
                 
+                <!-- Page numbers - tetap ditampilkan di tengah -->
                 @foreach ($checks->getUrlRange(1, $checks->lastPage()) as $page => $url)
                     <a href="{{ $url }}" class="page-link {{ $page == $checks->currentPage() ? 'active' : '' }}">
                         {{ $page }}
                     </a>
                 @endforeach
                 
+                <!-- Next button - hanya muncul jika bukan halaman terakhir -->
                 @if ($checks->hasMorePages())
                     <a href="{{ $checks->nextPageUrl() }}" class="page-link" rel="next">Next &raquo;</a>
                 @endif
