@@ -42,7 +42,7 @@
         }
         body {
             background-color: #e6f2ff;
-            padding-top: 20px; /* Mengurangi padding karena header sudah dihilangkan */
+            padding-top: 20px;
             overflow-y: auto;
             overscroll-behavior-y: none;
         }
@@ -243,7 +243,7 @@
         }
         @media (max-width: 768px) {
             body {
-                padding-top: 20px; /* Mengurangi padding karena header sudah dihilangkan */
+                padding-top: 20px;
             }
             .search-container {
                 padding: 15px;
@@ -337,11 +337,7 @@
                                     {{-- Menu lihat --}}
                                     @if(auth()->user() instanceof \App\Models\Approver)
                                         <a href="{{ route('air-dryer.show', $check->id) }}" title="Lihat Detail">
-                                            @if($check->approved_by)
-                                                <i class="fas fa-eye" style="color: #1565c0; opacity: 0.7;" title="Sudah disetujui"></i>
-                                            @else
-                                                <i class="fas fa-eye" style="color: #1565c0;" title="Lihat Detail"></i>
-                                            @endif
+                                            <i class="fas fa-eye" style="color: #1565c0;" title="Lihat Detail"></i>
                                         </a>
                                     {{-- Menu edit --}}
                                     @elseif(auth()->user() instanceof \App\Models\Checker)
@@ -361,22 +357,22 @@
             </table>
         </div>
         
-        <!-- Pagination - diperbarui untuk hilangkan tombol Previous/Next saat di penghujung halaman -->
+        <!-- Pagination -->
         <div class="mt-4 d-flex justify-content-center">
             <div class="pagination">
-                <!-- Previous button - hanya muncul jika bukan halaman pertama -->
+                <!-- Previous button -->
                 @if (!$checks->onFirstPage())
                     <a href="{{ $checks->previousPageUrl() }}" class="page-link" rel="prev">&laquo; Previous</a>
                 @endif
                 
-                <!-- Page numbers - tetap ditampilkan di tengah -->
+                <!-- Page numbers -->
                 @foreach ($checks->getUrlRange(1, $checks->lastPage()) as $page => $url)
                     <a href="{{ $url }}" class="page-link {{ $page == $checks->currentPage() ? 'active' : '' }}">
                         {{ $page }}
                     </a>
                 @endforeach
                 
-                <!-- Next button - hanya muncul jika bukan halaman terakhir -->
+                <!-- Next button -->
                 @if ($checks->hasMorePages())
                     <a href="{{ $checks->nextPageUrl() }}" class="page-link" rel="next">Next &raquo;</a>
                 @endif
