@@ -149,13 +149,16 @@ class AirDryerController extends Controller
         // Ambil data dari database berdasarkan ID
         $check = AirDryerCheck::findOrFail($id);
         $results = AirDryerResult::where('check_id', $id)->get();
-
+        
         // Load view untuk PDF dengan ukuran halaman yang sesuai
         $pdf = Pdf::loadView('air_dryer.pdf', compact('check', 'results'))
             ->setPaper('a4', 'landscape'); // Set ukuran kertas A4 landscape
-
-        // Mengembalikan file PDF untuk di-download
-        return $pdf->download('air_dryer_' . $id . '.pdf');
+    
+        // Format tanggal untuk nama file
+        $formattedDate = date('d-m-Y', strtotime($check->tanggal));
+        
+        // Mengembalikan file PDF untuk di-download dengan format nama yang baru
+        return $pdf->download('Air Dryer Form_' . $formattedDate . '.pdf');
     }
 
 

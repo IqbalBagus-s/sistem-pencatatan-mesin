@@ -6,29 +6,11 @@
     <title>Form Pencatatan Mesin Air Dryer</title>
 
     <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             background-color: #f0f5ff;
             font-family: Arial, sans-serif;
-            /* Added padding to the top to account for the fixed header */
-            padding-top: 70px;
-        }
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #ffffff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            touch-action: pan-y;
-        }
-        .logo {
-            font-weight: bold;
-            color: #2963B8;
-            font-size: 20px;
         }
         .card {
             border: none;
@@ -52,6 +34,9 @@
         }
         .table th {
             background-color: #f0f5ff;
+        }
+        .auto-drain-column {
+            min-width: 140px;
         }
         .btn-primary {
             background-color: #2963B8;
@@ -79,16 +64,7 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header d-flex justify-content-between align-items-center p-3">
-        <img src="{{ asset('images/logo.png') }}" alt="ASPRA Logo" height="40">
-        <form id="logout-form" action="{{ route('logout') }}" method="POST">
-            @csrf
-            <button type="submit" class="btn btn-outline-danger">Logout</button>
-        </form>
-    </header>
-
-    <div class="container">
+    <div class="container mt-4">
         <h2 class="mb-4">Pencatatan Mesin Air Dryer</h2>
 
         <div class="card">
@@ -127,7 +103,7 @@
                                     <th>Temperatur Angin Out</th>
                                     <th>Evaporator</th>
                                     <th>Fan Evaporator</th>
-                                    <th>Auto Drain</th>
+                                    <th class="auto-drain-column">Auto Drain</th>
                                     <th>Keterangan</th>
                                 </tr>
                             </thead>
@@ -145,23 +121,22 @@
                     </div>
 
                     <div class="d-flex justify-content-between mt-4">
-                        <button type="submit" class="btn btn-primary">
-                            Simpan
-                        </button>
                         <a href="{{ route('air-dryer.index') }}" class="btn btn-secondary">
                             Kembali
                         </a>
+                        <button type="submit" class="btn btn-primary">
+                            Simpan
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Data mesin air dryer
-        const jumlahMesin = 8; // Sesuaikan jumlah mesin
+        const jumlahMesin = 8;
         const tableBody = document.getElementById("table-body");
 
         for (let i = 1; i <= jumlahMesin; i++) {
@@ -211,7 +186,7 @@
                         <option value="OFF">OFF</option>
                     </select>
                 </td>
-                <td>
+                <td class="auto-drain-column">
                     <select name="auto_drain[${i}]" class="form-select form-select-sm">
                         <option value="Berfungsi">Berfungsi</option>
                         <option value="Tidak Berfungsi">Tidak Berfungsi</option>
@@ -226,7 +201,6 @@
             tableBody.innerHTML += row;
         }
 
-        // Fungsi untuk mengubah tanggal menjadi hari otomatis
         document.getElementById("tanggal").addEventListener("change", function() {
             let tanggal = new Date(this.value);
             let hari = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(tanggal);
