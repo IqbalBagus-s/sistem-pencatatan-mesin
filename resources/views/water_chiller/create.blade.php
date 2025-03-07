@@ -37,70 +37,67 @@
                     <thead>
                         <tr class="bg-gray-200">
                             <th class="border border-gray-300 p-2">No</th>
-                            <th class="border border-gray-300 p-2">Checked Items</th>
-                            <th class="border border-gray-300 p-2">CH1</th>
-                            <th class="border border-gray-300 p-2">CH2</th>
-                            <th class="border border-gray-300 p-2">CH3</th>
-                            <th class="border border-gray-300 p-2">CH4</th>
-                            <th class="border border-gray-300 p-2">CH5</th>
-                            <th class="border border-gray-300 p-2">CH6</th>
-                            <th class="border border-gray-300 p-2">CH7</th>
-                            <th class="border border-gray-300 p-2">CH8</th>
-                            <th class="border border-gray-300 p-2">CH9</th>
-                            <th class="border border-gray-300 p-2">CH10</th>
-                            <th class="border border-gray-300 p-2">CH11</th>
-                            <th class="border border-gray-300 p-2">CH12</th>
-                            <th class="border border-gray-300 p-2">CH13</th>
-                            <th class="border border-gray-300 p-2">CH14</th>
-                            <th class="border border-gray-300 p-2">CH15</th>
-                            <th class="border border-gray-300 p-2">CH16</th>
-                            <th class="border border-gray-300 p-2">CH17</th>
-                            <th class="border border-gray-300 p-2">CH18</th>
-                            <th class="border border-gray-300 p-2">CH19</th>
-                            <th class="border border-gray-300 p-2">CH20</th>
-                            <th class="border border-gray-300 p-2">CH21</th>
-                            <th class="border border-gray-300 p-2">CH22</th>
-                            <th class="border border-gray-300 p-2">CH23</th>
-                            <th class="border border-gray-300 p-2">CH24</th>
-                            <th class="border border-gray-300 p-2">CH25</th>
-                            <th class="border border-gray-300 p-2">CH26</th>
-                            <th class="border border-gray-300 p-2">CH27</th>
-                            <th class="border border-gray-300 p-2">CH28</th>
-                            <th class="border border-gray-300 p-2">CH29</th>
-                            <th class="border border-gray-300 p-2">CH30</th>
-                            <th class="border border-gray-300 p-2">CH31</th>
-                            <th class="border border-gray-300 p-2">CH32</th>
+                            <th class="border border-gray-300 p-2" style="width: 200px; min-width: 200px;">ITEM YANG DIPERIKSA</th>
+                            <th class="border border-gray-300 p-2" style="width: 130px; min-width: 130px;">STANDART</th>
+                            @for ($i = 1; $i <= 32; $i++)
+                                <th class="border border-gray-300 p-2 text-center" style="width: 80px; min-width: 60px;">CH{{ $i }}</th>
+                            @endfor
                         </tr>
                     </thead>
                     <tbody id="table-body">
                         @php
                             $checkedItems = [
-                                'Temperatur Compressor', 'Temperatur Kabel', 'Temperatur Mcb', 
-                                'Temperatur Air', 'Temperatur Pompa', 'Evaporator', 
-                                'Fan Evaporator', 'Freon', 'Air'
+                                ['Temperatur Compressor', '30 °C - 60 °C'],
+                                ['Temperatur Kabel', '30 °C - 45 °C'],
+                                ['Temperatur Mcb', '30 °C - 50 °C'],
+                                ['Temperatur Air', 'Sesuai Setelan'],
+                                ['Temperatur Pompa', '40 °C - 50 °C'],
+                                ['Evaporator', 'Bersih'],
+                                ['Fan Evaporator', 'Suara Halus'],
+                                ['Freon', 'Cukup'],
+                                ['Air', 'Cukup']
                             ];
                         @endphp
                     
                         @foreach ($checkedItems as $index => $item)
                             <tr class="bg-white">
                                 <td class="border border-gray-300 p-2 text-center">{{ $index + 1 }}</td>
-                                <td class="border border-gray-300 p-2">
+                                <td class="border border-gray-300 p-2 text-center" style="width: 250px;">
                                     <input type="text" name="checked_items[{{ $index + 1 }}]" 
-                                        class="w-full p-1 border border-gray-300 rounded bg-gray-200"
-                                        value="{{ $item }}" readonly>
+                                        class="w-full p-1 border border-gray-300 rounded bg-gray-200 text-center"
+                                        value="{{ $item[0] }}" readonly>
+                                </td>
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <input type="text" class="w-full p-1 border border-gray-300 rounded bg-gray-200 text-center"
+                                        value="{{ $item[1] }}" readonly>
                                 </td>
                                 @for ($j = 1; $j <= 32; $j++)
-                                    <td class="border border-gray-300 p-2">
-                                        <input type="text" name="CH{{ $j }}[{{ $index + 1 }}]" 
-                                            class="w-full p-1 border border-gray-300 rounded"
-                                            placeholder="CH{{ $j }}">
+                                    <td class="border border-gray-300 p-2 text-center">
+                                        @if ($index >= 5) 
+                                            <!-- Baris 6-9 berupa checkbox (tidak wajib diisi) -->
+                                            <input type="checkbox" name="CH{{ $j }}[{{ $index + 1 }}]" value="✔" 
+                                                class="w-5 h-5 border border-gray-300 rounded">
+                                        @else
+                                            <!-- Input teks wajib diisi -->
+                                            <input type="text" name="CH{{ $j }}[{{ $index + 1 }}]" 
+                                                class="w-full p-1 border border-gray-300 rounded text-center" required/>
+                                        @endif
                                     </td>
                                 @endfor
                             </tr>
                         @endforeach
-                    </tbody>
+                    </tbody>                    
                 </table>
             </div>
+
+            <!-- Form Input Keterangan -->
+            <div class="mt-4">
+                <label for="keterangan" class="block text-gray-700 font-semibold">Keterangan:</label>
+                <textarea id="keterangan" name="keterangan" rows="3"
+                    class="w-full p-2 border border-gray-300 rounded" 
+                    placeholder="Tambahkan keterangan jika diperlukan..."></textarea>
+            </div>
+
 
             <div class="mt-4 flex justify-between">
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
