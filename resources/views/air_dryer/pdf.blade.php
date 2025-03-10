@@ -46,15 +46,40 @@
             font-weight: bold;
             margin-bottom: 10px;
         }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .logo {
+            height: 60px; /* Sesuaikan ukuran logo sesuai kebutuhan */
+            max-width: 200px;
+        }
+        
+        .header {
+            margin-bottom: 20px;
+        }
+        
+        .report-info {
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
-    <div class="title">Laporan Pemeriksaan Air Dryer</div>
+    <div class="header">
+        <div class="logo-container">
+            <img src="{{ public_path('images/logo.png') }}" alt="Logo ASPRA" class="logo">
+        </div>
+        <div class="title">Laporan Pemeriksaan Air Dryer</div>
+    </div>
 
-    <p><strong>Tanggal:</strong> {{ $check->tanggal }}</p>
-    <p><strong>Hari:</strong> {{ $check->hari }}</p>
-    <p><strong>Checker:</strong> {{ $check->checked_by }}</p>
-    <p><strong>Approved By:</strong> {{ $check->approved_by ?? 'Belum Disetujui' }}</p>
+    <div class="report-info">
+        <p><strong>Tanggal:</strong> {{ $check->tanggal }}</p>
+        <p><strong>Hari:</strong> {{ $check->hari }}</p>
+        <p><strong>Checker:</strong> {{ $check->checked_by }}</p>
+        <p><strong>Approved By:</strong> {{ $check->approved_by ?? 'Belum Disetujui' }}</p>
+    </div>
 
     <div class="table-container">
         <table>

@@ -156,6 +156,10 @@ class AirDryerController extends Controller
     
         // Format tanggal untuk nama file
         $formattedDate = date('d-m-Y', strtotime($check->tanggal));
+
+        // Aktifkan opsi untuk gambar
+        $pdf->getDomPDF()->set_option('isRemoteEnabled', true);
+        $pdf->getDomPDF()->set_option('isHtml5ParserEnabled', true);
         
         // Mengembalikan file PDF untuk di-download dengan format nama yang baru
         return $pdf->download('Air Dryer Form_' . $formattedDate . '.pdf');
