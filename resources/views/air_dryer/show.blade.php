@@ -28,6 +28,7 @@
                     <span class="text-success">{{ $check->checked_by }}</span></p>
             </div>
 
+            {{-- tanggal form di isi --}}
             <div class="mb-3">
                 <label class="form-label">Tanggal:</label>
                 <input type="date" value="{{ $check->tanggal }}" class="form-control bg-light" readonly>

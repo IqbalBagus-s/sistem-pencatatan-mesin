@@ -111,6 +111,7 @@ class WaterChillerController extends Controller
         $request->validate([
             'tanggal' => 'required|date',
             'hari' => 'required|string|max:20',
+            'keterangan' => 'nullable|string',
         ]);
 
         // Update WaterChillerCheck
@@ -118,6 +119,7 @@ class WaterChillerController extends Controller
         $check->update([
             'tanggal' => $request->tanggal,
             'hari' => $request->hari,
+            'keterangan' => $request->keterangan,
         ]);
 
         // Update WaterChillerResult
@@ -127,40 +129,11 @@ class WaterChillerController extends Controller
                 ->first();
 
             if ($result) {
-                $result->update([
-                    'CH1' => $request->CH1[$index] ?? null,
-                    'CH2' => $request->CH2[$index] ?? null,
-                    'CH3' => $request->CH3[$index] ?? null,
-                    'CH4' => $request->CH4[$index] ?? null,
-                    'CH5' => $request->CH5[$index] ?? null,
-                    'CH6' => $request->CH6[$index] ?? null,
-                    'CH7' => $request->CH7[$index] ?? null,
-                    'CH8' => $request->CH8[$index] ?? null,
-                    'CH9' => $request->CH9[$index] ?? null,
-                    'CH10' => $request->CH10[$index] ?? null,
-                    'CH11' => $request->CH11[$index] ?? null,
-                    'CH12' => $request->CH12[$index] ?? null,
-                    'CH13' => $request->CH13[$index] ?? null,
-                    'CH14' => $request->CH14[$index] ?? null,
-                    'CH15' => $request->CH15[$index] ?? null,
-                    'CH16' => $request->CH16[$index] ?? null,
-                    'CH17' => $request->CH17[$index] ?? null,
-                    'CH18' => $request->CH18[$index] ?? null,
-                    'CH19' => $request->CH19[$index] ?? null,
-                    'CH20' => $request->CH20[$index] ?? null,
-                    'CH21' => $request->CH21[$index] ?? null,
-                    'CH22' => $request->CH22[$index] ?? null,
-                    'CH23' => $request->CH23[$index] ?? null,
-                    'CH24' => $request->CH24[$index] ?? null,
-                    'CH25' => $request->CH25[$index] ?? null,
-                    'CH26' => $request->CH26[$index] ?? null,
-                    'CH27' => $request->CH27[$index] ?? null,
-                    'CH28' => $request->CH28[$index] ?? null,
-                    'CH29' => $request->CH29[$index] ?? null,
-                    'CH30' => $request->CH30[$index] ?? null,
-                    'CH31' => $request->CH31[$index] ?? null,
-                    'CH32' => $request->CH32[$index] ?? null,
-                ]);
+                for ($j = 1; $j <= 32; $j++) {
+                    $key = "CH{$j}";
+                    $result->$key = $request->{$key}[$index] ?? "-";
+                }
+            $result->save();
             }
         }
 
