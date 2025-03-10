@@ -100,6 +100,14 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        .footer {
+            background-color: #ffffff;
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+            margin-top: auto;
+            width: 100%;
+        }
         .btn-back {
             background-color: #6c757d;
             color: white;
@@ -197,12 +205,22 @@
         .text-center {
             text-align: center !important;
         }
+        .pagination-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 1rem;
+            padding: 0 15px;
+        }
         .pagination {
             display: flex;
             justify-content: center;
             list-style: none;
             padding: 0;
             gap: 5px;
+            width: 100%;
+            margin: 0 auto;
         }
         .pagination .page-link {
             color: #1565c0;
@@ -358,7 +376,7 @@
         </div>
         
         <!-- Pagination -->
-        <div class="mt-4 d-flex justify-content-center">
+        <div class="pagination-container">
             <div class="pagination">
                 <!-- Previous button -->
                 @if (!$checks->onFirstPage())
@@ -386,6 +404,11 @@
             </a>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p class="mb-0 fw-bold">2025 © PT ASIA PRAMULIA</p>
+    </footer>
 
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 </body>

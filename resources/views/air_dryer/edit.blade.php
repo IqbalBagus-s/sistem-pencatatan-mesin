@@ -15,6 +15,14 @@
         .table-responsive {
             overflow-x: auto;
         }
+        .footer {
+            background-color: #ffffff;
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+            margin-top: auto;
+            width: 100%;
+        }
         .form-select-auto-drain {
             width: 100%;
         }
@@ -127,6 +135,11 @@
             </div>
         </form>
     </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p class="mb-0 fw-bold">2025 © PT ASIA PRAMULIA</p>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
