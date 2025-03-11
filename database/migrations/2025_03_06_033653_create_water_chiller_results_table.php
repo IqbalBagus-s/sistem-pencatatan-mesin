@@ -14,12 +14,16 @@ return new class extends Migration
         Schema::create('water_chiller_results', function (Blueprint $table) {
             $table->id(); // Kolom id (primary key)
             $table->unsignedBigInteger('check_id'); 
-            $table->string('checked_items'); // Kolom checked_items
-            
-            // Kolom CH1 sampai CH32 dibuat nullable
-            for ($i = 1; $i <= 32; $i++) {
-                $table->string("CH$i")->nullable();
-            }
+            $table->string('no_mesin'); // Kolom no_mesin
+            $table->string('Temperatur_Compressor'); 
+            $table->string('Temperatur_Kabel'); 
+            $table->string('Temperatur_Mcb'); 
+            $table->string('Temperatur_Air'); 
+            $table->string('Temperatur_Pompa'); 
+            $table->string('Evaporator'); 
+            $table->string('Fan_Evaporator'); 
+            $table->string('Freon'); 
+            $table->string('Air'); 
 
             $table->timestamps(); // Kolom created_at dan updated_at
 

@@ -51,7 +51,6 @@ class WaterChillerController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
-        // Simpan data ke dalam tabel WaterChillerCheck
         $check = WaterChillerCheck::create([
             'tanggal' => $request->tanggal,
             'hari' => $request->hari,
@@ -60,40 +59,23 @@ class WaterChillerController extends Controller
             'keterangan' => $request->keterangan,
         ]);
 
-        // Simpan data per mesin ke dalam tabel WaterChillerResult
-        foreach ($request->checked_items as $index => $checked_item) {
-            $data = [
+        for ($i = 1; $i <= 32; $i++) {
+            WaterChillerResult::create([
                 'check_id' => $check->id,
-                'checked_items' => $checked_item,
-            ];
-
-            for ($j = 1; $j <= 32; $j++) {
-                $key = "CH{$j}";
-                $value = $request->{$key}[$index] ?? "➖"; // Default ke strip jika kosong
-
-                switch ($checked_item) {
-                    case 'Evaporator':
-                        $data[$key] = ($value === '✔️') ? "✔️" : (($value === '❌') ? "❌" : "-");
-                        break;
-                    case 'Fan Evaporator':
-                        $data[$key] = ($value === '✔️') ? "✔️" : (($value === '❌') ? "❌" : "-");
-                        break;
-                    case 'Freon':
-                        $data[$key] = ($value === '✔️') ? "✔️" : (($value === '❌') ? "❌" : "-");
-                        break;
-                    case 'Air':
-                        $data[$key] = ($value === '✔️') ? "✔️" : (($value === '❌') ? "❌" : "-");
-                        break;
-                    default:
-                        $data[$key] = $value; // Menyimpan langsung nilai ✔️, ❌, atau ➖
-                        break;
-                }
-            }
-
-            WaterChillerResult::create($data);
+                'no_mesin' => "CH{$i}",
+                'Temperatur_Compressor' => $request->input("temperatur_1.{$i}"),
+                'Temperatur_Kabel' => $request->input("temperatur_2.{$i}"),
+                'Temperatur_Mcb' => $request->input("temperatur_3.{$i}"),
+                'Temperatur_Air' => $request->input("temperatur_4.{$i}"),
+                'Temperatur_Pompa' => $request->input("temperatur_5.{$i}"),
+                'Evaporator' => $request->input("evaporator.{$i}"),
+                'Fan_Evaporator' => $request->input("fan_evaporator.{$i}"),
+                'Freon' => $request->input("freon.{$i}"),
+                'Air' => $request->input("air.{$i}"),
+            ]);
         }
 
-        return redirect()->route('water-chiller.index')->with('success', 'Data berhasil disimpan!');
+        return redirect()->route('water-chiller.index')->with('success', 'Data berhasil disimpan');
     }
 
 
@@ -121,17 +103,23 @@ class WaterChillerController extends Controller
         ]);
 
         // Update WaterChillerResult
-        foreach ($request->checked_items as $index => $checked_item) {
+        for ($i = 1; $i <= 32; $i++) {
             $result = WaterChillerResult::where('check_id', $check_id)
-                ->where('checked_items', $checked_item)
+                ->where('no_mesin', "CH{$i}")
                 ->first();
 
             if ($result) {
-                for ($j = 1; $j <= 32; $j++) {
-                    $key = "CH{$j}";
-                    $result->$key = $request->{$key}[$index] ?? "-";
-                }
-            $result->save();
+                $result->update([
+                    'Temperatur_Compressor' => $request->input("temperatur_1.{$i}"),
+                    'Temperatur_Kabel' => $request->input("temperatur_2.{$i}"),
+                    'Temperatur_Mcb' => $request->input("temperatur_3.{$i}"),
+                    'Temperatur_Air' => $request->input("temperatur_4.{$i}"),
+                    'Temperatur_Pompa' => $request->input("temperatur_5.{$i}"),
+                    'Evaporator' => $request->input("evaporator.{$i}"),
+                    'Fan_Evaporator' => $request->input("fan_evaporator.{$i}"),
+                    'Freon' => $request->input("freon.{$i}"),
+                    'Air' => $request->input("air.{$i}"),
+                ]);
             }
         }
 

@@ -10,7 +10,7 @@
 </head>
 <body class="bg-light p-3">
     <div class="container bg-white p-4 rounded shadow">
-        <h2 class="mb-4 fw-bold">Approval Pencatatan Mesin Air Dryer</h2>
+        <h2 class="mb-4 fw-bold">Approval Pencatatan Mesin Water Chiller</h2>
 
         <form action="{{ route('water-chiller.approve', $check->id) }}" method="POST">
             @csrf
@@ -35,41 +35,84 @@
 
             <div class="table-responsive">
                 <table class="table table-bordered">
-                    <thead class="table-secondary">
+                    <thead class="table-light">
                         <tr>
                             <th class="text-center">No</th>
-                            <th class="text-center" style="min-width: 220px;">ITEM YANG DIPERIKSA</th>
-                            <th class="text-center" style="min-width: 145px;">STANDART</th>
-                            @for ($i = 1; $i <= 32; $i++)
-                                <th class="text-center text-nowrap" style="min-width: 10px; font-size: 12px;">CH{{ $i }}</th>
-                            @endfor
+                            <th class="text-center">Nomor Mesin</th>
+                            <th class="text-center">Temperatur Kompresor</th>
+                            <th class="text-center">Temperatur Kabel</th>
+                            <th class="text-center">Temperatur MCB</th>
+                            <th class="text-center">Temperatur Air</th>
+                            <th class="text-center">Temperatur Pompa</th>
+                            <th class="text-center">Evaporator</th>
+                            <th class="text-center">Fan Evaporator</th>
+                            <th class="text-center">Freon</th>
+                            <th class="text-center">Air</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody> 
                         @foreach($results as $index => $result)
-                            <tr>
-                                <td class="text-center text-nowrap" style="padding: 0.2rem;">{{ $index + 1 }}</td>
-                                <td>
-                                    <input type="text" class="text-center form-control bg-light" value="{{ $result->checked_items }}" readonly>
+                            <tr class="bg-white">
+                                <td class="border border-gray-300 p-2 text-center">{{ $index + 1 }}</td>
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <input type="text" class="w-24 p-1 border border-gray-300 rounded bg-gray-200 text-center" 
+                                        value="{{ $result->no_mesin }}" readonly>
                                 </td>
-                                <td>
-                                    <input type="text" class="text-center form-control bg-light" value="{{ $result->standart }}" readonly>
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <input type="text" class="w-20 p-1 border border-gray-300 rounded text-center bg-gray-200" 
+                                        value="{{ $result->Temperatur_Compressor }}" readonly>
                                 </td>
-                                @for ($j = 1; $j <= 32; $j++)
-                                    @php 
-                                        $key = "CH{$j}"; 
-                                        $value = $result->$key ?? '-';
-                                    @endphp
-                                    <td class="border border-gray-300 text-center align-middle text-nowrap" style="padding: 0.2rem;">
-                                        {{ $value }}
-                                    </td>
-                                @endfor
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <input type="text" class="w-20 p-1 border border-gray-300 rounded text-center bg-gray-200" 
+                                        value="{{ $result->Temperatur_Kabel }}" readonly>
+                                </td>
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <input type="text" class="w-20 p-1 border border-gray-300 rounded text-center bg-gray-200" 
+                                        value="{{ $result->Temperatur_Mcb }}" readonly>
+                                </td>
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <input type="text" class="w-20 p-1 border border-gray-300 rounded text-center bg-gray-200" 
+                                        value="{{ $result->Temperatur_Air }}" readonly>
+                                </td>
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <input type="text" class="w-20 p-1 border border-gray-300 rounded text-center bg-gray-200" 
+                                        value="{{ $result->Temperatur_Pompa }}" readonly>
+                                </td>
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <select class="w-24 p-1 border border-gray-300 rounded text-center bg-gray-200" disabled>
+                                        <option value="Bersih" {{ $result->Evaporator == 'Bersih' ? 'selected' : '' }}>Bersih</option>
+                                        <option value="Kotor" {{ $result->Evaporator == 'Kotor' ? 'selected' : '' }}>Kotor</option>
+                                        <option value="OFF" {{ $result->Evaporator == 'OFF' ? 'selected' : '' }}>OFF</option>
+                                    </select>
+                                </td>
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <select class="w-24 p-1 border border-gray-300 rounded text-center bg-gray-200" disabled>
+                                        <option value="Suara Halus" {{ $result->Fan_Evaporator == 'Suara Halus' ? 'selected' : '' }}>Suara Halus</option>
+                                        <option value="Suara Keras" {{ $result->Fan_Evaporator == 'Suara Keras' ? 'selected' : '' }}>Suara Keras</option>
+                                        <option value="OFF" {{ $result->Fan_Evaporator == 'OFF' ? 'selected' : '' }}>OFF</option>
+                                    </select>
+                                </td>
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <select class="w-24 p-1 border border-gray-300 rounded text-center bg-gray-200" disabled>
+                                        <option value="Cukup" {{ $result->Freon == 'Cukup' ? 'selected' : '' }}>Cukup</option>
+                                        <option value="Tidak Cukup" {{ $result->Freon == 'Tidak Cukup' ? 'selected' : '' }}>Tidak Cukup</option>
+                                        <option value="OFF" {{ $result->Freon == 'OFF' ? 'selected' : '' }}>OFF</option>
+                                    </select>
+                                </td>
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <select class="w-24 p-1 border border-gray-300 rounded text-center bg-gray-200" disabled>
+                                        <option value="Cukup" {{ $result->Air == 'Cukup' ? 'selected' : '' }}>Cukup</option>
+                                        <option value="Tidak Cukup" {{ $result->Air == 'Tidak Cukup' ? 'selected' : '' }}>Tidak Cukup</option>
+                                        <option value="OFF" {{ $result->Air == 'OFF' ? 'selected' : '' }}>OFF</option>
+                                    </select>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>                    
-                                    
+                    
                 </table>
             </div>
+            
             
             <div class="mt-4">
                 <label for="keterangan" class="form-label">Keterangan:</label>
@@ -87,29 +130,5 @@
             </div>
         </form>
     </div>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const standardValues = [
-                "30 °C - 60 °C",
-                "30 °C - 45 °C",
-                "30 °C - 50 °C",
-                "Sesuai Setelan",
-                "40 °C - 50 °C",
-                "Bersih",
-                "Suara Halus",
-                "Cukup",
-                "Cukup"
-            ];
-    
-            const standardInputs = document.querySelectorAll('td:nth-child(3) input');
-            
-            standardInputs.forEach((input, index) => {
-                if (standardValues[index]) {
-                    input.value = standardValues[index];
-                }
-            });
-        });
-    </script>
 </body>
 </html>

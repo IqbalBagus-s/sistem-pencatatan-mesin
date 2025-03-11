@@ -36,62 +36,67 @@
                 <table class="min-w-full border border-gray-300">
                     <thead>
                         <tr class="bg-gray-200">
-                            <th class="border border-gray-300 p-2">No</th>
-                            <th class="border border-gray-300 p-2" style="width: 200px; min-width: 200px;">ITEM YANG DIPERIKSA</th>
-                            <th class="border border-gray-300 p-2" style="width: 130px; min-width: 130px;">STANDART</th>
-                            @for ($i = 1; $i <= 32; $i++)
-                                <th class="border border-gray-300 p-2 text-center" style="width: 80px; min-width: 80px;">CH{{ $i }}</th>
-                            @endfor
+                            <th class="border border-gray-300 p-2">NO.</th>
+                            <th class="border border-gray-300 p-2">No Mesin</th>
+                            <th class="border border-gray-300 p-2">Temperatur Compressor</th>
+                            <th class="border border-gray-300 p-2">Temperatur Kabel</th>
+                            <th class="border border-gray-300 p-2">Temperatur Mcb</th>
+                            <th class="border border-gray-300 p-2">Temperatur Air</th>
+                            <th class="border border-gray-300 p-2">Temperatur Pompa</th>
+                            <th class="border border-gray-300 p-2">Evaporator</th>
+                            <th class="border border-gray-300 p-2">Fan Evaporator</th>
+                            <th class="border border-gray-300 p-2">Freon</th>
+                            <th class="border border-gray-300 p-2">Air</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
-                        @php
-                            $checkedItems = [
-                                ['Temperatur Compressor', '30 °C - 60 °C'],
-                                ['Temperatur Kabel', '30 °C - 45 °C'],
-                                ['Temperatur Mcb', '30 °C - 50 °C'],
-                                ['Temperatur Air', 'Sesuai Setelan'],
-                                ['Temperatur Pompa', '40 °C - 50 °C'],
-                                ['Evaporator', 'Bersih'],
-                                ['Fan Evaporator', 'Suara Halus'],
-                                ['Freon', 'Cukup'],
-                                ['Air', 'Cukup']
-                            ];
-                        @endphp
-                    
-                        @foreach ($checkedItems as $index => $item)
+                        @for ($i = 1; $i <= 32; $i++)
                             <tr class="bg-white">
-                                <td class="border border-gray-300 p-2 text-center">{{ $index + 1 }}</td>
-                                <td class="border border-gray-300 p-2 text-center" style="width: 250px;">
-                                    <input type="text" name="checked_items[{{ $index + 1 }}]" 
-                                        class="w-full p-1 border border-gray-300 rounded bg-gray-200 text-center"
-                                        value="{{ $item[0] }}" readonly>
-                                </td>
+                                <td class="border border-gray-300 p-2 text-center">{{ $i }}</td>
                                 <td class="border border-gray-300 p-2 text-center">
-                                    <input type="text" class="w-full p-1 border border-gray-300 rounded bg-gray-200 text-center"
-                                        value="{{ $item[1] }}" readonly>
+                                    <input type="text" name="no_mesin[{{ $i }}]" 
+                                        class="w-full p-1 border border-gray-300 rounded bg-gray-200 text-center" 
+                                        value="CH{{ $i }}" readonly>
                                 </td>
-                                @for ($j = 1; $j <= 32; $j++)
+                                @for ($j = 1; $j <= 5; $j++)
                                     <td class="border border-gray-300 p-2 text-center">
-                                        @if ($index >= 5) 
-                                            <!-- Dropdown dengan pilihan ✔️, ❌, ➖ -->
-                                            <select name="CH{{ $j }}[{{ $index + 1 }}]" class="w-full p-1 border border-gray-300 rounded text-center">
-                                                <option value="✔️">✔️</option>
-                                                <option value="❌">❌</option>
-                                                <option value="➖">➖</option>
-                                            </select>
-                                        @else
-                                            <!-- Input teks wajib diisi -->
-                                            <input type="text" name="CH{{ $j }}[{{ $index + 1 }}]" 
-                                                class="w-full p-1 border border-gray-300 rounded text-center" required/>
-                                        @endif
+                                        <input type="text" name="temperatur_{{ $j }}[{{ $i }}]" 
+                                            class="w-full p-1 border border-gray-300 rounded text-center" required>
                                     </td>
                                 @endfor
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <select name="evaporator[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded text-center">
+                                        <option value="Bersih">Bersih</option>
+                                        <option value="Kotor">Kotor</option>
+                                        <option value="OFF">OFF</option>
+                                    </select>
+                                </td>
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <select name="fan_evaporator[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded text-center">
+                                        <option value="Suara Halus">Suara Halus</option>
+                                        <option value="Suara Keras">Suara Keras</option>
+                                        <option value="OFF">OFF</option>
+                                    </select>
+                                </td>
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <select name="freon[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded text-center">
+                                        <option value="Cukup">Cukup</option>
+                                        <option value="Tidak Cukup">Tidak Cukup</option>
+                                        <option value="OFF">OFF</option>
+                                    </select>
+                                </td>
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <select name="air[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded text-center">
+                                        <option value="Cukup">Cukup</option>
+                                        <option value="Tidak Cukup">Tidak Cukup</option>
+                                        <option value="OFF">OFF</option>
+                                    </select>
+                                </td>
                             </tr>
-                        @endforeach                
-                    </tbody>                    
+                        @endfor
+                    </tbody>
                 </table>
-            </div>
+            </div>            
 
             <!-- Form Input Keterangan -->
             <div class="mt-4">
