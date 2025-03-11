@@ -69,28 +69,26 @@ class WaterChillerController extends Controller
 
             for ($j = 1; $j <= 32; $j++) {
                 $key = "CH{$j}";
-            
+                $value = $request->{$key}[$index] ?? "➖"; // Default ke strip jika kosong
+
                 switch ($checked_item) {
                     case 'Evaporator':
-                        $data[$key] = isset($request->{$key}[$index]) ? "Bersih" : "Kotor";
+                        $data[$key] = ($value === '✔️') ? "✔️" : (($value === '❌') ? "❌" : "-");
                         break;
                     case 'Fan Evaporator':
-                        $data[$key] = isset($request->{$key}[$index]) ? "Suara Halus" : "Suara Kasar";
+                        $data[$key] = ($value === '✔️') ? "✔️" : (($value === '❌') ? "❌" : "-");
                         break;
                     case 'Freon':
-                        $data[$key] = isset($request->{$key}[$index]) ? "Cukup" : "Kurang";
+                        $data[$key] = ($value === '✔️') ? "✔️" : (($value === '❌') ? "❌" : "-");
                         break;
                     case 'Air':
-                        $data[$key] = isset($request->{$key}[$index]) ? "Cukup" : "Kurang";
-                        break;
-                    case 'Temperatur Pompa': // Pastikan ini mendapatkan nilai yang sesuai
-                        $data[$key] = $request->{$key}[$index] ?? "-";
+                        $data[$key] = ($value === '✔️') ? "✔️" : (($value === '❌') ? "❌" : "-");
                         break;
                     default:
-                        $data[$key] = $request->{$key}[$index] ?? "-"; // Jika tidak termasuk kategori khusus
+                        $data[$key] = $value; // Menyimpan langsung nilai ✔️, ❌, atau ➖
                         break;
                 }
-            }                        
+            }
 
             WaterChillerResult::create($data);
         }

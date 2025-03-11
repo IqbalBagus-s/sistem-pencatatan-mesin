@@ -40,7 +40,7 @@
                             <th class="border border-gray-300 p-2" style="width: 200px; min-width: 200px;">ITEM YANG DIPERIKSA</th>
                             <th class="border border-gray-300 p-2" style="width: 130px; min-width: 130px;">STANDART</th>
                             @for ($i = 1; $i <= 32; $i++)
-                                <th class="border border-gray-300 p-2 text-center" style="width: 80px; min-width: 60px;">CH{{ $i }}</th>
+                                <th class="border border-gray-300 p-2 text-center" style="width: 80px; min-width: 80px;">CH{{ $i }}</th>
                             @endfor
                         </tr>
                     </thead>
@@ -74,9 +74,12 @@
                                 @for ($j = 1; $j <= 32; $j++)
                                     <td class="border border-gray-300 p-2 text-center">
                                         @if ($index >= 5) 
-                                            <!-- Baris 6-9 berupa checkbox (tidak wajib diisi) -->
-                                            <input type="checkbox" name="CH{{ $j }}[{{ $index + 1 }}]" value="✔" 
-                                                class="w-5 h-5 border border-gray-300 rounded">
+                                            <!-- Dropdown dengan pilihan ✔️, ❌, ➖ -->
+                                            <select name="CH{{ $j }}[{{ $index + 1 }}]" class="w-full p-1 border border-gray-300 rounded text-center">
+                                                <option value="✔️">✔️</option>
+                                                <option value="❌">❌</option>
+                                                <option value="➖">➖</option>
+                                            </select>
                                         @else
                                             <!-- Input teks wajib diisi -->
                                             <input type="text" name="CH{{ $j }}[{{ $index + 1 }}]" 
@@ -85,7 +88,7 @@
                                     </td>
                                 @endfor
                             </tr>
-                        @endforeach
+                        @endforeach                
                     </tbody>                    
                 </table>
             </div>

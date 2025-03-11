@@ -37,21 +37,18 @@
                 <table class="table table-bordered">
                     <thead class="table-secondary">
                         <tr>
-                            <tr>
-                                <th class="text-center">No</th>
-                                <th class="text-center" style="min-width: 220px;">ITEM YANG DIPERIKSA</th>
-                                <th class="text-center" style="min-width: 145px;">STANDART</th>
-                                @for ($i = 1; $i <= 32; $i++)
-                                    <th class="text-center" style="min-width: 70px;">CH{{ $i }}</th>
-                                @endfor
-                            </tr>
-                            
+                            <th class="text-center">No</th>
+                            <th class="text-center" style="min-width: 220px;">ITEM YANG DIPERIKSA</th>
+                            <th class="text-center" style="min-width: 145px;">STANDART</th>
+                            @for ($i = 1; $i <= 32; $i++)
+                                <th class="text-center text-nowrap" style="min-width: 10px; font-size: 12px;">CH{{ $i }}</th>
+                            @endfor
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($results as $index => $result)
                             <tr>
-                                <td class="text-center">{{ $index + 1 }}</td>
+                                <td class="text-center text-nowrap" style="padding: 0.2rem;">{{ $index + 1 }}</td>
                                 <td>
                                     <input type="text" class="text-center form-control bg-light" value="{{ $result->checked_items }}" readonly>
                                 </td>
@@ -62,29 +59,15 @@
                                     @php 
                                         $key = "CH{$j}"; 
                                         $value = $result->$key ?? '-';
-                                        $isChecked = ($value == 'Bersih' || $value == 'Cukup') ? 'checked' : '';
-                                        $checkboxValue = in_array($result->checked_items, ['Evaporator', 'Fan Evaporator']) ? 'Bersih' : 'Cukup';
-                                        $hiddenValue = in_array($result->checked_items, ['Evaporator', 'Fan Evaporator']) ? 'Kotor' : 'Kurang';
                                     @endphp
-                                    <td class="text-center">
-                                        @if (in_array($result->checked_items, ['Evaporator', 'Fan Evaporator', 'Freon', 'Air']))
-                                            <!-- Hidden input untuk nilai default (Kotor / Kurang) -->
-                                            <input type="hidden" name="{{ $key }}[{{ $result->id }}]" value="{{ $hiddenValue }}">
-                                            <!-- Checkbox untuk mengubah nilai -->
-                                            <input type="checkbox" name="{{ $key }}[{{ $result->id }}]" value="{{ $checkboxValue }}" class="form-check-input"
-                                                {{ $isChecked }}>
-                                        @elseif ($index >= 5)
-                                            <input type="checkbox" name="{{ $key }}[{{ $result->id }}]" value="✔" class="form-check-input" 
-                                                {{ $value == '✔' ? 'checked' : '' }}>
-                                        @else
-                                            <input type="text" name="{{ $key }}[{{ $result->id }}]" class="form-control bg-light" value="{{ $value }}" readonly>
-                                        @endif
+                                    <td class="border border-gray-300 text-center align-middle text-nowrap" style="padding: 0.2rem;">
+                                        {{ $value }}
                                     </td>
                                 @endfor
                             </tr>
                         @endforeach
-                    </tbody>
-                                        
+                    </tbody>                    
+                                    
                 </table>
             </div>
             

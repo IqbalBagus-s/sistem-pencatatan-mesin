@@ -42,7 +42,7 @@
                             <th class="border border-gray-300 p-2" style="width: 200px; min-width: 200px;">ITEM YANG DIPERIKSA</th>
                             <th class="border border-gray-300 p-2" style="width: 130px; min-width: 130px;">STANDART</th>
                             @for ($i = 1; $i <= 32; $i++)
-                                <th class="border border-gray-300 p-2 text-center" style="width: 80px; min-width: 100px;">CH{{ $i }}</th>
+                                <th class="border border-gray-300 p-2 text-center" style="width: 80px; min-width: 80px;">CH{{ $i }}</th>
                             @endfor
                         </tr>
                     </thead>
@@ -61,30 +61,25 @@
                                         value="{{ $result->standart }}" readonly>
                                 </td>
                                 @for ($j = 1; $j <= 32; $j++)
-                                @php 
-                                    $key = "CH{$j}"; 
-                                    $value = $result->$key ?? '-';
-                                    $isChecked = ($value == 'Bersih' || $value == 'Cukup') ? 'checked' : '';
-                                    $checkboxValue = in_array($result->checked_items, ['Evaporator', 'Fan Evaporator']) ? 'Bersih' : 'Cukup';
-                                    $hiddenValue = in_array($result->checked_items, ['Evaporator', 'Fan Evaporator']) ? 'Kotor' : 'Kurang';
-                                @endphp
-                                <td class="border border-gray-300 p-2 text-center">
-                                    @if (in_array($result->checked_items, ['Evaporator', 'Fan Evaporator', 'Freon', 'Air']))
-                                        <!-- Hidden input untuk menyimpan nilai default (Kotor / Kurang) -->
-                                        <input type="hidden" name="{{ $key }}[{{ $result->id }}]" value="{{ $hiddenValue }}">
-                                        <!-- Checkbox untuk mengubah nilai -->
-                                        <input type="checkbox" name="{{ $key }}[{{ $result->id }}]" value="{{ $checkboxValue }}" class="form-check-input"
-                                            {{ $isChecked }}>
-                                    @elseif ($index >= 5)
-                                        <!-- Baris 6-9 berupa checkbox (tidak wajib diisi) -->
-                                        <input type="checkbox" name="{{ $key }}[{{ $result->id }}]" value="✔" class="w-5 h-5 border border-gray-300 rounded"
-                                            {{ $value == '✔' ? 'checked' : '' }}>
-                                    @else
-                                        <!-- Input teks wajib diisi -->
-                                        <input type="text" name="{{ $key }}[{{ $result->id }}]" 
-                                            class="w-full p-1 border border-gray-300 rounded text-center" value="{{ $value }}" required>
-                                    @endif
-                                </td>
+                                    @php 
+                                        $key = "CH{$j}"; 
+                                        $value = $result->$key ?? '-'; // Default jika kosong
+                                    @endphp
+                                    <td class="border border-gray-300 p-2 text-center">
+                                        @if ($index >= 5)
+                                            <!-- Dropdown untuk index >= 5 -->
+                                            <select name="{{ $key }}[{{ $result->id }}]" class="w-full p-1 border border-gray-300 rounded text-center">
+                                                <option value="-" {{ $value == '-' ? 'selected' : '' }}>-</option>
+                                                <option value="✔️" {{ $value == '✔️' ? 'selected' : '' }}>✔️</option>
+                                                <option value="❌" {{ $value == '❌' ? 'selected' : '' }}>❌</option>
+                                            </select>
+                                        @else
+                                            <!-- Input teks wajib diisi untuk index < 5 -->
+                                            <input type="text" name="{{ $key }}[{{ $result->id }}]" 
+                                                class="w-full p-1 border border-gray-300 rounded text-center" 
+                                                value="{{ $value }}" required>
+                                        @endif
+                                    </td>                                    
                                 @endfor
                             </tr>
                         @endforeach
