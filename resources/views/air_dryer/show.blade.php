@@ -29,8 +29,13 @@
 
             <!-- Tampilkan nama approver yang sedang login -->
             <div class="mb-4 p-3 bg-light rounded">
+                @if(!$check->approved_by)
                 <p class="fs-5 fw-semibold">Approver: 
                     <span class="text-primary">{{ Auth::user()->username }}</span></p>
+                @else
+                <p class="fs-5 fw-semibold">Approver: 
+                    <span class="text-primary">{{ $check->approved_by }}</span></p>
+                @endif
             </div>
 
             <!-- Tampilkan nama checker yang mengisi data -->

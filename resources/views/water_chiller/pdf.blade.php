@@ -3,200 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Approval Pencatatan Mesin Water Chiller</title>
+    <title>Laporan Checklist</title>
     <style>
-        @page {
-            size: A4 landscape;
-            margin: 5mm;
-        }
         body {
-            font-family: Arial, sans-serif;
-            font-size: 9px;
-            margin: 0;
-            padding: 0;
-            width: 100%;
+            font-family: sans-serif;
         }
-        table {
+        .table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 5px;
-            table-layout: fixed;
         }
-        th, td {
-            border: 1px solid black;
-            padding: 2px;
-            text-align: center;
-            font-size: 7px;
-            height: auto;
-            word-wrap: break-word;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .item-column {
-            width: 80px;
-            white-space: normal;
-            height: auto;
-        }
-        .no-column {
-            width: 5px !important;
-            min-width: 5px !important;
-            max-width: 5px !important;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .standard-column {
-            width: 60px;
-            white-space: normal;
-        }
-        .ch-column {
-            width: 18px;
-        }
-        .temp-text {
-            writing-mode: vertical-lr;
-            transform: rotate(180deg);
-            white-space: nowrap;
-            height: 60px;
-            vertical-align: middle;
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: center;
         }
-        .header {
-            text-align: center;
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 10px;
+        .table th {
+            background-color: #f3f3f3;
         }
-        .info {
-            margin-bottom: 5px;
-            font-size: 10px;
-        }
-        .footer {
-            margin-top: 15px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .approval-box {
-            border: 1px solid black;
-            width: 120px;
-            height: 60px;
-            text-align: center;
-            padding-top: 10px;
-        }
-        .form-info {
-            font-size: 8px;
-            margin-top: 15px;
-        }
-        .name-text {
-            text-align: center;
-            margin-top: 5px;
-        }
+        .text-primary { color: blue; }
+        .text-success { color: green; }
+        .bg-light { background-color: #f8f9fa; }
+        .rounded { border-radius: 5px; }
+        .mb-4 { margin-bottom: 16px; }
+        .p-3 { padding: 12px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        Approval Pencatatan Mesin Water Chiller
+    <h2 style="text-align: center;">Laporan Checklist Mesin</h2>
+
+    <div class="mb-4 p-3 bg-light rounded">
+        <p><strong>Approver:</strong> <span class="text-primary">{{ $check->approved_by }}</span></p>
     </div>
 
-    <div class="info">
-        <strong>Approver:</strong> {{ Auth::user()->username }} <br>
-        <strong>Checker:</strong> {{ $check->checked_by }} <br>
-        <strong>Tanggal:</strong> {{ $check->tanggal }} <br>
-        <strong>Hari:</strong> {{ $check->hari }} <br>
+    <div class="mb-4 p-3 bg-light rounded">
+        <p><strong>Checker:</strong> <span class="text-success">{{ $check->checked_by }}</span></p>
     </div>
 
-    <table>
+    <div class="mb-3">
+        <p><strong>Tanggal:</strong> {{ $check->tanggal }}</p>
+    </div>
+
+    <div class="mb-3">
+        <p><strong>Hari:</strong> {{ $check->hari }}</p>
+    </div>
+
+    <table class="table">
         <thead>
             <tr>
-                <th rowspan="2" class="no-column"> No</th>
-                <th rowspan="2" class="item-column">ITEM YANG DIPERIKSA</th>
-                <th rowspan="2" class="standard-column">STANDART</th>
-                <th colspan="32">HASIL PEMERIKSAAN</th>
-            </tr>
-            <tr>
-                @for ($i = 1; $i <= 32; $i++)
-                <th class="ch-column">CH{{ $i }}</th>
-                @endfor
+                <th>No</th>
+                <th>Nomor Mesin</th>
+                <th>Temperatur Kompresor</th>
+                <th>Temperatur Kabel</th>
+                <th>Temperatur MCB</th>
+                <th>Temperatur Air</th>
+                <th>Temperatur Pompa</th>
+                <th>Evaporator</th>
+                <th>Fan Evaporator</th>
+                <th>Freon</th>
+                <th>Air</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>1</td>
-                <td class="item-column">Tem<br>pera<br>Tur<br>Com<br>Pres<br>or</td>
-                <td>30 °c - 60°c</td>
-                @for ($j = 1; $j <= 32; $j++)
-                <td>{{ $results[0]->{"CH{$j}"} ?? '' }}</td>
-                @endfor
-            </tr>
-            <tr>
-                <td>2</td>
-                <td class="item-column">Tem<br>pera<br>tur<br>Kabel</td>
-                <td>30 °c - 45°c</td>
-                @for ($j = 1; $j <= 32; $j++)
-                <td>{{ $results[1]->{"CH{$j}"} ?? '' }}</td>
-                @endfor
-            </tr>
-            <tr>
-                <td>3</td>
-                <td class="item-column">Tem<br>pera<br>tur<br>Mcb</td>
-                <td>30 °c - 50°c</td>
-                @for ($j = 1; $j <= 32; $j++)
-                <td>{{ $results[2]->{"CH{$j}"} ?? '' }}</td>
-                @endfor
-            </tr>
-            <tr>
-                <td>4</td>
-                <td class="item-column">Tem<br>pera<br>tur<br>Air</td>
-                <td>Sesuai<br>Setelan</td>
-                @for ($j = 1; $j <= 32; $j++)
-                <td>{{ $results[3]->{"CH{$j}"} ?? '' }}</td>
-                @endfor
-            </tr>
-            <tr>
-                <td>5</td>
-                <td class="item-column">Tem<br>pera<br>tur<br>Pompa</td>
-                <td>40 °c - 50°c</td>
-                @for ($j = 1; $j <= 32; $j++)
-                <td>{{ $results[4]->{"CH{$j}"} ?? '' }}</td>
-                @endfor
-            </tr>
-            <tr>
-                <td>6</td>
-                <td class="item-column">Evaporator</td>
-                <td>Bersih</td>
-                @for ($j = 1; $j <= 32; $j++)
-                <td>{{ $results[5]->{"CH{$j}"} ?? '' }}</td>
-                @endfor
-            </tr>
-            <tr>
-                <td>7</td>
-                <td class="item-column">Fan<br>Evapo<br>rator</td>
-                <td>Suara Halus</td>
-                @for ($j = 1; $j <= 32; $j++)
-                <td>{{ $results[6]->{"CH{$j}"} ?? '' }}</td>
-                @endfor
-            </tr>
-            <tr>
-                <td>8</td>
-                <td class="item-column">Freon</td>
-                <td>Cukup</td>
-                @for ($j = 1; $j <= 32; $j++)
-                <td>{{ $results[7]->{"CH{$j}"} ?? '' }}</td>
-                @endfor
-            </tr>
-            <tr>
-                <td>9</td>
-                <td class="item-column">Air</td>
-                <td>Cukup</td>
-                @for ($j = 1; $j <= 32; $j++)
-                <td>{{ $results[8]->{"CH{$j}"} ?? '' }}</td>
-                @endfor
-            </tr>
+            @foreach($results as $index => $result)
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $result->no_mesin }}</td>
+                    <td>{{ $result->Temperatur_Compressor }}</td>
+                    <td>{{ $result->Temperatur_Kabel }}</td>
+                    <td>{{ $result->Temperatur_Mcb }}</td>
+                    <td>{{ $result->Temperatur_Air }}</td>
+                    <td>{{ $result->Temperatur_Pompa }}</td>
+                    <td>{{ $result->Evaporator }}</td>
+                    <td>{{ $result->Fan_Evaporator }}</td>
+                    <td>{{ $result->Freon }}</td>
+                    <td>{{ $result->Air }}</td>
+                </tr>
+            @endforeach
         </tbody>
     </table>
 
-    <div class="info" style="margin-top: 10px;">
-        <strong>Keterangan:</strong> {{ $check->keterangan }}
+    <div class="mt-4">
+        <p><strong>Keterangan:</strong></p>
+        <p>{{ $check->keterangan }}</p>
     </div>
 </body>
 </html>
