@@ -130,7 +130,8 @@
                     $machines = [
                         ['name' => 'Air Dryer', 'route' => 'air-dryer.index'],
                         ['name' => 'Water Chiller', 'route' => 'water-chiller.index'],
-                        'Compressor', 'Cooling Tower',
+                        ['name' => 'Compressor', 'route' => 'compressor.index'],
+                        'Cooling Tower',
                         'Mesin B', 'Mesin C', 'Mesin D',
                         'Mesin E', 'Mesin F', 'Mesin G', 'Mesin H',
                         'Mesin I', 'Mesin J', 'Mesin K', 'Mesin L',
