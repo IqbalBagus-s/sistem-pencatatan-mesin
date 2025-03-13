@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Pencatatan Mesin Water Chiller</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite('resources/css/app.css')
     <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
 </head>
 <body class="bg-gray-100 p-6">
@@ -31,24 +31,30 @@
                 </div>
             </div>
 
-            <!-- Tabel Inspeksi -->
+            <!-- Tabel Low Kompressor -->
             <div class="overflow-x-auto">
                 <table class="min-w-full border border-gray-300">
                     <thead>
                         <tr class="bg-gray-200">
                             <th class="border border-gray-300 p-2">NO.</th>
-                            <th class="border border-gray-300 p-2">No Mesin</th>
-                            <th class="border border-gray-300 p-2">Temperatur Compressor</th>
-                            <th class="border border-gray-300 p-2">Temperatur Kabel</th>
-                            <th class="border border-gray-300 p-2">Temperatur Mcb</th>
-                            <th class="border border-gray-300 p-2">Temperatur Air</th>
-                            <th class="border border-gray-300 p-2">Temperatur Pompa</th>
-                            <th class="border border-gray-300 p-2">Evaporator</th>
-                            <th class="border border-gray-300 p-2">Fan Evaporator</th>
-                            <th class="border border-gray-300 p-2">Freon</th>
-                            <th class="border border-gray-300 p-2">Air</th>
+                            <th class="border border-gray-300 p-2">Checked Items</th>
+                            <th class="border border-gray-300 p-2">Standart KL</th>
+                    
+                            <!-- Kompresor Low -->
+                            <th class="border border-gray-300 p-2">KL 10I</th>
+                            <th class="border border-gray-300 p-2">KL 10II</th>
+                            <th class="border border-gray-300 p-2">KL 5I</th>
+                            <th class="border border-gray-300 p-2">KL 5II</th>
+                            <th class="border border-gray-300 p-2">KL 6I</th>
+                            <th class="border border-gray-300 p-2">KL 6II</th>
+                            <th class="border border-gray-300 p-2">KL 7I</th>
+                            <th class="border border-gray-300 p-2">KL 7II</th>
+                            <th class="border border-gray-300 p-2">KL 8I</th>
+                            <th class="border border-gray-300 p-2">KL 8II</th>
+                            <th class="border border-gray-300 p-2">KL 9I</th>
+                            <th class="border border-gray-300 p-2">KL 9II</th>
                         </tr>
-                    </thead>
+                    </thead>                    
                     <tbody id="table-body">
                         @for ($i = 1; $i <= 32; $i++)
                             <tr class="bg-white">
@@ -96,16 +102,37 @@
                         @endfor
                     </tbody>
                 </table>
+
+                <div>
+                    Form pengisian High Kompressor
+                </div>
+ 
+                <!-- Tabel High Kompressor -->           
+                <table class="min-w-full border border-gray-300">
+                    <thead>
+                        <tr>
+                            <th class="border border-gray-300 p-2">NO.</th>
+                            <th class="border border-gray-300 p-2">Checked Items</th>
+                            <th class="border border-gray-300 p-2">Standart KL</th>
+
+                            <!-- Kompresor High -->
+                            <th class="border border-gray-300 p-2">KH 7I</th>
+                            <th class="border border-gray-300 p-2">KH 7II</th>
+                            <th class="border border-gray-300 p-2">KH 8I</th>
+                            <th class="border border-gray-300 p-2">KH 8II</th>
+                            <th class="border border-gray-300 p-2">KH 9I</th>
+                            <th class="border border-gray-300 p-2">KH 9II</th>
+                            <th class="border border-gray-300 p-2">KH 10I</th>
+                            <th class="border border-gray-300 p-2">KH 10II</th>
+                            <th class="border border-gray-300 p-2">KH 11I</th>
+                            <th class="border border-gray-300 p-2">KH 11II</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        
+                    </tbody>
+                </table>
             </div>            
-
-            <!-- Form Input Keterangan -->
-            <div class="mt-4">
-                <label for="keterangan" class="block text-gray-700 font-semibold">Keterangan:</label>
-                <textarea id="keterangan" name="keterangan" rows="3"
-                    class="w-full p-2 border border-gray-300 rounded" 
-                    placeholder="Tambahkan keterangan jika diperlukan..."></textarea>
-            </div>
-
 
             <div class="mt-4 flex justify-between">
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">

@@ -23,7 +23,7 @@ class CompressorCheck extends Model
         'mesin_on',
         'mesin_off',
         'temperatur_shift1',
-        'tempertatur_shift2',
+        'temperatur_shift2',
         'humidity_shift1',
         'humidity_shift2',
     ];

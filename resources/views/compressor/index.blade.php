@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pencatatan Mesin Water Chiller</title>
     
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS -->
+    @vite('resources/css/app.css')
 
     <style>
         @font-face {
@@ -83,7 +83,7 @@
 
                 @if(auth()->user() instanceof \App\Models\Checker)
                     <div class="mt-4">
-                        <a href="{{ route('water-chiller.create') }}" 
+                        <a href="{{ route('compressor.create') }}" 
                             class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
                             Tambah Pencatatan
                         </a>
