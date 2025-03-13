@@ -31,75 +31,64 @@
                 </div>
             </div>
 
-            <!-- Tabel Low Kompressor -->
             <div class="overflow-x-auto">
+                <!-- Tabel Low Kompressor -->
                 <table class="min-w-full border border-gray-300">
                     <thead>
                         <tr class="bg-gray-200">
-                            <th class="border border-gray-300 p-2">NO.</th>
-                            <th class="border border-gray-300 p-2">Checked Items</th>
-                            <th class="border border-gray-300 p-2">Standart KL</th>
-                    
-                            <!-- Kompresor Low -->
-                            <th class="border border-gray-300 p-2">KL 10I</th>
-                            <th class="border border-gray-300 p-2">KL 10II</th>
-                            <th class="border border-gray-300 p-2">KL 5I</th>
-                            <th class="border border-gray-300 p-2">KL 5II</th>
-                            <th class="border border-gray-300 p-2">KL 6I</th>
-                            <th class="border border-gray-300 p-2">KL 6II</th>
-                            <th class="border border-gray-300 p-2">KL 7I</th>
-                            <th class="border border-gray-300 p-2">KL 7II</th>
-                            <th class="border border-gray-300 p-2">KL 8I</th>
-                            <th class="border border-gray-300 p-2">KL 8II</th>
-                            <th class="border border-gray-300 p-2">KL 9I</th>
-                            <th class="border border-gray-300 p-2">KL 9II</th>
+                            <th class="border border-gray-300 p-2" rowspan="3">NO.</th>
+                            <th class="border border-gray-300 p-2" rowspan="3">Checked Items</th>
+                            <th class="border border-gray-300 p-2" colspan="12">Hasil Pemeriksaan</th>
                         </tr>
-                    </thead>                    
+                        <tr class="bg-gray-200">
+                            <th class="border border-gray-300 p-2" colspan="2">KL 10</th>
+                            <th class="border border-gray-300 p-2" colspan="2">KL 5</th>
+                            <th class="border border-gray-300 p-2" colspan="2">KL 6</th>
+                            <th class="border border-gray-300 p-2" colspan="2">KL 7</th>
+                            <th class="border border-gray-300 p-2" colspan="2">KL 8</th>
+                            <th class="border border-gray-300 p-2" colspan="2">KL 9</th>
+                        </tr>
+                        <tr class="bg-gray-200">
+                            @for ($i = 0; $i < 6; $i++)
+                                <th class="border border-gray-300 p-2">I</th>
+                                <th class="border border-gray-300 p-2">II</th>
+                            @endfor
+                        </tr>
+                    </thead>
                     <tbody id="table-body">
-                        @for ($i = 1; $i <= 32; $i++)
-                            <tr class="bg-white">
-                                <td class="border border-gray-300 p-2 text-center">{{ $i }}</td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <input type="text" name="no_mesin[{{ $i }}]" 
-                                        class="w-full p-1 border border-gray-300 rounded bg-gray-200 text-center" 
-                                        value="CH{{ $i }}" readonly>
-                                </td>
-                                @for ($j = 1; $j <= 5; $j++)
-                                    <td class="border border-gray-300 p-2 text-center">
-                                        <input type="text" name="temperatur_{{ $j }}[{{ $i }}]" 
-                                            class="w-full p-1 border border-gray-300 rounded text-center" required>
+                        @php
+                            $checkedItems = [
+                                "Temperatur motor", "Temperatur screw", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
+                                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
+                                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
+                                "Ampere", "Skun", "Service hour", "Load hours", "Temperatur ADT"
+                            ];
+                            $selectIndexes = [5, 6, 7, 8, 9, 12, 16]; // Indeks yang menggunakan pilihan Ya/Tidak
+            
+                            // Sesuai dengan header, hanya ada 12 kolom KL
+                            $klColumns = ['KL 10I', 'KL 10II', 'KL 5I', 'KL 5II', 'KL 6I', 'KL 6II', 'KL 7I', 'KL 7II', 'KL 8I', 'KL 8II', 'KL 9I', 'KL 9II'];
+                        @endphp
+                        
+                        @foreach ($checkedItems as $index => $item)
+                            <tr>
+                                <td class="border border-gray-300 p-2">{{ $index + 1 }}</td>
+                                <td class="border border-gray-300 p-2">{{ $item }}</td>
+            
+                                @foreach ($klColumns as $kl)
+                                    <td class="border border-gray-300 p-2">
+                                        @if (in_array($index, $selectIndexes))
+                                            <select name="kl_{{ $kl }}[{{ $index }}]" class="w-full border-gray-300 p-1">
+                                                <option value="">Pilih</option>
+                                                <option value="Ya">Ya</option>
+                                                <option value="Tidak">Tidak</option>
+                                            </select>
+                                        @else
+                                            <input type="text" name="kl_{{ $kl }}[{{ $index }}]" class="w-full border-gray-300 p-1">
+                                        @endif
                                     </td>
-                                @endfor
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <select name="evaporator[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded text-center">
-                                        <option value="Bersih">Bersih</option>
-                                        <option value="Kotor">Kotor</option>
-                                        <option value="OFF">OFF</option>
-                                    </select>
-                                </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <select name="fan_evaporator[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded text-center">
-                                        <option value="Suara Halus">Suara Halus</option>
-                                        <option value="Suara Keras">Suara Keras</option>
-                                        <option value="OFF">OFF</option>
-                                    </select>
-                                </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <select name="freon[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded text-center">
-                                        <option value="Cukup">Cukup</option>
-                                        <option value="Tidak Cukup">Tidak Cukup</option>
-                                        <option value="OFF">OFF</option>
-                                    </select>
-                                </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <select name="air[{{ $i }}]" class="w-full p-1 border border-gray-300 rounded text-center">
-                                        <option value="Cukup">Cukup</option>
-                                        <option value="Tidak Cukup">Tidak Cukup</option>
-                                        <option value="OFF">OFF</option>
-                                    </select>
-                                </td>
+                                @endforeach
                             </tr>
-                        @endfor
+                        @endforeach
                     </tbody>
                 </table>
 
@@ -129,7 +118,7 @@
                         </tr>
                     </thead>
                     <tbody id="table-body">
-                        
+
                     </tbody>
                 </table>
             </div>            
