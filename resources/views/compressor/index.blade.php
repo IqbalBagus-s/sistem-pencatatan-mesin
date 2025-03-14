@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pencatatan Mesin Water Chiller</title>
+    <title>Pencatatan Mesin Kompresor</title>
     
     <!-- Tailwind CSS -->
     @vite('resources/css/app.css')
@@ -55,11 +55,11 @@
     </header>
 
     <div class="container mx-auto mt-0 p-3">
-        <h2 class="text-2xl font-bold mb-6 text-gray-800">Pencatatan Mesin Water Chiller</h2>
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">Pencatatan Mesin Kompresor</h2>
 
         <!-- Form Pencarian dan Tombol Tambah -->
         <div class="bg-white p-6 rounded-lg shadow mb-6">
-            <form method="GET" action="{{ route('water-chiller.index') }}">
+            <form method="GET" action="{{ route('compressor.index') }}">
                 <div class="flex flex-wrap gap-4">
                     @if(auth()->user() instanceof \App\Models\Approver)
                         <div class="w-full md:w-1/3">
@@ -143,12 +143,12 @@
                                 </td>
                                 <td class="p-3 border flex justify-center items-center gap-3">
                                     @if(auth()->user() instanceof \App\Models\Approver)
-                                        <a href="{{ route('water-chiller.show', $check->id) }}" class="text-blue-600 hover:text-blue-800">
+                                        <a href="{{ route('compressor.show', $check->id) }}" class="text-blue-600 hover:text-blue-800">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                     @elseif(auth()->user() instanceof \App\Models\Checker)
                                         @if(!$check->approved_by)
-                                            <a href="{{ route('water-chiller.edit', $check->id) }}" class="text-yellow-500 hover:text-yellow-700">
+                                            <a href="{{ route('compressor.edit', $check->id) }}" class="text-yellow-500 hover:text-yellow-700">
                                                 <i class="fas fa-pen"></i>
                                             </a>
                                         @else
