@@ -25,7 +25,7 @@
                 </div>
                 <div>
                     <label class="block text-gray-700">Tanggal:</label>
-                    <input type="date" id="tanggal" name="tanggal" class="w-full p-2 border border-gray-300 rounded" value="{{ $check->tanggal }}" required>
+                    <input type="date" id="tanggal" name="tanggal" class="w-full p-2 border border-gray-300 rounded" value="{{ $check->tanggal }}" readonly>
                 </div>
             </div>
     
@@ -38,15 +38,16 @@
                     <div class="p-4 bg-white shadow rounded border border-gray-300">
                         <label class="block text-gray-700 font-semibold">Shift 1</label>
                         <input type="text" id="shift1" name="checked_by_shift1" class="mt-2 w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" value="{{ $check->checked_by_shift1 }}" readonly>
-                        <button type="button" onclick="pilihShift(1)" class="mt-2 w-full bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700 transition">Pilih</button>
+                        <button type="button" id="btn-shift-1" onclick="pilihShift(1)" class="mt-2 w-full bg-blue-600 text-white py-1 px-3 rounded">Pilih</button>
                     </div>
-    
+
                     <!-- Shift 2 -->
                     <div class="p-4 bg-white shadow rounded border border-gray-300">
                         <label class="block text-gray-700 font-semibold">Shift 2</label>
                         <input type="text" id="shift2" name="checked_by_shift2" class="mt-2 w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" value="{{ $check->checked_by_shift2 }}" readonly>
-                        <button type="button" onclick="pilihShift(2)" class="mt-2 w-full bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700 transition">Pilih</button>
+                        <button type="button" id="btn-shift-2" onclick="pilihShift(2)" class="mt-2 w-full bg-blue-600 text-white py-1 px-3 rounded">Pilih</button>
                     </div>
+
                 </div>
             </div>
     
@@ -311,20 +312,21 @@
                             </tr>
                         @endforeach
                     </tbody>
-                                </table>
-                            </div>
+                </table>
+            </div>
                     
-                            <div class="mt-4 flex justify-between">
-                                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                                    Simpan Perubahan
-                                </button>
-                                <a href="{{ route('compressor.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded">
-                                    Kembali
-                                </a>
-                            </div>
-                        </form>
-                    </div>
+            <div class="mt-4 flex justify-between">
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Simpan Perubahan
+                </button>
+                <a href="{{ route('compressor.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded">
+                    Kembali
+                </a>
+            </div>
+        </form>
+    </div>
 
+    
     <!-- Script untuk mengisi hari berdasarkan tanggal -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -332,103 +334,57 @@
             function setupFieldsBasedOnShifts() {
                 const shift1Value = document.getElementById('shift1').value;
                 const shift2Value = document.getElementById('shift2').value;
-                
-                if (shift1Value && !shift2Value) {
-                    // Shift 1 terisi, Shift 2 kosong
-                    document.getElementById("temp-shift-1").disabled = false;
-                    document.getElementById("temp-shift-1").classList.remove("bg-gray-300");
-                    document.getElementById("humidity-shift-1").disabled = false;
-                    document.getElementById("humidity-shift-1").classList.remove("bg-gray-300");
-                    
-                    document.getElementById("temp-shift-2").disabled = true;
-                    document.getElementById("temp-shift-2").classList.add("bg-gray-300");
-                    document.getElementById("humidity-shift-2").disabled = true;
-                    document.getElementById("humidity-shift-2").classList.add("bg-gray-300");
-                } else if (!shift1Value && shift2Value) {
-                    // Shift 1 kosong, Shift 2 terisi
-                    document.getElementById("temp-shift-1").disabled = true;
-                    document.getElementById("temp-shift-1").classList.add("bg-gray-300");
-                    document.getElementById("humidity-shift-1").disabled = true;
-                    document.getElementById("humidity-shift-1").classList.add("bg-gray-300");
-                    
-                    document.getElementById("temp-shift-2").disabled = false;
-                    document.getElementById("temp-shift-2").classList.remove("bg-gray-300");
-                    document.getElementById("humidity-shift-2").disabled = false;
-                    document.getElementById("humidity-shift-2").classList.remove("bg-gray-300");
-                } else if (shift1Value && shift2Value) {
-                    // Kedua shift terisi (khusus untuk kasus edit)
-                    document.getElementById("temp-shift-1").disabled = false;
-                    document.getElementById("temp-shift-1").classList.remove("bg-gray-300");
-                    document.getElementById("humidity-shift-1").disabled = false;
-                    document.getElementById("humidity-shift-1").classList.remove("bg-gray-300");
-                    
-                    document.getElementById("temp-shift-2").disabled = false;
-                    document.getElementById("temp-shift-2").classList.remove("bg-gray-300");
-                    document.getElementById("humidity-shift-2").disabled = false;
-                    document.getElementById("humidity-shift-2").classList.remove("bg-gray-300");
+
+                if (shift1Value) {
+                    // Shift 1 sudah terisi, nonaktifkan tombol pilih shift 1
+                    document.getElementById("btn-shift-1").disabled = true;
+                    document.getElementById("btn-shift-1").classList.add("bg-gray-400", "cursor-not-allowed");
                 } else {
-                    // Kedua shift kosong
-                    document.getElementById("temp-shift-1").disabled = true;
-                    document.getElementById("temp-shift-1").classList.add("bg-gray-300");
-                    document.getElementById("humidity-shift-1").disabled = true;
-                    document.getElementById("humidity-shift-1").classList.add("bg-gray-300");
-                    
-                    document.getElementById("temp-shift-2").disabled = true;
-                    document.getElementById("temp-shift-2").classList.add("bg-gray-300");
-                    document.getElementById("humidity-shift-2").disabled = true;
-                    document.getElementById("humidity-shift-2").classList.add("bg-gray-300");
+                    document.getElementById("btn-shift-1").disabled = false;
+                    document.getElementById("btn-shift-1").classList.remove("bg-gray-400", "cursor-not-allowed");
                 }
+
+                if (shift2Value) {
+                    // Shift 2 sudah terisi, nonaktifkan tombol pilih shift 2
+                    document.getElementById("btn-shift-2").disabled = true;
+                    document.getElementById("btn-shift-2").classList.add("bg-gray-400", "cursor-not-allowed");
+                } else {
+                    document.getElementById("btn-shift-2").disabled = false;
+                    document.getElementById("btn-shift-2").classList.remove("bg-gray-400", "cursor-not-allowed");
+                }
+            }
+
+            // Fungsi untuk memilih shift
+            function pilihShift(shift) {
+                let username = "{{ Auth::user()->username }}"; // Ambil username yang sedang login
+
+                if (shift === 1 && !document.getElementById('shift1').value) {
+                    document.getElementById('shift1').value = username; // Isi Shift 1
+                    document.getElementById("btn-shift-1").disabled = true;
+                    document.getElementById("btn-shift-1").classList.add("bg-gray-400", "cursor-not-allowed");
+                } 
+                else if (shift === 2 && !document.getElementById('shift2').value) {
+                    document.getElementById('shift2').value = username; // Isi Shift 2
+                    document.getElementById("btn-shift-2").disabled = true;
+                    document.getElementById("btn-shift-2").classList.add("bg-gray-400", "cursor-not-allowed");
+                }
+
+                setupFieldsBasedOnShifts(); // Pastikan tampilan selalu terupdate
             }
 
             // Inisialisasi status field saat halaman dimuat
             setupFieldsBasedOnShifts();
 
-            // Event listener untuk tanggal
+            // Event listener untuk tanggal (agar otomatis menampilkan hari dalam bahasa Indonesia)
             document.getElementById("tanggal").addEventListener("change", function() {
                 let tanggal = new Date(this.value);
                 let hari = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(tanggal);
                 document.getElementById("hari").value = hari;
             });
+
+            // Jadikan fungsi global agar bisa dipanggil dari tombol
+            window.pilihShift = pilihShift;
         });
-
-        // Fungsi untuk memilih shift
-        function pilihShift(shift) {
-            let username = "{{ Auth::user()->username }}"; // Ambil username yang sedang login
-
-            if (shift === 1) {
-                document.getElementById('shift1').value = username; // Isi Shift 1
-                document.getElementById('shift2').value = ""; // Kosongkan Shift 2
-
-                // Aktifkan input shift 1 & nonaktifkan shift 2
-                document.getElementById("temp-shift-1").disabled = false;
-                document.getElementById("temp-shift-1").classList.remove("bg-gray-300");
-
-                document.getElementById("humidity-shift-1").disabled = false;
-                document.getElementById("humidity-shift-1").classList.remove("bg-gray-300");
-
-                document.getElementById("temp-shift-2").disabled = true;
-                document.getElementById("temp-shift-2").classList.add("bg-gray-300");
-
-                document.getElementById("humidity-shift-2").disabled = true;
-                document.getElementById("humidity-shift-2").classList.add("bg-gray-300");
-            } else {
-                document.getElementById('shift2').value = username; // Isi Shift 2
-                document.getElementById('shift1').value = ""; // Kosongkan Shift 1
-
-                // Aktifkan input shift 2 & nonaktifkan shift 1
-                document.getElementById("temp-shift-2").disabled = false;
-                document.getElementById("temp-shift-2").classList.remove("bg-gray-300");
-
-                document.getElementById("humidity-shift-2").disabled = false;
-                document.getElementById("humidity-shift-2").classList.remove("bg-gray-300");
-
-                document.getElementById("temp-shift-1").disabled = true;
-                document.getElementById("temp-shift-1").classList.add("bg-gray-300");
-
-                document.getElementById("humidity-shift-1").disabled = true;
-                document.getElementById("humidity-shift-1").classList.add("bg-gray-300");
-            }
-        }
     </script>
 </body>
 </html>

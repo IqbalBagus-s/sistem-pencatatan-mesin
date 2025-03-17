@@ -3,138 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Approval Pencatatan Mesin Water Chiller</title>
-
+    <title>Detail Pencatatan Mesin Compressor</title>
+    @vite('resources/css/app.css')
     <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-light p-3">
-    <div class="container bg-white p-4 rounded shadow">
-        <h2 class="mb-4 fw-bold">Approval Pencatatan Mesin Water Chiller</h2>
+<body class="bg-gray-100 p-6">
 
-        <form action="{{ route('water-chiller.approve', $check->id) }}" method="POST">
-            @csrf
-            {{-- approver yang sedang login --}}
-            <div class="mb-4 p-3 bg-light rounded">
-                @if(!$check->approved_by)
-                <p class="fs-5 fw-semibold">Approver: 
-                    <span class="text-primary">{{ Auth::user()->username }}</span></p>
-                @else
-                <p class="fs-5 fw-semibold">Approver: 
-                    <span class="text-primary">{{ $check->approved_by }}</span></p>
-                @endif
+    <div class="max-w-7xl mx-auto bg-white p-6 rounded shadow-md">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Detail Pencatatan Compressor</h2>
+    
+        <!-- Tampilan Detail -->
+        <div>
+            {{-- Informasi Tanggal dan Hari --}}
+            <div class="mb-4 grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-gray-700 font-medium">Hari:</label>
+                    <div class="w-full p-2 border border-gray-300 rounded bg-gray-100">{{ $check->hari }}</div>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium">Tanggal:</label>
+                    <div class="w-full p-2 border border-gray-300 rounded bg-gray-100">{{ date('d-m-Y', strtotime($check->tanggal)) }}</div>
+                </div>
             </div>
+    
+            <!-- Informasi Shift -->
+            <div class="mb-4 p-4 bg-gray-200 rounded">
+                <p class="text-lg font-semibold text-gray-700">Informasi Shift Checker</p>
+                
+                <div class="grid grid-cols-2 gap-4 mt-2">
+                    <!-- Shift 1 -->
+                    <div class="p-4 bg-white shadow rounded border border-gray-300">
+                        <label class="block text-gray-700 font-semibold">Shift 1</label>
+                        <div class="mt-2 w-full p-2 border rounded bg-gray-100">{{ $check->checked_by_shift1 ?: 'Belum diisi' }}</div>
+                    </div>
 
-            <div class="mb-4 p-3 bg-light rounded">
-                <p class="fs-5 fw-semibold">Checker: <span class="text-success">{{ $check->checked_by }}</span></p>
+                    <!-- Shift 2 -->
+                    <div class="p-4 bg-white shadow rounded border border-gray-300">
+                        <label class="block text-gray-700 font-semibold">Shift 2</label>
+                        <div class="mt-2 w-full p-2 border rounded bg-gray-100">{{ $check->checked_by_shift2 ?: 'Belum diisi' }}</div>
+                    </div>
+                </div>
             </div>
-
-            <div class="mb-3">
-                <label class="form-label">Tanggal:</label>
-                <input type="date" value="{{ $check->tanggal }}" class="form-control bg-light" readonly>
+    
+            <!-- Informasi Kompresor ON -->
+            <div class="mb-4 p-4 bg-gray-200 rounded shadow-lg">
+                <p class="text-lg font-semibold text-gray-700 mb-2">Jumlah Kompresor ON</p>
+    
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- KL -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">KL</label>
+                        <div class="w-full border border-gray-400 p-2 rounded text-center bg-gray-100">{{ $check->kompressor_on_kl }}</div>
+                    </div>
+                    <!-- KH -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">KH</label>
+                        <div class="w-full border border-gray-400 p-2 rounded text-center bg-gray-100">{{ $check->kompressor_on_kh }}</div>
+                    </div>
+                </div>
+    
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <!-- Mesin ON -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">Mesin ON</label>
+                        <div class="w-full border border-gray-400 p-2 rounded text-center bg-gray-100">{{ $check->mesin_on }}</div>
+                    </div>
+                    <!-- Mesin OFF -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">Mesin OFF</label>
+                        <div class="w-full border border-gray-400 p-2 rounded text-center bg-gray-100">{{ $check->mesin_off }}</div>
+                    </div>
+                </div>
             </div>
-
-            <div class="mb-3">
-                <label class="form-label">Hari:</label>
-                <input type="text" value="{{ $check->hari }}" class="form-control bg-light" readonly>
+    
+            <!-- Informasi Kelembapan Udara -->
+            <div class="mb-4 p-4 bg-gray-200 rounded shadow-lg">
+                <p class="text-lg font-semibold text-gray-700 mb-2">Kelembapan Udara</p>
+    
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Temperatur Shift 1 -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">Temperatur Shift 1</label>
+                        <div class="w-full border border-gray-400 p-2 rounded text-center bg-gray-100">{{ $check->temperatur_shift1 }}</div>
+                    </div>
+                    <!-- Temperatur Shift 2 -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">Temperatur Shift 2</label>
+                        <div class="w-full border border-gray-400 p-2 rounded text-center bg-gray-100">{{ $check->temperatur_shift2 }}</div>
+                    </div>
+                    <!-- Humidity Shift 1 -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">Humidity Shift 1</label>
+                        <div class="w-full border border-gray-400 p-2 rounded text-center bg-gray-100">{{ $check->humidity_shift1 }}</div>
+                    </div>
+                    <!-- Humidity Shift 2 -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">Humidity Shift 2</label>
+                        <div class="w-full border border-gray-400 p-2 rounded text-center bg-gray-100">{{ $check->humidity_shift2 }}</div>
+                    </div>
+                </div>
             </div>
-
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead class="table-light">
+            
+            <!-- Low Kompressor Table -->
+            <div class="text-lg font-semibold mb-4 mt-4">
+                Data Low Kompressor
+            </div>
+    
+            <div class="overflow-x-auto">
+                <table class="min-w-full border border-gray-300 shadow-lg rounded-lg bg-white border-collapse">
+                    <thead class="bg-gray-200 text-center">
                         <tr>
-                            <th class="text-center">No</th>
-                            <th class="text-center">Nomor Mesin</th>
-                            <th class="text-center">Temperatur Kompresor</th>
-                            <th class="text-center">Temperatur Kabel</th>
-                            <th class="text-center">Temperatur MCB</th>
-                            <th class="text-center">Temperatur Air</th>
-                            <th class="text-center">Temperatur Pompa</th>
-                            <th class="text-center">Evaporator</th>
-                            <th class="text-center">Fan Evaporator</th>
-                            <th class="text-center">Freon</th>
-                            <th class="text-center">Air</th>
+                            <th class="border border-gray-300 p-2" rowspan="3">No.</th>
+                            <th class="border border-gray-300 p-2" rowspan="3">Checked Items</th>
+                            <th class="border border-gray-300 p-2" colspan="12">Hasil Pemeriksaan</th>
+                        </tr>
+                        <tr>
+                            <th class="border border-gray-300 p-2" colspan="2">KL 10</th>
+                            <th class="border border-gray-300 p-2" colspan="2">KL 5</th>
+                            <th class="border border-gray-300 p-2" colspan="2">KL 6</th>
+                            <th class="border border-gray-300 p-2" colspan="2">KL 7</th>
+                            <th class="border border-gray-300 p-2" colspan="2">KL 8</th>
+                            <th class="border border-gray-300 p-2" colspan="2">KL 9</th>
+                        </tr>
+                        <tr>
+                            @for ($i = 0; $i < 6; $i++)
+                                <th class="border border-gray-300 p-2">I</th>
+                                <th class="border border-gray-300 p-2">II</th>
+                            @endfor
                         </tr>
                     </thead>
-                    <tbody> 
-                        @foreach($results as $index => $result)
-                            <tr class="bg-white">
-                                <td class="border border-gray-300 p-2 text-center">{{ $index + 1 }}</td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <input type="text" class="w-24 p-1 border border-gray-300 rounded bg-gray-200 text-center" 
-                                        value="{{ $result->no_mesin }}" readonly>
-                                </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <input type="text" class="w-20 p-1 border border-gray-300 rounded text-center bg-gray-200" 
-                                        value="{{ $result->Temperatur_Compressor }}" readonly>
-                                </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <input type="text" class="w-20 p-1 border border-gray-300 rounded text-center bg-gray-200" 
-                                        value="{{ $result->Temperatur_Kabel }}" readonly>
-                                </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <input type="text" class="w-20 p-1 border border-gray-300 rounded text-center bg-gray-200" 
-                                        value="{{ $result->Temperatur_Mcb }}" readonly>
-                                </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <input type="text" class="w-20 p-1 border border-gray-300 rounded text-center bg-gray-200" 
-                                        value="{{ $result->Temperatur_Air }}" readonly>
-                                </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <input type="text" class="w-20 p-1 border border-gray-300 rounded text-center bg-gray-200" 
-                                        value="{{ $result->Temperatur_Pompa }}" readonly>
-                                </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <select class="w-24 p-1 border border-gray-300 rounded text-center bg-gray-200" disabled>
-                                        <option value="Bersih" {{ $result->Evaporator == 'Bersih' ? 'selected' : '' }}>Bersih</option>
-                                        <option value="Kotor" {{ $result->Evaporator == 'Kotor' ? 'selected' : '' }}>Kotor</option>
-                                        <option value="OFF" {{ $result->Evaporator == 'OFF' ? 'selected' : '' }}>OFF</option>
-                                    </select>
-                                </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <select class="w-24 p-1 border border-gray-300 rounded text-center bg-gray-200" disabled>
-                                        <option value="Suara Halus" {{ $result->Fan_Evaporator == 'Suara Halus' ? 'selected' : '' }}>Suara Halus</option>
-                                        <option value="Suara Keras" {{ $result->Fan_Evaporator == 'Suara Keras' ? 'selected' : '' }}>Suara Keras</option>
-                                        <option value="OFF" {{ $result->Fan_Evaporator == 'OFF' ? 'selected' : '' }}>OFF</option>
-                                    </select>
-                                </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <select class="w-24 p-1 border border-gray-300 rounded text-center bg-gray-200" disabled>
-                                        <option value="Cukup" {{ $result->Freon == 'Cukup' ? 'selected' : '' }}>Cukup</option>
-                                        <option value="Tidak Cukup" {{ $result->Freon == 'Tidak Cukup' ? 'selected' : '' }}>Tidak Cukup</option>
-                                        <option value="OFF" {{ $result->Freon == 'OFF' ? 'selected' : '' }}>OFF</option>
-                                    </select>
-                                </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <select class="w-24 p-1 border border-gray-300 rounded text-center bg-gray-200" disabled>
-                                        <option value="Cukup" {{ $result->Air == 'Cukup' ? 'selected' : '' }}>Cukup</option>
-                                        <option value="Tidak Cukup" {{ $result->Air == 'Tidak Cukup' ? 'selected' : '' }}>Tidak Cukup</option>
-                                        <option value="OFF" {{ $result->Air == 'OFF' ? 'selected' : '' }}>OFF</option>
-                                    </select>
-                                </td>
+    
+                    <tbody class="text-sm text-center">
+                        @php
+                            $checkedItems = [
+                                "Temperatur motor", "Temperatur screw", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
+                                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
+                                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
+                                "Ampere", "Skun", "Service hour", "Load hours", "Temperatur ADT"
+                            ];
+                        
+                            // Kolom KL untuk tabel
+                            $klDbColumns = ['kl_10I', 'kl_10II', 'kl_5I', 'kl_5II', 'kl_6I', 'kl_6II', 'kl_7I', 'kl_7II', 'kl_8I', 'kl_8II', 'kl_9I', 'kl_9II'];
+                        @endphp
+    
+                        @foreach ($lowResults->groupBy('checked_items') as $itemIndex => $resultGroup)
+                            @php 
+                                $result = $resultGroup->first();
+                                $index = array_search($result->checked_items, $checkedItems);
+                            @endphp
+                            <tr class="hover:bg-gray-100">
+                                <td class="border border-gray-300 p-2">{{ $index + 1 }}</td>
+                                <td class="border border-gray-300 p-2 w-1/8 text-left">{{ $result->checked_items }}</td>
+    
+                                @foreach ($klDbColumns as $i => $klColumn)
+                                    <td class="border border-gray-300 p-2 w-auto">
+                                        {{ $result->$klColumn }}
+                                    </td>
+                                @endforeach
                             </tr>
                         @endforeach
-                    </tbody>                    
-                    
+                    </tbody>
                 </table>
             </div>
             
-            
-            <div class="mt-4">
-                <label for="keterangan" class="form-label">Keterangan:</label>
-                <textarea id="keterangan" name="keterangan" rows="3" class="form-control" placeholder="Tambahkan keterangan jika diperlukan..." readonly>{{ $check->keterangan }}</textarea>
+            <!-- High Kompressor Table -->
+            <div class="text-lg font-semibold mb-4 mt-8">
+                Data High Kompressor
             </div>
-
-            <div class="mt-4 d-flex justify-content-between">
-                <a href="{{ route('water-chiller.index') }}" class="btn btn-secondary">Kembali</a>
-                @if(!$check->approved_by)
-                    <button type="submit" class="btn btn-success">Setujui</button>
-                @else
-                    <a href="{{ route('water-chiller.downloadPdf', $check->id) }}" class="btn btn-primary">Download PDF</a>
-                    <button type="submit" class="btn btn-secondary" disabled>Telah Disetujui</button>
-                @endif
+    
+            <div class="overflow-x-auto">
+                <table class="min-w-full border border-gray-300 shadow-lg rounded-lg bg-white border-collapse">
+                    <thead class="bg-gray-200 text-center">
+                        <tr>
+                            <th class="border border-gray-300 p-2" rowspan="3">No.</th>
+                            <th class="border border-gray-300 p-2" rowspan="3">Checked Items</th>
+                            <th class="border border-gray-300 p-2" colspan="10">Hasil Pemeriksaan</th>
+                        </tr>
+                        <tr>
+                            <th class="border border-gray-300 p-2" colspan="2">KH 7</th>
+                            <th class="border border-gray-300 p-2" colspan="2">KH 8</th>
+                            <th class="border border-gray-300 p-2" colspan="2">KH 9</th>
+                            <th class="border border-gray-300 p-2" colspan="2">KH 10</th>
+                            <th class="border border-gray-300 p-2" colspan="2">KH 11</th>
+                        </tr>
+                        <tr>
+                            @for ($i = 0; $i < 5; $i++)
+                                <th class="border border-gray-300 p-2">I</th>
+                                <th class="border border-gray-300 p-2">II</th>
+                            @endfor
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm text-center">
+                        @php
+                            $checkedItems = [
+                                "Temperatur Motor", "Temperatur Piston", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
+                                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
+                                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
+                                "Ampere", "Skun", "Service hour", "Load hours", "Inlet Preasure", "Outlet Preasure"
+                            ];
+                        
+                            // Kolom KH untuk tabel
+                            $khDbColumns = ['kh_7I', 'kh_7II', 'kh_8I', 'kh_8II', 'kh_9I', 'kh_9II', 'kh_10I', 'kh_10II', 'kh_11I', 'kh_11II'];
+                        @endphp
+                    
+                        @foreach ($highResults->groupBy('checked_items') as $itemIndex => $resultGroup)
+                            @php 
+                                $result = $resultGroup->first();
+                                $index = array_search($result->checked_items, $checkedItems);
+                            @endphp
+                            <tr class="hover:bg-gray-100">
+                                <td class="border border-gray-300 p-2">{{ $index + 1 }}</td>
+                                <td class="border border-gray-300 p-2 w-1/8 text-left">{{ $result->checked_items }}</td>
+                    
+                                @foreach ($khDbColumns as $i => $khColumn)
+                                    <td class="border border-gray-300 p-2 w-auto">
+                                        {{ $result->$khColumn }}
+                                    </td>
+                                @endforeach
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
-        </form>
+        </div>
     </div>
 </body>
 </html>

@@ -50,7 +50,13 @@ class CompressorController extends Controller
 
     public function store(Request $request)
     {
-        // Validasi data yang diterima dari form
+        // Cek apakah tanggal sudah ada di database
+        $existingDate = CompressorCheck::where('tanggal', $request->tanggal)->exists();
+        
+        if ($existingDate) {
+            return back()->withErrors(['tanggal' => 'Tanggal ini sudah digunakan! Pilih tanggal lain.']);
+        }
+            // Validasi data yang diterima dari form
         $request->validate([
             'tanggal' => 'required|date',
             'hari' => 'required|string',
@@ -276,6 +282,35 @@ class CompressorController extends Controller
 
         // Redirect ke halaman index dengan pesan sukses
         return redirect()->route('compressor.index')->with('success', 'Data berhasil diperbarui!');
+    }
+
+    public function show($id)
+    {
+        // Ambil data compressor check berdasarkan ID
+        $check = CompressorCheck::findOrFail($id);
+        
+        // Ambil data low kompressor
+        $lowResults = CompressorResult::where('check_id', $id)
+            ->whereIn('checked_items', [
+                "Temperatur motor", "Temperatur screw", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
+                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
+                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
+                "Ampere", "Skun", "Service hour", "Load hours", "Temperatur ADT"
+            ])
+            ->get();
+        
+        // Ambil data high kompressor
+        $highResults = CompressorResult::where('check_id', $id)
+            ->whereIn('checked_items', [
+                "Temperatur Motor", "Temperatur Piston", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
+                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
+                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
+                "Ampere", "Skun", "Service hour", "Load hours", "Inlet Preasure", "Outlet Preasure"
+            ])
+            ->get();
+        
+        // Tampilkan view dengan data yang diperlukan
+        return view('compressor.show', compact('check', 'lowResults', 'highResults'));
     }
 }
 
