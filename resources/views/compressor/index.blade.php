@@ -6,7 +6,7 @@
     <title>Pencatatan Mesin Kompresor</title>
     
     <!-- Tailwind CSS -->
-    @vite('resources/css/app.css')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
         @font-face {
@@ -141,18 +141,24 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td class="p-3 border flex justify-center items-center gap-3">
+                                <td class="py-3">
+                                    {{-- Menu lihat --}}
                                     @if(auth()->user() instanceof \App\Models\Approver)
-                                        <a href="{{ route('compressor.show', $check->id) }}" class="text-blue-600 hover:text-blue-800">
-                                            <i class="fas fa-eye"></i>
+                                        <a href="{{ route('compressor.show', $check->id) }}" title="Lihat Detail">
+                                            @if($check->approved_by)
+                                                <i class="fas fa-eye" style="color: #1565c0; opacity: 0.7;" title="Sudah disetujui"></i>
+                                            @else
+                                                <i class="fas fa-eye" style="color: #1565c0;" title="Lihat Detail"></i>
+                                            @endif
                                         </a>
+                                    {{-- Menu edit --}}
                                     @elseif(auth()->user() instanceof \App\Models\Checker)
                                         @if(!$check->approved_by)
-                                            <a href="{{ route('compressor.edit', $check->id) }}" class="text-yellow-500 hover:text-yellow-700">
-                                                <i class="fas fa-pen"></i>
+                                            <a href="{{ route('compressor.edit', $check->id) }}" title="Edit">
+                                                <i class="fas fa-pen edit-icon"></i>
                                             </a>
                                         @else
-                                            <i class="fas fa-pen text-yellow-300 cursor-not-allowed"></i>
+                                            <i class="fas fa-pen edit-icon-disabled" title="Tidak dapat diedit karena sudah disetujui"></i>
                                         @endif
                                     @endif
                                 </td>
@@ -162,6 +168,7 @@
                 </tbody>
             </table>
         </div>
+        
 
         <!-- Pagination -->
         <div class="mt-6 flex justify-center">
