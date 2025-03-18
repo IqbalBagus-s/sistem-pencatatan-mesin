@@ -6,7 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AirDryerController;
 use App\Http\Controllers\WaterChillerController;
 use App\Http\Controllers\CompressorController;
-use App\Http\Middleware\RoleMiddleware;
+
 
 Route::get('/', function () {
     return view('auth.login');

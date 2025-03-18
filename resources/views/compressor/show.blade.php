@@ -145,24 +145,23 @@
                             // Kolom KL untuk tabel
                             $klDbColumns = ['kl_10I', 'kl_10II', 'kl_5I', 'kl_5II', 'kl_6I', 'kl_6II', 'kl_7I', 'kl_7II', 'kl_8I', 'kl_8II', 'kl_9I', 'kl_9II'];
                         @endphp
-    
+                    
                         @foreach ($lowResults->groupBy('checked_items') as $itemIndex => $resultGroup)
                             @php 
                                 $result = $resultGroup->first();
-                                $index = array_search($result->checked_items, $checkedItems);
                             @endphp
                             <tr class="hover:bg-gray-100">
-                                <td class="border border-gray-300 p-2">{{ $index + 1 }}</td>
+                                <td class="border border-gray-300 p-2">{{ $loop->iteration }}</td>
                                 <td class="border border-gray-300 p-2 w-1/8 text-left">{{ $result->checked_items }}</td>
-    
-                                @foreach ($klDbColumns as $i => $klColumn)
+                    
+                                @foreach ($klDbColumns as $klColumn)
                                     <td class="border border-gray-300 p-2 w-auto">
                                         {{ $result->$klColumn }}
                                     </td>
                                 @endforeach
                             </tr>
                         @endforeach
-                    </tbody>
+                    </tbody>                    
                 </table>
             </div>
             
@@ -209,23 +208,92 @@
                         @foreach ($highResults->groupBy('checked_items') as $itemIndex => $resultGroup)
                             @php 
                                 $result = $resultGroup->first();
-                                $index = array_search($result->checked_items, $checkedItems);
                             @endphp
                             <tr class="hover:bg-gray-100">
-                                <td class="border border-gray-300 p-2">{{ $index + 1 }}</td>
+                                <td class="border border-gray-300 p-2">{{ $loop->iteration }}</td>
                                 <td class="border border-gray-300 p-2 w-1/8 text-left">{{ $result->checked_items }}</td>
                     
-                                @foreach ($khDbColumns as $i => $khColumn)
+                                @foreach ($khDbColumns as $khColumn)
                                     <td class="border border-gray-300 p-2 w-auto">
                                         {{ $result->$khColumn }}
                                     </td>
                                 @endforeach
                             </tr>
                         @endforeach
-                    </tbody>
+                    </tbody>                    
                 </table>
             </div>
+            <!-- Menampilkan Pilihan Shift untuk Approver -->
+            <div class="mb-4 p-4 bg-gray-200 rounded">
+                <p class="text-lg font-semibold text-gray-700">Pilih Shift Approver</p>
+                
+                <div class="grid grid-cols-2 gap-4 mt-2">
+                    <!-- Shift 1 -->
+                    <div class="p-4 bg-white shadow rounded border border-gray-300">
+                        <label class="block text-gray-700 font-semibold">Shift 1</label>
+                        <input type="text" id="approved_by_shift1" name="approved_by_shift1" class="mt-2 w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" 
+                            value="{{ $check->approved_by_shift1 }}" readonly>
+                        <button type="button" id="btn-shift-1" class="mt-2 w-full bg-blue-500 text-white py-1 px-3 rounded disabled:opacity-50" 
+                                onclick="pilihShift(1)" {{ $check->approved_by_shift1 ? 'disabled' : '' }}>Pilih</button>
+                    </div>
+
+                    <!-- Shift 2 -->
+                    <div class="p-4 bg-white shadow rounded border border-gray-300">
+                        <label class="block text-gray-700 font-semibold">Shift 2</label>
+                        <input type="text" id="approved_by_shift2" name="approved_by_shift2" class="mt-2 w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" 
+                            value="{{ $check->approved_by_shift2 }}" readonly>
+                        <button type="button" id="btn-shift-2" class="mt-2 w-full bg-green-500 text-white py-1 px-3 rounded disabled:opacity-50" 
+                                onclick="pilihShift(2)" {{ $check->approved_by_shift2 ? 'disabled' : '' }}>Pilih</button>
+                    </div>
+                </div>
+
+                <!-- Tombol Simpan Persetujuan -->
+                <form id="approvalForm" method="POST" action="{{ route('compressor.approve', $check->id) }}">
+                    @csrf
+                    <input type="hidden" id="shift1" name="shift1" value="{{ $check->approved_by_shift1 }}">
+                    <input type="hidden" id="shift2" name="shift2" value="{{ $check->approved_by_shift2 }}">
+
+                    <div class="mt-4 flex justify-between">
+                        <!-- Tombol Kembali -->
+                        <a href="{{ route('compressor.index') }}" class="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600">
+                            Kembali
+                        </a>
+
+                        @if($check->approved_by_shift1 && $check->approved_by_shift2)
+                            <!-- Jika kedua shift sudah disetujui, tampilkan tombol Download PDF -->
+                            <a href="{{ route('compressor.downloadPdf', $check->id) }}" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                                Download PDF
+                            </a>
+                            <button type="button" class="bg-gray-400 text-white py-2 px-4 rounded cursor-not-allowed" disabled>
+                                Telah Disetujui
+                            </button>
+                        @else
+                            <!-- Jika salah satu shift belum disetujui, tampilkan tombol Simpan Persetujuan -->
+                            <button type="submit" class="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800">
+                                Simpan Persetujuan
+                            </button>
+                        @endif
+                    </div>
+                </form>                
+            </div>
+                
         </div>
     </div>
+    
+    <script>
+        // Fungsi untuk mengisi shift dengan nama user yang sedang login
+        function pilihShift(shift) {
+            let user = "{{ Auth::user()->username }}"; // Gantilah dengan data user yang sesuai
+            if (shift === 1) {
+                document.getElementById("approved_by_shift1").value = user;
+                document.getElementById("shift1").value = user;
+                document.getElementById("btn-shift-1").disabled = true;
+            } else if (shift === 2) {
+                document.getElementById("approved_by_shift2").value = user;
+                document.getElementById("shift2").value = user;
+                document.getElementById("btn-shift-2").disabled = true;
+            }
+        }
+    </script>
 </body>
 </html>

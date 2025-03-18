@@ -131,7 +131,7 @@
                                 </td>
                                 
                                 <td class="p-3 border">
-                                    @if($check->approved_by)
+                                    @if(!is_null($check->approved_by_shift1) && !is_null($check->approved_by_shift2))
                                         <span class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm">
                                             Disetujui
                                         </span>
@@ -140,7 +140,7 @@
                                             Belum Disetujui
                                         </span>
                                     @endif
-                                </td>
+                                </td>                                
                                 <td class="py-3">
                                     {{-- Menu lihat --}}
                                     @if(auth()->user() instanceof \App\Models\Approver)

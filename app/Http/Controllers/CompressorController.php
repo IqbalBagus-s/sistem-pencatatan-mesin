@@ -312,5 +312,25 @@ class CompressorController extends Controller
         // Tampilkan view dengan data yang diperlukan
         return view('compressor.show', compact('check', 'lowResults', 'highResults'));
     }
+
+    public function approve(Request $request, $id)
+    {
+        $check = CompressorCheck::findOrFail($id);
+
+        // Update field yang tersedia
+        if ($request->shift1) {
+            $check->approved_by_shift1 = $request->shift1;
+        }
+
+        if ($request->shift2) {
+            $check->approved_by_shift2 = $request->shift2;
+        }
+
+        $check->save(); // Simpan perubahan ke database
+
+        return redirect()->route('compressor.index')->with('success', 'Persetujuan berhasil disimpan.');
+    }
+
+
 }
 
