@@ -56,4 +56,15 @@ Route::middleware(['auth:approver,checker'])->group(function () {
     Route::post('/compressor/{id}/approve', [CompressorController::class, 'approve'])->name('compressor.approve');
     // Route download PDF
     Route::get('/compressor/{id}/download-pdf', [CompressorController::class, 'downloadPdf'])->name('compressor.downloadPdf');
+
+     // Route Mesin Compressor
+     Route::get('/compressor', [CompressorController::class, 'index'])->name('compressor.index');
+     Route::get('/compressor/create', [CompressorController::class, 'create'])->name('compressor.create');
+     Route::post('/compressor', [CompressorController::class, 'store'])->name('compressor.store');
+     Route::get('/compressor/{id}/edit', [CompressorController::class, 'edit'])->name('compressor.edit');
+     Route::put('/compressor/{id}', [CompressorController::class, 'update'])->name('compressor.update');
+     Route::get('/compressor/{id}', [CompressorController::class, 'show'])->name('compressor.show');
+     Route::post('/compressor/{id}/approve', [CompressorController::class, 'approve'])->name('compressor.approve');
+     // Route download PDF
+     Route::get('/compressor/{id}/download-pdf', [CompressorController::class, 'downloadPdf'])->name('compressor.downloadPdf');
 });

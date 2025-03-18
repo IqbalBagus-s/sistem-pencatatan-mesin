@@ -6,109 +6,89 @@
     <title>Edit Pencatatan Mesin Air Dryer</title>
  
     <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
-    <style>
-        .auto-drain-column {
-            min-width: 140px;
-        }
-        .table-responsive {
-            overflow-x: auto;
-        }
-        .footer {
-            background-color: #ffffff;
-            padding: 15px 0;
-            text-align: center;
-            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
-            margin-top: auto;
-            width: 100%;
-        }
-        .form-select-auto-drain {
-            width: 100%;
-        }
-    </style>
+    @vite('resources/css/app.css')
 </head>
-<body class="bg-light p-3">
+<body class="bg-gray-100 p-3">
 
-    <div class="container bg-white p-4 rounded shadow">
-        <h2 class="fw-semibold text-dark mb-4">Edit Pencatatan Mesin Air Dryer</h2>
+    <div class="container mx-auto bg-white p-4 rounded-lg shadow-md">
+        <h2 class="font-semibold text-gray-800 mb-4 text-xl">Edit Pencatatan Mesin Air Dryer</h2>
 
         <form action="{{ route('air-dryer.update', $check->id) }}" method="POST">
             @csrf
             @method('PUT')
 
             <div class="mb-3">
-                <label class="form-label">Tanggal:</label>
-                <input type="date" name="tanggal" value="{{ $check->tanggal }}" class="form-control bg-light" readonly>
+                <label class="block mb-1">Tanggal:</label>
+                <input type="date" name="tanggal" value="{{ $check->tanggal }}" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md" readonly>
             </div>
             
             <div class="mb-3">
-                <label class="form-label">Hari:</label>
-                <input type="text" name="hari" value="{{ $check->hari }}" class="form-control bg-light" readonly>
+                <label class="block mb-1">Hari:</label>
+                <input type="text" name="hari" value="{{ $check->hari }}" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md" readonly>
             </div>
             
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead class="table-light">
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse border border-gray-300">
+                    <thead class="bg-gray-100">
                         <tr>
-                            <th class="text-center" style="width: 50px;">No</th>
-                            <th class="text-center" style="width: 120px;">Nomor Mesin</th>
-                            <th class="text-center">Temperatur Kompresor</th>
-                            <th class="text-center">Temperatur Kabel</th>
-                            <th class="text-center">Temperatur MCB</th>
-                            <th class="text-center">Temperatur Angin In</th>
-                            <th class="text-center">Temperatur Angin Out</th>
-                            <th class="text-center" style="width: 110px;">Evaporator</th>
-                            <th class="text-center" style="width: 140px;">Fan Evaporator</th>
-                            <th class="text-center auto-drain-column">Auto Drain</th>
-                            <th class="text-center">Keterangan</th>
+                            <th class="border border-gray-300 p-2 text-center w-12">No</th>
+                            <th class="border border-gray-300 p-2 text-center w-32">Nomor Mesin</th>
+                            <th class="border border-gray-300 p-2 text-center">Temperatur Kompresor</th>
+                            <th class="border border-gray-300 p-2 text-center">Temperatur Kabel</th>
+                            <th class="border border-gray-300 p-2 text-center">Temperatur MCB</th>
+                            <th class="border border-gray-300 p-2 text-center">Temperatur Angin In</th>
+                            <th class="border border-gray-300 p-2 text-center">Temperatur Angin Out</th>
+                            <th class="border border-gray-300 p-2 text-center w-28">Evaporator</th>
+                            <th class="border border-gray-300 p-2 text-center w-36">Fan Evaporator</th>
+                            <th class="border border-gray-300 p-2 text-center min-w-[140px]">Auto Drain</th>
+                            <th class="border border-gray-300 p-2 text-center">Keterangan</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($results as $index => $result)
                         <tr>
-                            <td class="text-center">{{ $index + 1 }}</td>
-                            <td class="text-center">
-                                <input type="text" name="nomor_mesin[{{ $result->id }}]" value="{{ $result->nomor_mesin }}" class="form-control form-control-sm bg-light" readonly>
+                            <td class="border border-gray-300 p-2 text-center">{{ $index + 1 }}</td>
+                            <td class="border border-gray-300 p-2 text-center">
+                                <input type="text" name="nomor_mesin[{{ $result->id }}]" value="{{ $result->nomor_mesin }}" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded-md" readonly>
                             </td>
-                            <td>
-                                <input type="text" name="temperatur_kompresor[{{ $result->id }}]" value="{{ $result->temperatur_kompresor }}" class="form-control form-control-sm" required>
+                            <td class="border border-gray-300 p-2">
+                                <input type="text" name="temperatur_kompresor[{{ $result->id }}]" value="{{ $result->temperatur_kompresor }}" class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md" required>
                             </td>
-                            <td>
-                                <input type="text" name="temperatur_kabel[{{ $result->id }}]" value="{{ $result->temperatur_kabel }}" class="form-control form-control-sm" required>
+                            <td class="border border-gray-300 p-2">
+                                <input type="text" name="temperatur_kabel[{{ $result->id }}]" value="{{ $result->temperatur_kabel }}" class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md" required>
                             </td>
-                            <td>
-                                <input type="text" name="temperatur_mcb[{{ $result->id }}]" value="{{ $result->temperatur_mcb }}" class="form-control form-control-sm" required>
+                            <td class="border border-gray-300 p-2">
+                                <input type="text" name="temperatur_mcb[{{ $result->id }}]" value="{{ $result->temperatur_mcb }}" class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md" required>
                             </td>
-                            <td>
-                                <input type="text" name="temperatur_angin_in[{{ $result->id }}]" value="{{ $result->temperatur_angin_in }}" class="form-control form-control-sm" required>
+                            <td class="border border-gray-300 p-2">
+                                <input type="text" name="temperatur_angin_in[{{ $result->id }}]" value="{{ $result->temperatur_angin_in }}" class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md" required>
                             </td>
-                            <td>
-                                <input type="text" name="temperatur_angin_out[{{ $result->id }}]" value="{{ $result->temperatur_angin_out }}" class="form-control form-control-sm" required>
+                            <td class="border border-gray-300 p-2">
+                                <input type="text" name="temperatur_angin_out[{{ $result->id }}]" value="{{ $result->temperatur_angin_out }}" class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md" required>
                             </td>
-                            <td>
-                                <select name="evaporator[{{ $result->id }}]" class="form-select form-select-sm">
+                            <td class="border border-gray-300 p-2">
+                                <select name="evaporator[{{ $result->id }}]" class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md">
                                     <option value="Bersih" {{ $result->evaporator == 'Bersih' ? 'selected' : '' }}>Bersih</option>
                                     <option value="Kotor" {{ $result->evaporator == 'Kotor' ? 'selected' : '' }}>Kotor</option>
                                     <option value="OFF" {{ $result->evaporator == 'OFF' ? 'selected' : '' }}>OFF</option>
                                 </select>
                             </td>
-                            <td>
-                                <select name="fan_evaporator[{{ $result->id }}]" class="form-select form-select-sm">
+                            <td class="border border-gray-300 p-2">
+                                <select name="fan_evaporator[{{ $result->id }}]" class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md">
                                     <option value="Suara Halus" {{ $result->fan_evaporator == 'Suara Halus' ? 'selected' : '' }}>Suara Halus</option>
                                     <option value="Suara Kasar" {{ $result->fan_evaporator == 'Suara Kasar' ? 'selected' : '' }}>Suara Kasar</option>
                                     <option value="OFF" {{ $result->fan_evaporator == 'OFF' ? 'selected' : '' }}>OFF</option>
                                 </select>
                             </td>
-                            <td class="auto-drain-column">
-                                <select name="auto_drain[{{ $result->id }}]" class="form-select form-select-sm form-select-auto-drain">
+                            <td class="border border-gray-300 p-2 min-w-[140px]">
+                                <select name="auto_drain[{{ $result->id }}]" class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md">
                                     <option value="Berfungsi" {{ $result->auto_drain == 'Berfungsi' ? 'selected' : '' }}>Berfungsi</option>
                                     <option value="Tidak Berfungsi" {{ $result->auto_drain == 'Tidak Berfungsi' ? 'selected' : '' }}>Tidak Berfungsi</option>
                                     <option value="OFF" {{ $result->auto_drain == 'OFF' ? 'selected' : '' }}>OFF</option>
                                 </select>
                             </td>
-                            <td>
-                                <input type="text" name="keterangan[{{ $result->id }}]" value="{{ $result->keterangan }}" class="form-control form-control-sm">
+                            <td class="border border-gray-300 p-2">
+                                <input type="text" name="keterangan[{{ $result->id }}]" value="{{ $result->keterangan }}" class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md">
                             </td>
                         </tr>
                         @endforeach
@@ -117,19 +97,19 @@
             </div>
 
             <!-- Detail Mesin -->
-            <div class="mt-4 p-3 bg-light rounded w-50">
-                <h3 class="fs-5 fw-semibold text-dark mb-2">Detail Mesin:</h3>
+            <div class="mt-4 p-3 bg-gray-100 rounded-md w-1/2">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Detail Mesin:</h3>
                 <p class="mb-1">AD 1 : HIGH PRESS 1 &nbsp;&nbsp;&nbsp; AD 5 : SUPPLY INJECT</p>
                 <p class="mb-1">AD 2 : HIGH PRESS 2 &nbsp;&nbsp;&nbsp; AD 6 : LOW PRESS 3</p>
                 <p class="mb-1">AD 3 : LOW PRESS 1 &nbsp;&nbsp;&nbsp;&nbsp; AD 7 : LOW PRESS 4</p>
                 <p class="mb-1">AD 4 : LOW PRESS 2 &nbsp;&nbsp;&nbsp;&nbsp; AD 8 : LOW PRESS 5</p>
             </div>
 
-            <div class="mt-4 d-flex justify-content-between">
-                <a href="{{ route('air-dryer.index') }}" class="btn btn-secondary">
+            <div class="mt-4 flex justify-between">
+                <a href="{{ route('air-dryer.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400">
                     Kembali
                 </a>
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
                     Simpan
                 </button>
             </div>
@@ -137,10 +117,10 @@
     </div>
 
     <!-- Footer -->
-    <footer class="footer">
-        <p class="mb-0 fw-bold">2025 © PT ASIA PRAMULIA</p>
+    <footer class="bg-white py-4 text-center shadow-md mt-4 w-full">
+        <p class="font-bold">2025 © PT Asia Pramulia</p>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @vite('resources/js/app.js')
 </body>
 </html>

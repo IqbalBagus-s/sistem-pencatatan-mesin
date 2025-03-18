@@ -6,116 +6,105 @@
     <title>Approval Pencatatan Mesin Air Dryer</title>
 
     <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <style> 
-        .footer {
-            background-color: #ffffff;
-            padding: 15px 0;
-            text-align: center;
-            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
-            margin-top: auto;
-            width: 100%;
-        }
-    </style>
+    @vite('resources/css/app.css')
 </head>
-<body class="bg-light p-3">
+<body class="bg-blue-50 pt-5 font-poppins min-h-screen flex flex-col overscroll-none">
 
-    <div class="container bg-white p-4 rounded shadow">
-        <h2 class="mb-4 fw-bold">Approval Pencatatan Mesin Air Dryer</h2>
+    <div class="container mx-auto bg-white p-4 rounded-lg shadow-md">
+        <h2 class="mb-4 font-bold text-xl">Approval Pencatatan Mesin Air Dryer</h2>
 
         <form action="{{ route('air-dryer.approve', $check->id) }}" method="POST">
             @csrf
 
             <!-- Tampilkan nama approver yang sedang login -->
-            <div class="mb-4 p-3 bg-light rounded">
+            <div class="mb-4 p-3 bg-gray-100 rounded-lg">
                 @if(!$check->approved_by)
-                <p class="fs-5 fw-semibold">Approver: 
-                    <span class="text-primary">{{ Auth::user()->username }}</span></p>
+                <p class="text-lg font-semibold">Approver: 
+                    <span class="text-blue-600">{{ Auth::user()->username }}</span></p>
                 @else
-                <p class="fs-5 fw-semibold">Approver: 
-                    <span class="text-primary">{{ $check->approved_by }}</span></p>
+                <p class="text-lg font-semibold">Approver: 
+                    <span class="text-blue-600">{{ $check->approved_by }}</span></p>
                 @endif
             </div>
 
             <!-- Tampilkan nama checker yang mengisi data -->
-            <div class="mb-4 p-3 bg-light rounded">
-                <p class="fs-5 fw-semibold">Checker: 
-                    <span class="text-success">{{ $check->checked_by }}</span></p>
+            <div class="mb-4 p-3 bg-gray-100 rounded-lg">
+                <p class="text-lg font-semibold">Checker: 
+                    <span class="text-green-600">{{ $check->checked_by }}</span></p>
             </div>
 
             {{-- tanggal form di isi --}}
             <div class="mb-3">
-                <label class="form-label">Tanggal:</label>
-                <input type="date" value="{{ $check->tanggal }}" class="form-control bg-light" readonly>
+                <label class="block font-medium mb-1">Tanggal:</label>
+                <input type="date" value="{{ $check->tanggal }}" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md" readonly>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Hari:</label>
-                <input type="text" value="{{ $check->hari }}" class="form-control bg-light" readonly>
+                <label class="block font-medium mb-1">Hari:</label>
+                <input type="text" value="{{ $check->hari }}" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md" readonly>
             </div>
 
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead class="table-light">
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse border border-gray-300">
+                    <thead class="bg-gray-100">
                         <tr>
-                            <th>No</th>
-                            <th>Nomor Mesin</th>
-                            <th>Temperatur Kompresor</th>
-                            <th>Temperatur Kabel</th>
-                            <th>Temperatur MCB</th>
-                            <th>Temperatur Angin In</th>
-                            <th>Temperatur Angin Out</th>
-                            <th>Evaporator</th>
-                            <th>Fan Evaporator</th>
-                            <th>Auto Drain</th>
-                            <th>Keterangan</th>
+                            <th class="border border-gray-300 p-2">No</th>
+                            <th class="border border-gray-300 p-2">Nomor Mesin</th>
+                            <th class="border border-gray-300 p-2">Temperatur Kompresor</th>
+                            <th class="border border-gray-300 p-2">Temperatur Kabel</th>
+                            <th class="border border-gray-300 p-2">Temperatur MCB</th>
+                            <th class="border border-gray-300 p-2">Temperatur Angin In</th>
+                            <th class="border border-gray-300 p-2">Temperatur Angin Out</th>
+                            <th class="border border-gray-300 p-2">Evaporator</th>
+                            <th class="border border-gray-300 p-2">Fan Evaporator</th>
+                            <th class="border border-gray-300 p-2">Auto Drain</th>
+                            <th class="border border-gray-300 p-2">Keterangan</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($results as $index => $result)
                         <tr>
-                            <td class="text-center">{{ $index + 1 }}</td>
-                            <td class="text-center">{{ $result->nomor_mesin }}</td>
-                            <td class="text-center">{{ $result->temperatur_kompresor }}</td>
-                            <td class="text-center">{{ $result->temperatur_kabel }}</td>
-                            <td class="text-center">{{ $result->temperatur_mcb }}</td>
-                            <td class="text-center">{{ $result->temperatur_angin_in }}</td>
-                            <td class="text-center">{{ $result->temperatur_angin_out }}</td>
-                            <td class="text-center">{{ $result->evaporator }}</td>
-                            <td class="text-center">{{ $result->fan_evaporator }}</td>
-                            <td class="text-center">{{ $result->auto_drain }}</td>
-                            <td class="text-center">{{ $result->keterangan }}</td>
+                            <td class="text-center border border-gray-300 p-2">{{ $index + 1 }}</td>
+                            <td class="text-center border border-gray-300 p-2">{{ $result->nomor_mesin }}</td>
+                            <td class="text-center border border-gray-300 p-2">{{ $result->temperatur_kompresor }}</td>
+                            <td class="text-center border border-gray-300 p-2">{{ $result->temperatur_kabel }}</td>
+                            <td class="text-center border border-gray-300 p-2">{{ $result->temperatur_mcb }}</td>
+                            <td class="text-center border border-gray-300 p-2">{{ $result->temperatur_angin_in }}</td>
+                            <td class="text-center border border-gray-300 p-2">{{ $result->temperatur_angin_out }}</td>
+                            <td class="text-center border border-gray-300 p-2">{{ $result->evaporator }}</td>
+                            <td class="text-center border border-gray-300 p-2">{{ $result->fan_evaporator }}</td>
+                            <td class="text-center border border-gray-300 p-2">{{ $result->auto_drain }}</td>
+                            <td class="text-center border border-gray-300 p-2">{{ $result->keterangan }}</td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
 
-            <div class="mt-4 p-3 bg-light rounded col-md-6">
-                <h3 class="fs-5 fw-semibold mb-2">Detail Mesin:</h3>
+            <div class="mt-4 p-3 bg-gray-100 rounded-lg md:w-1/2">
+                <h3 class="text-lg font-semibold mb-2">Detail Mesin:</h3>
                 <p>AD 1 : HIGH PRESS 1 &nbsp;&nbsp;&nbsp; AD 5 : SUPPLY INJECT</p>
                 <p>AD 2 : HIGH PRESS 2 &nbsp;&nbsp;&nbsp; AD 6 : LOW PRESS 3</p>
                 <p>AD 3 : LOW PRESS 1 &nbsp;&nbsp;&nbsp;&nbsp; AD 7 : LOW PRESS 4</p>
                 <p>AD 4 : LOW PRESS 2 &nbsp;&nbsp;&nbsp;&nbsp; AD 8 : LOW PRESS 5</p>
             </div>
 
-            <div class="mt-4 d-flex justify-content-between">
+            <div class="mt-4 flex justify-between">
                 @if(!$check->approved_by)
-                <a href="{{ route('air-dryer.index') }}" class="btn btn-secondary">
+                <a href="{{ route('air-dryer.index') }}" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition duration-200">
                     Kembali
                 </a>
-                <button type="submit" class="btn btn-success">
+                <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-200">
                     Setujui
                 </button>
                 @else
-                <a href="{{ route('air-dryer.index') }}" class="btn btn-secondary">
+                <a href="{{ route('air-dryer.index') }}" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition duration-200">
                     Kembali
                 </a>
-                <a href="{{ route('air-dryer.downloadPdf', $check->id) }}" class="btn btn-primary">
+                <a href="{{ route('air-dryer.downloadPdf', $check->id) }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-200">
                     Download PDF
                 </a>
-                <button type="submit" class="btn btn-secondary" disabled>
+                <button type="submit" class="px-4 py-2 bg-gray-600 opacity-75 text-white rounded-md cursor-not-allowed" disabled>
                     Telah Disetujui
                 </button>
                 @endif
@@ -124,10 +113,8 @@
     </div>
 
     <!-- Footer -->
-    <footer class="footer">
-        <p class="mb-0 fw-bold">2025 © PT ASIA PRAMULIA</p>
+    <footer class="bg-white py-4 text-center shadow-md mt-auto w-full">
+        <p class="font-bold">2025 © PT Asia Pramulia</p>
     </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
