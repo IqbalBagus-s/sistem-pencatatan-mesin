@@ -26,11 +26,11 @@
                     <div class="grid md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block mb-2">Hari:</label>
-                            <input type="text" id="hari" name="hari" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" readonly>
+                            <input type="text" id="hari" name="hari" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md" readonly>
                         </div>
                         <div>
                             <label class="block mb-2">Tanggal:</label>
-                            <input type="date" id="tanggal" name="tanggal" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
+                            <input type="date" id="tanggal" name="tanggal" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md" required>
                         </div>
                     </div>
 
@@ -49,29 +49,80 @@
                                     <th class="border border-gray-300 bg-sky-50 p-2">Evaporator</th>
                                     <th class="border border-gray-300 bg-sky-50 p-2">Fan Evaporator</th>
                                     <th class="border border-gray-300 bg-sky-50 p-2 min-w-[140px]">Auto Drain</th>
-                                    <th class="border border-gray-300 bg-sky-50 p-2">Keterangan</th>
                                 </tr>
                             </thead>
-                            <tbody id="table-body"></tbody>
+                            <tbody>
+                                @for ($i = 1; $i <= 8; $i++)
+                                    <tr>
+                                        <td class="border border-gray-300 text-center p-2">{{ $i }}</td>
+                                        <td class="border border-gray-300 text-center p-2">
+                                            <input type="text" name="nomor_mesin[{{ $i }}]" value="AD{{ $i }}" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded" readonly>
+                                        </td>
+                                        <td class="border border-gray-300 p-2">
+                                            <input type="text" name="temperatur_kompresor[{{ $i }}]" value="{{ old("temperatur_kompresor.$i") }}" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded" placeholder="30°C - 60°C">
+                                        </td>
+                                        <td class="border border-gray-300 p-2">
+                                            <input type="text" name="temperatur_kabel[{{ $i }}]" value="{{ old("temperatur_kabel.$i") }}" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded" placeholder="30°C - 60°C">
+                                        </td>
+                                        <td class="border border-gray-300 p-2">
+                                            <input type="text" name="temperatur_mcb[{{ $i }}]" value="{{ old("temperatur_mcb.$i") }}" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded" placeholder="30°C - 60°C">
+                                        </td>
+                                        <td class="border border-gray-300 p-2">
+                                            <input type="text" name="temperatur_angin_in[{{ $i }}]" value="{{ old("temperatur_angin_in.$i") }}" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded" placeholder="30°C - 60°C">
+                                        </td>
+                                        <td class="border border-gray-300 p-2">
+                                            <input type="text" name="temperatur_angin_out[{{ $i }}]" value="{{ old("temperatur_angin_out.$i") }}" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded" placeholder="30°C - 60°C">
+                                        </td>
+                                        <td class="border border-gray-300 p-2">
+                                            <select name="evaporator[{{ $i }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded">
+                                                <option value="Bersih">Bersih</option>
+                                                <option value="Kotor">Kotor</option>
+                                                <option value="OFF">OFF</option>
+                                            </select>
+                                        </td>
+                                        <td class="border border-gray-300 p-2">
+                                            <select name="fan_evaporator[{{ $i }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded">
+                                                <option value="Suara Halus">Suara Halus</option>
+                                                <option value="Suara Kasar">Suara Kasar</option>
+                                                <option value="OFF">OFF</option>
+                                            </select>
+                                        </td>
+                                        <td class="border border-gray-300 p-2">
+                                            <select name="auto_drain[{{ $i }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded">
+                                                <option value="Berfungsi">Berfungsi</option>
+                                                <option value="Tidak Berfungsi">Tidak Berfungsi</option>
+                                                <option value="OFF">OFF</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                @endfor
+                            </tbody>
                         </table>
                     </div>
 
-                    <!-- Detail Mesin -->
-                    <div class="bg-gray-100 p-4 rounded-md mt-5 md:w-1/2">
-                        <h5 class="mb-3 font-medium">Detail Mesin:</h5>
-                        <p class="mb-1">AD 1 : HIGH PRESS 1 &nbsp;&nbsp;&nbsp; AD 5 : SUPPLY INJECT</p>
-                        <p class="mb-1">AD 2 : HIGH PRESS 2 &nbsp;&nbsp;&nbsp; AD 6 : LOW PRESS 3</p>
-                        <p class="mb-1">AD 3 : LOW PRESS 1 &nbsp;&nbsp;&nbsp;&nbsp; AD 7 : LOW PRESS 4</p>
-                        <p class="mb-1">AD 4 : LOW PRESS 2 &nbsp;&nbsp;&nbsp;&nbsp; AD 8 : LOW PRESS 5</p>
+                    <!-- Detail Mesin & Form Input Keterangan -->
+                    <div class="flex flex-col md:flex-row gap-4 mt-5">
+                        <!-- Detail Mesin -->
+                        <div class="bg-gray-100 p-4 rounded-md md:w-auto">
+                            <h5 class="mb-3 font-medium">Detail Mesin:</h5>
+                            <p class="mb-1">AD 1 : HIGH PRESS 1 &nbsp;&nbsp;&nbsp; AD 5 : SUPPLY INJECT</p>
+                            <p class="mb-1">AD 2 : HIGH PRESS 2 &nbsp;&nbsp;&nbsp; AD 6 : LOW PRESS 3</p>
+                            <p class="mb-1">AD 3 : LOW PRESS 1 &nbsp;&nbsp;&nbsp;&nbsp; AD 7 : LOW PRESS 4</p>
+                            <p class="mb-1">AD 4 : LOW PRESS 2 &nbsp;&nbsp;&nbsp;&nbsp; AD 8 : LOW PRESS 5</p>
+                        </div>
+
+                        <!-- Form Input Keterangan -->
+                        <div class="flex-1">
+                            <label for="keterangan" class="block mb-2 font-medium">Keterangan:</label>
+                            <textarea id="keterangan" name="keterangan" rows="5"
+                                class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" 
+                                placeholder="Tambahkan keterangan jika diperlukan..."></textarea>
+                        </div>
                     </div>
 
                     <div class="flex justify-between mt-6">
-                        <a href="{{ route('air-dryer.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Kembali
-                        </a>
-                        <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Simpan
-                        </button>
+                        <a href="{{ route('air-dryer.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Kembali</a>
+                        <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">Simpan</button>
                     </div>
                 </form>
             </div>
@@ -85,72 +136,6 @@
 
     @vite('resources/js/app.js')
     <script>
-        // Data mesin air dryer
-        const jumlahMesin = 8;
-        const tableBody = document.getElementById("table-body");
-
-        for (let i = 1; i <= jumlahMesin; i++) {
-            let nomorMesin = `AD${i}`;
-
-            let row = `<tr>
-                <td class="border border-gray-300 text-center p-2">${i}</td>
-                <td class="border border-gray-300 text-center p-2">
-                    <input type="text" name="nomor_mesin[${i}]" value="${nomorMesin}" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded" readonly>
-                </td>
-                <td class="border border-gray-300 p-2">
-                    <input type="text" name="temperatur_kompresor[${i}]" 
-                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                        placeholder="30°C - 60°C" required>
-                </td>
-                <td class="border border-gray-300 p-2">
-                    <input type="text" name="temperatur_kabel[${i}]" 
-                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                        placeholder="30°C - 60°C" required>
-                </td>
-                <td class="border border-gray-300 p-2">
-                    <input type="text" name="temperatur_mcb[${i}]" 
-                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                        placeholder="30°C - 60°C" required>
-                </td>
-                <td class="border border-gray-300 p-2">
-                    <input type="text" name="temperatur_angin_in[${i}]" 
-                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                        placeholder="30°C - 60°C" required>
-                </td>
-                <td class="border border-gray-300 p-2">
-                    <input type="text" name="temperatur_angin_out[${i}]" 
-                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                        placeholder="30°C - 60°C" required> 
-                </td>
-                <td class="border border-gray-300 p-2">
-                    <select name="evaporator[${i}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                        <option value="Bersih">Bersih</option>
-                        <option value="Kotor">Kotor</option>
-                        <option value="OFF">OFF</option>
-                    </select>
-                </td>
-                <td class="border border-gray-300 p-2">
-                    <select name="fan_evaporator[${i}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                        <option value="Suara Halus">Suara Halus</option>
-                        <option value="Suara Kasar">Suara Kasar</option>
-                        <option value="OFF">OFF</option>
-                    </select>
-                </td>
-                <td class="border border-gray-300 p-2 min-w-[140px]">
-                    <select name="auto_drain[${i}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                        <option value="Berfungsi">Berfungsi</option>
-                        <option value="Tidak Berfungsi">Tidak Berfungsi</option>
-                        <option value="OFF">OFF</option>
-                    </select>
-                </td>
-                <td class="border border-gray-300 p-2">
-                    <input type="text" name="keterangan[${i}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                </td>
-            </tr>`;
-
-            tableBody.innerHTML += row;
-        }
-
         document.getElementById("tanggal").addEventListener("change", function() {
             let tanggal = new Date(this.value);
             let hari = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(tanggal);

@@ -45,6 +45,13 @@ class WaterChillerController extends Controller
 
     public function store(Request $request)
     {
+        // Cek apakah tanggal sudah ada di database
+        $existingDate = WaterChillerCheck::where('tanggal', $request->tanggal)->exists();
+        
+        if ($existingDate) {
+            return back()->withErrors(['tanggal' => 'Tanggal ini sudah digunakan! Pilih tanggal lain.']);
+        }
+
         $request->validate([
             'tanggal' => 'required|date',
             'hari' => 'required|string|max:20',

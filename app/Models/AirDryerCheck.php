@@ -16,6 +16,7 @@ class AirDryerCheck extends Model
         'hari',
         'checked_by',  // Sekarang menyimpan nama checker
         'approved_by', // Bisa kosong (nullable)
+        'keterangan',
     ];
 
     // Relasi ke AirDryerResult (tetap)

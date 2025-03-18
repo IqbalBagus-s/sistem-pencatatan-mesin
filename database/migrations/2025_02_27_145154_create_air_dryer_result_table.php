@@ -10,16 +10,15 @@ return new class extends Migration {
         Schema::create('air_dryer_result', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('check_id');
-            $table->string('nomor_mesin');
-            $table->string('temperatur_kompresor');
-            $table->string('temperatur_kabel');
-            $table->string('temperatur_mcb');
-            $table->string('temperatur_angin_in');
-            $table->string('temperatur_angin_out');
-            $table->string('evaporator');
-            $table->string('fan_evaporator');
-            $table->string('auto_drain');
-            $table->text('keterangan')->nullable();
+            $table->string('nomor_mesin')->nullable();
+            $table->string('temperatur_kompresor')->nullable();
+            $table->string('temperatur_kabel')->nullable();
+            $table->string('temperatur_mcb')->nullable();
+            $table->string('temperatur_angin_in')->nullable();
+            $table->string('temperatur_angin_out')->nullable();
+            $table->string('evaporator')->nullable();
+            $table->string('fan_evaporator')->nullable();
+            $table->string('auto_drain')->nullable();
             $table->timestamps();
 
             // Foreign key

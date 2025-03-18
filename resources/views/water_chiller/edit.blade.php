@@ -35,79 +35,79 @@
 
             <!-- Tabel Inspeksi -->
             <div class="overflow-x-auto">
-                <table class="min-w-full border border-gray-300">
+                <table class="w-full border-collapse border border-gray-300">
                     <thead>
-                        <tr class="bg-gray-200">
-                            <th class="border border-gray-300 p-2">NO.</th>
-                            <th class="border border-gray-300 p-2">No Mesin</th>
-                            <th class="border border-gray-300 p-2">Temperatur Compressor</th>
-                            <th class="border border-gray-300 p-2">Temperatur Kabel</th>
-                            <th class="border border-gray-300 p-2">Temperatur Mcb</th>
-                            <th class="border border-gray-300 p-2">Temperatur Air</th>
-                            <th class="border border-gray-300 p-2">Temperatur Pompa</th>
-                            <th class="border border-gray-300 p-2">Evaporator</th>
-                            <th class="border border-gray-300 p-2">Fan Evaporator</th>
-                            <th class="border border-gray-300 p-2">Freon</th>
-                            <th class="border border-gray-300 p-2">Air</th>
+                        <tr>
+                            <th class="border border-gray-300 bg-sky-50 p-2 w-12">NO.</th>
+                            <th class="border border-gray-300 bg-sky-50 p-2 w-20">No Mesin</th>
+                            <th class="border border-gray-300 bg-sky-50 p-2">Temperatur Compressor</th>
+                            <th class="border border-gray-300 bg-sky-50 p-2">Temperatur Kabel</th>
+                            <th class="border border-gray-300 bg-sky-50 p-2">Temperatur Mcb</th>
+                            <th class="border border-gray-300 bg-sky-50 p-2">Temperatur Air</th>
+                            <th class="border border-gray-300 bg-sky-50 p-2">Temperatur Pompa</th>
+                            <th class="border border-gray-300 bg-sky-50 p-2 w-24">Evaporator</th>
+                            <th class="border border-gray-300 bg-sky-50 p-2 w-28">Fan Evaporator</th>
+                            <th class="border border-gray-300 bg-sky-50 p-2 w-24">Freon</th>
+                            <th class="border border-gray-300 bg-sky-50 p-2 w-24">Air</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($results as $index => $result)
                             <tr class="bg-white">
-                                <td class="border border-gray-300 p-2 text-center">{{ $index + 1 }}</td>
-                                <td class="border border-gray-300 p-2 text-center">
+                                <td class="border border-gray-300 text-center p-2">{{ $index + 1 }}</td>
+                                <td class="border border-gray-300 text-center p-2">
                                     <input type="text" name="no_mesin[{{ $result->id }}]" 
-                                        class="w-full p-1 border border-gray-300 rounded bg-gray-200 text-center" 
+                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center" 
                                         value="{{ $result->no_mesin }}" readonly>
                                 </td>
-                                <td class="border border-gray-300 p-2 text-center">
+                                <td class="border border-gray-300 p-2">
                                     <input type="text" name="temperatur_1[{{ $result->id }}]" 
-                                        class="w-full p-1 border border-gray-300 rounded text-center" 
-                                        value="{{ $result->Temperatur_Compressor }}" required>
+                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                        placeholder="30°C - 60°C" value="{{ $result->Temperatur_Compressor }}" required>
                                 </td>
-                                <td class="border border-gray-300 p-2 text-center">
+                                <td class="border border-gray-300 p-2">
                                     <input type="text" name="temperatur_2[{{ $result->id }}]" 
-                                        class="w-full p-1 border border-gray-300 rounded text-center" 
-                                        value="{{ $result->Temperatur_Kabel }}" required>
+                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                        placeholder="30°C - 60°C" value="{{ $result->Temperatur_Kabel }}" required>
                                 </td>
-                                <td class="border border-gray-300 p-2 text-center">
+                                <td class="border border-gray-300 p-2">
                                     <input type="text" name="temperatur_3[{{ $result->id }}]" 
-                                        class="w-full p-1 border border-gray-300 rounded text-center" 
-                                        value="{{ $result->Temperatur_Mcb }}" required>
+                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                        placeholder="30°C - 60°C" value="{{ $result->Temperatur_Mcb }}" required>
                                 </td>
-                                <td class="border border-gray-300 p-2 text-center">
+                                <td class="border border-gray-300 p-2">
                                     <input type="text" name="temperatur_4[{{ $result->id }}]" 
-                                        class="w-full p-1 border border-gray-300 rounded text-center" 
-                                        value="{{ $result->Temperatur_Air }}" required>
+                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                        placeholder="30°C - 60°C" value="{{ $result->Temperatur_Air }}" required>
                                 </td>
-                                <td class="border border-gray-300 p-2 text-center">
+                                <td class="border border-gray-300 p-2">
                                     <input type="text" name="temperatur_5[{{ $result->id }}]" 
-                                        class="w-full p-1 border border-gray-300 rounded text-center" 
-                                        value="{{ $result->Temperatur_Pompa }}" required>
+                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                        placeholder="30°C - 60°C" value="{{ $result->Temperatur_Pompa }}" required>
                                 </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <select name="evaporator[{{ $result->id }}]" class="w-full p-1 border border-gray-300 rounded text-center">
+                                <td class="border border-gray-300 p-2">
+                                    <select name="evaporator[{{ $result->id }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
                                         <option value="Bersih" {{ $result->Evaporator == 'Bersih' ? 'selected' : '' }}>Bersih</option>
                                         <option value="Kotor" {{ $result->Evaporator == 'Kotor' ? 'selected' : '' }}>Kotor</option>
                                         <option value="OFF" {{ $result->Evaporator == 'OFF' ? 'selected' : '' }}>OFF</option>
                                     </select>
                                 </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <select name="fan_evaporator[{{ $result->id }}]" class="w-full p-1 border border-gray-300 rounded text-center">
+                                <td class="border border-gray-300 p-2">
+                                    <select name="fan_evaporator[{{ $result->id }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
                                         <option value="Suara Halus" {{ $result->Fan_Evaporator == 'Suara Halus' ? 'selected' : '' }}>Suara Halus</option>
                                         <option value="Suara Keras" {{ $result->Fan_Evaporator == 'Suara Keras' ? 'selected' : '' }}>Suara Keras</option>
                                         <option value="OFF" {{ $result->Fan_Evaporator == 'OFF' ? 'selected' : '' }}>OFF</option>
                                     </select>
                                 </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <select name="freon[{{ $result->id }}]" class="w-full p-1 border border-gray-300 rounded text-center">
+                                <td class="border border-gray-300 p-2">
+                                    <select name="freon[{{ $result->id }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
                                         <option value="Cukup" {{ $result->Freon == 'Cukup' ? 'selected' : '' }}>Cukup</option>
                                         <option value="Tidak Cukup" {{ $result->Freon == 'Tidak Cukup' ? 'selected' : '' }}>Tidak Cukup</option>
                                         <option value="OFF" {{ $result->Freon == 'OFF' ? 'selected' : '' }}>OFF</option>
                                     </select>
                                 </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <select name="air[{{ $result->id }}]" class="w-full p-1 border border-gray-300 rounded text-center">
+                                <td class="border border-gray-300 p-2">
+                                    <select name="air[{{ $result->id }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
                                         <option value="Cukup" {{ $result->Air == 'Cukup' ? 'selected' : '' }}>Cukup</option>
                                         <option value="Tidak Cukup" {{ $result->Air == 'Tidak Cukup' ? 'selected' : '' }}>Tidak Cukup</option>
                                         <option value="OFF" {{ $result->Air == 'OFF' ? 'selected' : '' }}>OFF</option>

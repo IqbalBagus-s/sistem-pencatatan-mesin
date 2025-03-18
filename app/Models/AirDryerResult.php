@@ -21,7 +21,6 @@ class AirDryerResult extends Model
         'evaporator',
         'fan_evaporator',
         'auto_drain',
-        'keterangan',
     ];
 
     // Relasi ke AirDryerCheck
