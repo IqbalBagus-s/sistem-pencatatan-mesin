@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pencatatan Mesin Water Chiller</title>
     
-    <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+    @vite('resources/css/app.css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
     
     <style>
         @font-face {
@@ -33,285 +34,90 @@
             font-weight: 700;
             font-style: normal;
         }
-        
-        html, body {
-            height: 100%;
-            margin: 0;
-            font-family: 'Poppins', sans-serif;
-        }
-        body {
-            background-color: #e6f2ff;
-            padding-top: 80px;
-            overflow-y: auto;
-            overscroll-behavior-y: none;
-        }
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #ffffff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            touch-action: pan-y;
-        }
-        .container {
-            padding-bottom: 50px;
-        }
-        .card {
-            border: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            background-color: #ffffff;
-        }
-        .page-title {
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: #1a1a1a;
-        }
-        .btn-add {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            font-weight: 500;
-            height: 38px;
-        }
-        .btn-add:hover {
-            background-color: #218838;
-            color: white;
-        }
-        .btn-view {
-            background-color: #1565c0;
-            color: white;
-            border: none;
-        }
-        .btn-view:hover {
-            background-color: #0d47a1;
-            color: white;
-        }
-        .eye-icon {
-            transition: opacity 0.2s ease;
-        }
-        .eye-icon:hover {
-            opacity: 0.7;
-        }
-        .edit-icon {
-            color: #ffc107;
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-        .edit-icon:hover {
-            color: #e0a800;
-        }
-        .edit-icon-disabled {
-            color: #ffc10780;
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .btn-back {
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-        }
-        .btn-back:hover {
-            background-color: #5a6268;
-            color: white;
-        }
-        .btn-search {
-            background-color: #1565c0;
-            color: white;
-            border: none;
-            height: 38px;
-        }
-        .btn-search:hover {
-            background-color: #0d47a1;
-            color: white;
-        }
-        .table-container {
-            background-color: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .table-header {
-            background-color: #f8f9fa;
-            font-weight: 600;
-        }
-        .status-approved {
+        /* Menambahkan custom colors untuk status dan pagination */
+        .bg-approved {
             background-color: #d4edda;
+        }
+        .text-approvedText {
             color: #155724;
-            border-radius: 20px;
-            padding: 5px 15px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            display: inline-block;
         }
-        .status-pending {
+        .bg-pending {
             background-color: #f8d7da;
+        }
+        .text-pendingText {
             color: #721c24;
-            border-radius: 20px;
-            padding: 5px 15px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            display: inline-block;
         }
-        .filter-label {
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: #333;
-        }
-        .form-control:focus {
-            border-color: #1565c0;
-            box-shadow: 0 0 0 0.2rem rgba(21, 101, 192, 0.25);
-        }
-        .search-container {
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .table {
-            width: 100%;
-            margin-bottom: 1rem;
-            color: #212529;
-            border-collapse: collapse;
-        }
-        .table th,
-        .table td {
-            padding: 0.75rem;
-            vertical-align: middle;
-            border-top: 1px solid #dee2e6;
-        }
-        .table thead th {
-            vertical-align: bottom;
-            border-bottom: 2px solid #dee2e6;
-        }
-        .table tbody + tbody {
-            border-top: 2px solid #dee2e6;
-        }
-        .table-bordered {
-            border: 1px solid #dee2e6;
-        }
-        .table-bordered th,
-        .table-bordered td {
-            border: 1px solid #dee2e6;
-        }
-        .table-hover tbody tr:hover {
-            color: #212529;
-            background-color: rgba(0, 0, 0, 0.075);
-        }
-        .text-center {
-            text-align: center !important;
-        }
-        .pagination {
-            display: flex;
-            justify-content: center;
-            list-style: none;
-            padding: 0;
-        }
-        .pagination .page-item {
-            margin: 0 3px;
-        }
-        .pagination .page-link {
-            color: #1565c0;
-            background-color: #fff;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            padding: 0.5rem 0.75rem;
-            text-decoration: none;
-        }
-        .pagination .page-item.active .page-link {
+        .bg-primary {
             background-color: #1565c0;
-            color: white;
+        }
+        .bg-primaryDark {
+            background-color: #0d47a1;
+        }
+        .text-primary {
+            color: #1565c0;
+        }
+        .border-primary {
             border-color: #1565c0;
         }
-        .pagination .page-link:hover {
-            background-color: #e9ecef;
+        .bg-success {
+            background-color: #28a745;
         }
-        .search-and-add {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
+        .bg-successDark {
+            background-color: #218838;
         }
-        .action-buttons {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .bg-secondary {
+            background-color: #6c757d;
         }
-        @media (min-width: 768px) {
-            .col-md-2 {
-                flex: 0 0 16.666667%;
-                max-width: 16.666667%;
-            }
-            .col-md-4 {
-                flex: 0 0 33.333333%;
-                max-width: 33.333333%;
-            }
+        .search-button {
+            width: 120px; /* Or any width you prefer */
         }
-        @media (max-width: 768px) {
-            body {
-                padding-top: 60px;
-            }
-            .header {
-                padding: 10px !important;
-            }
-            .search-container {
-                padding: 15px;
-            }
-            .search-and-add {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .action-buttons {
-                margin-top: 15px;
-                width: 100%;
-            }
-            .btn-add, .btn-search {
-                width: 100%;
-            }
+        .focus\:ring-primary:focus {
+            --tw-ring-color: #1565c0;
+        }
+        .focus\:border-primary:focus {
+            border-color: #1565c0;
+        }
+        .hover\:bg-primaryDark:hover {
+            background-color: #0d47a1;
+        }
+        .hover\:bg-successDark:hover {
+            background-color: #218838;
+        }
+        .hover\:bg-gray-600:hover {
+            background-color: #4b5563;
         }
     </style>
 </head>
-<body>
-    <!-- Header -->
-    <header class="header d-flex justify-content-between align-items-center p-3">
-        <img src="{{ asset('images/logo.png') }}" alt="ASPRA Logo" height="40">
-        <form id="logout-form" action="{{ route('logout') }}" method="POST">
-            @csrf
-            <button type="submit" class="btn btn-outline-danger">Logout</button>
-        </form>
-    </header>
+<body class="bg-blue-50 pt-5 font-poppins min-h-screen flex flex-col overscroll-none">
 
-    <div class="container">
-        <h2 class="page-title">Pencatatan Mesin Water Chiller</h2>
+    <div class="container mx-auto px-4 pb-12">
+        <h2 class="text-2xl font-bold mb-6 text-gray-900">Pencatatan Mesin Water Chiller</h2>
 
         <!-- Form Pencarian dan Tombol Tambah -->
-        <div class="card search-container">
+        <div class="bg-white rounded-lg shadow-md p-4 md:p-5 mb-5">
             <form method="GET" action="{{ route('water-chiller.index') }}">
-                <div class="search-and-add">
-                    <div class="row g-3 align-items-end flex-grow-1">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-end">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end flex-grow">
                         @if(auth()->user() instanceof \App\Models\Approver)
-                        <div class="col-md-4">
-                            <label for="search" class="filter-label">Cari berdasarkan nama Checker:</label>
+                        <div>
+                            <label for="search" class="block font-medium text-gray-700 mb-2">Cari berdasarkan nama Checker:</label>
                             <input type="text" name="search" id="search" placeholder="Masukkan nama checker..." 
-                                value="{{ request('search') }}" class="form-control">
+                                value="{{ request('search') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
                         </div>
                         @endif
-                        <div class="col-md-4">
-                            <label for="filter_bulan" class="filter-label">Filter berdasarkan Bulan:</label>
-                            <input type="month" name="bulan" id="filter_bulan" value="{{ request('bulan') }}" class="form-control">
+                        <div>
+                            <label for="filter_bulan" class="block font-medium text-gray-700 mb-2">Filter berdasarkan Bulan:</label>
+                            <input type="month" name="bulan" id="filter_bulan" value="{{ request('bulan') }}" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
                         </div>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-search w-100">Cari</button>
+                        <div>
+                            <button type="submit" class="bg-primary hover:bg-primaryDark text-white py-2 px-4 rounded-md transition duration-200 search-button">Cari</button>
                         </div>
                     </div>
                     
                     @if(auth()->user() instanceof \App\Models\Checker)
-                        <div class="action-buttons">
-                            <a href="{{ route('water-chiller.create') }}" class="btn btn-add">
+                        <div class="mt-4 md:mt-0 flex">
+                            <a href="{{ route('water-chiller.create') }}" class="bg-success hover:bg-successDark text-white py-2 px-4 rounded-md font-medium transition duration-200">
                                 Tambah Pencatatan
                             </a>
                         </div>
@@ -321,15 +127,15 @@
         </div>
         
         <!-- Tabel Data -->
-        <div class="table-container">
-            <table class="table table-hover table-bordered mb-0">
-                <thead class="table-header">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-gray-100">
                     <tr class="text-center">
-                        <th class="py-3">Tanggal</th>
-                        <th class="py-3">Hari</th>
-                        <th class="py-3">Checker</th>
-                        <th class="py-3">Status</th>
-                        <th class="py-3">Aksi</th>
+                        <th class="py-3 px-4 border-b border-gray-200 font-semibold">Tanggal</th>
+                        <th class="py-3 px-4 border-b border-gray-200 font-semibold">Hari</th>
+                        <th class="py-3 px-4 border-b border-gray-200 font-semibold">Checker</th>
+                        <th class="py-3 px-4 border-b border-gray-200 font-semibold">Status</th>
+                        <th class="py-3 px-4 border-b border-gray-200 font-semibold">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -339,39 +145,35 @@
                         </tr>
                     @else
                         @foreach($checks as $check)
-                            <tr class="text-center align-middle">
-                                <td class="py-3">{{ $check->tanggal }}</td>
-                                <td class="py-3">{{ $check->hari }}</td>
-                                <td class="py-3">{{ $check->checked_by }}</td>
-                                <td class="py-3">
+                            <tr class="text-center hover:bg-gray-50">
+                                <td class="py-3 px-4 border-b border-gray-200">{{ $check->tanggal }}</td>
+                                <td class="py-3 px-4 border-b border-gray-200">{{ $check->hari }}</td>
+                                <td class="py-3 px-4 border-b border-gray-200">{{ $check->checked_by }}</td>
+                                <td class="py-3 px-4 border-b border-gray-200">
                                     @if($check->approved_by)
-                                        <span class="status-approved">
+                                        <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                             Disetujui
                                         </span>
                                     @else
-                                        <span class="status-pending">
+                                        <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                             Belum Disetujui
                                         </span>
                                     @endif
                                 </td>
-                                <td class="py-3">
+                                <td class="py-3 px-4 border-b border-gray-200">
                                     {{-- Menu lihat --}}
                                     @if(auth()->user() instanceof \App\Models\Approver)
                                         <a href="{{ route('water-chiller.show', $check->id) }}" title="Lihat Detail">
-                                            @if($check->approved_by)
-                                                <i class="fas fa-eye" style="color: #1565c0; opacity: 0.7;" title="Sudah disetujui"></i>
-                                            @else
-                                                <i class="fas fa-eye" style="color: #1565c0;" title="Lihat Detail"></i>
-                                            @endif
+                                            <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                         </a>
                                     {{-- Menu edit --}}
                                     @elseif(auth()->user() instanceof \App\Models\Checker)
                                         @if(!$check->approved_by)
                                             <a href="{{ route('water-chiller.edit', $check->id) }}" title="Edit">
-                                                <i class="fas fa-pen edit-icon"></i>
+                                                <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                             </a>
                                         @else
-                                            <i class="fas fa-pen edit-icon-disabled" title="Tidak dapat diedit karena sudah disetujui"></i>
+                                            <i class="fas fa-pen text-amber-300 opacity-50 text-lg cursor-not-allowed" title="Tidak dapat diedit karena sudah disetujui"></i>
                                         @endif
                                     @endif
                                 </td>
@@ -383,32 +185,40 @@
         </div>
         
         <!-- Pagination -->
-        <div class="mt-4 d-flex justify-content-center">
-            <div class="pagination">
+        <div class="flex justify-center mt-4">
+            <div class="flex flex-wrap gap-1 justify-center">
+                <!-- Previous button -->
                 @if (!$checks->onFirstPage())
-                    <a href="{{ $checks->previousPageUrl() }}" class="page-link" rel="prev">&laquo; Previous</a>
+                    <a href="{{ $checks->previousPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">&laquo; Previous</a>
                 @endif
                 
+                <!-- Page numbers -->
                 @foreach ($checks->getUrlRange(1, $checks->lastPage()) as $page => $url)
-                    <a href="{{ $url }}" class="page-link {{ $page == $checks->currentPage() ? 'active' : '' }}">
+                    <a href="{{ $url }}" class="px-3 py-2 border {{ $page == $checks->currentPage() ? 'bg-primary text-white border-primary font-bold' : 'bg-white text-primary border-gray-300 hover:bg-gray-100' }} rounded-md transition duration-200">
                         {{ $page }}
                     </a>
                 @endforeach
                 
+                <!-- Next button -->
                 @if ($checks->hasMorePages())
-                    <a href="{{ $checks->nextPageUrl() }}" class="page-link" rel="next">Next &raquo;</a>
+                    <a href="{{ $checks->nextPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">Next &raquo;</a>
                 @endif
             </div>
         </div>
 
         <!-- Tombol Kembali ke Dashboard -->
         <div class="mt-4">
-            <a href="{{ route('dashboard') }}" class="btn btn-back">
+            <a href="{{ route('dashboard') }}" class="px-4 py-2 bg-secondary hover:bg-gray-600 text-white rounded-md transition duration-200">
                 Kembali
             </a>
         </div>
     </div>
 
-    <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+    <!-- Footer -->
+    <footer class="bg-white py-4 text-center shadow-md mt-auto">
+        <p class="font-bold">2025 © PT Asia Pramulia</p>
+    </footer>
+
+    @vite('resources/js/app.js')
 </body>
 </html>

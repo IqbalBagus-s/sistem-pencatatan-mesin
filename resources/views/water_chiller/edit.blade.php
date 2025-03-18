@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Pencatatan Mesin Water Chiller</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite('resources/css/app.css')
     <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
 </head>
 <body class="bg-gray-100 p-6">
@@ -22,7 +22,7 @@
             @csrf
             @method('PUT')
 
-            <div class="mb-4 grid grid-cols-2 gap-4">
+            <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-gray-700">Hari:</label>
                     <input type="text" name="hari" value="{{ $check->hari }}" class="w-full p-2 border border-gray-300 rounded bg-gray-100" readonly>
@@ -127,8 +127,8 @@
                     placeholder="Tambahkan keterangan jika diperlukan...">{{ $check->keterangan }}</textarea>
             </div>
 
-            <div class="mt-4 flex justify-between">
-                <a href="{{ route('water-chiller.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded">
+            <div class="mt-4 flex flex-col sm:flex-row justify-between gap-2">
+                <a href="{{ route('water-chiller.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded text-center">
                     Kembali
                 </a>
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
