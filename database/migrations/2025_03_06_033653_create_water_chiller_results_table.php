@@ -14,18 +14,19 @@ return new class extends Migration
         Schema::create('water_chiller_results', function (Blueprint $table) {
             $table->id(); // Kolom id (primary key)
             $table->unsignedBigInteger('check_id'); 
-            $table->string('no_mesin'); // Kolom no_mesin
-            $table->string('Temperatur_Compressor'); 
-            $table->string('Temperatur_Kabel'); 
-            $table->string('Temperatur_Mcb'); 
-            $table->string('Temperatur_Air'); 
-            $table->string('Temperatur_Pompa'); 
-            $table->string('Evaporator'); 
-            $table->string('Fan_Evaporator'); 
-            $table->string('Freon'); 
-            $table->string('Air'); 
+            $table->string('no_mesin')->nullable();
+            $table->string('Temperatur_Compressor')->nullable(); 
+            $table->string('Temperatur_Kabel')->nullable(); 
+            $table->string('Temperatur_Mcb')->nullable(); 
+            $table->string('Temperatur_Air')->nullable(); 
+            $table->string('Temperatur_Pompa')->nullable(); 
+            $table->string('Evaporator')->nullable(); 
+            $table->string('Fan_Evaporator')->nullable(); 
+            $table->string('Freon')->nullable(); 
+            $table->string('Air')->nullable(); 
 
             $table->timestamps(); // Kolom created_at dan updated_at
+            $table->softDeletes();
 
             // Foreign key ke water_chiller_checks
             $table->foreign('check_id')->references('id')->on('water_chiller_checks')->onDelete('cascade');

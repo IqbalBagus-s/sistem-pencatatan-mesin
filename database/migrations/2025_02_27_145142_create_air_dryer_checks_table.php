@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->string('approved_by')->nullable(); // Dibuat nullable
             $table->text('keterangan')->nullable();
             $table->timestamps();
-
+            $table->softDeletes();
         });
     }
 

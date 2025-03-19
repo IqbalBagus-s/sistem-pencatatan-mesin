@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up()
     {
-        Schema::create('air_dryer_result', function (Blueprint $table) {
+        Schema::create('air_dryer_results', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('check_id');
             $table->string('nomor_mesin')->nullable();
@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->string('fan_evaporator')->nullable();
             $table->string('auto_drain')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             // Foreign key
             $table->foreign('check_id')->references('id')->on('air_dryer_checks')->onDelete('cascade');

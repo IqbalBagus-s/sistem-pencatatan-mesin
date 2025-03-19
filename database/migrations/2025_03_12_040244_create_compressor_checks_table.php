@@ -31,6 +31,7 @@ return new class extends Migration
             $table->string('humidity_shift1')->nullable(); 
             $table->string('humidity_shift2')->nullable(); 
             $table->timestamps(); // Kolom created_at dan updated_at
+            $table->softDeletes();
         });
     }
 

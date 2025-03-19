@@ -43,6 +43,7 @@ return new class extends Migration
             $table->string('kh_11II')->nullable();
 
             $table->timestamps();
+            $table->softDeletes();
 
             // Foreign key
             $table->foreign('check_id')->references('id')->on('compressor_checks')->onDelete('cascade');

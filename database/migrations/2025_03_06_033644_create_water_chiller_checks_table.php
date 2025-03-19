@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('approved_by')->nullable(); // Kolom approved_by (nullable)
             $table->text('keterangan')->nullable(); // Kolom keterangan (text dan nullable)
             $table->timestamps(); // Kolom created_at dan updated_at
+            $table->softDeletes();
         });
     }
 
