@@ -64,27 +64,27 @@
                                         <td class="border border-gray-300 p-2">
                                             <input type="text" name="temperatur_1[{{ $i }}]" 
                                                 class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                                placeholder="30°C - 60°C" required>
+                                                placeholder="30°C - 60°C">
                                         </td>
                                         <td class="border border-gray-300 p-2">
                                             <input type="text" name="temperatur_2[{{ $i }}]" 
                                                 class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                                placeholder="30°C - 60°C" required>
+                                                placeholder="30°C - 60°C">
                                         </td>
                                         <td class="border border-gray-300 p-2">
                                             <input type="text" name="temperatur_3[{{ $i }}]" 
                                                 class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                                placeholder="30°C - 60°C" required>
+                                                placeholder="30°C - 60°C">
                                         </td>
                                         <td class="border border-gray-300 p-2">
                                             <input type="text" name="temperatur_4[{{ $i }}]" 
                                                 class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                                placeholder="30°C - 60°C" required>
+                                                placeholder="30°C - 60°C">
                                         </td>
                                         <td class="border border-gray-300 p-2">
                                             <input type="text" name="temperatur_5[{{ $i }}]" 
                                                 class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                                placeholder="30°C - 60°C" required>
+                                                placeholder="30°C - 60°C">
                                         </td>
                                         <td class="border border-gray-300 p-2">
                                             <select name="evaporator[{{ $i }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">

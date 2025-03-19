@@ -46,9 +46,17 @@ class AirDryerController extends Controller
 
     public function store(Request $request)
     {
+        // Cek apakah tanggal sudah ada di database
+        $existingDate = AirDryerCheck::where('tanggal', $request->tanggal)->exists();
+        
+        if ($existingDate) {
+            return back()->withErrors(['tanggal' => 'Tanggal ini sudah digunakan! Pilih tanggal lain.']);
+        }
+
         $request->validate([
             'tanggal' => 'required|date',
             'hari' => 'required|string|max:20',
+            'keterangan' => 'nullable|string',
         ]);
     
         $check = AirDryerCheck::create([
@@ -56,6 +64,7 @@ class AirDryerController extends Controller
             'hari' => $request->hari,
             'checked_by' => Auth::user()->username,
             'approved_by' => null,
+            'keterangan' => $request->keterangan,
         ]);
 
         // Simpan data per mesin
@@ -71,7 +80,6 @@ class AirDryerController extends Controller
                 'evaporator' => $request->evaporator[$index] ?? null,
                 'fan_evaporator' => $request->fan_evaporator[$index] ?? null,
                 'auto_drain' => $request->auto_drain[$index] ?? null,
-                'keterangan' => $request->keterangan[$index] ?? null,
             ]);
         }
 
@@ -90,6 +98,7 @@ class AirDryerController extends Controller
         $request->validate([
             'tanggal' => 'required|date',
             'hari' => 'required|string|max:20',
+            'keterangan' => 'nullable|string',
         ]);
 
         // Update AirDryerCheck
@@ -97,6 +106,7 @@ class AirDryerController extends Controller
         $check->update([
             'tanggal' => $request->tanggal,
             'hari' => $request->hari,
+            'keterangan' => $request->keterangan,
         ]);
 
         // Update AirDryerResult
@@ -115,7 +125,6 @@ class AirDryerController extends Controller
                     'evaporator' => $request->evaporator[$index] ?? null,
                     'fan_evaporator' => $request->fan_evaporator[$index] ?? null,
                     'auto_drain' => $request->auto_drain[$index] ?? null,
-                    'keterangan' => $request->keterangan[$index] ?? null,
                 ]);
             }
         }
@@ -157,10 +166,6 @@ class AirDryerController extends Controller
         // Format tanggal untuk nama file
         $formattedDate = date('d-m-Y', strtotime($check->tanggal));
 
-        // Aktifkan opsi untuk gambar
-        $pdf->getDomPDF()->set_option('isRemoteEnabled', true);
-        $pdf->getDomPDF()->set_option('isHtml5ParserEnabled', true);
-        
         // Mengembalikan file PDF untuk di-download dengan format nama yang baru
         return $pdf->download('Air Dryer Form_' . $formattedDate . '.pdf');
     }

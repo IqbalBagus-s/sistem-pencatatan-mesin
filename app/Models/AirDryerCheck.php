@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AirDryerCheck extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'air_dryer_checks';
 
@@ -16,6 +17,7 @@ class AirDryerCheck extends Model
         'hari',
         'checked_by',  // Sekarang menyimpan nama checker
         'approved_by', // Bisa kosong (nullable)
+        'keterangan',
     ];
 
     // Relasi ke AirDryerResult (tetap)

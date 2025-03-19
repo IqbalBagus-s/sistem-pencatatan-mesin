@@ -45,6 +45,13 @@ class WaterChillerController extends Controller
 
     public function store(Request $request)
     {
+        // Cek apakah tanggal sudah ada di database
+        $existingDate = WaterChillerCheck::where('tanggal', $request->tanggal)->exists();
+        
+        if ($existingDate) {
+            return back()->withErrors(['tanggal' => 'Tanggal ini sudah digunakan! Pilih tanggal lain.']);
+        }
+
         $request->validate([
             'tanggal' => 'required|date',
             'hari' => 'required|string|max:20',
@@ -63,21 +70,20 @@ class WaterChillerController extends Controller
             WaterChillerResult::create([
                 'check_id' => $check->id,
                 'no_mesin' => "CH{$i}",
-                'Temperatur_Compressor' => $request->input("temperatur_1.{$i}"),
-                'Temperatur_Kabel' => $request->input("temperatur_2.{$i}"),
-                'Temperatur_Mcb' => $request->input("temperatur_3.{$i}"),
-                'Temperatur_Air' => $request->input("temperatur_4.{$i}"),
-                'Temperatur_Pompa' => $request->input("temperatur_5.{$i}"),
-                'Evaporator' => $request->input("evaporator.{$i}"),
-                'Fan_Evaporator' => $request->input("fan_evaporator.{$i}"),
-                'Freon' => $request->input("freon.{$i}"),
-                'Air' => $request->input("air.{$i}"),
+                'Temperatur_Compressor' => $request->input("temperatur_1.{$i}") ?: null,
+                'Temperatur_Kabel' => $request->input("temperatur_2.{$i}") ?: null,
+                'Temperatur_Mcb' => $request->input("temperatur_3.{$i}") ?: null,
+                'Temperatur_Air' => $request->input("temperatur_4.{$i}") ?: null,
+                'Temperatur_Pompa' => $request->input("temperatur_5.{$i}") ?: null,
+                'Evaporator' => $request->input("evaporator.{$i}") ?: null,
+                'Fan_Evaporator' => $request->input("fan_evaporator.{$i}") ?: null,
+                'Freon' => $request->input("freon.{$i}") ?: null,
+                'Air' => $request->input("air.{$i}") ?: null,
             ]);
         }
 
         return redirect()->route('water-chiller.index')->with('success', 'Data berhasil disimpan');
     }
-
 
     public function edit($check_id)
     {
@@ -110,15 +116,15 @@ class WaterChillerController extends Controller
 
             if ($result) {
                 $result->update([
-                    'Temperatur_Compressor' => $request->input("temperatur_1.{$i}"),
-                    'Temperatur_Kabel' => $request->input("temperatur_2.{$i}"),
-                    'Temperatur_Mcb' => $request->input("temperatur_3.{$i}"),
-                    'Temperatur_Air' => $request->input("temperatur_4.{$i}"),
-                    'Temperatur_Pompa' => $request->input("temperatur_5.{$i}"),
-                    'Evaporator' => $request->input("evaporator.{$i}"),
-                    'Fan_Evaporator' => $request->input("fan_evaporator.{$i}"),
-                    'Freon' => $request->input("freon.{$i}"),
-                    'Air' => $request->input("air.{$i}"),
+                    'Temperatur_Compressor' => $request->input("temperatur_1.{$i}") ?: null,
+                    'Temperatur_Kabel' => $request->input("temperatur_2.{$i}") ?: null,
+                    'Temperatur_Mcb' => $request->input("temperatur_3.{$i}") ?: null,
+                    'Temperatur_Air' => $request->input("temperatur_4.{$i}") ?: null,
+                    'Temperatur_Pompa' => $request->input("temperatur_5.{$i}") ?: null,
+                    'Evaporator' => $request->input("evaporator.{$i}") ?: null,
+                    'Fan_Evaporator' => $request->input("fan_evaporator.{$i}") ?: null,
+                    'Freon' => $request->input("freon.{$i}") ?: null,
+                    'Air' => $request->input("air.{$i}") ?: null,
                 ]);
             }
         }
@@ -152,19 +158,12 @@ class WaterChillerController extends Controller
         // Ambil data dari database berdasarkan ID
         $check = WaterChillerCheck::findOrFail($id);
         $results = WaterChillerResult::where('check_id', $id)->get();
-        
+
         // Load view untuk PDF dengan ukuran halaman yang sesuai
         $pdf = Pdf::loadView('water_chiller.pdf', compact('check', 'results'))
             ->setPaper('a4', 'landscape'); // Set ukuran kertas A4 landscape
 
-        // Format tanggal untuk nama file
-        $formattedDate = date('d-m-Y', strtotime($check->tanggal));
-
-        // Aktifkan opsi untuk gambar
-        $pdf->getDomPDF()->set_option('isRemoteEnabled', true);
-        $pdf->getDomPDF()->set_option('isHtml5ParserEnabled', true);
-        
-        // Mengembalikan file PDF untuk di-download dengan format nama yang baru
-        return $pdf->download('Water Chiller Form_' . $formattedDate . '.pdf');
+        // Mengembalikan file PDF untuk di-download
+        return $pdf->download('water_chiller_' . $id . '.pdf');
     }
 }

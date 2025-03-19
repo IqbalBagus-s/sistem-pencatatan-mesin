@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AirDryerResult extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
-    protected $table = 'air_dryer_result';
+    protected $table = 'air_dryer_results';
     protected $fillable = [
         'check_id',
         'nomor_mesin',
@@ -21,7 +22,6 @@ class AirDryerResult extends Model
         'evaporator',
         'fan_evaporator',
         'auto_drain',
-        'keterangan',
     ];
 
     // Relasi ke AirDryerCheck

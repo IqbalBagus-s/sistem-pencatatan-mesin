@@ -58,7 +58,6 @@
                             <th class="border border-gray-300 p-2">Evaporator</th>
                             <th class="border border-gray-300 p-2">Fan Evaporator</th>
                             <th class="border border-gray-300 p-2">Auto Drain</th>
-                            <th class="border border-gray-300 p-2">Keterangan</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -74,19 +73,29 @@
                             <td class="text-center border border-gray-300 p-2">{{ $result->evaporator }}</td>
                             <td class="text-center border border-gray-300 p-2">{{ $result->fan_evaporator }}</td>
                             <td class="text-center border border-gray-300 p-2">{{ $result->auto_drain }}</td>
-                            <td class="text-center border border-gray-300 p-2">{{ $result->keterangan }}</td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
 
-            <div class="mt-4 p-3 bg-gray-100 rounded-lg md:w-1/2">
-                <h3 class="text-lg font-semibold mb-2">Detail Mesin:</h3>
-                <p>AD 1 : HIGH PRESS 1 &nbsp;&nbsp;&nbsp; AD 5 : SUPPLY INJECT</p>
-                <p>AD 2 : HIGH PRESS 2 &nbsp;&nbsp;&nbsp; AD 6 : LOW PRESS 3</p>
-                <p>AD 3 : LOW PRESS 1 &nbsp;&nbsp;&nbsp;&nbsp; AD 7 : LOW PRESS 4</p>
-                <p>AD 4 : LOW PRESS 2 &nbsp;&nbsp;&nbsp;&nbsp; AD 8 : LOW PRESS 5</p>
+            <div class="flex flex-col md:flex-row gap-4 mt-5">
+                <!-- Detail Mesin -->
+                <div class="bg-gray-100 p-4 rounded-md md:w-auto">
+                    <h5 class="mb-3 font-medium">Detail Mesin:</h5>
+                    <p class="mb-1">AD 1 : HIGH PRESS 1 &nbsp;&nbsp;&nbsp; AD 5 : SUPPLY INJECT</p>
+                    <p class="mb-1">AD 2 : HIGH PRESS 2 &nbsp;&nbsp;&nbsp; AD 6 : LOW PRESS 3</p>
+                    <p class="mb-1">AD 3 : LOW PRESS 1 &nbsp;&nbsp;&nbsp;&nbsp; AD 7 : LOW PRESS 4</p>
+                    <p class="mb-1">AD 4 : LOW PRESS 2 &nbsp;&nbsp;&nbsp;&nbsp; AD 8 : LOW PRESS 5</p>
+                </div>
+
+                <!-- Form Input Keterangan -->
+                <div class="flex-1">
+                    <label for="keterangan" class="block mb-2 font-medium">Keterangan:</label>
+                    <textarea id="keterangan" name="keterangan" rows="5"
+                        class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" 
+                        placeholder="Tambahkan keterangan jika diperlukan..." readonly>{{ $check->keterangan }}</textarea>
+                </div>
             </div>
 
             <div class="mt-4 flex justify-between">
