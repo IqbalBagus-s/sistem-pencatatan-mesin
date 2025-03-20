@@ -7,12 +7,12 @@
     <style>
         @page { 
             size: A4 landscape; /* Ukuran A4 Landscape */
-            margin: 10px; /* Margin kecil agar lebih banyak konten yang muat */
+            margin: 8px; /* Margin kecil agar lebih banyak konten yang muat */
         }
 
         body {
             font-family: Arial, sans-serif;
-            font-size: 10px; /* Ukuran font kecil agar muat di halaman */
+            font-size: 11px; /* Ukuran font kecil agar muat di halaman */
         }
 
         table {
@@ -24,7 +24,7 @@
             border: 1px solid black;
             padding: 5px;
             text-align: center;
-            font-size: 9px; /* Perkecil teks dalam tabel */
+            font-size: 10px; /* Perkecil teks dalam tabel */
         }
 
         th {
@@ -42,7 +42,7 @@
 
         .title {
             text-align: center;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             margin-bottom: 10px;
         }
@@ -53,7 +53,7 @@
         }
         
         .logo {
-            height: 60px; /* Sesuaikan ukuran logo sesuai kebutuhan */
+            height: 70px; /* Sesuaikan ukuran logo sesuai kebutuhan */
             max-width: 200px;
         }
         
