@@ -7,6 +7,10 @@
     
     @vite('resources/css/app.css')
     <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
+    <!-- Tambahkan di <head> -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
     
     <style>
         @font-face {
@@ -86,7 +90,7 @@
             background-color: #4b5563;
         }
         
-        @yield('additional-styles')
+        @yield('additional-styles'){}
     </style>
 </head>
 <body class="bg-blue-50 pt-5 font-poppins min-h-screen flex flex-col overscroll-none">
@@ -106,6 +110,11 @@
                                 value="{{ request('search') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
                         </div>
                         @endif
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end flex-grow">
+                            @yield('custom-filters') {{-- Tambahkan ini agar filter tambahan muncul --}}
+                        </div>
+                        
                         <div>
                             <label for="filter_bulan" class="block font-medium text-gray-700 mb-2">Filter berdasarkan Bulan:</label>
                             <input type="month" name="bulan" id="filter_bulan" value="{{ request('bulan') }}" 
@@ -170,5 +179,6 @@
     </footer>
 
     @vite('resources/js/app.js')
+    @yield('scripts')
 </body>
 </html>
