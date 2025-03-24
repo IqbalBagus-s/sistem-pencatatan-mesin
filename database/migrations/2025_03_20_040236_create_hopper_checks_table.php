@@ -15,9 +15,21 @@ return new class extends Migration
             $table->id();
             $table->string('nomer_hopper'); // Menyimpan nomor hopper
             $table->string('bulan'); // Menyimpan bulan
-            $table->date('tanggal')->nullable(); // Bisa bernilai null
-            $table->string('checked_by')->nullable(); // Bisa bernilai null
-            $table->string('approved_by')->nullable(); // Bisa bernilai null
+            // data tanggal tiap minggu
+            $table->date('tanggal_minggu1')->nullable(); // Bisa bernilai null
+            $table->date('tanggal_minggu2')->nullable(); // Bisa bernilai null
+            $table->date('tanggal_minggu3')->nullable(); // Bisa bernilai null
+            $table->date('tanggal_minggu4')->nullable(); // Bisa bernilai null
+            // data checker tiap minggu
+            $table->string('checked_by_minggu1')->nullable(); // Bisa bernilai null
+            $table->string('checked_by_minggu2')->nullable(); // Bisa bernilai null
+            $table->string('checked_by_minggu3')->nullable(); // Bisa bernilai null
+            $table->string('checked_by_minggu4')->nullable(); // Bisa bernilai null
+            // data approver tiap minggu
+            $table->string('approved_by_minggu1')->nullable(); // Bisa bernilai null
+            $table->string('approved_by_minggu2')->nullable(); // Bisa bernilai null
+            $table->string('approved_by_minggu3')->nullable(); // Bisa bernilai null
+            $table->string('approved_by_minggu4')->nullable(); // Bisa bernilai null
             $table->softDeletes(); // Soft delete untuk menyimpan data yang dihapus
             $table->timestamps();
         });

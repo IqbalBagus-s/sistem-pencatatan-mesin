@@ -44,10 +44,10 @@
 @endsection
 
 @section('table-content')
-    <table class="w-full">
+    <table class="table-auto w-full">
         <thead class="bg-gray-100">
             <tr class="text-center">
-                <th class="py-3 px-4 border-b border-gray-200 font-semibold">No Hopper</th>
+                <th class="py-3 px-4 border-b border-gray-200 font-semibold w-1/6">No Hopper</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Bulan</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Checker</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Status</th>
@@ -62,7 +62,7 @@
             @else
                 @foreach($checks as $check)
                     <tr class="text-center hover:bg-gray-50">
-                        <td class="py-3 px-4 border-b border-gray-200">{{ $check->nomer_hopper }}</td>
+                        <td class="py-3 px-4 border-b border-gray-200 w-1/6">{{ $check->nomer_hopper }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->bulan }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->checked_by }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">
@@ -128,14 +128,14 @@
 @endsection
 
 @section('scripts')
-<script>
-    $(document).ready(function() {
-        $('#search_hopper').select2({
-            placeholder: "-- Pilih Nomor Hopper --",
-            allowClear: true,
-            width: '100%',
-            minimumResultsForSearch: -1 // Menghilangkan kolom pencarian
+    <script>
+        $(document).ready(function() {
+            $('#search_hopper').select2({
+                placeholder: "-- Pilih Nomor Hopper --",
+                allowClear: true,
+                width: '100%',
+                minimumResultsForSearch: -1 // Menghilangkan kolom pencarian
+            });
         });
-    });
-</script>
+    </script>
 @endsection

@@ -15,9 +15,21 @@ class HopperCheck extends Model
     protected $fillable = [
         'nomer_hopper',
         'bulan',
-        'tanggal',
-        'checked_by',
-        'approved_by',
+        // Data tanggal tiap minggu
+        'tanggal_minggu1',
+        'tanggal_minggu2',
+        'tanggal_minggu3',
+        'tanggal_minggu4',
+        // Data checker tiap minggu
+        'checked_by_minggu1',
+        'checked_by_minggu2',
+        'checked_by_minggu3',
+        'checked_by_minggu4',
+        // Data approver tiap minggu
+        'approved_by_minggu1',
+        'approved_by_minggu2',
+        'approved_by_minggu3',
+        'approved_by_minggu4',
     ];
 
     /**
