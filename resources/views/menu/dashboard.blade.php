@@ -89,7 +89,9 @@
                         ['name' => 'Air Dryer', 'route' => 'air-dryer.index'],
                         ['name' => 'Water Chiller', 'route' => 'water-chiller.index'],
                         ['name' => 'Compressor', 'route' => 'compressor.index'],
-                        'Cooling Tower', 'Mesin B', 'Mesin C', 'Mesin D',
+                        ['name' => 'Hopper', 'route' => 'hopper.index'],
+                        ['name' => 'Dehum Bahan', 'route' => 'compressor.index'],
+                        'Mesin C', 'Mesin D',
                         'Mesin E', 'Mesin F', 'Mesin G', 'Mesin H',
                         'Mesin I', 'Mesin J', 'Mesin K', 'Mesin L',
                         'Mesin M', 'Mesin N', 'Mesin O', 'Mesin P'

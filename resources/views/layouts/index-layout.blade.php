@@ -7,6 +7,10 @@
     
     @vite('resources/css/app.css')
     <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
+    <!-- Tambahkan di <head> -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
     
     <style>
         @font-face {
@@ -86,7 +90,7 @@
             background-color: #4b5563;
         }
         
-        @yield('additional-styles')
+        @yield('additional-styles'){}
     </style>
 </head>
 <body class="bg-blue-50 pt-5 font-poppins min-h-screen flex flex-col overscroll-none">
@@ -99,18 +103,8 @@
             <form method="GET" action="@yield('form-action')">
                 <div class="flex flex-col md:flex-row md:justify-between md:items-end">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end flex-grow">
-                        @if(auth()->user() instanceof \App\Models\Approver)
-                        <div>
-                            <label for="search" class="block font-medium text-gray-700 mb-2">Cari berdasarkan nama Checker:</label>
-                            <input type="text" name="search" id="search" placeholder="Masukkan nama checker..." 
-                                value="{{ request('search') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-                        </div>
-                        @endif
-                        <div>
-                            <label for="filter_bulan" class="block font-medium text-gray-700 mb-2">Filter berdasarkan Bulan:</label>
-                            <input type="month" name="bulan" id="filter_bulan" value="{{ request('bulan') }}" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-                        </div>
+                        @yield('custom-filters')
+                        
                         <div>
                             <button type="submit" class="bg-primary hover:bg-primaryDark text-white py-2 px-4 rounded-md transition duration-200 search-button">Cari</button>
                         </div>
@@ -119,7 +113,7 @@
                     @if(auth()->user() instanceof \App\Models\Checker)
                         <div class="mt-4 md:mt-0 flex">
                             <a href="@yield('create-route')" class="bg-success hover:bg-successDark text-white py-2 px-4 rounded-md font-medium transition duration-200">
-                                Tambah Pencatatan
+                                @yield('create-button-text', 'Tambah Pencatatan')
                             </a>
                         </div>
                     @endif
@@ -133,32 +127,11 @@
         </div>
         
         <!-- Pagination -->
-        <div class="flex justify-center mt-4">
-            <div class="flex flex-wrap gap-1 justify-center">
-                @if(isset($checks) && $checks->hasPages())
-                    <!-- Previous button -->
-                    @if (!$checks->onFirstPage())
-                        <a href="{{ $checks->previousPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">&laquo; Previous</a>
-                    @endif
-                    
-                    <!-- Page numbers -->
-                    @foreach ($checks->getUrlRange(1, $checks->lastPage()) as $page => $url)
-                        <a href="{{ $url }}" class="px-3 py-2 border {{ $page == $checks->currentPage() ? 'bg-primary text-white border-primary font-bold' : 'bg-white text-primary border-gray-300 hover:bg-gray-100' }} rounded-md transition duration-200">
-                            {{ $page }}
-                        </a>
-                    @endforeach
-                    
-                    <!-- Next button -->
-                    @if ($checks->hasMorePages())
-                        <a href="{{ $checks->nextPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">Next &raquo;</a>
-                    @endif
-                @endif
-            </div>
-        </div>
+        @yield('pagination')
 
         <!-- Tombol Kembali ke Dashboard -->
         <div class="mt-4">
-            <a href="{{ route('dashboard') }}" class="px-4 py-2 bg-secondary hover:bg-gray-600 text-white rounded-md transition duration-200">
+            <a href="@yield('back-route', route('dashboard'))" class="px-4 py-2 bg-secondary hover:bg-gray-600 text-white rounded-md transition duration-200">
                 Kembali
             </a>
         </div>
@@ -170,5 +143,6 @@
     </footer>
 
     @vite('resources/js/app.js')
+    @yield('scripts')
 </body>
 </html>

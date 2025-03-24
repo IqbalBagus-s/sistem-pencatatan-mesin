@@ -6,7 +6,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AirDryerController;
 use App\Http\Controllers\WaterChillerController;
 use App\Http\Controllers\CompressorController;
-use App\Http\Middleware\RoleMiddleware;
+use App\Http\Controllers\HopperController;
+
 
 Route::get('/', function () {
     return view('auth.login');
@@ -57,14 +58,14 @@ Route::middleware(['auth:approver,checker'])->group(function () {
     // Route download PDF
     Route::get('/compressor/{id}/download-pdf', [CompressorController::class, 'downloadPdf'])->name('compressor.downloadPdf');
 
-     // Route Mesin Compressor
-     Route::get('/compressor', [CompressorController::class, 'index'])->name('compressor.index');
-     Route::get('/compressor/create', [CompressorController::class, 'create'])->name('compressor.create');
-     Route::post('/compressor', [CompressorController::class, 'store'])->name('compressor.store');
-     Route::get('/compressor/{id}/edit', [CompressorController::class, 'edit'])->name('compressor.edit');
-     Route::put('/compressor/{id}', [CompressorController::class, 'update'])->name('compressor.update');
-     Route::get('/compressor/{id}', [CompressorController::class, 'show'])->name('compressor.show');
-     Route::post('/compressor/{id}/approve', [CompressorController::class, 'approve'])->name('compressor.approve');
-     // Route download PDF
-     Route::get('/compressor/{id}/download-pdf', [CompressorController::class, 'downloadPdf'])->name('compressor.downloadPdf');
+    // Route Mesin Hopper
+    Route::get('/hopper', [HopperController::class, 'index'])->name('hopper.index');
+    Route::get('/hopper/create', [HopperController::class, 'create'])->name('hopper.create');
+    Route::post('/hopper', [HopperController::class, 'store'])->name('hopper.store');
+    Route::get('/hopper/{id}/edit', [HopperController::class, 'edit'])->name('hopper.edit');
+    Route::put('/hopper/{id}', [HopperController::class, 'update'])->name('hopper.update');
+    Route::get('/hopper/{id}', [HopperController::class, 'show'])->name('hopper.show');
+    Route::post('/hopper/{id}/approve', [HopperController::class, 'approve'])->name('hopper.approve');
+    // Route download PDF
+    Route::get('/hopper/{id}/download-pdf', [HopperController::class, 'downloadPdf'])->name('hopper.downloadPdf');
 });
