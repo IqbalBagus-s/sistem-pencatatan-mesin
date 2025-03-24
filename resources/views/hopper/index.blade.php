@@ -8,29 +8,32 @@
     {{ route('hopper.index') }}
 @endsection
 
-
 @section('custom-filters')
     @if(auth()->user() instanceof \App\Models\Approver)
     <div>
-        <label for="search_checker" class="block font-medium text-gray-700 mb-2">Cari berdasarkan nama Checker:</label>
-        <input type="text" name="search_checker" id="search_checker" placeholder="Masukkan nama checker..." 
-            value="{{ request('search_checker') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+        <label for="search" class="block font-medium text-gray-700 mb-2">Cari berdasarkan nama Checker:</label>
+        <input type="text" name="search" id="search" placeholder="Masukkan nama checker..." 
+            value="{{ request('search') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
     </div>
     @endif
 
     <div>
         <label for="search_hopper" class="block font-medium text-gray-700 mb-2">Cari berdasarkan Nomor Hopper:</label>
-        <select name="search_hopper" id="search_hopper" class="w-full">
+        <select name="search_hopper" id="search_hopper" 
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
             <option value="">-- Pilih Nomor Hopper --</option>
             @for ($i = 1; $i <= 15; $i++)
-                <option value="{{ $i }}">Hopper {{ $i }}</option>
+                <option value="{{ $i }}" {{ request('search_hopper') == $i ? 'selected' : '' }}>Hopper {{ $i }}</option>
             @endfor
         </select>
     </div>
 
-
+    <div>
+        <label for="filter_bulan" class="block font-medium text-gray-700 mb-2">Filter berdasarkan Bulan:</label>
+        <input type="month" name="bulan" id="filter_bulan" value="{{ request('bulan') }}" 
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+    </div>
 @endsection
-
 
 @section('create-route')
     {{ route('hopper.create') }}
@@ -44,8 +47,8 @@
     <table class="w-full">
         <thead class="bg-gray-100">
             <tr class="text-center">
-                <th class="py-3 px-4 border-b border-gray-200 font-semibold">Tanggal</th>
-                <th class="py-3 px-4 border-b border-gray-200 font-semibold">Hari</th>
+                <th class="py-3 px-4 border-b border-gray-200 font-semibold">No Hopper</th>
+                <th class="py-3 px-4 border-b border-gray-200 font-semibold">Bulan</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Checker</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Status</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Aksi</th>
@@ -59,8 +62,8 @@
             @else
                 @foreach($checks as $check)
                     <tr class="text-center hover:bg-gray-50">
-                        <td class="py-3 px-4 border-b border-gray-200">{{ $check->tanggal }}</td>
-                        <td class="py-3 px-4 border-b border-gray-200">{{ $check->hari }}</td>
+                        <td class="py-3 px-4 border-b border-gray-200">{{ $check->nomer_hopper }}</td>
+                        <td class="py-3 px-4 border-b border-gray-200">{{ $check->bulan }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->checked_by }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             @if($check->approved_by)
@@ -125,8 +128,6 @@
 @endsection
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
         $('#search_hopper').select2({
@@ -138,5 +139,3 @@
     });
 </script>
 @endsection
-
-
