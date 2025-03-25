@@ -87,3 +87,16 @@
     <p class="mb-1">AD 4 : LOW PRESS 2 &nbsp;&nbsp;&nbsp;&nbsp; AD 8 : LOW PRESS 5</p>
 </div>
 @endsection
+
+@section('additional-scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const warningMessage = "{{ session('warning') }}";
+        
+        if (warningMessage) {
+            // Create a custom popup or use a library like SweetAlert
+            alert(warningMessage);
+        }
+    });
+</script>
+@endsection
