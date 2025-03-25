@@ -57,6 +57,22 @@
         .btn-check-machine:hover {
             background-color: #0d47a1;
         }
+
+        /* Login success notification styles */
+        #loginSuccessNotification {
+            position: fixed;
+            top: 90px; /* Positioned just below the header and near the "Hello" text */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #48bb78; /* Green background */
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            font-weight: 500;
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-blue-50 pt-20 overflow-y-auto overscroll-y-none flex flex-col min-h-screen">
@@ -73,6 +89,11 @@
             </form>
         </div>
     </header>
+
+    <!-- Login Success Notification -->
+    <div id="loginSuccessNotification">
+        Anda berhasil login
+    </div>
 
     <div class="flex-1">
         <div class="container mx-auto px-4 mb-8">
@@ -148,12 +169,37 @@
         }
         
         // Mulai saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', updateDateTime);
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
 
-        // Add event listener to the logout form
-        document.getElementById('logout-form').addEventListener('submit', function(e) {
-            // Store logout status in localStorage before form submission
-            localStorage.setItem('just_logged_out', 'true');
+            // Check if user just logged in
+            if (localStorage.getItem('just_logged_in') === 'true') {
+                // Show login success notification
+                const notification = document.getElementById('loginSuccessNotification');
+                notification.style.display = 'block';
+                
+                // Remove the flag from localStorage
+                localStorage.removeItem('just_logged_in');
+                
+                // Hide notification after 3 seconds
+                setTimeout(function() {
+                    notification.style.opacity = '1';
+                    notification.style.transition = 'opacity 0.5s ease';
+                    
+                    setTimeout(function() {
+                        notification.style.opacity = '0';
+                        setTimeout(function() {
+                            notification.style.display = 'none';
+                        }, 500);
+                    }, 3000);
+                }, 100);
+            }
+
+            // Add event listener to the logout form
+            document.getElementById('logout-form').addEventListener('submit', function(e) {
+                // Store logout status in localStorage before form submission
+                localStorage.setItem('just_logged_out', 'true');
+            });
         });
     </script>
 </body>

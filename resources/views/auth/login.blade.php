@@ -15,7 +15,7 @@
             </div>
             <h2 class="text-center text-gray-600 text-2xl mb-6">Login</h2>
 
-            <form action="{{ route('login.post') }}" method="POST">
+            <form action="{{ route('login.post') }}" method="POST" id="loginForm">
                 @csrf
                 <div class="mb-4">
                     <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
@@ -102,30 +102,37 @@
                 }
             });
         });
+
         // Check for logout parameter in URL
         document.addEventListener('DOMContentLoaded', function() {
-        // Check if user just logged out
-        if (localStorage.getItem('just_logged_out') === 'true') {
-            // Show notification
-            const notification = document.getElementById('logoutNotification');
-            notification.style.display = 'block';
+            // Check if user just logged out
+            if (localStorage.getItem('just_logged_out') === 'true') {
+                // Show notification
+                const notification = document.getElementById('logoutNotification');
+                notification.style.display = 'block';
                 
-            // Remove the flag from localStorage
-            localStorage.removeItem('just_logged_out');
+                // Remove the flag from localStorage
+                localStorage.removeItem('just_logged_out');
                 
-            // Hide notification after 3 seconds
-            setTimeout(function() {
-                notification.style.opacity = '1';
-                notification.style.transition = 'opacity 0.5s ease';
-                    
+                // Hide notification after 3 seconds
                 setTimeout(function() {
-                    notification.style.opacity = '0';
+                    notification.style.opacity = '1';
+                    notification.style.transition = 'opacity 0.5s ease';
+                    
                     setTimeout(function() {
-                        notification.style.display = 'none';
+                        notification.style.opacity = '0';
+                        setTimeout(function() {
+                            notification.style.display = 'none';
                         }, 500);
                     }, 3000);
                 }, 100);
             }
+        });
+
+        // Add login success handling
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            // Set a flag in localStorage before form submission
+            localStorage.setItem('just_logged_in', 'true');
         });
     </script>
 </body>

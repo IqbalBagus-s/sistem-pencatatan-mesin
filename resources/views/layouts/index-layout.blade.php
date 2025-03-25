@@ -144,5 +144,35 @@
 
     @vite('resources/js/app.js')
     @yield('scripts')
+
+    <script>
+    // Function to show notification
+    function showNotification(message, type = 'success') {
+        const popup = document.getElementById('notification-popup');
+        const messageEl = document.getElementById('notification-message');
+        
+        // Reset classes
+        popup.classList.remove('notification-success', 'notification-warning');
+        
+        // Add appropriate class based on type
+        popup.classList.add(`notification-${type}`);
+        
+        messageEl.textContent = message;
+        popup.style.display = 'block';
+        
+        setTimeout(() => {
+            popup.style.display = 'none';
+        }, 3000);
+    }
+
+    // Check for flash messages on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        const successMessage = "{{ session('success') }}";
+        
+        if (successMessage) {
+            showNotification(successMessage);
+        }
+    });
+</script>
 </body>
 </html>

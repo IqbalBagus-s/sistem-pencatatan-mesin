@@ -25,31 +25,51 @@
                     @csrf
                     <div class="grid md:grid-cols-2 gap-4 mb-4">
                         <!-- Dropdown Pilih No Hopper -->
-                        <div x-data="{ open: false, selected: '' }" class="relative w-full">
+                        <div x-data="{ 
+                            open: false, 
+                            selected: null,
+                            reset() {
+                                this.selected = null;
+                                this.open = false;
+                            }
+                        }" class="relative w-full">
                             <!-- Label -->
                             <label class="block mb-2 text-sm font-medium text-gray-700">Pilih No Hopper:</label>
-                    
+                            
                             <!-- Dropdown Button -->
-                            <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">
+                            <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative">
                                 <span x-text="selected ? 'Hopper ' + selected : 'Pilih Hopper'"></span>
+                                
+                                <!-- Selection Indicator -->
+                                <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                                    <!-- Checkmark when selected -->
+                                    <svg x-show="selected" @click.stop="reset()" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    
+                                    <!-- Dropdown Arrow when not selected -->
+                                    <svg x-show="!selected" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
                             </button>
-                    
+                            
                             <!-- Dropdown List -->
-                            <div x-show="open" @click.away="open = false" class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md p-2">
+                            <div x-show="open" @click.away="open = false" class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md p-2 z-10">
                                 <div class="grid grid-cols-4 gap-2">
                                     <template x-for="i in 15" :key="i">
                                         <div @click.stop>
-                                            <button type="button" @click="selected = i; open = false" class="px-3 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white rounded-md">
+                                            <button type="button" @click="selected = i; open = false" class="w-full px-3 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white rounded-md">
                                                 <span x-text="'Hopper ' + i"></span>
                                             </button>
                                         </div>
                                     </template>
                                 </div>
                             </div>
-                    
+                            
                             <!-- Hidden Input untuk dikirim ke server -->
                             <input type="hidden" name="nomer_hopper" x-model="selected">
-                        </div>                        
+                        </div>                      
                     
                         <div>
                             <label for="bulan" class="block mb-2 text-sm font-medium text-gray-700">Pilih Bulan:</label>
@@ -81,7 +101,7 @@
                                     <th class="border border-gray-300 bg-sky-50 p-2">Check</th>
                                     <th class="border border-gray-300 bg-sky-50 p-2">Check</th>
                                 </tr>
-                            </thead>                            
+                            </thead>                          
                             <tbody>
                                 @php
                                     $items = [
@@ -103,74 +123,73 @@
                                 
                                 @foreach($items as $i => $item)
                                     <tr>
-                                        <td class="border border-gray-300 text-center p-2">{{ $i }}</td>
-                                        <td class="border border-gray-300 p-2">
+                                        <td class="border border-gray-300 text-center p-2 h-12">{{ $i }}</td>
+                                        <td class="border border-gray-300 p-2 h-12">
                                             <input type="text" name="checked_items[{{ $i }}]" 
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center" 
+                                                class="w-full h-10 px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center" 
                                                 value="{{ $item }}" readonly>
                                         </td>
-                                        <td class="border border-gray-300 p-2">
-                                            <select name="check_1[{{ $i }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                        <td class="border border-gray-300 p-2 h-12">
+                                            <select name="check_1[{{ $i }}]" class="w-full h-10 px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
                                                 <option value="">Pilih</option>
                                                 @foreach($options[$i] as $option)
                                                     <option value="{{ $option }}">{{ $option }}</option>
                                                 @endforeach
                                             </select>
                                         </td>
-                                        <td class="border border-gray-300 p-2">
+                                        <td class="border border-gray-300 p-2 h-12">
                                             <input type="text" name="keterangan_1[{{ $i }}]" 
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                class="w-full h-10 px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
                                                 placeholder="Keterangan">
                                         </td>
-                                        <td class="border border-gray-300 p-2">
-                                            <select name="check_2[{{ $i }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                        <td class="border border-gray-300 p-2 h-12">
+                                            <select name="check_2[{{ $i }}]" class="w-full h-10 px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
                                                 <option value="">Pilih</option>
                                                 @foreach($options[$i] as $option)
                                                     <option value="{{ $option }}">{{ $option }}</option>
                                                 @endforeach
                                             </select>
                                         </td>
-                                        <td class="border border-gray-300 p-2">
+                                        <td class="border border-gray-300 p-2 h-12">
                                             <input type="text" name="keterangan_2[{{ $i }}]" 
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                class="w-full h-10 px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
                                                 placeholder="Keterangan">
                                         </td>
-                                        <td class="border border-gray-300 p-2">
-                                            <select name="check_3[{{ $i }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                        <td class="border border-gray-300 p-2 h-12">
+                                            <select name="check_3[{{ $i }}]" class="w-full h-10 px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
                                                 <option value="">Pilih</option>
                                                 @foreach($options[$i] as $option)
                                                     <option value="{{ $option }}">{{ $option }}</option>
                                                 @endforeach
                                             </select>
                                         </td>
-                                        <td class="border border-gray-300 p-2">
+                                        <td class="border border-gray-300 p-2 h-12">
                                             <input type="text" name="keterangan_3[{{ $i }}]" 
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                class="w-full h-10 px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
                                                 placeholder="Keterangan">
                                         </td>
-                                        <td class="border border-gray-300 p-2">
-                                            <select name="check_4[{{ $i }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                        <td class="border border-gray-300 p-2 h-12">
+                                            <select name="check_4[{{ $i }}]" class="w-full h-10 px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
                                                 <option value="">Pilih</option>
                                                 @foreach($options[$i] as $option)
                                                     <option value="{{ $option }}">{{ $option }}</option>
                                                 @endforeach
                                             </select>
                                         </td>
-                                        <td class="border border-gray-300 p-2">
+                                        <td class="border border-gray-300 p-2 h-12">
                                             <input type="text" name="keterangan_4[{{ $i }}]" 
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                class="w-full h-10 px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
                                                 placeholder="Keterangan">
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
-                            <!-- Tambahkan tbody baru di bawah tbody yang sudah ada -->
                             <tbody class="bg-white">
                                 <tr class="bg-sky-50">
-                                    <td class="border border-gray-300 text-center p-2 bg-sky-50" rowspan="1">-</td>
+                                    <td class="border border-gray-300 text-center p-2 bg-sky-50 h-12" rowspan="1">-</td>
                                     <td class="border border-gray-300 p-2 font-medium bg-sky-50">Dibuat Oleh</td>
                                     
-                                    <!-- Week 1 -->
+                                     <!-- Week 1 -->
                                     <td colspan="2" class="border border-gray-300 p-2 bg-sky-50">
                                         <div x-data="{ selected: false, userName: '' }">
                                             <button type="button" 

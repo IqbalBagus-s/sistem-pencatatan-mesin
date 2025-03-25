@@ -46,11 +46,15 @@ class AirDryerController extends Controller
 
     public function store(Request $request)
     {
-        // Cek apakah tanggal sudah ada di database
-        $existingDate = AirDryerCheck::where('tanggal', $request->tanggal)->exists();
-        
+        $existingDate = AirDryerCheck::where('tanggal', $request->tanggal)
+        ->when(Auth::user() instanceof \App\Models\Checker, function ($query) {
+            // Jika user adalah Checker, hanya cek recordnya sendiri
+            return $query->where('checked_by', Auth::user()->username);
+        })
+        ->exists();
+    
         if ($existingDate) {
-            return back()->withErrors(['tanggal' => 'Tanggal ini sudah digunakan! Pilih tanggal lain.']);
+            return redirect()->route('air-dryer.create')->with('warning', 'Data di tanggal tersebut telah dibuat');
         }
 
         $request->validate([
