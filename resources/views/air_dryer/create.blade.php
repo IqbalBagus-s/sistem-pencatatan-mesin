@@ -89,14 +89,5 @@
 @endsection
 
 @section('additional-scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const warningMessage = "{{ session('warning') }}";
-        
-        if (warningMessage) {
-            // Create a custom popup or use a library like SweetAlert
-            alert(warningMessage);
-        }
-    });
-</script>
+
 @endsection

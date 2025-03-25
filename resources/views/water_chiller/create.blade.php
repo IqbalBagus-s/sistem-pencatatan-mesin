@@ -92,3 +92,5 @@
     </tbody>
 </table>
 @endsection
+
+@section('additional-scripts')

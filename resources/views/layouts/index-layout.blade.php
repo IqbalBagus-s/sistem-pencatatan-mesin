@@ -96,6 +96,7 @@
 <body class="bg-blue-50 pt-5 font-poppins min-h-screen flex flex-col overscroll-none">
 
     <div class="container mx-auto px-4 pb-12">
+    <div id="notification-popup" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg text-white text-center" style="display: none;"></div>
         <h2 class="text-2xl font-bold mb-6 text-gray-900">@yield('page-title', 'Pencatatan Mesin')</h2>
 
         <!-- Form Pencarian dan Tombol Tambah -->
@@ -146,33 +147,43 @@
     @yield('scripts')
 
     <script>
-    // Function to show notification
-    function showNotification(message, type = 'success') {
-        const popup = document.getElementById('notification-popup');
-        const messageEl = document.getElementById('notification-message');
-        
-        // Reset classes
-        popup.classList.remove('notification-success', 'notification-warning');
-        
-        // Add appropriate class based on type
-        popup.classList.add(`notification-${type}`);
-        
-        messageEl.textContent = message;
-        popup.style.display = 'block';
-        
-        setTimeout(() => {
-            popup.style.display = 'none';
-        }, 3000);
-    }
-
-    // Check for flash messages on page load
-    document.addEventListener('DOMContentLoaded', () => {
-        const successMessage = "{{ session('success') }}";
-        
-        if (successMessage) {
-            showNotification(successMessage);
+        // Function to show notification
+        function showNotification(message, type = 'success') {
+            const popup = document.getElementById('notification-popup');
+            
+            // Reset classes
+            popup.classList.remove('bg-green-500', 'bg-red-500', 'bg-yellow-500');
+            
+            // Set color based on type
+            if (type === 'success') {
+                popup.classList.add('bg-green-500');
+            } else if (type === 'warning') {
+                popup.classList.add('bg-yellow-500');
+            } else if (type === 'error') {
+                popup.classList.add('bg-red-500');
+            }
+            
+            popup.textContent = message;
+            popup.style.display = 'block';
+            
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 3000);
         }
-    });
-</script>
+
+        // Check for flash messages on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const successMessage = "{{ session('success') }}";
+            const warningMessage = "{{ session('warning') }}";
+            
+            if (successMessage) {
+                showNotification(successMessage, 'success');
+            }
+            
+            if (warningMessage) {
+                showNotification(warningMessage, 'warning');
+            }
+        });
+    </script>
 </body>
 </html>
