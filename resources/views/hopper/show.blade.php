@@ -18,7 +18,15 @@
                 <div class="bg-sky-50 p-4 rounded-md mb-5">
                     <span class="text-gray-600 font-bold">Checker: </span>
                     <span class="font-bold text-blue-700">
-                        {{ $hopperRecord->created_by_1 ?? $hopperRecord->created_by_2 ?? $hopperRecord->created_by_3 ?? $hopperRecord->created_by_4 ?? 'Tidak Diketahui' }}
+                        @php
+                            $checkers = collect([
+                                $hopperRecord->checked_by_minggu1, 
+                                $hopperRecord->checked_by_minggu2, 
+                                $hopperRecord->checked_by_minggu3, 
+                                $hopperRecord->checked_by_minggu4
+                            ])->filter()->unique()->values()->implode(', ') ?? 'Tidak Diketahui'
+                        @endphp
+                        {{ $checkers }}
                     </span>
                 </div>
 
@@ -105,13 +113,192 @@
                                 @endif
                             @endforeach
                         </tbody>
+                        <tbody class="bg-white">
+                            <tr class="bg-sky-50">
+                                <td class="border border-gray-300 text-center p-2 bg-sky-50 h-12" rowspan="1">-</td>
+                                <td class="border border-gray-300 p-2 font-medium bg-sky-50">Dicek Oleh</td>
+                                
+                                <!-- Week 1 Checker -->
+                                <td colspan="2" class="border border-gray-300 p-2 bg-sky-50">
+                                    <div class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1">
+                                        {{ $hopperRecord->checked_by_minggu1 ?? '-' }}
+                                    </div>
+                                    <div class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
+                                        {{ $hopperRecord->tanggal_minggu1 ? \Carbon\Carbon::parse($hopperRecord->tanggal_minggu1)->format('d/m/Y') : '-' }}
+                                    </div>
+                                </td>
+                                
+                                <!-- Week 2 Checker -->
+                                <td colspan="2" class="border border-gray-300 p-2 bg-sky-50">
+                                    <div class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1">
+                                        {{ $hopperRecord->checked_by_minggu2 ?? '-' }}
+                                    </div>
+                                    <div class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
+                                        {{ $hopperRecord->tanggal_minggu2 ? \Carbon\Carbon::parse($hopperRecord->tanggal_minggu2)->format('d/m/Y') : '-' }}
+                                    </div>
+                                </td>
+                                
+                                <!-- Week 3 Checker -->
+                                <td colspan="2" class="border border-gray-300 p-2 bg-sky-50">
+                                    <div class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1">
+                                        {{ $hopperRecord->checked_by_minggu3 ?? '-' }}
+                                    </div>
+                                    <div class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
+                                        {{ $hopperRecord->tanggal_minggu3 ? \Carbon\Carbon::parse($hopperRecord->tanggal_minggu3)->format('d/m/Y') : '-' }}
+                                    </div>
+                                </td>
+                                
+                                <!-- Week 4 Checker -->
+                                <td colspan="2" class="border border-gray-300 p-2 bg-sky-50">
+                                    <div class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1">
+                                        {{ $hopperRecord->checked_by_minggu4 ?? '-' }}
+                                    </div>
+                                    <div class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
+                                        {{ $hopperRecord->tanggal_minggu4 ? \Carbon\Carbon::parse($hopperRecord->tanggal_minggu4)->format('d/m/Y') : '-' }}
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <!-- New Tbody for Approval -->
+                        <tbody class="bg-white">
+                            <tr class="bg-sky-50">
+                                <td class="border border-gray-300 text-center p-2 bg-sky-50 h-12" rowspan="1">-</td>
+                                <td class="border border-gray-300 p-2 font-medium bg-sky-50">Disetujui Oleh</td>
+                                
+                                <!-- Week 1 Approval -->
+                                <td colspan="2" class="border border-gray-300 p-2 bg-sky-50">
+                                    <div x-data="{ selected: false, userName: '' }">
+                                        <button type="button" 
+                                            @click="selected = !selected; 
+                                                if(selected) {
+                                                    userName = '{{ Auth::user()->username }}'; 
+                                                    $refs.user1.value = userName;
+                                                } else {
+                                                    userName = '';
+                                                    $refs.user1.value = '';
+                                                }"
+                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                            :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                            <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                        </button>
+                                        <div class="mt-2 space-y-1" x-show="selected">
+                                            <input type="text" name="approved_by_minggu1" x-ref="user1" x-bind:value="userName"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                readonly>
+                                        </div>
+                                    </div>
+                                </td>
+                                
+                                <!-- Week 2 Approval -->
+                                <td colspan="2" class="border border-gray-300 p-2 bg-sky-50">
+                                    <div x-data="{ selected: false, userName: '' }">
+                                        <button type="button" 
+                                            @click="selected = !selected; 
+                                                if(selected) {
+                                                    userName = '{{ Auth::user()->username }}'; 
+                                                    $refs.user2.value = userName;
+                                                } else {
+                                                    userName = '';
+                                                    $refs.user2.value = '';
+                                                }"
+                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                            :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                            <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                        </button>
+                                        <div class="mt-2 space-y-1" x-show="selected">
+                                            <input type="text" name="approved_by_minggu2" x-ref="user2" x-bind:value="userName"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                readonly>
+                                        </div>
+                                    </div>
+                                </td>
+                                
+                                <!-- Week 3 Approval -->
+                                <td colspan="2" class="border border-gray-300 p-2 bg-sky-50">
+                                    <div x-data="{ selected: false, userName: '' }">
+                                        <button type="button" 
+                                            @click="selected = !selected; 
+                                                if(selected) {
+                                                    userName = '{{ Auth::user()->username }}'; 
+                                                    $refs.user3.value = userName;
+                                                } else {
+                                                    userName = '';
+                                                    $refs.user3.value = '';
+                                                }"
+                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                            :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                            <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                        </button>
+                                        <div class="mt-2 space-y-1" x-show="selected">
+                                            <input type="text" name="approved_by_minggu3" x-ref="user3" x-bind:value="userName"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                readonly>
+                                        </div>
+                                    </div>
+                                </td>
+                                
+                                <!-- Week 4 Approval -->
+                                <td colspan="2" class="border border-gray-300 p-2 bg-sky-50">
+                                    <div x-data="{ selected: false, userName: '' }">
+                                        <button type="button" 
+                                            @click="selected = !selected; 
+                                                if(selected) {
+                                                    userName = '{{ Auth::user()->username }}'; 
+                                                    $refs.user4.value = userName;
+                                                } else {
+                                                    userName = '';
+                                                    $refs.user4.value = '';
+                                                }"
+                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                            :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                            <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                        </button>
+                                        <div class="mt-2 space-y-1" x-show="selected">
+                                            <input type="text" name="approved_by_minggu4" x-ref="user4" x-bind:value="userName"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                readonly>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
 
-                <div class="flex justify-start mt-6">
+                <div class="flex justify-between mt-6">
                     <a href="{{ route('hopper.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                         Kembali
                     </a>
+                
+                    <form id="approvalForm" method="POST" action="{{ route('hopper.approve', $hopperRecord->id) }}" class="flex space-x-4">
+                        @csrf
+                        <!-- Hidden inputs for approval tracking -->
+                        <input type="hidden" id="approved_minggu1" name="approved_minggu1" value="{{ $hopperRecord->approved_by_minggu1 }}">
+                        <input type="hidden" id="approved_minggu2" name="approved_minggu2" value="{{ $hopperRecord->approved_by_minggu2 }}">
+                        <input type="hidden" id="approved_minggu3" name="approved_minggu3" value="{{ $hopperRecord->approved_by_minggu3 }}">
+                        <input type="hidden" id="approved_minggu4" name="approved_by_minggu4" value="{{ $hopperRecord->approved_by_minggu4 }}">
+                
+                        @php
+                            $isFullyApproved = $hopperRecord->approved_by_minggu1 && 
+                                               $hopperRecord->approved_by_minggu2 && 
+                                               $hopperRecord->approved_by_minggu3 && 
+                                               $hopperRecord->approved_by_minggu4;
+                        @endphp
+                
+                        @if(!$isFullyApproved)
+                            <button type="submit" class="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800">
+                                Setujui
+                            </button>
+                        @else
+                            <button type="button" class="bg-gray-400 text-white py-2 px-4 rounded cursor-not-allowed" disabled>
+                                Telah Disetujui
+                            </button>
+                
+                            <a href="{{ route('hopper.downloadPdf', $hopperRecord->id) }}" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                                Download PDF
+                            </a>
+                        @endif
+                    </form>
                 </div>
             </div>
         </div>
@@ -121,5 +308,6 @@
     <footer class="bg-white py-4 text-center shadow-md mt-auto w-full">
         <p class="mb-0 font-bold">2025 © PT Asia Pramulia</p>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </body>
 </html>

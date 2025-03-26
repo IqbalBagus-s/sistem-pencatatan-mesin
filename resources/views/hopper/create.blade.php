@@ -182,6 +182,13 @@
                                                 placeholder="Keterangan">
                                         </td>
                                     </tr>
+                                    @if($i == 2)
+                                    <tr>
+                                        <td colspan="10" class="border border-gray-300 text-center p-2 h-12 bg-gray-100 font-medium">
+                                            Panel Kelistrikan
+                                        </td>
+                                    </tr>
+                                    @endif
                                 @endforeach
                             </tbody>
                             {{-- badan tabel kedua untuk mencatat checker --}}
