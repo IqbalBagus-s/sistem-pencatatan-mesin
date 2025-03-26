@@ -276,4 +276,53 @@ class HopperController extends Controller
             return redirect()->back()->with('error', 'Failed to update hopper check data: ' . $e->getMessage());
         }
     }
+
+    public function show($check_id)
+{
+    // Find the main hopper record
+    $hopperRecord = HopperCheck::findOrFail($check_id);
+
+    // Prepare the checked items
+    $items = [
+        1 => 'Filter',
+        2 => 'Selang', 
+        3 => 'Kontraktor',
+        4 => 'Temperatur Kontrol',
+        5 => 'MCB'
+    ];
+
+    // Fetch associated results
+    $hopperResults = HopperResult::where('check_id', $check_id)->get()->keyBy('checked_items');
+
+    // Prepare check and keterangan arrays for each week
+    $weekFields = [
+        'check_1' => 'minggu1',
+        'check_2' => 'minggu2',
+        'check_3' => 'minggu3',
+        'check_4' => 'minggu4',
+        'keterangan_1' => 'keterangan_minggu1',
+        'keterangan_2' => 'keterangan_minggu2',
+        'keterangan_3' => 'keterangan_minggu3',
+        'keterangan_4' => 'keterangan_minggu4'
+    ];
+
+    // Create a new array to store the modified data
+    $viewData = $hopperRecord->toArray();
+
+    // Dynamically populate the arrays
+    foreach ($weekFields as $recordKey => $dbField) {
+        $viewData[$recordKey] = [];
+        foreach ($items as $index => $item) {
+            $viewData[$recordKey][$index] = optional($hopperResults->get($item))->$dbField ?? '';
+        }
+    }
+
+    // Convert back to an object for view compatibility
+    $viewData = (object) $viewData;
+
+    return view('hopper.show', [
+        'hopperRecord' => $viewData,
+        'items' => $items
+    ]);
+}
 }

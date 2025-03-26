@@ -140,16 +140,15 @@
 
                             // Remove duplicates and filter out null/empty values
                             $uniqueCheckedBy = array_unique(array_filter($checkedByFields));
-
-                            // Join unique names if multiple exist
-                            $displayCheckedBy = implode(', ', $uniqueCheckedBy);
                         @endphp
 
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if(!empty($displayCheckedBy))
-                                <span class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm">
-                                    {{ $displayCheckedBy }}
-                                </span>
+                            @if(!empty($uniqueCheckedBy))
+                                @foreach($uniqueCheckedBy as $checkedBy)
+                                    <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm mb-1 inline-block">
+                                        {{ $checkedBy }}
+                                    </div>
+                                @endforeach
                             @else
                                 <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
                                     Belum Diisi

@@ -184,6 +184,7 @@
                                     </tr>
                                 @endforeach
                             </tbody>
+                            {{-- badan tabel kedua untuk mencatat checker --}}
                             <tbody class="bg-white">
                                 <tr class="bg-sky-50">
                                     <td class="border border-gray-300 text-center p-2 bg-sky-50 h-12" rowspan="1">-</td>
