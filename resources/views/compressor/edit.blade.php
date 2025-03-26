@@ -6,6 +6,19 @@
     <title>Edit Form Pencatatan Mesin Compressor</title>
     @vite('resources/css/app.css')
     <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
+    <style>
+        /* Sticky Table Header Styles */
+        .table-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .table-container table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: theme('colors.gray.200');
+        }
+    </style>
 </head>
 <body class="bg-gray-100 p-6">
 
@@ -115,7 +128,7 @@
                 Form Pengisian Low Kompressor
             </div>
     
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto table-container">
                 <table class="min-w-full border border-gray-300 shadow-lg rounded-lg bg-white border-collapse">
                     <thead class="bg-gray-200 text-center">
                         <tr>
@@ -218,7 +231,7 @@
                 Form Pengisian High Kompressor
             </div>
     
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto table-container">
                 <table class="min-w-full border border-gray-300 shadow-lg rounded-lg bg-white border-collapse">
                     <thead class="bg-gray-200 text-center">
                         <tr>
@@ -316,12 +329,12 @@
             </div>
                     
             <div class="mt-4 flex justify-between">
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    Simpan Perubahan
-                </button>
                 <a href="{{ route('compressor.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded">
                     Kembali
                 </a>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Simpan Perubahan
+                </button>
             </div>
         </form>
     </div>
