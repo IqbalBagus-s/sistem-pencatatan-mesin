@@ -50,18 +50,26 @@
                 <!-- Tabel Inspeksi -->
                 <div class="overflow-x-auto">
                     <table class="w-full border-collapse border border-gray-300 text-sm">
-                        <thead class="bg-gray-100">
+                        <thead>
                             <tr>
-                                <th class="border border-gray-300 p-1 w-10">No</th>
-                                <th class="border border-gray-300 p-1 w-24">No Hopper</th>
-                                <th class="border border-gray-300 p-1 w-20">Minggu 1</th>
-                                <th class="border border-gray-300 p-1 w-20">Keterangan 1</th>
-                                <th class="border border-gray-300 p-1 w-20">Minggu 2</th>
-                                <th class="border border-gray-300 p-1 w-20">Keterangan 2</th>
-                                <th class="border border-gray-300 p-1 w-20">Minggu 3</th>
-                                <th class="border border-gray-300 p-1 w-20">Keterangan 3</th>
-                                <th class="border border-gray-300 p-1 w-20">Minggu 4</th>
-                                <th class="border border-gray-300 p-1 w-20">Keterangan 4</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 w-10" rowspan="2">No.</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-28" colspan="1">Minggu</th>
+                                
+                                <th class="border border-gray-300 bg-sky-50 p-2" colspan="1">01</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 w-32" rowspan="2">Keterangan</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2" colspan="1">02</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 w-32" rowspan="2">Keterangan</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2" colspan="1">03</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 w-32" rowspan="2">Keterangan</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2" colspan="1">04</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 w-32" rowspan="2">Keterangan</th>
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-28">Checked Items</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2">Check</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2">Check</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2">Check</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2">Check</th>
                             </tr>
                         </thead>
                         <tbody>
