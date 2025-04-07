@@ -29,7 +29,7 @@
                         {{ $checkers }}
                     </span>
                 </div>
-
+            
                 <!-- Detail Informasi -->
                 <div class="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
@@ -46,7 +46,7 @@
                         </div>
                     </div>
                 </div>
-
+            
                 <!-- Tabel Inspeksi -->
                 <div class="overflow-x-auto">
                     <table class="w-full border-collapse border border-gray-300 text-sm">
@@ -159,7 +159,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                        <!-- New Tbody for Approval -->
+                        <!-- Tbody for Approval -->
                         <tbody class="bg-white">
                             <tr class="bg-sky-50">
                                 <td class="border border-gray-300 text-center p-2 bg-sky-50 h-12" rowspan="1">-</td>
@@ -167,23 +167,25 @@
                                 
                                 <!-- Week 1 Approval -->
                                 <td colspan="2" class="border border-gray-300 p-2 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
+                                    <div x-data="{ selected: {{ $hopperRecord->approved_by_minggu1 ? 'true' : 'false' }}, userName: '{{ $hopperRecord->approved_by_minggu1 ?? '' }}' }">
                                         <button type="button" 
                                             @click="selected = !selected; 
                                                 if(selected) {
                                                     userName = '{{ Auth::user()->username }}'; 
                                                     $refs.user1.value = userName;
+                                                    document.getElementById('hidden_approved_by_minggu1').value = userName;
                                                 } else {
                                                     userName = '';
                                                     $refs.user1.value = '';
+                                                    document.getElementById('hidden_approved_by_minggu1').value = '';
                                                 }"
                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                             :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
                                             <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
                                         </button>
                                         <div class="mt-2 space-y-1" x-show="selected">
-                                            <input type="text" name="approved_by_minggu1" x-ref="user1" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                            <input type="text" x-ref="user1" x-bind:value="userName"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border text-center border-gray-300 rounded"
                                                 readonly>
                                         </div>
                                     </div>
@@ -191,23 +193,25 @@
                                 
                                 <!-- Week 2 Approval -->
                                 <td colspan="2" class="border border-gray-300 p-2 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
+                                    <div x-data="{ selected: {{ $hopperRecord->approved_by_minggu2 ? 'true' : 'false' }}, userName: '{{ $hopperRecord->approved_by_minggu2 ?? '' }}' }">
                                         <button type="button" 
                                             @click="selected = !selected; 
                                                 if(selected) {
                                                     userName = '{{ Auth::user()->username }}'; 
                                                     $refs.user2.value = userName;
+                                                    document.getElementById('hidden_approved_by_minggu2').value = userName;
                                                 } else {
                                                     userName = '';
                                                     $refs.user2.value = '';
+                                                    document.getElementById('hidden_approved_by_minggu2').value = '';
                                                 }"
                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                             :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
                                             <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
                                         </button>
                                         <div class="mt-2 space-y-1" x-show="selected">
-                                            <input type="text" name="approved_by_minggu2" x-ref="user2" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                            <input type="text" x-ref="user2" x-bind:value="userName"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border text-center border-gray-300 rounded"
                                                 readonly>
                                         </div>
                                     </div>
@@ -215,23 +219,25 @@
                                 
                                 <!-- Week 3 Approval -->
                                 <td colspan="2" class="border border-gray-300 p-2 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
+                                    <div x-data="{ selected: {{ $hopperRecord->approved_by_minggu3 ? 'true' : 'false' }}, userName: '{{ $hopperRecord->approved_by_minggu3 ?? '' }}' }">
                                         <button type="button" 
                                             @click="selected = !selected; 
                                                 if(selected) {
                                                     userName = '{{ Auth::user()->username }}'; 
                                                     $refs.user3.value = userName;
+                                                    document.getElementById('hidden_approved_by_minggu3').value = userName;
                                                 } else {
                                                     userName = '';
                                                     $refs.user3.value = '';
+                                                    document.getElementById('hidden_approved_by_minggu3').value = '';
                                                 }"
                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                             :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
                                             <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
                                         </button>
                                         <div class="mt-2 space-y-1" x-show="selected">
-                                            <input type="text" name="approved_by_minggu3" x-ref="user3" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                            <input type="text" x-ref="user3" x-bind:value="userName"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border text-center border-gray-300 rounded"
                                                 readonly>
                                         </div>
                                     </div>
@@ -239,23 +245,25 @@
                                 
                                 <!-- Week 4 Approval -->
                                 <td colspan="2" class="border border-gray-300 p-2 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
+                                    <div x-data="{ selected: {{ $hopperRecord->approved_by_minggu4 ? 'true' : 'false' }}, userName: '{{ $hopperRecord->approved_by_minggu4 ?? '' }}' }">
                                         <button type="button" 
                                             @click="selected = !selected; 
                                                 if(selected) {
                                                     userName = '{{ Auth::user()->username }}'; 
                                                     $refs.user4.value = userName;
+                                                    document.getElementById('hidden_approved_by_minggu4').value = userName;
                                                 } else {
                                                     userName = '';
                                                     $refs.user4.value = '';
+                                                    document.getElementById('hidden_approved_by_minggu4').value = '';
                                                 }"
                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                             :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
                                             <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
                                         </button>
                                         <div class="mt-2 space-y-1" x-show="selected">
-                                            <input type="text" name="approved_by_minggu4" x-ref="user4" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                            <input type="text" x-ref="user4" x-bind:value="userName"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border text-center border-gray-300 rounded"
                                                 readonly>
                                         </div>
                                     </div>
@@ -264,7 +272,7 @@
                         </tbody>
                     </table>
                 </div>
-
+            
                 <div class="flex justify-between mt-6">
                     <a href="{{ route('hopper.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                         Kembali
@@ -272,11 +280,11 @@
                 
                     <form id="approvalForm" method="POST" action="{{ route('hopper.approve', $hopperRecord->id) }}" class="flex space-x-4">
                         @csrf
-                        <!-- Hidden inputs for approval tracking -->
-                        <input type="hidden" id="approved_minggu1" name="approved_minggu1" value="{{ $hopperRecord->approved_by_minggu1 }}">
-                        <input type="hidden" id="approved_minggu2" name="approved_minggu2" value="{{ $hopperRecord->approved_by_minggu2 }}">
-                        <input type="hidden" id="approved_minggu3" name="approved_minggu3" value="{{ $hopperRecord->approved_by_minggu3 }}">
-                        <input type="hidden" id="approved_minggu4" name="approved_by_minggu4" value="{{ $hopperRecord->approved_by_minggu4 }}">
+                        <!-- Hidden inputs for approval tracking - NAMA FIELD SUDAH DIBENARKAN -->
+                        <input type="hidden" id="hidden_approved_by_minggu1" name="approved_by_minggu1" value="{{ $hopperRecord->approved_by_minggu1 }}">
+                        <input type="hidden" id="hidden_approved_by_minggu2" name="approved_by_minggu2" value="{{ $hopperRecord->approved_by_minggu2 }}">
+                        <input type="hidden" id="hidden_approved_by_minggu3" name="approved_by_minggu3" value="{{ $hopperRecord->approved_by_minggu3 }}">
+                        <input type="hidden" id="hidden_approved_by_minggu4" name="approved_by_minggu4" value="{{ $hopperRecord->approved_by_minggu4 }}">
                 
                         @php
                             $isFullyApproved = $hopperRecord->approved_by_minggu1 && 

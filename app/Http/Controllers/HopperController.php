@@ -350,9 +350,9 @@ class HopperController extends Controller
     {
         // Validate the request
         $validatedData = $request->validate([
-            'approved_minggu1' => 'nullable|string|max:255',
-            'approved_minggu2' => 'nullable|string|max:255',
-            'approved_minggu3' => 'nullable|string|max:255',
+            'approved_by_minggu1' => 'nullable|string|max:255',
+            'approved_by_minggu2' => 'nullable|string|max:255',
+            'approved_by_minggu3' => 'nullable|string|max:255',
             'approved_by_minggu4' => 'nullable|string|max:255'
         ]);
 
@@ -361,18 +361,11 @@ class HopperController extends Controller
 
         // Update the approval fields
         // Note: We use the exact field names from the database
-        $hopperRecord->approved_by_minggu1 = $validatedData['approved_minggu1'] ?? null;
-        $hopperRecord->approved_by_minggu2 = $validatedData['approved_minggu2'] ?? null;
-        $hopperRecord->approved_by_minggu3 = $validatedData['approved_minggu3'] ?? null;
+        $hopperRecord->approved_by_minggu1 = $validatedData['approved_by_minggu1'] ?? null;
+        $hopperRecord->approved_by_minggu2 = $validatedData['approved_by_minggu2'] ?? null;
+        $hopperRecord->approved_by_minggu3 = $validatedData['approved_by_minggu3'] ?? null;
         $hopperRecord->approved_by_minggu4 = $validatedData['approved_by_minggu4'] ?? null;
 
-        // If all weeks are approved, set a flag or timestamp
-        if ($hopperRecord->approved_by_minggu1 && 
-            $hopperRecord->approved_by_minggu2 && 
-            $hopperRecord->approved_by_minggu3 && 
-            $hopperRecord->approved_by_minggu4) {
-            $hopperRecord->fully_approved_at = now();
-        }
 
         // Save the record
         $hopperRecord->save();
