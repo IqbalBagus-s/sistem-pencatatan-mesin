@@ -108,31 +108,31 @@
             <div class="text-lg font-semibold mb-4 mt-4">
                 Data Low Kompressor
             </div>
-    
-            <div class="overflow-x-auto">
+
+            <div class="overflow-x-auto max-h-[500px]">
                 <table class="min-w-full border border-gray-300 shadow-lg rounded-lg bg-white border-collapse">
-                    <thead class="bg-gray-200 text-center">
+                    <thead class="bg-gray-200 text-center sticky top-0 z-10">
                         <tr>
-                            <th class="border border-gray-300 p-2" rowspan="3">No.</th>
-                            <th class="border border-gray-300 p-2" rowspan="3">Checked Items</th>
-                            <th class="border border-gray-300 p-2" colspan="12">Hasil Pemeriksaan</th>
+                            <th class="border border-gray-300 p-2 sticky top-0" rowspan="3">No.</th>
+                            <th class="border border-gray-300 p-2 sticky top-0" rowspan="3">Checked Items</th>
+                            <th class="border border-gray-300 p-2 sticky top-0" colspan="12">Hasil Pemeriksaan</th>
                         </tr>
-                        <tr>
-                            <th class="border border-gray-300 p-2" colspan="2">KL 10</th>
-                            <th class="border border-gray-300 p-2" colspan="2">KL 5</th>
-                            <th class="border border-gray-300 p-2" colspan="2">KL 6</th>
-                            <th class="border border-gray-300 p-2" colspan="2">KL 7</th>
-                            <th class="border border-gray-300 p-2" colspan="2">KL 8</th>
-                            <th class="border border-gray-300 p-2" colspan="2">KL 9</th>
+                        <tr class="sticky top-[41px] z-10">
+                            <th class="border border-gray-300 p-2 bg-gray-200" colspan="2">KL 10</th>
+                            <th class="border border-gray-300 p-2 bg-gray-200" colspan="2">KL 5</th>
+                            <th class="border border-gray-300 p-2 bg-gray-200" colspan="2">KL 6</th>
+                            <th class="border border-gray-300 p-2 bg-gray-200" colspan="2">KL 7</th>
+                            <th class="border border-gray-300 p-2 bg-gray-200" colspan="2">KL 8</th>
+                            <th class="border border-gray-300 p-2 bg-gray-200" colspan="2">KL 9</th>
                         </tr>
-                        <tr>
+                        <tr class="sticky top-[82px] z-10">
                             @for ($i = 0; $i < 6; $i++)
-                                <th class="border border-gray-300 p-2">I</th>
-                                <th class="border border-gray-300 p-2">II</th>
+                                <th class="border border-gray-300 p-2 bg-gray-200">I</th>
+                                <th class="border border-gray-300 p-2 bg-gray-200">II</th>
                             @endfor
                         </tr>
                     </thead>
-    
+
                     <tbody class="text-sm text-center">
                         @php
                             $checkedItems = [
@@ -164,31 +164,31 @@
                     </tbody>                    
                 </table>
             </div>
-            
+
             <!-- High Kompressor Table -->
             <div class="text-lg font-semibold mb-4 mt-8">
                 Data High Kompressor
             </div>
-    
-            <div class="overflow-x-auto">
+
+            <div class="overflow-x-auto max-h-[500px]">
                 <table class="min-w-full border border-gray-300 shadow-lg rounded-lg bg-white border-collapse">
-                    <thead class="bg-gray-200 text-center">
+                    <thead class="bg-gray-200 text-center sticky top-0 z-10">
                         <tr>
-                            <th class="border border-gray-300 p-2" rowspan="3">No.</th>
-                            <th class="border border-gray-300 p-2" rowspan="3">Checked Items</th>
-                            <th class="border border-gray-300 p-2" colspan="10">Hasil Pemeriksaan</th>
+                            <th class="border border-gray-300 p-2 sticky top-0" rowspan="3">No.</th>
+                            <th class="border border-gray-300 p-2 sticky top-0" rowspan="3">Checked Items</th>
+                            <th class="border border-gray-300 p-2 sticky top-0" colspan="10">Hasil Pemeriksaan</th>
                         </tr>
-                        <tr>
-                            <th class="border border-gray-300 p-2" colspan="2">KH 7</th>
-                            <th class="border border-gray-300 p-2" colspan="2">KH 8</th>
-                            <th class="border border-gray-300 p-2" colspan="2">KH 9</th>
-                            <th class="border border-gray-300 p-2" colspan="2">KH 10</th>
-                            <th class="border border-gray-300 p-2" colspan="2">KH 11</th>
+                        <tr class="sticky top-[41px] z-10">
+                            <th class="border border-gray-300 p-2 bg-gray-200" colspan="2">KH 7</th>
+                            <th class="border border-gray-300 p-2 bg-gray-200" colspan="2">KH 8</th>
+                            <th class="border border-gray-300 p-2 bg-gray-200" colspan="2">KH 9</th>
+                            <th class="border border-gray-300 p-2 bg-gray-200" colspan="2">KH 10</th>
+                            <th class="border border-gray-300 p-2 bg-gray-200" colspan="2">KH 11</th>
                         </tr>
-                        <tr>
+                        <tr class="sticky top-[82px] z-10">
                             @for ($i = 0; $i < 5; $i++)
-                                <th class="border border-gray-300 p-2">I</th>
-                                <th class="border border-gray-300 p-2">II</th>
+                                <th class="border border-gray-300 p-2 bg-gray-200">I</th>
+                                <th class="border border-gray-300 p-2 bg-gray-200">II</th>
                             @endfor
                         </tr>
                     </thead>

@@ -46,12 +46,16 @@ class WaterChillerController extends Controller
     public function store(Request $request)
     {
         // Cek apakah tanggal sudah ada di database
-        $existingDate = WaterChillerCheck::where('tanggal', $request->tanggal)->exists();
-        
+        $existingDate = WaterChillerCheck::where('tanggal', $request->tanggal)
+        ->when(Auth::user() instanceof \App\Models\Checker, function ($query) {
+            // Jika user adalah Checker, hanya cek recordnya sendiri
+            return $query->where('checked_by', Auth::user()->username);
+        })
+        ->exists();
+    
         if ($existingDate) {
-            return back()->withErrors(['tanggal' => 'Tanggal ini sudah digunakan! Pilih tanggal lain.']);
+            return redirect()->route('water-chiller.create')->with('warning', 'Data di tanggal tersebut telah dibuat');
         }
-
         $request->validate([
             'tanggal' => 'required|date',
             'hari' => 'required|string|max:20',
@@ -158,12 +162,15 @@ class WaterChillerController extends Controller
         // Ambil data dari database berdasarkan ID
         $check = WaterChillerCheck::findOrFail($id);
         $results = WaterChillerResult::where('check_id', $id)->get();
-
+        
         // Load view untuk PDF dengan ukuran halaman yang sesuai
         $pdf = Pdf::loadView('water_chiller.pdf', compact('check', 'results'))
             ->setPaper('a4', 'landscape'); // Set ukuran kertas A4 landscape
+    
+        // Format tanggal untuk nama file
+        $formattedDate = date('d-m-Y', strtotime($check->tanggal));
 
-        // Mengembalikan file PDF untuk di-download
-        return $pdf->download('water_chiller_' . $id . '.pdf');
+        // Mengembalikan file PDF untuk di-download dengan format nama yang baru
+        return $pdf->download('Water Chiller Form_' . $formattedDate . '.pdf');
     }
 }

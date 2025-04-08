@@ -7,8 +7,36 @@
 
     <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
     @vite('resources/css/app.css')
+    <style>
+        /* Notification Popup Styles */
+        #notification-popup {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 15px 30px;
+            border-radius: 8px;
+            color: white;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: opacity 0.3s ease;
+        }
+        .notification-success {
+            background-color: #28a745;
+        }
+        .notification-warning {
+        background-color: #dc3545;
+        color: white;
+        }
+    </style>
 </head>
 <body class="bg-sky-50 font-sans">
+    <!-- Notification Popup -->
+    <div id="notification-popup" class="notification-success">
+        <span id="notification-message"></span>
+    </div>
+
     <div class="container mx-auto mt-4 px-4">
         <h2 class="mb-4 text-xl font-bold">@yield('page-title', 'Pencatatan Mesin')</h2>
 
@@ -21,7 +49,7 @@
                 </div>
 
                 <!-- Form Input -->
-                <form action="@yield('form-action')" method="POST">
+                <form action="@yield('form-action')" method="POST" id="air-dryer-form">
                     @csrf
                     <div class="grid md:grid-cols-2 gap-4 mb-4">
                         <div>
@@ -72,6 +100,30 @@
             let hari = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(tanggal);
             document.getElementById("hari").value = hari;
         });
+
+        // Function to show notification
+        function showNotification(message, type = 'success') {
+            const popup = document.getElementById('notification-popup');
+            const messageEl = document.getElementById('notification-message');
+            
+            // Reset classes
+            popup.classList.remove('notification-success', 'notification-warning');
+            
+            // Add appropriate class based on type
+            popup.classList.add(`notification-${type}`);
+            
+            messageEl.textContent = message;
+            popup.style.display = 'block';
+            
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 3000);
+        }
+
+        // Handle date duplicate warning
+        @if(session('warning'))
+            showNotification("{{ session('warning') }}", 'warning');
+        @endif
     </script>
     
     @yield('additional-scripts')

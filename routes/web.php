@@ -7,6 +7,7 @@ use App\Http\Controllers\AirDryerController;
 use App\Http\Controllers\WaterChillerController;
 use App\Http\Controllers\CompressorController;
 use App\Http\Controllers\HopperController;
+use App\Http\Controllers\DehumBahanController;
 
 
 Route::get('/', function () {
@@ -68,4 +69,15 @@ Route::middleware(['auth:approver,checker'])->group(function () {
     Route::post('/hopper/{id}/approve', [HopperController::class, 'approve'])->name('hopper.approve');
     // Route download PDF
     Route::get('/hopper/{id}/download-pdf', [HopperController::class, 'downloadPdf'])->name('hopper.downloadPdf');
+
+    // Route Mesin Dehum Bahan
+    Route::get('/dehumbahan', [DehumBahanController::class, 'index'])->name('dehumbahan.index');
+    Route::get('/dehumbahan/create', [DehumBahanController::class, 'create'])->name('dehumbahan.create');
+    Route::post('/dehumbahan', [DehumBahanController::class, 'store'])->name('dehumbahan.store');
+    Route::get('/dehumbahan/{id}/edit', [DehumBahanController::class, 'edit'])->name('dehumbahan.edit');
+    Route::put('/dehumbahan/{id}', [DehumBahanController::class, 'update'])->name('dehumbahan.update');
+    Route::get('/dehumbahan/{id}', [DehumBahanController::class, 'show'])->name('dehumbahan.show');
+    Route::post('/dehumbahan/{id}/approve', [DehumBahanController::class, 'approve'])->name('dehumbahan.approve');
+    // Route download PDF
+    Route::get('/dehumbahan/{id}/download-pdf', [DehumBahanController::class, 'downloadPdf'])->name('dehumbahan.downloadPdf');
 });
