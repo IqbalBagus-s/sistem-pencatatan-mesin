@@ -168,29 +168,16 @@ class CompressorController extends Controller
 
     public function edit($id)
     {
-        // Ambil data compressor check berdasarkan ID
+        // Ambil data check berdasarkan ID
         $check = CompressorCheck::findOrFail($id);
         
-        // Ambil data low kompressor
-        $lowResults = CompressorResultKl::where('check_id', $id)
-            ->whereIn('checked_items', [
-                "Temperatur motor", "Temperatur screw", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
-                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
-                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
-                "Ampere", "Skun", "Service hour", "Load hours", "Temperatur ADT"
-            ])
-            ->get();
+        // Ambil data hasil low kompressor
+        $lowResults = CompressorResultKl::where('check_id', $id)->get();
         
-        // Ambil data high kompressor
-        $highResults = CompressorResultKh::where('check_id', $id)
-            ->whereIn('checked_items', [
-                "Temperatur Motor", "Temperatur Piston", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
-                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
-                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
-                "Ampere", "Skun", "Service hour", "Load hours", "Inlet Preasure", "Outlet Preasure"
-            ])
-            ->get();
+        // Ambil data hasil high kompressor
+        $highResults = CompressorResultKh::where('check_id', $id)->get();
         
+        // Tampilkan view edit dengan data yang diperlukan
         return view('compressor.edit', compact('check', 'lowResults', 'highResults'));
     }
 
@@ -211,9 +198,11 @@ class CompressorController extends Controller
             'humidity_shift1' => 'nullable|string',
             'humidity_shift2' => 'nullable|string',
         ]);
-
-        // Update data di tabel compressor_checks
+        
+        // Cari record yang akan diupdate
         $compressorCheck = CompressorCheck::findOrFail($id);
+        
+        // Update data di tabel compressor_checks
         $compressorCheck->update([
             'tanggal' => $request->tanggal,
             'hari' => $request->hari,
@@ -229,14 +218,58 @@ class CompressorController extends Controller
             'humidity_shift2' => $request->humidity_shift2,
         ]);
 
-        // Definisi semua item yang diperiksa untuk kedua kompressor
+        // Update data hasil pemeriksaan Low Kompressor
         $lowCheckedItems = [
             "Temperatur motor", "Temperatur screw", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
             "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
             "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
             "Ampere", "Skun", "Service hour", "Load hours", "Temperatur ADT"
         ];
-        
+
+        // Untuk Low Kompressor
+        foreach ($lowCheckedItems as $index => $item) {
+            // Cari record yang akan diupdate
+            $result = CompressorResultKl::where('check_id', $id)
+                                    ->where('checked_items', $item)
+                                    ->first();
+            
+            if ($result) {
+                $result->update([
+                    'kl_10I' => $request->input("kl_KL_10I")[$index] ?? null,
+                    'kl_10II' => $request->input("kl_KL_10II")[$index] ?? null,
+                    'kl_5I' => $request->input("kl_KL_5I")[$index] ?? null,
+                    'kl_5II' => $request->input("kl_KL_5II")[$index] ?? null,
+                    'kl_6I' => $request->input("kl_KL_6I")[$index] ?? null,
+                    'kl_6II' => $request->input("kl_KL_6II")[$index] ?? null,
+                    'kl_7I' => $request->input("kl_KL_7I")[$index] ?? null,
+                    'kl_7II' => $request->input("kl_KL_7II")[$index] ?? null,
+                    'kl_8I' => $request->input("kl_KL_8I")[$index] ?? null,
+                    'kl_8II' => $request->input("kl_KL_8II")[$index] ?? null,
+                    'kl_9I' => $request->input("kl_KL_9I")[$index] ?? null,
+                    'kl_9II' => $request->input("kl_KL_9II")[$index] ?? null
+                ]);
+            } else {
+                // Jika tidak ada record, buat baru
+                CompressorResultKl::create([
+                    'check_id' => $id,
+                    'checked_items' => $item,
+                    'kl_10I' => $request->input("kl_KL_10I")[$index] ?? null,
+                    'kl_10II' => $request->input("kl_KL_10II")[$index] ?? null,
+                    'kl_5I' => $request->input("kl_KL_5I")[$index] ?? null,
+                    'kl_5II' => $request->input("kl_KL_5II")[$index] ?? null,
+                    'kl_6I' => $request->input("kl_KL_6I")[$index] ?? null,
+                    'kl_6II' => $request->input("kl_KL_6II")[$index] ?? null,
+                    'kl_7I' => $request->input("kl_KL_7I")[$index] ?? null,
+                    'kl_7II' => $request->input("kl_KL_7II")[$index] ?? null,
+                    'kl_8I' => $request->input("kl_KL_8I")[$index] ?? null,
+                    'kl_8II' => $request->input("kl_KL_8II")[$index] ?? null,
+                    'kl_9I' => $request->input("kl_KL_9I")[$index] ?? null,
+                    'kl_9II' => $request->input("kl_KL_9II")[$index] ?? null
+                ]);
+            }
+        }
+
+        // Update data hasil pemeriksaan High Kompressor
         $highCheckedItems = [
             "Temperatur Motor", "Temperatur Piston", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
             "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
@@ -244,74 +277,43 @@ class CompressorController extends Controller
             "Ampere", "Skun", "Service hour", "Load hours", "Inlet Preasure", "Outlet Preasure"
         ];
 
-        // Kolom untuk Low Kompressor
-        $klColumns = [
-            'kl_10I', 'kl_10II', 'kl_5I', 'kl_5II', 'kl_6I', 'kl_6II',
-            'kl_7I', 'kl_7II', 'kl_8I', 'kl_8II', 'kl_9I', 'kl_9II'
-        ];
-        
-        // Kolom untuk High Kompressor - sesuaikan dengan yang ada di view
-        $khColumns = [
-            'kh_7I', 'kh_7II', 'kh_8I', 'kh_8II', 'kh_9I', 'kh_9II',
-            'kh_10I', 'kh_10II', 'kh_11I', 'kh_11II'
-        ];
-
-        // Proses data untuk Low Kompressor
-        foreach ($lowCheckedItems as $index => $item) {
-            // Siapkan data base yang akan digunakan untuk menemukan record
-            $data = [
-                'check_id' => $id, 
-                'checked_items' => $item
-            ];
-            
-            // Siapkan array untuk nilai yang akan diupdate
-            $values = [];
-            
-            // Loop melalui semua kolom KL dan ambil nilainya dari form
-            foreach ($klColumns as $col) {
-                // Nama field di request sesuai dengan nama di form
-                $inputName = "kl_{$col}";
-                
-                // Tambahkan nilai ke values jika ada di request
-                if ($request->has($inputName)) {
-                    $values[$col] = $request->input($inputName)[$index] ?? null;
-                } else {
-                    $values[$col] = null;
-                }
-            }
-            
-            // Update atau buat data baru dengan data yang tepat
-            CompressorResultKl::updateOrCreate($data, $values);
-            CompressorResultKh::updateOrCreate($data, $values);
-        }
-
-        // Proses data untuk High Kompressor
+        // Untuk High Kompressor
         foreach ($highCheckedItems as $index => $item) {
-            // Siapkan data base yang akan digunakan untuk menemukan record
-            $data = [
-                'check_id' => $id, 
-                'checked_items' => $item
-            ];
+            // Cari record yang akan diupdate
+            $result = CompressorResultKh::where('check_id', $id)
+                                    ->where('checked_items', $item)
+                                    ->first();
             
-            // Siapkan array untuk nilai yang akan diupdate
-            $values = [];
-            
-            // Loop melalui semua kolom KH dan ambil nilainya dari form
-            foreach ($khColumns as $col) {
-                // Nama field di request sesuai dengan nama di form
-                $inputName = "kh_{$col}";
-                
-                // Tambahkan nilai ke values jika ada di request
-                if ($request->has($inputName)) {
-                    $values[$col] = $request->input($inputName)[$index] ?? null;
-                } else {
-                    $values[$col] = null;
-                }
+            if ($result) {
+                $result->update([
+                    'kh_7I' => $request->input("kh_KH_7I")[$index] ?? null,
+                    'kh_7II' => $request->input("kh_KH_7II")[$index] ?? null,
+                    'kh_8I' => $request->input("kh_KH_8I")[$index] ?? null,
+                    'kh_8II' => $request->input("kh_KH_8II")[$index] ?? null,
+                    'kh_9I' => $request->input("kh_KH_9I")[$index] ?? null,
+                    'kh_9II' => $request->input("kh_KH_9II")[$index] ?? null,
+                    'kh_10I' => $request->input("kh_KH_10I")[$index] ?? null,
+                    'kh_10II' => $request->input("kh_KH_10II")[$index] ?? null,
+                    'kh_11I' => $request->input("kh_KH_11I")[$index] ?? null,
+                    'kh_11II' => $request->input("kh_KH_11II")[$index] ?? null
+                ]);
+            } else {
+                // Jika tidak ada record, buat baru
+                CompressorResultKh::create([
+                    'check_id' => $id,
+                    'checked_items' => $item,
+                    'kh_7I' => $request->input("kh_KH_7I")[$index] ?? null,
+                    'kh_7II' => $request->input("kh_KH_7II")[$index] ?? null,
+                    'kh_8I' => $request->input("kh_KH_8I")[$index] ?? null,
+                    'kh_8II' => $request->input("kh_KH_8II")[$index] ?? null,
+                    'kh_9I' => $request->input("kh_KH_9I")[$index] ?? null,
+                    'kh_9II' => $request->input("kh_KH_9II")[$index] ?? null,
+                    'kh_10I' => $request->input("kh_KH_10I")[$index] ?? null,
+                    'kh_10II' => $request->input("kh_KH_10II")[$index] ?? null,
+                    'kh_11I' => $request->input("kh_KH_11I")[$index] ?? null,
+                    'kh_11II' => $request->input("kh_KH_11II")[$index] ?? null
+                ]);
             }
-            
-            // Update atau buat data baru dengan data yang tepat
-            CompressorResultKh::updateOrCreate($data, $values);
-            CompressorResultKl::updateOrCreate($data, $values);
         }
 
         // Redirect ke halaman index dengan pesan sukses
