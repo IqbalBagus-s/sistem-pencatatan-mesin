@@ -73,21 +73,104 @@
                         </div>
                     </div>
 
+                    <!-- Form tambahan -->
+                    <div x-data="{
+                            shiftSelected: null,
+                            username: '{{ Auth::user()->username }}',
+                            
+                            selectShift(shift) {
+                                if (this.shiftSelected === shift) {
+                                    // If the same shift is clicked again, cancel the selection
+                                    this.cancelSelection();
+                                } else {
+                                    // Select the shift
+                                    this.shiftSelected = shift;
+                                    
+                                    if (shift === 1) {
+                                        this.$refs.shift1.value = this.username;
+                                        this.$refs.shift2.value = '';
+                                        
+                                        this.$refs.tempShift1.disabled = false;
+                                        this.$refs.tempShift1.classList.remove('bg-gray-300');
+                                        this.$refs.tempShift1.classList.add('bg-gray-100');
+                                        this.$refs.humidityShift1.disabled = false;
+                                        this.$refs.humidityShift1.classList.remove('bg-gray-300');
+                                        this.$refs.humidityShift1.classList.add('bg-gray-100');
+                                        
+                                        this.$refs.tempShift2.disabled = true;
+                                        this.$refs.tempShift2.classList.remove('bg-gray-100');
+                                        this.$refs.tempShift2.classList.add('bg-gray-300');
+                                        this.$refs.humidityShift2.disabled = true;
+                                        this.$refs.humidityShift2.classList.remove('bg-gray-100');
+                                        this.$refs.humidityShift2.classList.add('bg-gray-300');
+                                    } else if (shift === 2) {
+                                        this.$refs.shift2.value = this.username;
+                                        this.$refs.shift1.value = '';
+                                        
+                                        this.$refs.tempShift2.disabled = false;
+                                        this.$refs.tempShift2.classList.remove('bg-gray-300');
+                                        this.$refs.tempShift2.classList.add('bg-gray-100');
+                                        this.$refs.humidityShift2.disabled = false;
+                                        this.$refs.humidityShift2.classList.remove('bg-gray-300');
+                                        this.$refs.humidityShift2.classList.add('bg-gray-100');
+                                        
+                                        this.$refs.tempShift1.disabled = true;
+                                        this.$refs.tempShift1.classList.remove('bg-gray-100');
+                                        this.$refs.tempShift1.classList.add('bg-gray-300');
+                                        this.$refs.humidityShift1.disabled = true;
+                                        this.$refs.humidityShift1.classList.remove('bg-gray-100');
+                                        this.$refs.humidityShift1.classList.add('bg-gray-300');
+                                    }
+                                }
+                            },
+                            
+                            cancelSelection() {
+                                // Reset the shift selection
+                                this.shiftSelected = null;
+                                
+                                // Clear the input fields
+                                this.$refs.shift1.value = '';
+                                this.$refs.shift2.value = '';
+                                
+                                // Disable all input fields
+                                this.$refs.tempShift1.disabled = true;
+                                this.$refs.tempShift1.classList.remove('bg-gray-100');
+                                this.$refs.tempShift1.classList.add('bg-gray-300');
+                                this.$refs.humidityShift1.disabled = true;
+                                this.$refs.humidityShift1.classList.remove('bg-gray-100');
+                                this.$refs.humidityShift1.classList.add('bg-gray-300');
+                                
+                                this.$refs.tempShift2.disabled = true;
+                                this.$refs.tempShift2.classList.remove('bg-gray-100');
+                                this.$refs.tempShift2.classList.add('bg-gray-300');
+                                this.$refs.humidityShift2.disabled = true;
+                                this.$refs.humidityShift2.classList.remove('bg-gray-100');
+                                this.$refs.humidityShift2.classList.add('bg-gray-300');
+                            }
+                        }">
                     <!-- Pilih Shift Checker -->
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block mb-2">Shift 1:</label>
-                            <input type="text" id="shift1" name="checked_by_shift1" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md" readonly>
-                            <button type="button" onclick="pilihShift(1)" class="mt-2 w-full bg-blue-600 text-white py-2 rounded">Pilih</button>
+                            <input type="text" id="shift1" name="checked_by_shift1" x-ref="shift1" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md" readonly>
+                            <button type="button" @click="selectShift(1)" class="mt-2 w-full text-white py-2 rounded cursor-pointer" 
+                                :class="shiftSelected === 1 ? 'bg-red-600' : 'bg-blue-600'"
+                                x-text="shiftSelected === 1 ? 'Batal' : 'Pilih'">
+                                Pilih
+                            </button>
                         </div>
                         <div>
                             <label class="block mb-2">Shift 2:</label>
-                            <input type="text" id="shift2" name="checked_by_shift2" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md" readonly>
-                            <button type="button" onclick="pilihShift(2)" class="mt-2 w-full bg-blue-600 text-white py-2 rounded">Pilih</button>
+                            <input type="text" id="shift2" name="checked_by_shift2" x-ref="shift2" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md" readonly>
+                            <button type="button" @click="selectShift(2)" class="mt-2 w-full text-white py-2 rounded cursor-pointer"
+                                :class="shiftSelected === 2 ? 'bg-red-600' : 'bg-blue-600'"
+                                x-text="shiftSelected === 2 ? 'Batal' : 'Pilih'">
+                                Pilih
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Jumlah Kompresor ON -->
+                    <!-- Independent menu items that don't need Alpine.js functionality -->
                     <div class="grid md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block mb-2">Jumlah Kompresor ON KL:</label>
@@ -115,20 +198,21 @@
                     <div class="grid md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block mb-2">Temperatur Shift 1:</label>
-                            <input type="text" id="temp-shift-1" name="temperatur_shift1" class="w-full px-3 py-2 bg-gray-300 border border-gray-300 rounded-md" placeholder="Masukkan suhu..." disabled>
+                            <input type="text" id="temp-shift-1" x-ref="tempShift1" name="temperatur_shift1" class="w-full px-3 py-2 bg-gray-300 border border-gray-300 rounded-md" placeholder="Masukkan suhu..." disabled>
                         </div>
                         <div>
                             <label class="block mb-2">Temperatur Shift 2:</label>
-                            <input type="text" id="temp-shift-2" name="temperatur_shift2" class="w-full px-3 py-2 bg-gray-300 border border-gray-300 rounded-md" placeholder="Masukkan suhu..." disabled>
+                            <input type="text" id="temp-shift-2" x-ref="tempShift2" name="temperatur_shift2" class="w-full px-3 py-2 bg-gray-300 border border-gray-300 rounded-md" placeholder="Masukkan suhu..." disabled>
                         </div>
                         <div>
                             <label class="block mb-2">Humidity Shift 1:</label>
-                            <input type="text" id="humidity-shift-1" name="humidity_shift1" class="w-full px-3 py-2 bg-gray-300 border border-gray-300 rounded-md" placeholder="Masukkan kelembapan..." disabled>
+                            <input type="text" id="humidity-shift-1" x-ref="humidityShift1" name="humidity_shift1" class="w-full px-3 py-2 bg-gray-300 border border-gray-300 rounded-md" placeholder="Masukkan kelembapan..." disabled>
                         </div>
                         <div>
                             <label class="block mb-2">Humidity Shift 2:</label>
-                            <input type="text" id="humidity-shift-2" name="humidity_shift2" class="w-full px-3 py-2 bg-gray-300 border border-gray-300 rounded-md" placeholder="Masukkan kelembapan..." disabled>
+                            <input type="text" id="humidity-shift-2" x-ref="humidityShift2" name="humidity_shift2" class="w-full px-3 py-2 bg-gray-300 border border-gray-300 rounded-md" placeholder="Masukkan kelembapan..." disabled>
                         </div>
+                    </div>
                     </div>
 
                     <!-- Low Kompressor Table -->
@@ -336,6 +420,8 @@
         <p class="mb-0 font-bold">2025 © PT Asia Pramulia</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
     <script>
         document.getElementById("tanggal").addEventListener("change", function() {
             let tanggal = new Date(this.value);
@@ -343,41 +429,6 @@
             document.getElementById("hari").value = hari;
         });
 
-        function pilihShift(shift) {
-            let username = "{{ Auth::user()->username }}";
-
-            if (shift === 1) {
-                document.getElementById('shift1').value = username;
-                document.getElementById('shift2').value = "";
-
-                document.getElementById("temp-shift-1").disabled = false;
-                document.getElementById("temp-shift-1").classList.remove("bg-gray-300");
-
-                document.getElementById("humidity-shift-1").disabled = false;
-                document.getElementById("humidity-shift-1").classList.remove("bg-gray-300");
-
-                document.getElementById("temp-shift-2").disabled = true;
-                document.getElementById("temp-shift-2").classList.add("bg-gray-300");
-
-                document.getElementById("humidity-shift-2").disabled = true;
-                document.getElementById("humidity-shift-2").classList.add("bg-gray-300");
-            } else {
-                document.getElementById('shift2').value = username;
-                document.getElementById('shift1').value = "";
-
-                document.getElementById("temp-shift-2").disabled = false;
-                document.getElementById("temp-shift-2").classList.remove("bg-gray-300");
-
-                document.getElementById("humidity-shift-2").disabled = false;
-                document.getElementById("humidity-shift-2").classList.remove("bg-gray-300");
-
-                document.getElementById("temp-shift-1").disabled = true;
-                document.getElementById("temp-shift-1").classList.add("bg-gray-300");
-
-                document.getElementById("humidity-shift-1").disabled = true;
-                document.getElementById("humidity-shift-1").classList.add("bg-gray-300");
-            }
-        }
 
         // Function to show notification
         function showNotification(message, type = 'success') {

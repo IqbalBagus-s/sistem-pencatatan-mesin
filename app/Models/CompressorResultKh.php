@@ -6,18 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CompressorResult extends Model
+class CompressorResultKh extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'compressor_results'; // Nama tabel di database
+    protected $table = 'compressor_kh_results'; // Nama tabel di database
 
     protected $fillable = [
         'check_id',
         'checked_items',
-        'kl_10I', 'kl_10II', 'kl_5I', 'kl_5II',
-        'kl_6I', 'kl_6II', 'kl_7I', 'kl_7II',
-        'kl_8I', 'kl_8II', 'kl_9I', 'kl_9II',
         'kh_7I', 'kh_7II', 'kh_8I', 'kh_8II',
         'kh_9I', 'kh_9II', 'kh_10I', 'kh_10II',
         'kh_11I', 'kh_11II',

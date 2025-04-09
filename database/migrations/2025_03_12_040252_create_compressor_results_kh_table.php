@@ -11,25 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('compressor_results', function (Blueprint $table) {
+        Schema::create('compressor_kh_results', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('check_id');
             $table->string('checked_items');
             
-            // Kompresor low
-            $table->string('kl_10I')->nullable();
-            $table->string('kl_10II')->nullable();
-            $table->string('kl_5I')->nullable();
-            $table->string('kl_5II')->nullable();
-            $table->string('kl_6I')->nullable();
-            $table->string('kl_6II')->nullable();
-            $table->string('kl_7I')->nullable();
-            $table->string('kl_7II')->nullable();
-            $table->string('kl_8I')->nullable();
-            $table->string('kl_8II')->nullable();
-            $table->string('kl_9I')->nullable();
-            $table->string('kl_9II')->nullable();
-
             // Kompresor high
             $table->string('kh_7I')->nullable();
             $table->string('kh_7II')->nullable();

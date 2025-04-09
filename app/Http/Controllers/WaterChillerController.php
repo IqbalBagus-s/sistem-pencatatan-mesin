@@ -113,22 +113,20 @@ class WaterChillerController extends Controller
         ]);
 
         // Update WaterChillerResult
-        for ($i = 1; $i <= 32; $i++) {
-            $result = WaterChillerResult::where('check_id', $check_id)
-                ->where('no_mesin', "CH{$i}")
-                ->first();
-
-            if ($result) {
+        if ($request->has('no_mesin')) {
+            foreach ($request->no_mesin as $resultId => $no_mesin) {
+                $result = WaterChillerResult::findOrFail($resultId);
+                
                 $result->update([
-                    'Temperatur_Compressor' => $request->input("temperatur_1.{$i}") ?: null,
-                    'Temperatur_Kabel' => $request->input("temperatur_2.{$i}") ?: null,
-                    'Temperatur_Mcb' => $request->input("temperatur_3.{$i}") ?: null,
-                    'Temperatur_Air' => $request->input("temperatur_4.{$i}") ?: null,
-                    'Temperatur_Pompa' => $request->input("temperatur_5.{$i}") ?: null,
-                    'Evaporator' => $request->input("evaporator.{$i}") ?: null,
-                    'Fan_Evaporator' => $request->input("fan_evaporator.{$i}") ?: null,
-                    'Freon' => $request->input("freon.{$i}") ?: null,
-                    'Air' => $request->input("air.{$i}") ?: null,
+                    'Temperatur_Compressor' => $request->input("temperatur_1.{$resultId}") ?: null,
+                    'Temperatur_Kabel' => $request->input("temperatur_2.{$resultId}") ?: null,
+                    'Temperatur_Mcb' => $request->input("temperatur_3.{$resultId}") ?: null,
+                    'Temperatur_Air' => $request->input("temperatur_4.{$resultId}") ?: null,
+                    'Temperatur_Pompa' => $request->input("temperatur_5.{$resultId}") ?: null,
+                    'Evaporator' => $request->input("evaporator.{$resultId}") ?: null,
+                    'Fan_Evaporator' => $request->input("fan_evaporator.{$resultId}") ?: null,
+                    'Freon' => $request->input("freon.{$resultId}") ?: null,
+                    'Air' => $request->input("air.{$resultId}") ?: null,
                 ]);
             }
         }
