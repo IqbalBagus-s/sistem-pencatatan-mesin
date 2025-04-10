@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 use App\Models\CompressorCheck;
-use App\Models\CompressorResult;
 use App\Models\CompressorResultKh;
 use App\Models\CompressorResultKl;
 use Illuminate\Support\Facades\Auth;

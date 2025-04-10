@@ -6,6 +6,8 @@
     <title>Detail Pencatatan Mesin Compressor</title>
     @vite('resources/css/app.css')
     <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
+    <!-- Add Alpine.js from CDN -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-100 p-6">
 
@@ -223,35 +225,98 @@
                     </tbody>                    
                 </table>
             </div>
-            <!-- Menampilkan Pilihan Shift untuk Approver -->
-            <div class="mb-4 p-4 bg-gray-200 rounded">
-                <p class="text-lg font-semibold text-gray-700">Pilih Shift Approver</p>
+            
+            <!-- Menampilkan Pilihan Shift untuk Approver dengan Alpine.js Inline -->
+            <div class="mb-4 p-4 bg-gray-200 rounded" 
+                 x-data="{
+                     // Initial values from database 
+                     dbShift1: '{{ $check->approved_by_shift1 }}',
+                     dbShift2: '{{ $check->approved_by_shift2 }}',
+                     // Current form values (initially set to match database)
+                     shift1: '{{ $check->approved_by_shift1 }}',
+                     shift2: '{{ $check->approved_by_shift2 }}',
+                     // Store the original database values for comparison
+                     formChanged: false,
+                     pilihShift(shift) {
+                         const user = '{{ Auth::user()->username }}';
+                         if (shift === 1) {
+                             this.shift1 = user;
+                         } else if (shift === 2) {
+                             this.shift2 = user;
+                         }
+                         this.updateFormChanged();
+                     },
+                     batalPilih(shift) {
+                         // Always clear the field completely, ignoring database value
+                         if (shift === 1) {
+                             this.shift1 = '';
+                         } else if (shift === 2) {
+                             this.shift2 = '';
+                         }
+                         this.updateFormChanged();
+                     },
+                     // Update the form changed status
+                     updateFormChanged() {
+                         this.formChanged = (this.shift1 !== this.dbShift1) || (this.shift2 !== this.dbShift2);
+                     },
+                     // Check if form can be submitted
+                     canSubmit() {
+                         return this.formChanged && (this.shift1 !== '' || this.shift2 !== '');
+                     }
+                 }">
+                <p class="text-lg font-semibold text-gray-700">Setujui Laporan</p>
                 
                 <div class="grid grid-cols-2 gap-4 mt-2">
                     <!-- Shift 1 -->
                     <div class="p-4 bg-white shadow rounded border border-gray-300">
                         <label class="block text-gray-700 font-semibold">Shift 1</label>
                         <input type="text" id="approved_by_shift1" name="approved_by_shift1" class="mt-2 w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                            value="{{ $check->approved_by_shift1 }}" readonly>
-                        <button type="button" id="btn-shift-1" class="mt-2 w-full bg-blue-500 text-white py-1 px-3 rounded disabled:opacity-50" 
-                                onclick="pilihShift(1)" {{ $check->approved_by_shift1 ? 'disabled' : '' }}>Pilih</button>
+                            x-model="shift1" readonly>
+                        
+                        <!-- Show Pilih button if empty, otherwise show Batal button -->
+                        <button type="button" 
+                            x-show="!shift1" 
+                            class="mt-2 w-full bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-600" 
+                            @click="pilihShift(1)">
+                            Setujui
+                        </button>
+                        
+                        <button type="button" 
+                            x-show="shift1" 
+                            class="mt-2 w-full bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" 
+                            @click="batalPilih(1)">
+                            Batal Setujui
+                        </button>
                     </div>
 
                     <!-- Shift 2 -->
                     <div class="p-4 bg-white shadow rounded border border-gray-300">
                         <label class="block text-gray-700 font-semibold">Shift 2</label>
                         <input type="text" id="approved_by_shift2" name="approved_by_shift2" class="mt-2 w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                            value="{{ $check->approved_by_shift2 }}" readonly>
-                        <button type="button" id="btn-shift-2" class="mt-2 w-full bg-green-500 text-white py-1 px-3 rounded disabled:opacity-50" 
-                                onclick="pilihShift(2)" {{ $check->approved_by_shift2 ? 'disabled' : '' }}>Pilih</button>
+                            x-model="shift2" readonly>
+                        
+                        <!-- Show Pilih button if empty, otherwise show Batal button -->
+                        <button type="button" 
+                            x-show="!shift2" 
+                            class="mt-2 w-full bg-green-500 text-white py-1 px-3 rounded hover:bg-green-600" 
+                            @click="pilihShift(2)">
+                            Setujui
+                        </button>
+                        
+                        <button type="button" 
+                            x-show="shift2" 
+                            class="mt-2 w-full bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" 
+                            @click="batalPilih(2)">
+                            Batal Setujui
+                        </button>
                     </div>
                 </div>
 
                 <!-- Tombol Simpan Persetujuan -->
                 <form id="approvalForm" method="POST" action="{{ route('compressor.approve', $check->id) }}">
                     @csrf
-                    <input type="hidden" id="shift1" name="shift1" value="{{ $check->approved_by_shift1 }}">
-                    <input type="hidden" id="shift2" name="shift2" value="{{ $check->approved_by_shift2 }}">
+                    <input type="hidden" name="shift1" :value="shift1">
+                    <input type="hidden" name="shift2" :value="shift2">
 
                     <div class="mt-4 flex justify-between">
                         <!-- Tombol Kembali -->
@@ -259,41 +324,28 @@
                             Kembali
                         </a>
 
+                        <!-- Conditional rendering based on db values, not form state -->
                         @if($check->approved_by_shift1 && $check->approved_by_shift2)
-                            <!-- Jika kedua shift sudah disetujui, tampilkan tombol Download PDF -->
-                            <a href="{{ route('compressor.downloadPdf', $check->id) }}" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-                                Download PDF
-                            </a>
-                            <button type="button" class="bg-gray-400 text-white py-2 px-4 rounded cursor-not-allowed" disabled>
-                                Telah Disetujui
-                            </button>
+                            <!-- Jika kedua shift sudah disetujui di database, tampilkan tombol Download PDF -->
+                            <div class="flex space-x-2">
+                                <a href="{{ route('compressor.downloadPdf', $check->id) }}" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                                    Download PDF
+                                </a>
+                                <button type="button" class="bg-gray-400 text-white py-2 px-4 rounded cursor-not-allowed" disabled>
+                                    Telah Disetujui
+                                </button>
+                            </div>
                         @else
-                            <!-- Jika salah satu shift belum disetujui, tampilkan tombol Simpan Persetujuan -->
-                            <button type="submit" class="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800">
+                            <!-- Jika salah satu shift belum disetujui di database, tampilkan tombol Simpan Persetujuan -->
+                            <button type="submit" class="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800"
+                                    :disabled="!isModified(1) && !isModified(2)">
                                 Simpan Persetujuan
                             </button>
                         @endif
                     </div>
                 </form>                
             </div>
-                
         </div>
     </div>
-    
-    <script>
-        // Fungsi untuk mengisi shift dengan nama user yang sedang login
-        function pilihShift(shift) {
-            let user = "{{ Auth::user()->username }}"; // Gantilah dengan data user yang sesuai
-            if (shift === 1) {
-                document.getElementById("approved_by_shift1").value = user;
-                document.getElementById("shift1").value = user;
-                document.getElementById("btn-shift-1").disabled = true;
-            } else if (shift === 2) {
-                document.getElementById("approved_by_shift2").value = user;
-                document.getElementById("shift2").value = user;
-                document.getElementById("btn-shift-2").disabled = true;
-            }
-        }
-    </script>
 </body>
 </html>

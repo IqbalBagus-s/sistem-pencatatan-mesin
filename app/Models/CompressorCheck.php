@@ -32,8 +32,14 @@ class CompressorCheck extends Model
     /**
      * Relasi ke CompressorResult (One to Many)
      */
-    public function results()
+    public function resultsKh()
     {
-        return $this->hasMany(CompressorResult::class, 'check_id');
+        return $this->hasMany(CompressorResultKh::class, 'check_id');
     }
+
+    public function resultsKl()
+    {
+        return $this->hasMany(CompressorResultKl::class, 'check_id');
+    }
+
 }
