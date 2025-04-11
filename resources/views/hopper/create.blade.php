@@ -4,6 +4,8 @@
 @section('title', 'Form Pencatatan Mesin Hopper')
 
 @section('content')
+
+
 <h2 class="mb-4 text-xl font-bold">Pencatatan Mesin Hopper</h2>
 
 <div class="bg-white rounded-lg shadow-md mb-5">
@@ -335,5 +337,6 @@
             });
         }
     });
+    
 </script>
 @endsection
