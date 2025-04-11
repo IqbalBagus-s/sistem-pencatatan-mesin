@@ -90,13 +90,60 @@
             background-color: #4b5563;
         }
         
-        @yield('additional-styles'){}
+        @yield('additional-styles');
     </style>
 </head>
 <body class="bg-blue-50 pt-5 font-poppins min-h-screen flex flex-col overscroll-none">
 
     <div class="container mx-auto px-4 pb-12">
-    <div id="notification-popup" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg text-white text-center" style="display: none;"></div>
+    <!-- Notification popup with success, error, and warning variants -->
+    <div id="notification-popup" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 hidden">
+        <!-- Success notification (green) -->
+        <div id="success-notification" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-md flex items-center max-w-md hidden">
+            <div class="mr-2">
+                <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <p class="mr-6 text-sm" id="success-message">Data berhasil disimpan.</p>
+            <button type="button" class="ml-auto close-notification">
+                <svg class="w-4 h-4 text-green-500 hover:text-green-700" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Error notification (red) -->
+        <div id="error-notification" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-md flex items-center max-w-md hidden">
+            <div class="mr-2">
+                <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <p class="mr-6 text-sm" id="error-message">There was a problem sending your mail. Please try again.</p>
+            <button type="button" class="ml-auto close-notification">
+                <svg class="w-4 h-4 text-red-500 hover:text-red-700" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Warning notification (yellow) -->
+        <div id="warning-notification" class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded shadow-md flex items-center max-w-md hidden">
+            <div class="mr-2">
+                <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <p class="mr-6 text-sm" id="warning-message">Peringatan: Silakan periksa data Anda.</p>
+            <button type="button" class="ml-auto close-notification">
+                <svg class="w-4 h-4 text-yellow-500 hover:text-yellow-700" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
         <h2 class="text-2xl font-bold mb-6 text-gray-900">@yield('page-title', 'Pencatatan Mesin')</h2>
 
         <!-- Form Pencarian dan Tombol Tambah -->
@@ -148,42 +195,65 @@
 
     <script>
         // Function to show notification
-        function showNotification(message, type = 'success') {
-            const popup = document.getElementById('notification-popup');
-            
-            // Reset classes
-            popup.classList.remove('bg-green-500', 'bg-red-500', 'bg-yellow-500');
-            
-            // Set color based on type
-            if (type === 'success') {
-                popup.classList.add('bg-green-500');
-            } else if (type === 'warning') {
-                popup.classList.add('bg-yellow-500');
-            } else if (type === 'error') {
-                popup.classList.add('bg-red-500');
-            }
-            
-            popup.textContent = message;
-            popup.style.display = 'block';
-            
-            setTimeout(() => {
-                popup.style.display = 'none';
-            }, 3000);
+    function showNotification(message, type = 'success') {
+        const popup = document.getElementById('notification-popup');
+        const successNotification = document.getElementById('success-notification');
+        const errorNotification = document.getElementById('error-notification');
+        const warningNotification = document.getElementById('warning-notification');
+        
+        // Hide all notifications first
+        successNotification.classList.add('hidden');
+        errorNotification.classList.add('hidden');
+        warningNotification.classList.add('hidden');
+        
+        // Show the popup container
+        popup.classList.remove('hidden');
+        
+        // Show the appropriate notification type
+        if (type === 'success') {
+            document.getElementById('success-message').textContent = message;
+            successNotification.classList.remove('hidden');
+        } else if (type === 'error') {
+            document.getElementById('error-message').textContent = message;
+            errorNotification.classList.remove('hidden');
+        } else if (type === 'warning') {
+            document.getElementById('warning-message').textContent = message;
+            warningNotification.classList.remove('hidden');
         }
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            popup.classList.add('hidden');
+        }, 5000);
+    }
 
-        // Check for flash messages on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            const successMessage = "{{ session('success') }}";
-            const warningMessage = "{{ session('warning') }}";
-            
-            if (successMessage) {
-                showNotification(successMessage, 'success');
-            }
-            
-            if (warningMessage) {
-                showNotification(warningMessage, 'warning');
-            }
+    // Close button handling
+    document.addEventListener('DOMContentLoaded', () => {
+        // Add click event to all close buttons
+        const closeButtons = document.querySelectorAll('.close-notification');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                document.getElementById('notification-popup').classList.add('hidden');
+            });
         });
+        
+        // Check for flash messages on page load
+        const successMessage = "{{ session('success') }}";
+        const errorMessage = "{{ session('error') }}";
+        const warningMessage = "{{ session('warning') }}";
+        
+        if (successMessage) {
+            showNotification(successMessage, 'success');
+        }
+        
+        if (errorMessage) {
+            showNotification(errorMessage, 'error');
+        }
+        
+        if (warningMessage) {
+            showNotification(warningMessage, 'warning');
+        }
+    });
     </script>
 </body>
 </html>
