@@ -1,10 +1,10 @@
-<!-- resources/views/hopper/create.blade.php -->
+<!-- resources/views/dehum/create.blade.php -->
 @extends('layouts.create-layout-2')
 
-@section('title', 'Form Pencatatan Mesin Hopper')
+@section('title', 'Form Pencatatan Mesin Dehum')
 
 @section('content')
-<h2 class="mb-4 text-xl font-bold">Pencatatan Mesin Hopper</h2>
+<h2 class="mb-4 text-xl font-bold">Pencatatan Mesin Dehum</h2>
 
 <div class="bg-white rounded-lg shadow-md mb-5">
     <div class="p-4">
@@ -15,10 +15,10 @@
         </div>
 
         <!-- Form Input -->
-        <form action="{{ route('hopper.store') }}" method="POST">
+        <form action="{{ route('dehum-bahan.store') }}" method="POST">
             @csrf
             <div class="grid md:grid-cols-2 gap-4 mb-4">
-                <!-- Dropdown Pilih No Hopper -->
+                <!-- Dropdown Pilih No Dehum -->
                 <div x-data="{ 
                     open: false, 
                     selected: null,
@@ -28,11 +28,11 @@
                     }
                 }" class="relative w-full">
                     <!-- Label -->
-                    <label class="block mb-2 text-sm font-medium text-gray-700">Pilih No Hopper:</label>
+                    <label class="block mb-2 text-sm font-medium text-gray-700">Pilih No Dehum:</label>
                     
                     <!-- Dropdown Button -->
                     <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative">
-                        <span x-text="selected ? 'Hopper ' + selected : 'Pilih Hopper'"></span>
+                        <span x-text="selected ? 'Dehum ' + selected : 'Pilih Dehum'"></span>
                         
                         <!-- Selection Indicator -->
                         <div class="absolute right-3 top-1/2 -translate-y-1/2">
@@ -51,10 +51,10 @@
                     <!-- Dropdown List -->
                     <div x-show="open" @click.away="open = false" class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md p-2 z-10">
                         <div class="grid grid-cols-4 gap-2">
-                            <template x-for="i in 15" :key="i">
+                            <template x-for="i in 10" :key="i">
                                 <div @click.stop>
                                     <button type="button" @click="selected = i; open = false" class="w-full px-3 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white rounded-md">
-                                        <span x-text="'Hopper ' + i"></span>
+                                        <span x-text="'Dehum ' + i"></span>
                                     </button>
                                 </div>
                             </template>
@@ -62,7 +62,7 @@
                     </div>
                     
                     <!-- Hidden Input untuk dikirim ke server -->
-                    <input type="hidden" name="nomer_hopper" x-model="selected">
+                    <input type="hidden" name="nomer_dehum" x-model="selected">
                 </div>                      
             
                 <div>
@@ -99,19 +99,23 @@
                     <tbody>
                         @php
                             $items = [
-                                1 => 'Filter',
-                                2 => 'Selang',
-                                3 => 'Kontraktor',
-                                4 => 'Temperatur Kontrol',
-                                5 => 'MCB'
+                                1 => 'Filter Udara',
+                                2 => 'Kondensor',
+                                3 => 'Kompresor',
+                                4 => 'Humidity Control',
+                                5 => 'Fan',
+                                6 => 'Drain System',
+                                7 => 'Kondisi Refrigerant'
                             ];
                             
                             $options = [
                                 1 => ['Bersih', 'Kotor', 'OFF'],
-                                2 => ['Tidak Bocor', 'Bocor', 'OFF'],
-                                3 => ['Baik', 'Buruk', 'OFF'],
-                                4 => ['Baik', 'Buruk', 'OFF'],
-                                5 => ['Baik', 'Buruk', 'OFF']
+                                2 => ['Baik', 'Kotor', 'OFF'],
+                                3 => ['Normal', 'Berisik', 'OFF'],
+                                4 => ['Akurat', 'Tidak Akurat', 'OFF'],
+                                5 => ['Normal', 'Berisik', 'OFF'],
+                                6 => ['Lancar', 'Tersumbat', 'OFF'],
+                                7 => ['Normal', 'Kurang', 'OFF']
                             ];
                         @endphp
                         
@@ -176,10 +180,10 @@
                                         placeholder="Keterangan">
                                 </td>
                             </tr>
-                            @if($i == 2)
+                            @if($i == 3)
                             <tr>
                                 <td colspan="10" class="border border-gray-300 text-center p-2 h-12 bg-gray-100 font-medium">
-                                    Panel Kelistrikan
+                                    Komponen Elektrik
                                 </td>
                             </tr>
                             @endif
@@ -312,7 +316,7 @@
             </div>
 
             <div class="flex justify-between mt-6">
-                <a href="{{ route('hopper.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                <a href="{{ route('dehum-bahan.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Kembali
                 </a>
                 <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">

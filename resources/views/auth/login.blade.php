@@ -6,14 +6,38 @@
     <title>Login</title>
     <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
     @vite('resources/css/app.css')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @media (max-width: 640px) {
+            .login-container {
+                width: 90%;
+                margin: 0 auto;
+                padding: 1rem;
+            }
+        }
+        
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .login-container {
+                width: 70%;
+                max-width: 500px;
+            }
+        }
+        
+        @media (min-width: 1025px) {
+            .login-container {
+                width: 100%;
+                max-width: 450px;
+            }
+        }
+    </style>
 </head>
-<body class="flex items-center justify-center min-h-screen bg-green-50">
-    <div class="w-full max-w-md">
-        <div class="p-6 bg-white rounded-lg shadow-md">
+<body class="flex items-center justify-center min-h-screen bg-green-50 px-4 py-6">
+    <div class="login-container w-full">
+        <div class="p-4 md:p-6 bg-white rounded-lg shadow-md">
             <div class="text-center mb-4">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-12 mb-2 mx-auto">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10 sm:h-12 mb-2 mx-auto">
             </div>
-            <h2 class="text-center text-gray-600 text-2xl mb-6">Login</h2>
+            <h2 class="text-center text-gray-600 text-xl sm:text-2xl mb-4 md:mb-6">Login</h2>
 
             <form action="{{ route('login.post') }}" method="POST" id="loginForm">
                 @csrf
@@ -32,26 +56,31 @@
                     </div>
                 </div>
 
-                <div class="mb-6">
+                <div class="mb-5 relative">
                     <label for="role" class="block text-sm font-medium text-gray-700 mb-1">Posisi</label>
-                    <select id="role" name="role" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
-                        <option value="" disabled selected>Pilih posisi</option>
-                        <option value="approver">Approver</option>
-                        <option value="checker">Checker</option>
-                    </select>
+                    <div class="relative">
+                        <select id="role" name="role" class="w-full px-3 py-2 appearance-none border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                            <option value="" disabled selected>Pilih posisi</option>
+                            <option value="approver">Approver</option>
+                            <option value="checker">Checker</option>
+                        </select>
+                        <div class="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
                 </div>
 
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200">Sign in</button>
             </form>
 
-            <p class="text-center text-gray-500 text-sm mt-6">2025 © PT Asia Pramulia</p>
+            <p class="text-center text-gray-500 text-xs sm:text-sm mt-5">2025 © PT Asia Pramulia</p>
         </div>
     </div>
 
     <!-- Error Modal -->
     @if(session('error'))
-    <div id="errorModal" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-        <div class="bg-white rounded-lg overflow-hidden shadow-xl max-w-md w-full">
+    <div id="errorModal" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 px-4">
+        <div class="bg-white rounded-lg overflow-hidden shadow-xl w-full max-w-sm md:max-w-md">
             <div class="bg-red-600 px-4 py-3 flex justify-between items-center">
                 <h5 class="text-white font-medium">Login Error</h5>
                 <button type="button" class="text-white hover:text-gray-200" onclick="closeModal()">
@@ -60,18 +89,18 @@
                     </svg>
                 </button>
             </div>
-            <div class="px-4 py-3">
+            <div class="px-4 py-3 text-sm md:text-base">
                 {{ session('error') }}
             </div>
             <div class="px-4 py-3 bg-gray-50 text-right">
-                <button type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md text-sm transition duration-200" onclick="closeModal()">Close</button>
+                <button type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-1.5 px-3 md:py-2 md:px-4 rounded-md text-sm transition duration-200" onclick="closeModal()">Close</button>
             </div>
         </div>
     </div>
     @endif
 
     <!-- Logout notification -->
-    <div id="logoutNotification" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background-color: #2563eb; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); z-index: 1000; font-weight: 500;">
+    <div id="logoutNotification" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background-color: #2563eb; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); z-index: 1000; font-weight: 500; width: 85%; max-width: 300px; text-align: center;">
         Anda telah logout
     </div>
 

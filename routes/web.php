@@ -71,13 +71,13 @@ Route::middleware(['auth:approver,checker'])->group(function () {
     Route::get('/hopper/{id}/download-pdf', [HopperController::class, 'downloadPdf'])->name('hopper.downloadPdf');
 
     // Route Mesin Dehum Bahan
-    Route::get('/dehumbahan', [DehumBahanController::class, 'index'])->name('dehumbahan.index');
-    Route::get('/dehumbahan/create', [DehumBahanController::class, 'create'])->name('dehumbahan.create');
-    Route::post('/dehumbahan', [DehumBahanController::class, 'store'])->name('dehumbahan.store');
-    Route::get('/dehumbahan/{id}/edit', [DehumBahanController::class, 'edit'])->name('dehumbahan.edit');
-    Route::put('/dehumbahan/{id}', [DehumBahanController::class, 'update'])->name('dehumbahan.update');
-    Route::get('/dehumbahan/{id}', [DehumBahanController::class, 'show'])->name('dehumbahan.show');
-    Route::post('/dehumbahan/{id}/approve', [DehumBahanController::class, 'approve'])->name('dehumbahan.approve');
+    Route::get('/dehum-bahan', [DehumBahanController::class, 'index'])->name('dehum-bahan.index');
+    Route::get('/dehum-bahan/create', [DehumBahanController::class, 'create'])->name('dehum-bahan.create');
+    Route::post('/dehum-bahan', [DehumBahanController::class, 'store'])->name('dehum-bahan.store');
+    Route::get('/dehum-bahan/{id}/edit', [DehumBahanController::class, 'edit'])->name('dehum-bahan.edit');
+    Route::put('/dehum-bahan/{id}', [DehumBahanController::class, 'update'])->name('dehum-bahan.update');
+    Route::get('/dehum-bahan/{id}', [DehumBahanController::class, 'show'])->name('dehum-bahan.show');
+    Route::post('/dehum-bahan/{id}/approve', [DehumBahanController::class, 'approve'])->name('dehum-bahan.approve');
     // Route download PDF
-    Route::get('/dehumbahan/{id}/download-pdf', [DehumBahanController::class, 'downloadPdf'])->name('dehumbahan.downloadPdf');
+    Route::get('/dehum-bahan/{id}/download-pdf', [DehumBahanController::class, 'downloadPdf'])->name('dehum-bahan.downloadPdf');
 });
