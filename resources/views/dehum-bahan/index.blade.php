@@ -112,7 +112,7 @@
             @else
                 @foreach($checks as $check)
                     <tr class="text-center hover:bg-gray-50">
-                        <td class="py-3 px-4 border-b border-gray-200 w-1/6">{{ $check->nomer_dehum }}</td>
+                        <td class="py-3 px-4 border-b border-gray-200 w-1/6">{{ $check->nomer_dehum_bahan }}</td>
                         <td 
                             x-data="{ 
                                 formatMonth(monthYear) {
@@ -175,7 +175,7 @@
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
                                 @if(!$check->approved_by)
-                                    <a href="{{ route('dehum.edit', $check->id) }}" title="Edit">
+                                    <a href="{{ route('dehum-bahan.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
                                 @else
