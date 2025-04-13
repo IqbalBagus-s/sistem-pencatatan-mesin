@@ -55,9 +55,11 @@
             const errorMessage = document.getElementById('error-message');
             
             // Check if there's an error message from the session
-            @if(session('error'))
+            const sessionError = "{{ session('error') }}";
+            
+            if (sessionError) {
                 // Update the error message text
-                errorMessage.textContent = "{{ session('error') }}";
+                errorMessage.textContent = sessionError;
                 
                 // Show the notification
                 errorNotification.classList.remove('hidden');
@@ -66,7 +68,7 @@
                 setTimeout(function() {
                     errorNotification.classList.add('hidden');
                 }, 5000);
-            @endif
+            }
             
             // Close button functionality
             if (closeNotification) {

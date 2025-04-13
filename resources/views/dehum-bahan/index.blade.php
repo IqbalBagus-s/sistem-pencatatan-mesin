@@ -52,8 +52,8 @@
         <div 
             x-show="open" 
             @click.away="open = false" 
-            x-bind:style="{ width: document.querySelector('button[type=button]').offsetWidth + 'px' }"
-            class="absolute left-0 mt-1 bg-white border border-gray-300 shadow-lg rounded-md overflow-hidden z-10"
+            class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md overflow-hidden z-10"
+            style="display: none;"
         >
             <!-- Dehum List -->
             <div class="grid grid-cols-5 gap-1 p-1">
@@ -169,7 +169,7 @@
                         <td class="py-3 px-4 border-b border-gray-200">
                             {{-- Menu lihat --}}
                             @if(auth()->user() instanceof \App\Models\Approver)
-                                <a href="{{ route('dehum.show', $check->id) }}" title="Lihat Detail">
+                                <a href="{{ route('dehum-bahan.show', $check->id) }}" title="Lihat Detail">
                                     <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit --}}
@@ -218,5 +218,5 @@
 @endsection
 
 @section('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    
 @endsection

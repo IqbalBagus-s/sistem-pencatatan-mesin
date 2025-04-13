@@ -62,7 +62,7 @@
                     </div>
                     
                     <!-- Hidden Input untuk dikirim ke server -->
-                    <input type="hidden" name="nomer_dehum" x-model="selected">
+                    <input type="hidden" name="nomer_dehum_bahan" x-model="selected">
                 </div>                      
             
                 <div>

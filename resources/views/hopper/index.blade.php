@@ -52,8 +52,8 @@
         <div 
             x-show="open" 
             @click.away="open = false" 
-            x-bind:style="{ width: document.querySelector('button[type=button]').offsetWidth + 'px' }"
-            class="absolute left-0 mt-1 bg-white border border-gray-300 shadow-lg rounded-md overflow-hidden z-10"
+            class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md overflow-hidden z-10"
+            style="display: none;"
         >
             <!-- Hopper List -->
             <div class="grid grid-cols-5 gap-1 p-1">
