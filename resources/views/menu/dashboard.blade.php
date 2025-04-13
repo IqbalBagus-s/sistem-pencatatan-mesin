@@ -8,6 +8,7 @@
     @vite('resources/css/app.css')
     <link rel="icon" href="{{ asset('images/logo-aspra.png') }}" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
         /* Font loading fixes */
@@ -88,22 +89,43 @@
             background-color: #0d47a1;
         }
 
-        /* Login success notification styles */
-        #loginSuccessNotification {
+        /* Notification popup styles - dengan lebar yang ditambah */
+        #notification-popup {
             position: fixed;
             top: 90px; /* Positioned just below the header and near the "Hello" text */
             left: 50%;
             transform: translateX(-50%);
-            background-color: #48bb78; /* Green background */
-            color: white;
+            z-index: 1000;
+            display: none;
+            min-width: 250px; /* Lebar minimum */
+        }
+        
+        #login-notification {
+            background-color: #e6f3ff; /* Light blue background */
+            border: 1px solid #1565c0; /* Blue border */
+            color: #1565c0; /* Blue text */
             padding: 12px 20px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
-            font-weight: 500;
-            display: none;
-            max-width: 90%;
+            width: auto; /* Auto width based on content */
+            white-space: nowrap; /* Hindari text wrap */
             text-align: center;
+            display: flex;
+            align-items: center;
+        }
+        
+        #login-message {
+            margin-right: 20px;
+            font-size: 0.9rem;
+            white-space: nowrap; /* Pastikan teks tidak terpotong */
+        }
+        
+        .close-notification {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            margin-left: auto;
         }
         
         /* Logout button styling */
@@ -269,6 +291,21 @@
             #footer p {
                 font-size: 0.75rem;
             }
+            
+            /* Responsive notification on mobile */
+            #notification-popup {
+                top: 70px;
+                max-width: 90%; /* Batasi lebar maksimum pada mobile */
+            }
+            
+            #login-notification {
+                padding: 10px 15px;
+            }
+            
+            #login-message {
+                font-size: 0.8rem;
+                margin-right: 10px;
+            }
         }
         
         /* Tablet optimizations */
@@ -337,6 +374,21 @@
             #app-container {
                 padding-top: 45px;
             }
+            
+            /* Responsive notification on extra small screens */
+            #notification-popup {
+                top: 60px;
+            }
+            
+            #login-message {
+                font-size: 0.7rem;
+                margin-right: 8px;
+            }
+            
+            .close-notification svg {
+                width: 14px;
+                height: 14px;
+            }
         }
         
         /* Sticky footer for larger screens */
@@ -371,9 +423,17 @@
             </div>
         </header>
 
-        <!-- Login Success Notification -->
-        <div id="loginSuccessNotification">
-            Anda berhasil login
+        <!-- Notification popup - diperlebar agar tidak terpotong -->
+        <div id="notification-popup">
+            <!-- Login notification (blue) dengan lebar yang cukup -->
+            <div id="login-notification">
+                <p id="login-message">Anda berhasil login</p>
+                <button type="button" class="close-notification">
+                    <svg class="w-4 h-4 text-blue-500 hover:text-blue-700" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
         </div>
 
         <!-- Main Content Area -->
@@ -432,7 +492,7 @@
 
     @vite('resources/js/app.js')
     
-    <!-- Script untuk menampilkan tanggal dan waktu terkini -->
+    <!-- Script untuk menampilkan tanggal dan waktu terkini dan mengelola notifikasi -->
     <script>
         function updateDateTime() {
             const now = new Date();
@@ -504,25 +564,25 @@
             // Check if user just logged in
             if (localStorage.getItem('just_logged_in') === 'true') {
                 // Show login success notification
-                const notification = document.getElementById('loginSuccessNotification');
+                const notification = document.getElementById('notification-popup');
                 notification.style.display = 'block';
                 
                 // Remove the flag from localStorage
                 localStorage.removeItem('just_logged_in');
                 
-                // Hide notification after 3 seconds
-                setTimeout(function() {
-                    notification.style.opacity = '1';
-                    notification.style.transition = 'opacity 0.5s ease';
-                    
-                    setTimeout(function() {
-                        notification.style.opacity = '0';
-                        setTimeout(function() {
-                            notification.style.display = 'none';
-                        }, 500);
-                    }, 3000);
-                }, 100);
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 5000);
             }
+            
+            // Add click event to close button
+            const closeButtons = document.querySelectorAll('.close-notification');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    document.getElementById('notification-popup').style.display = 'none';
+                });
+            });
 
             // Add event listener to the logout form
             document.getElementById('logout-form').addEventListener('submit', function(e) {

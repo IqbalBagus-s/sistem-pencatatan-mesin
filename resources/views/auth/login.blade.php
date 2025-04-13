@@ -32,6 +32,19 @@
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen bg-green-50 px-4 py-6">
+    <!-- Notification popup -->
+    <div id="notification-popup" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50" style="display: none;">
+        <!-- Logout notification (red) -->
+        <div id="logout-notification" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-md flex items-center max-w-md">
+            <p class="mr-6 text-sm" id="notification-message">Anda telah logout</p>
+            <button type="button" class="ml-auto close-notification">
+                <svg class="w-4 h-4 text-red-500 hover:text-red-700" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
     <div class="login-container w-full">
         <div class="p-4 md:p-6 bg-white rounded-lg shadow-md">
             <div class="text-center mb-4">
@@ -43,13 +56,13 @@
                 @csrf
                 <div class="mb-4">
                     <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                    <input type="text" id="username" name="username" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                    <input type="text" id="username" name="username" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                 </div>
 
                 <div class="mb-4">
                     <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
                     <div class="relative">
-                        <input type="password" id="password" name="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                        <input type="password" id="password" name="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                         <button type="button" id="togglePassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none">
                             <i class="fas fa-eye-slash" id="toggleIcon"></i>
                         </button>
@@ -59,7 +72,7 @@
                 <div class="mb-5 relative">
                     <label for="role" class="block text-sm font-medium text-gray-700 mb-1">Posisi</label>
                     <div class="relative">
-                        <select id="role" name="role" class="w-full px-3 py-2 appearance-none border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                        <select id="role" name="role" class="w-full px-3 py-2 appearance-none border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                             <option value="" disabled selected>Pilih posisi</option>
                             <option value="approver">Approver</option>
                             <option value="checker">Checker</option>
@@ -77,39 +90,8 @@
         </div>
     </div>
 
-    <!-- Error Modal -->
-    @if(session('error'))
-    <div id="errorModal" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 px-4">
-        <div class="bg-white rounded-lg overflow-hidden shadow-xl w-full max-w-sm md:max-w-md">
-            <div class="bg-red-600 px-4 py-3 flex justify-between items-center">
-                <h5 class="text-white font-medium">Login Error</h5>
-                <button type="button" class="text-white hover:text-gray-200" onclick="closeModal()">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-            </div>
-            <div class="px-4 py-3 text-sm md:text-base">
-                {{ session('error') }}
-            </div>
-            <div class="px-4 py-3 bg-gray-50 text-right">
-                <button type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-1.5 px-3 md:py-2 md:px-4 rounded-md text-sm transition duration-200" onclick="closeModal()">Close</button>
-            </div>
-        </div>
-    </div>
-    @endif
-
-    <!-- Logout notification -->
-    <div id="logoutNotification" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background-color: #2563eb; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); z-index: 1000; font-weight: 500; width: 85%; max-width: 300px; text-align: center;">
-        Anda telah logout
-    </div>
-
     @vite('resources/js/app.js')
     <script>
-        function closeModal() {
-            document.getElementById('errorModal').style.display = 'none';
-        }
-
         // Toggle password visibility
         document.addEventListener('DOMContentLoaded', function() {
             const togglePassword = document.getElementById('togglePassword');
@@ -130,32 +112,47 @@
                     toggleIcon.classList.add('fa-eye');
                 }
             });
-        });
-
-        // Check for logout parameter in URL
-        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Display error notification if there's an error in session
+            @if(session('error'))
+                showNotification("{{ session('error') }}");
+            @endif
+            
             // Check if user just logged out
             if (localStorage.getItem('just_logged_out') === 'true') {
                 // Show notification
-                const notification = document.getElementById('logoutNotification');
-                notification.style.display = 'block';
+                showNotification("Anda telah logout");
                 
                 // Remove the flag from localStorage
                 localStorage.removeItem('just_logged_out');
-                
-                // Hide notification after 3 seconds
-                setTimeout(function() {
-                    notification.style.opacity = '1';
-                    notification.style.transition = 'opacity 0.5s ease';
-                    
-                    setTimeout(function() {
-                        notification.style.opacity = '0';
-                        setTimeout(function() {
-                            notification.style.display = 'none';
-                        }, 500);
-                    }, 3000);
-                }, 100);
             }
+        });
+
+        // Function to show notification
+        function showNotification(message) {
+            const notification = document.getElementById('notification-popup');
+            const notificationMessage = document.getElementById('notification-message');
+            
+            // Update message text
+            notificationMessage.textContent = message;
+            
+            // Show notification
+            notification.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Add click event to close button
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeButtons = document.querySelectorAll('.close-notification');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    document.getElementById('notification-popup').style.display = 'none';
+                });
+            });
         });
 
         // Add login success handling
