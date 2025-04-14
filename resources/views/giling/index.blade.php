@@ -21,6 +21,16 @@
         <input type="month" name="bulan" id="filter_bulan" value="{{ request('bulan') }}" 
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
     </div>
+    <div>
+        <label for="minggu" class="block font-medium text-gray-700 mb-2">Filter berdasarkan Minggu:</label>
+        <select name="minggu" id="minggu" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+            <option value="">Semua Minggu</option>
+            <option value="Minggu 1" {{ request('minggu') == 'Minggu 1' ? 'selected' : '' }}>Minggu 1</option>
+            <option value="Minggu 2" {{ request('minggu') == 'Minggu 2' ? 'selected' : '' }}>Minggu 2</option>
+            <option value="Minggu 3" {{ request('minggu') == 'Minggu 3' ? 'selected' : '' }}>Minggu 3</option>
+            <option value="Minggu 4" {{ request('minggu') == 'Minggu 4' ? 'selected' : '' }}>Minggu 4</option>
+        </select>
+    </div>
 @endsection
 
 @section('create-route')
@@ -36,6 +46,7 @@
         <thead class="bg-gray-100">
             <tr class="text-center">
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Bulan</th>
+                <th class="py-3 px-4 border-b border-gray-200 font-semibold">Minggu</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Checker</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Status</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Aksi</th>
@@ -50,6 +61,7 @@
                 @foreach($checks as $check)
                     <tr class="text-center hover:bg-gray-50">
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->bulan }}</td>
+                        <td class="py-3 px-4 border-b border-gray-200">{{ $check->minggu }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->checked_by }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             @if($check->approved_by1 && $check->approved_by2)

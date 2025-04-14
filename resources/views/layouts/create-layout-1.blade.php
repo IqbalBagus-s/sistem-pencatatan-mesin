@@ -41,16 +41,22 @@
                 <!-- Form Input -->
                 <form action="@yield('form-action')" method="POST" id="air-dryer-form">
                     @csrf
-                    <div class="grid md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block mb-2">Hari:</label>
-                            <input type="text" id="hari" name="hari" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md" readonly>
+                    
+                    <!-- Check if specific date-time fields are provided, otherwise use default -->
+                    @hasSection('date-time-fields')
+                        @yield('date-time-fields')
+                    @else
+                        <div class="grid md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block mb-2">Hari:</label>
+                                <input type="text" id="hari" name="hari" class="w-full px-3 py-2 bg-sky-50 border border-gray-300 rounded-md" readonly>
+                            </div>
+                            <div>
+                                <label class="block mb-2">Tanggal:</label>
+                                <input type="date" id="tanggal" name="tanggal" class="w-full px-3 py-2 bg-sky-50 border border-gray-300 rounded-md" required>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block mb-2">Tanggal:</label>
-                            <input type="date" id="tanggal" name="tanggal" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md" required>
-                        </div>
-                    </div>
+                    @endif
 
                     <!-- Tabel Inspeksi -->
                     <div class="overflow-x-auto">
@@ -86,12 +92,15 @@
     @vite('resources/js/app.js')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Existing code for date handling
-            if (document.getElementById("tanggal")) {
-                document.getElementById("tanggal").addEventListener("change", function() {
+            // Existing code for date handling - only run if tanggal element exists
+            const tanggalEl = document.getElementById("tanggal");
+            const hariEl = document.getElementById("hari");
+            
+            if (tanggalEl && hariEl) {
+                tanggalEl.addEventListener("change", function() {
                     let tanggal = new Date(this.value);
                     let hari = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(tanggal);
-                    document.getElementById("hari").value = hari;
+                    hariEl.value = hari;
                 });
             }
             
