@@ -456,7 +456,7 @@
                             ['name' => 'Dehum Bahan', 'route' => 'dehum-bahan.index'],
                             ['name' => 'Dehum Matras', 'route' => null],
                             ['name' => 'Auto Loader', 'route' => null],
-                            ['name' => 'Gilingan', 'route' => null],
+                            ['name' => 'Gilingan', 'route' => 'giling.index'],
                             ['name' => 'Caplining', 'route' => null],
                             ['name' => 'Vacum Cleaner', 'route' => null],
                             ['name' => 'Mesin Sleeting', 'route' => null],
