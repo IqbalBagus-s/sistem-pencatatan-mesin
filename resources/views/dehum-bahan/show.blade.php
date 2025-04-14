@@ -71,7 +71,7 @@
                             1 => 'Filter',
                             2 => 'Selang', 
                             3 => 'Kontraktor',
-                            4 => 'Temperatur kontrol',
+                            4 => 'Temperatur Control',
                             5 => 'MCB',
                             6 => 'Dew Point'
                         ];
