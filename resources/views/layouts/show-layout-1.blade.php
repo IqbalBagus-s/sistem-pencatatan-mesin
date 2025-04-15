@@ -89,9 +89,5 @@
         </form>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white py-4 text-center shadow-md mt-auto w-full">
-        <p class="font-bold">2025 © PT Asia Pramulia</p>
-    </footer>
 </body>
 </html>

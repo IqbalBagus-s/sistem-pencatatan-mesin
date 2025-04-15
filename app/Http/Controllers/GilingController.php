@@ -185,4 +185,18 @@ class GilingController extends Controller
         // Redirect with success message
         return redirect()->route('giling.index')->with('success', 'Data pemeriksaan mesin giling berhasil diperbarui');
     }
+
+    public function show($id)
+    {
+        // Fetch the GilingCheck record with its results
+        $check = GilingCheck::with('result')->findOrFail($id);
+        
+        // Get the associated results and organize into a more usable format
+        $results = $check->result->keyBy('checked_items');
+        
+        // Return the view with the GilingCheck data and its results
+        return view('giling.show', compact('check', 'results'));
+    }
+
+    
 }

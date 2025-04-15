@@ -63,10 +63,6 @@
         </form>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white py-4 text-center shadow-md mt-6 w-full">
-        <p class="font-bold">2025 © PT Asia Pramulia</p>
-    </footer>
 
     @vite('resources/js/app.js')
 </body>

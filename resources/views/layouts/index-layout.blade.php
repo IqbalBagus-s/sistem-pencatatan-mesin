@@ -187,10 +187,8 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white py-4 text-center shadow-md mt-auto">
-        <p class="font-bold">2025 © PT Asia Pramulia</p>
-    </footer>
+    <!-- Include Footer Component -->
+    @include('components.footer')
 
     @vite('resources/js/app.js')
     @yield('scripts')

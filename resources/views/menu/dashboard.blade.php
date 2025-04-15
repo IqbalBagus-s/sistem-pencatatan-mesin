@@ -484,10 +484,8 @@
             </div>
         </div>
 
-        <!-- Footer -->
-        <footer id="footer" class="bg-white py-2 sm:py-3 md:py-4 text-center shadow-md">
-            <p class="font-semibold text-xs sm:text-sm md:text-base text-gray-800">2025 © PT Asia Pramulia</p>
-        </footer>
+        <!-- Include Footer Component -->
+        @include('components.footer')
     </div>
 
     @vite('resources/js/app.js')
