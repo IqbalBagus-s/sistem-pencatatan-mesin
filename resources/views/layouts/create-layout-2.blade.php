@@ -30,10 +30,7 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white py-4 text-center shadow-md mt-auto w-full">
-        <p class="mb-0 font-bold">2025 © PT Asia Pramulia</p>
-    </footer>
+    @include('components.footer')
 
     @vite('resources/js/app.js')
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
