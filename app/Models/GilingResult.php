@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class GilingResultMinggu3 extends Model
+class GilingResult extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'giling_result_minggu3';
+    protected $table = 'giling_results';
     
     protected $fillable = [
         'check_id',

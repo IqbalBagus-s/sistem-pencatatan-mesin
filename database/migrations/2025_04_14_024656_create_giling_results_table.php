@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('giling_result_minggu4', function (Blueprint $table) {
+        Schema::create('giling_results', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('check_id'); // Foreign key dari giling_checks
             $table->string('checked_items')->nullable();
@@ -32,6 +32,7 @@ return new class extends Migration
 
             // Foreign key constraint
             $table->foreign('check_id')->references('id')->on('giling_checks')->onDelete('cascade');
+
         });
     }
 
@@ -40,6 +41,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('giling_result_minggu4s');
+        Schema::dropIfExists('giling_results');
     }
 };

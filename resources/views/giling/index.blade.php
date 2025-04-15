@@ -60,7 +60,30 @@
             @else
                 @foreach($checks as $check)
                     <tr class="text-center hover:bg-gray-50">
-                        <td class="py-3 px-4 border-b border-gray-200">{{ $check->bulan }}</td>
+                        <td class="py-3 px-4 border-b border-gray-200">
+                            @php
+                                // Untuk format YYYY-MM
+                                $bulan = $check->bulan;
+                                
+                                // Cek apakah format tahun-bulan (contoh: 2025-04)
+                                if (preg_match('/^(\d{4})-(\d{1,2})$/', $bulan, $matches)) {
+                                    $tahun = $matches[1];
+                                    $bulanAngka = (int)$matches[2];
+                                    
+                                    $namaBulan = [
+                                        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 
+                                        4 => 'April', 5 => 'Mei', 6 => 'Juni',
+                                        7 => 'Juli', 8 => 'Agustus', 9 => 'September', 
+                                        10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                                    ];
+                                    
+                                    echo $namaBulan[$bulanAngka] . ' ' . $tahun;
+                                } else {
+                                    // Tampilkan apa adanya jika format tidak sesuai
+                                    echo $bulan;
+                                }
+                            @endphp
+                        </td>
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->minggu }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->checked_by }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">

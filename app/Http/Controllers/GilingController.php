@@ -4,10 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\GilingCheck;
-use App\Models\GilingResultMinggu1;
-use App\Models\GilingResultMinggu2;
-use App\Models\GilingResultMinggu3;
-use App\Models\GilingResultMinggu4;
+use App\Models\GilingResult;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -63,36 +60,26 @@ class GilingController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
+        // Cek apakah kombinasi bulan dan minggu sudah ada di database
+        $existingCheck = GilingCheck::where('bulan', $request->bulan)
+                                ->where('minggu', $request->minggu)
+                                ->first();
+        
+        if ($existingCheck) {
+            return redirect()->back()->with('error', "Pencatatan tersebut sudah ada!")->withInput();
+        }
+
         try {
             DB::beginTransaction();
 
-            // Simpan data utama pemeriksaan
+            // Simpan data utama pemeriksaan dengan username dari user yang login
             $gilingCheck = GilingCheck::create([
                 'bulan' => $request->bulan,
                 'minggu' => $request->minggu,
-                'checked_by' => Auth::user() instanceof \App\Models\Checker,
+                'checked_by' => Auth::user()->username, // Mengambil username user yang sedang login
                 'keterangan' => $request->keterangan ?? '',
                 // Perhatikan: approval akan diisi nanti melalui proses terpisah
             ]);
-
-            // Tentukan model hasil yang sesuai berdasarkan minggu
-            $resultModel = null;
-            switch ($request->minggu) {
-                case 'Minggu 1':
-                    $resultModel = GilingResultMinggu1::class;
-                    break;
-                case 'Minggu 2':
-                    $resultModel = GilingResultMinggu2::class;
-                    break;
-                case 'Minggu 3':
-                    $resultModel = GilingResultMinggu3::class;
-                    break;
-                case 'Minggu 4':
-                    $resultModel = GilingResultMinggu4::class;
-                    break;
-                default:
-                    throw new \InvalidArgumentException("Minggu tidak valid: {$request->minggu}");
-            }
             
             // Item yang harus dicek berdasarkan form
             $checkedItems = [
@@ -120,8 +107,8 @@ class GilingController extends Controller
                     $resultData["g{$i}"] = $itemData[$key] ?? '-';
                 }
                 
-                // Simpan hasil ke database
-                $resultModel::create($resultData);
+                // Simpan hasil ke database menggunakan model GilingResult yang baru
+                GilingResult::create($resultData);
             }
 
             DB::commit();
