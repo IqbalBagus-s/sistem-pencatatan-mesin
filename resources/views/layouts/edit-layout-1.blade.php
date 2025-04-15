@@ -22,16 +22,21 @@
             @csrf
             @method('PUT')
 
-            <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-gray-700">Hari:</label>
-                    <input type="text" name="hari" value="@yield('hari-value')" class="w-full p-2 border border-gray-300 rounded bg-gray-100" readonly>
+            <!-- Check if specific date-time fields are provided, otherwise use default -->
+            @hasSection('date-time-fields')
+                @yield('date-time-fields')
+            @else
+                <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700">Hari:</label>
+                        <input type="text" name="hari" value="@yield('hari-value')" class="w-full p-2 border border-gray-300 rounded bg-gray-100" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Tanggal:</label>
+                        <input type="date" name="tanggal" value="@yield('tanggal-value')" class="w-full p-2 border border-gray-300 rounded bg-gray-100" readonly>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-gray-700">Tanggal:</label>
-                    <input type="date" name="tanggal" value="@yield('tanggal-value')" class="w-full p-2 border border-gray-300 rounded bg-gray-100" readonly>
-                </div>
-            </div>
+            @endif
 
             <!-- Tabel Inspeksi -->
             <div class="overflow-x-auto">
@@ -42,8 +47,8 @@
             <div class="mt-5">
                 <label for="keterangan" class="block mb-2 font-medium">Keterangan:</label>
                 <textarea id="keterangan" name="keterangan" rows="4"
-                    class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" 
-                    placeholder="Tambahkan keterangan jika diperlukan...">@yield('keterangan-value')</textarea>
+                class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" 
+                placeholder="Tambahkan keterangan jika diperlukan...">{{ $check->keterangan ?? '' }}</textarea>
             </div>
 
             <!-- Tombol Kembali dan Simpan -->

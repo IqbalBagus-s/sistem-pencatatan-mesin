@@ -119,4 +119,70 @@ class GilingController extends Controller
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
         }
     }
+
+    public function edit($id)
+    {
+        // Fetch the GilingCheck record with its results
+        $check = GilingCheck::with('result')->findOrFail($id);
+        
+        // Get the associated results and organize into a more usable format
+        $results = $check->result->keyBy('checked_items');
+        
+        // Return the view with the GilingCheck data and its results
+        return view('giling.edit', compact('check', 'results'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        // Find the GilingCheck record
+        $check = GilingCheck::findOrFail($id);
+        
+        // Update the GilingCheck record
+        $check->update([
+            'bulan' => $request->bulan,
+            'minggu' => $request->minggu,
+            'keterangan' => $request->keterangan,
+            // No need to update checked_by since it's the same user who created it
+        ]);
+        
+        // Map from field names to checked items
+        $itemMappings = [
+            'cek_motor_mesin_giling' => 'Cek Motor Mesin Giling',
+            'cek_vanbelt' => 'Cek Vanbelt',
+            'cek_dustcollector' => 'Cek Dustcollector',
+            'cek_safety_switch' => 'Cek Safety Switch',
+            'cek_ketajaman_pisau_putar_dan_pisau_duduk' => 'Cek Ketajaman Pisau Putar dan Pisau Duduk'
+        ];
+        
+        // Process each check item
+        foreach ($itemMappings as $fieldName => $checkedItem) {
+            // If the field exists in the request
+            if ($request->has($fieldName)) {
+                $data = $request->$fieldName;
+                
+                // Find or create the result for this checked item
+                $result = GilingResult::updateOrCreate(
+                    [
+                        'check_id' => $check->id,
+                        'checked_items' => $checkedItem
+                    ],
+                    [
+                        'g1' => $data['G1'] ?? '-',
+                        'g2' => $data['G2'] ?? '-',
+                        'g3' => $data['G3'] ?? '-',
+                        'g4' => $data['G4'] ?? '-',
+                        'g5' => $data['G5'] ?? '-',
+                        'g6' => $data['G6'] ?? '-',
+                        'g7' => $data['G7'] ?? '-',
+                        'g8' => $data['G8'] ?? '-',
+                        'g9' => $data['G9'] ?? '-',
+                        'g10' => $data['G10'] ?? '-',
+                    ]
+                );
+            }
+        }
+        
+        // Redirect with success message
+        return redirect()->route('giling.index')->with('success', 'Data pemeriksaan mesin giling berhasil diperbarui');
+    }
 }
