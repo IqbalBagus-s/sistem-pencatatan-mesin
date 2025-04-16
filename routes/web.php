@@ -82,7 +82,7 @@ Route::middleware(['auth:approver,checker'])->group(function () {
     // Route download PDF
     Route::get('/dehum-bahan/{id}/download-pdf', [DehumBahanController::class, 'downloadPdf'])->name('dehum-bahan.downloadPdf');
     
-    // Route Mesin Dehum Bahan
+    // Route Mesin Giling
     Route::get('/giling', [GilingController::class, 'index'])->name('giling.index');
     Route::get('/giling/create', [GilingController::class, 'create'])->name('giling.create');
     Route::post('/giling', [GilingController::class, 'store'])->name('giling.store');

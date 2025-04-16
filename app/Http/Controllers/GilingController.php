@@ -198,5 +198,25 @@ class GilingController extends Controller
         return view('giling.show', compact('check', 'results'));
     }
 
+    public function approve(Request $request, $id)
+    {
+        // Validate the request
+        $request->validate([
+            'approved_by1' => 'nullable|string|max:255',
+            'approved_by2' => 'nullable|string|max:255',
+        ]);
     
+        // Find the check record
+        $check = GilingCheck::findOrFail($id);
+        
+        // Update approval fields
+        $check->approved_by1 = $request->approved_by1;
+        $check->approved_by2 = $request->approved_by2;
+        
+        // Save the changes
+        $check->save();
+        
+        // Redirect back with success message
+        return redirect()->route('giling.index', $check->id)->with('success', 'Data berhasil disetujui!');
+    }
 }

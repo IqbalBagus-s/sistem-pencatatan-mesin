@@ -92,7 +92,7 @@
                                     Disetujui Lengkap
                                 </span>
                             @elseif($check->approved_by1 || $check->approved_by2)
-                                <span class="bg-warning text-warningText px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui Sebagian
                                 </span>
                             @else
