@@ -110,24 +110,30 @@
                     // Initial values from database 
                     dbApprover1: '{{ $check->approved_by1 }}',
                     dbApprover2: '{{ $check->approved_by2 }}',
+                    dbApprovalDate1: '{{ $check->approval_date1 }}',
                     // Current form values (initially set to match database)
                     approver1: '{{ $check->approved_by1 }}',
                     approver2: '{{ $check->approved_by2 }}',
+                    approvalDate1: '{{ $check->approval_date1 }}',
                     // Store the original database values for comparison
                     formChanged: false,
                     pilihApprover(position) {
                         const user = '{{ Auth::user()->username }}';
+                        const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+                        
                         if (position === 1) {
                             this.approver1 = user;
+                            this.approvalDate1 = currentDate;
                         } else if (position === 2) {
                             this.approver2 = user;
                         }
                         this.updateFormChanged();
                     },
                     batalPilih(position) {
-                        // Clear the field completely
+                        // Clear the fields completely
                         if (position === 1) {
                             this.approver1 = '';
+                            this.approvalDate1 = '';
                         } else if (position === 2) {
                             this.approver2 = '';
                         }
@@ -135,7 +141,9 @@
                     },
                     // Update the form changed status
                     updateFormChanged() {
-                        this.formChanged = (this.approver1 !== this.dbApprover1) || (this.approver2 !== this.dbApprover2);
+                        this.formChanged = (this.approver1 !== this.dbApprover1) || 
+                                          (this.approver2 !== this.dbApprover2) ||
+                                          (this.approvalDate1 !== this.dbApprovalDate1);
                     },
                     // Check if form can be submitted
                     canSubmit() {
@@ -145,50 +153,74 @@
             <p class="text-lg font-semibold text-gray-700 mb-3">Setujui Laporan</p>
             
             <div class="grid grid-cols-2 gap-4 mt-2">
-                <!-- Approver 1 -->
+                <!-- Approver 1 with date -->
                 <div class="p-4 bg-white shadow rounded border border-gray-300">
-                    <label class="block text-gray-700 font-semibold">Pelaksana Utility</label>
-                    <input type="text" id="approved_by1" name="approved_by1" class="mt-2 w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                        x-model="approver1" readonly>
+                    <label class="block text-gray-700 font-semibold mb-3">Pelaksana Utility</label>
                     
-                    <!-- Show Pilih button if empty, otherwise show Batal button -->
+                    <!-- Horizontal layout with two columns -->
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <!-- Username field -->
+                        <div>
+                            <input type="text" id="approved_by1" name="approved_by1" 
+                                class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" 
+                                x-model="approver1" readonly placeholder="Nama">
+                        </div>
+                        
+                        <!-- Date field -->
+                        <div>
+                            <input type="date" id="approval_date1" name="approval_date1" 
+                                class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" 
+                                x-model="approvalDate1" readonly>
+                        </div>
+                    </div>
+                    
+                    <!-- Conditional buttons -->
                     <button type="button" 
                         x-show="!approver1" 
-                        class="mt-2 w-full bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-700 cursor-pointer" 
+                        class="w-full bg-blue-500 text-white py-2 px-3 rounded hover:bg-blue-700 cursor-pointer" 
                         @click="pilihApprover(1)">
                         Setujui Sebagai Pelaksana Utility
                     </button>
                     
                     <button type="button" 
                         x-show="approver1" 
-                        class="mt-2 w-full bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" 
+                        class="w-full bg-red-500 text-white py-2 px-3 rounded hover:bg-red-600 cursor-pointer" 
                         @click="batalPilih(1)">
                         Batal Setujui
                     </button>
                 </div>
 
-                <!-- Approver 2 -->
+                <!-- Approver 2 with full-width name field -->
                 <div class="p-4 bg-white shadow rounded border border-gray-300">
-                    <label class="block text-gray-700 font-semibold">Koordinator Staff Utility</label>
-                    <input type="text" id="approved_by2" name="approved_by2" class="mt-2 w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                        x-model="approver2" readonly>
+                    <label class="block text-gray-700 font-semibold mb-3">Koordinator Staff Utility</label>
                     
-                    <!-- Show Pilih button if empty, otherwise show Batal button -->
+                    <!-- Full-width name field -->
+                    <div class="mb-3">
+                        <input type="text" id="approved_by2" name="approved_by2" 
+                            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" 
+                            x-model="approver2" readonly placeholder="Nama">
+                    </div>
+                    
+                    <!-- Conditional buttons with same height as first section -->
                     <button type="button" 
                         x-show="!approver2" 
-                        class="mt-2 w-full bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-700 cursor-pointer" 
+                        class="w-full bg-blue-500 text-white py-2 px-3 rounded hover:bg-blue-700 cursor-pointer" 
                         @click="pilihApprover(2)">
                         Setujui Sebagai Koordinator Staff Utility
                     </button>
                     
                     <button type="button" 
                         x-show="approver2" 
-                        class="mt-2 w-full bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" 
+                        class="w-full bg-red-500 text-white py-2 px-3 rounded hover:bg-red-600 cursor-pointer" 
                         @click="batalPilih(2)">
                         Batal Setujui
                     </button>
                 </div>
             </div>
+            
+            <!-- Hidden input for form submission -->
+            <input type="hidden" name="approval_date1" x-model="approvalDate1">
+</div>
         @endsection
     </div>
 @endsection
