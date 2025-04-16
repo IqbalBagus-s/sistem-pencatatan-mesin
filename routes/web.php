@@ -8,6 +8,7 @@ use App\Http\Controllers\WaterChillerController;
 use App\Http\Controllers\CompressorController;
 use App\Http\Controllers\HopperController;
 use App\Http\Controllers\DehumBahanController;
+use App\Http\Controllers\GilingController;
 
 
 Route::get('/', function () {
@@ -80,4 +81,15 @@ Route::middleware(['auth:approver,checker'])->group(function () {
     Route::post('/dehum-bahan/{id}/approve', [DehumBahanController::class, 'approve'])->name('dehum-bahan.approve');
     // Route download PDF
     Route::get('/dehum-bahan/{id}/download-pdf', [DehumBahanController::class, 'downloadPdf'])->name('dehum-bahan.downloadPdf');
+
+    // Route Mesin Giling
+    Route::get('/giling', [GilingController::class, 'index'])->name('giling.index');
+    Route::get('/giling/create', [GilingController::class, 'create'])->name('giling.create');
+    Route::post('/giling', [GilingController::class, 'store'])->name('giling.store');
+    Route::get('/giling/{id}/edit', [GilingController::class, 'edit'])->name('giling.edit');
+    Route::put('/giling/{id}', [GilingController::class, 'update'])->name('giling.update');
+    Route::get('/giling/{id}', [GilingController::class, 'show'])->name('giling.show');
+    Route::post('/giling/{id}/approve', [GilingController::class, 'approve'])->name('giling.approve');
+    // Route download PDF
+    Route::get('/giling/{id}/download-pdf', [GilingController::class, 'downloadPdf'])->name('giling.downloadPdf');
 });

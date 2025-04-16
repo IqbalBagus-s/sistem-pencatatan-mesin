@@ -12,7 +12,8 @@
 
 @section('keterangan-rows', '5')
 
-@section('air-dryer-table')
+@section('table-content')
 @endsection
 
-@section('detail-mesin', true)
+@section('detail-mesin')
+@endsection

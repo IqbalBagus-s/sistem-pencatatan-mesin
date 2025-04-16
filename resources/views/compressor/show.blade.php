@@ -347,8 +347,5 @@
             </div>
         </div>
     </div>
-
-    @include('components.footer')
-
 </body>
 </html>

@@ -8,5 +8,8 @@
 
 @section('back-route', route('water-chiller.index'))
 
-@section('water-chiller-table')
+@section('additional-scripts')
+@endsection
+
+@section('table-content')
 @endsection

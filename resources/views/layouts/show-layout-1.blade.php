@@ -88,7 +88,5 @@
             </div>
         </form>
     </div>
-
-    @include('components.footer')
 </body>
 </html>
