@@ -147,16 +147,16 @@
             <div class="grid grid-cols-2 gap-4 mt-2">
                 <!-- Approver 1 -->
                 <div class="p-4 bg-white shadow rounded border border-gray-300">
-                    <label class="block text-gray-700 font-semibold">Approver 1</label>
+                    <label class="block text-gray-700 font-semibold">Pelaksana Utility</label>
                     <input type="text" id="approved_by1" name="approved_by1" class="mt-2 w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" 
                         x-model="approver1" readonly>
                     
                     <!-- Show Pilih button if empty, otherwise show Batal button -->
                     <button type="button" 
                         x-show="!approver1" 
-                        class="mt-2 w-full bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-600" 
+                        class="mt-2 w-full bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-700 cursor-pointer" 
                         @click="pilihApprover(1)">
-                        Setujui sebagai Approver 1
+                        Setujui Sebagai Pelaksana Utility
                     </button>
                     
                     <button type="button" 
@@ -169,16 +169,16 @@
 
                 <!-- Approver 2 -->
                 <div class="p-4 bg-white shadow rounded border border-gray-300">
-                    <label class="block text-gray-700 font-semibold">Approver 2</label>
+                    <label class="block text-gray-700 font-semibold">Koordinator Staff Utility</label>
                     <input type="text" id="approved_by2" name="approved_by2" class="mt-2 w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" 
                         x-model="approver2" readonly>
                     
                     <!-- Show Pilih button if empty, otherwise show Batal button -->
                     <button type="button" 
                         x-show="!approver2" 
-                        class="mt-2 w-full bg-green-500 text-white py-1 px-3 rounded hover:bg-green-600" 
+                        class="mt-2 w-full bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-700 cursor-pointer" 
                         @click="pilihApprover(2)">
-                        Setujui sebagai Approver 2
+                        Setujui Sebagai Koordinator Staff Utility
                     </button>
                     
                     <button type="button" 

@@ -14,6 +14,11 @@ class GilingController extends Controller
     {
         $query = GilingCheck::query();
 
+        // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
+        if (Auth::user() instanceof \App\Models\Checker) {
+            $query->where('checked_by', Auth::user()->username);
+        }
+
         // Filter berdasarkan nama checker jika ada
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
