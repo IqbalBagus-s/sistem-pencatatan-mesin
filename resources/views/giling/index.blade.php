@@ -85,7 +85,11 @@
                             @endphp
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->minggu }}</td>
-                        <td class="py-3 px-4 border-b border-gray-200">{{ $check->checked_by }}</td>
+                        <td class="py-3 px-4 border-b border-gray-200">
+                            <span class="bg-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm">
+                                {{ $check->checked_by }}
+                            </span>
+                        </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             @if($check->approved_by1 && $check->approved_by2)
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">

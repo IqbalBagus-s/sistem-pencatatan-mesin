@@ -209,14 +209,16 @@ class GilingController extends Controller
         $request->validate([
             'approved_by1' => 'nullable|string|max:255',
             'approved_by2' => 'nullable|string|max:255',
+            'approval_date1' => 'nullable|date',
         ]);
-    
+
         // Find the check record
         $check = GilingCheck::findOrFail($id);
         
         // Update approval fields
         $check->approved_by1 = $request->approved_by1;
         $check->approved_by2 = $request->approved_by2;
+        $check->approval_date1 = $request->approval_date1;
         
         // Save the changes
         $check->save();

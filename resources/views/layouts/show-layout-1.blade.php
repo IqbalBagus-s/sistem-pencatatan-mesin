@@ -79,25 +79,30 @@
             
             <div>
                 @if(!($check->approved_by1 && $check->approved_by2) && !$check->approved_by)
-                <form action="@yield('approval-route')" method="POST" class="inline">
-                    @csrf
-                    <input type="hidden" name="approved_by1" x-model="approver1">
-                    <input type="hidden" name="approved_by2" x-model="approver2">
-                    <button type="submit" 
-                        class="inline-block px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-200">
-                        Setujui
-                    </button>
-                </form>
+                    <form action="@yield('approval-route')" method="POST" class="inline">
+                        @csrf
+                        <input type="hidden" name="approved_by1" x-model="approver1">
+                        <input type="hidden" name="approved_by2" x-model="approver2">
+                        <input type="hidden" name="approval_date1" x-model="approvalDate1">
+                        <button type="submit" 
+                            class="inline-block px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-200">
+                            @if(request()->url() == route('giling.show', $check->id))
+                                Simpan
+                            @else
+                                Setujui
+                            @endif
+                        </button>
+                    </form>
                 @else
-                <a href="@yield('pdf-route')" 
-                    class="inline-block mr-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-200">
-                    Download PDF
-                </a>
-                <button type="button" 
-                    class="inline-block px-4 py-2 bg-gray-600 opacity-75 text-white rounded-md cursor-not-allowed" 
-                    disabled>
-                    Telah Disetujui
-                </button>
+                    <a href="@yield('pdf-route')" 
+                        class="inline-block mr-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-200">
+                        Download PDF
+                    </a>
+                    <button type="button" 
+                        class="inline-block px-4 py-2 bg-gray-600 opacity-75 text-white rounded-md cursor-not-allowed" 
+                        disabled>
+                        Telah Disetujui
+                    </button>
                 @endif
             </div>
         </div>
