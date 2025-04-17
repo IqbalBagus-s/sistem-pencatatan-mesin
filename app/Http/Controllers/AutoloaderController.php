@@ -52,4 +52,9 @@ class AutoloaderController extends Controller
 
         return view('autoloader.index', compact('checks'));
     }
+    
+    public function create()
+    {
+        return view('autoloader.create');
+    }
 }
