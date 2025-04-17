@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('autoloader_details', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('tanggal_check_id'); // Foreign key dari autoloader_checks
-            $table->string('tangal')->nullable();
+            $table->string('tanggal')->nullable();
             $table->string('checked_by')->nullable();
             $table->string('approved_by')->nullable();
 
