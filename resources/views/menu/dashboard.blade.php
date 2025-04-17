@@ -11,46 +11,38 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        /* Font loading fixes */
+        /* Font loading fixes - exactly matching index page */
         @font-face {
             font-family: 'Poppins';
             src: url("{{ asset('fonts/Poppins-Regular.ttf') }}") format('truetype');
             font-weight: 400;
             font-style: normal;
-            font-display: swap;
         }
         @font-face {
             font-family: 'Poppins';
             src: url("{{ asset('fonts/Poppins-Medium.ttf') }}") format('truetype');
             font-weight: 500;
             font-style: normal;
-            font-display: swap;
         }
         @font-face {
             font-family: 'Poppins';
             src: url("{{ asset('fonts/Poppins-SemiBold.ttf') }}") format('truetype');
             font-weight: 600;
             font-style: normal;
-            font-display: swap;
         }
         @font-face {
             font-family: 'Poppins';
             src: url("{{ asset('fonts/Poppins-Bold.ttf') }}") format('truetype');
             font-weight: 700;
             font-style: normal;
-            font-display: swap;
         }
         
-        /* Ensure font is applied to all elements */
-        * {
-            font-family: 'Poppins', sans-serif !important;
-            box-sizing: border-box;
-        }
-        
+        /* Basic styles */
         html, body {
             height: 100%;
             margin: 0;
             overflow-x: hidden;
+            font-family: 'Poppins', sans-serif;
         }
         
         /* Main container styling - Flexbox untuk footer sticky */
@@ -59,6 +51,7 @@
             flex-direction: column;
             min-height: 100vh;
             padding-top: 65px; /* Header height + padding */
+            font-family: 'Poppins', sans-serif;
         }
         
         /* Content area that expands */
@@ -384,8 +377,8 @@
         }
     </style>
 </head>
-<body class="bg-blue-50">
-    <div id="app-container"> <!-- Main flex container -->
+<body class="bg-blue-50 font-poppins">
+    <div id="app-container" class="font-poppins"> <!-- Main flex container with font class -->
         <!-- Header Fixed -->
         <header class="fixed top-0 left-0 w-full bg-white shadow-md z-50 touch-pan-y">
             <div class="header-container">
