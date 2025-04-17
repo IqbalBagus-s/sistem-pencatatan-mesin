@@ -9,6 +9,7 @@ use App\Http\Controllers\CompressorController;
 use App\Http\Controllers\HopperController;
 use App\Http\Controllers\DehumBahanController;
 use App\Http\Controllers\GilingController;
+use App\Http\Controllers\AutoloaderController;
 
 
 Route::get('/', function () {
@@ -92,4 +93,15 @@ Route::middleware(['auth:approver,checker'])->group(function () {
     Route::post('/giling/{id}/approve', [GilingController::class, 'approve'])->name('giling.approve');
     // Route download PDF
     Route::get('/giling/{id}/download-pdf', [GilingController::class, 'downloadPdf'])->name('giling.downloadPdf');
+
+    // Route Mesin Giling
+    Route::get('/autoloader', [AutoloaderController::class, 'index'])->name('autoloader.index');
+    Route::get('/autoloader/create', [AutoloaderController::class, 'create'])->name('autoloader.create');
+    Route::post('/autoloader', [AutoloaderController::class, 'store'])->name('autoloader.store');
+    Route::get('/autoloader/{id}/edit', [AutoloaderController::class, 'edit'])->name('autoloader.edit');
+    Route::put('/autoloader/{id}', [AutoloaderController::class, 'update'])->name('autoloader.update');
+    Route::get('/autoloader/{id}', [AutoloaderController::class, 'show'])->name('autoloader.show');
+    Route::post('/autoloader/{id}/approve', [AutoloaderController::class, 'approve'])->name('autoloader.approve');
+    // Route download PDF
+    Route::get('/autoloader/{id}/download-pdf', [AutoloaderController::class, 'downloadPdf'])->name('autoloader.downloadPdf');
 });
