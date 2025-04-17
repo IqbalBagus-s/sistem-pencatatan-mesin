@@ -49,9 +49,26 @@
                     @csrf
                     
                     <!-- Date-time fields -->
-                    @if(View::hasSection('date-time-fields'))
-                        @yield('date-time-fields')
+                    @if(Route::currentRouteName() === 'giling.create')
+                    <!-- Minggu dan Bulan fields untuk mesin giling -->
+                        <div class="grid md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="minggu" class="block mb-2">Pilih Minggu ke- :</label>
+                                <select id="minggu" name="minggu" class="w-full px-3 py-2 bg-sky-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>
+                                    <option value="">-- Pilih Minggu --</option>
+                                    <option value="Minggu 1">Minggu 1</option>
+                                    <option value="Minggu 2">Minggu 2</option>
+                                    <option value="Minggu 3">Minggu 3</option>
+                                    <option value="Minggu 4">Minggu 4</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="bulan" class="block mb-2">Bulan:</label>
+                                <input type="month" id="bulan" name="bulan" class="w-full px-3 py-2 bg-sky-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>
+                            </div>
+                        </div>
                     @else
+                        <!-- Hari dan Tanggal fields untuk mesin lainnya -->
                         <div class="grid md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block mb-2">Hari:</label>
