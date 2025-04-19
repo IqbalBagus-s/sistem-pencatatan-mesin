@@ -10,7 +10,7 @@ class AutoloaderDetail extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'autoloader_checks_checker_and_approver';
+    protected $table = 'autoloader_details';
 
     protected $fillable = [
         'tanggal_check_id',

@@ -128,7 +128,8 @@
 
             <!-- Tabel Inspeksi -->
             <div class="overflow-x-auto">
-                <table class="w-full border-collapse border border-gray-300">
+                <!-- Table 1: Dates 1-11 -->
+                <table class="w-full border-collapse border border-gray-300 mb-6">
                     <thead>
                         <tr>
                             <th class="border border-gray-300 bg-sky-50 p-2 w-10" rowspan="2">No.</th>
@@ -500,16 +501,704 @@
                         </tr>
                     </tbody>
                 </table>
+
+                <!-- Table 2: Dates 12-22 -->
+                <table class="w-full border-collapse border border-gray-300 mb-6">
+                    <thead>
+                        <tr>
+                            <th class="border border-gray-300 bg-sky-50 p-2 w-10" rowspan="2">No.</th>
+                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-28" colspan="1">Tanggal</th>
+                            
+                            <?php
+                            // Generate header columns from 12 to 22
+                            for ($i = 12; $i <= 22; $i++) {
+                                $num = str_pad($i, 2, '0', STR_PAD_LEFT); // Format number as 12, 13, etc.
+                                echo '<th class="border border-gray-300 bg-sky-50 p-2" colspan="1">' . $num . '</th>';
+                                echo '<th class="border border-gray-300 bg-sky-50 p-2 w-32" rowspan="2">Keterangan</th>';
+                            }
+                            ?>
+                        </tr>
+                        <tr>
+                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-28">Checked Items</th>
+                            <?php
+                            // Generate "Check" cells for each column
+                            for ($i = 12; $i <= 22; $i++) {
+                                echo '<th class="border border-gray-300 bg-sky-50 p-2">Check</th>';
+                            }
+                            ?>
+                        </tr>
+                    </thead>                        
+                    <tbody>
+                        @php
+                            $items = [
+                                1 => 'Filter',
+                                2 => 'Selang',
+                                3 => 'Panel Kelistrikan',
+                                4 => 'Kontaktor',
+                                5 => 'Thermal Overload',
+                                6 => 'MCB',
+                            ];
+                            
+                            $options = [
+                                'V' => '✓',
+                                'X' => '✗',
+                                '-' => '—',
+                                'OFF' => 'OFF'
+                            ];
+                        @endphp
+                        
+                        @foreach($items as $i => $item)
+                            <tr>
+                                <td class="border border-gray-300 text-center p-1 h-10 text-xs">{{ $i }}</td>
+                                <td class="border border-gray-300 p-1 h-10">
+                                    <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
+                                </td>
+                                
+                                @for($j = 12; $j <= 22; $j++)
+                                    <td class="border border-gray-300 p-1 h-10">
+                                        <select name="check_{{ $j }}[{{ $i }}]" class="w-full h-8 px-1 py-0 text-xs bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                            @foreach($options as $value => $symbol)
+                                                <option value="{{ $value }}">{{ $symbol }}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td class="border border-gray-300 p-1 h-10">
+                                        <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
+                                            class="w-full h-8 px-1 py-0 text-xs bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                            placeholder="Keterangan">
+                                    </td>
+                                @endfor
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    {{-- badan tabel kedua untuk mencatat checker --}}
+                    <tbody class="bg-white">
+                        <tr class="bg-sky-50">
+                            <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs" rowspan="1">-</td>
+                            <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs">Dibuat Oleh</td>
+                            
+                            <!-- Check 12 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user12.value = userName;
+                                                $refs.checkNum12.value = '12';
+                                            } else {
+                                                userName = '';
+                                                $refs.user12.value = '';
+                                                $refs.checkNum12.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_12" x-ref="user12" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_12" x-ref="checkNum12" value="12">
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Check 13 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user13.value = userName;
+                                                $refs.checkNum13.value = '13';
+                                            } else {
+                                                userName = '';
+                                                $refs.user13.value = '';
+                                                $refs.checkNum13.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_13" x-ref="user13" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_13" x-ref="checkNum13" value="13">
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Check 14 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user14.value = userName;
+                                                $refs.checkNum14.value = '14';
+                                            } else {
+                                                userName = '';
+                                                $refs.user14.value = '';
+                                                $refs.checkNum14.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_14" x-ref="user14" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_14" x-ref="checkNum14" value="14">
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Check 15 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user15.value = userName;
+                                                $refs.checkNum15.value = '15';
+                                            } else {
+                                                userName = '';
+                                                $refs.user15.value = '';
+                                                $refs.checkNum15.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_15" x-ref="user15" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_15" x-ref="checkNum15" value="15">
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Check 16 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user16.value = userName;
+                                                $refs.checkNum16.value = '16';
+                                            } else {
+                                                userName = '';
+                                                $refs.user16.value = '';
+                                                $refs.checkNum16.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_16" x-ref="user16" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_16" x-ref="checkNum16" value="16">
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Check 17 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user17.value = userName;
+                                                $refs.checkNum17.value = '17';
+                                            } else {
+                                                userName = '';
+                                                $refs.user17.value = '';
+                                                $refs.checkNum17.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_17" x-ref="user17" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_17" x-ref="checkNum17" value="17">
+                                    </div>
+                                </div> 
+                            </td>
+                            
+                            <!-- Check 18 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user18.value = userName;
+                                                $refs.checkNum18.value = '18';
+                                            } else {
+                                                userName = '';
+                                                $refs.user18.value = '';
+                                                $refs.checkNum18.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_18" x-ref="user18" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_18" x-ref="checkNum18" value="18">
+                                    </div>
+                                </div>
+                            </td>
+                            <!-- Check 19 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user19.value = userName;
+                                                $refs.checkNum19.value = '19';
+                                            } else {
+                                                userName = '';
+                                                $refs.user19.value = '';
+                                                $refs.checkNum19.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_19" x-ref="user19" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_19" x-ref="checkNum19" value="19">
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Check 20 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user20.value = userName;
+                                                $refs.checkNum20.value = '20';
+                                            } else {
+                                                userName = '';
+                                                $refs.user20.value = '';
+                                                $refs.checkNum20.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_20" x-ref="user20" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_20" x-ref="checkNum20" value="20">
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Check 21 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user21.value = userName;
+                                                $refs.checkNum21.value = '21';
+                                            } else {
+                                                userName = '';
+                                                $refs.user21.value = '';
+                                                $refs.checkNum21.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_21" x-ref="user21" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_21" x-ref="checkNum21" value="21">
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Check 22 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user22.value = userName;
+                                                $refs.checkNum22.value = '22';
+                                            } else {
+                                                userName = '';
+                                                $refs.user22.value = '';
+                                                $refs.checkNum22.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_22" x-ref="user22" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_22" x-ref="checkNum22" value="22">
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Table 3: Dates 23-31 -->
+                <table class="w-full border-collapse border border-gray-300 mb-6">
+                    <thead>
+                        <tr>
+                            <th class="border border-gray-300 bg-sky-50 p-2 w-10" rowspan="2">No.</th>
+                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-28" colspan="1">Tanggal</th>
+                            
+                            <?php
+                            // Generate header columns from 23 to 31
+                            for ($i = 23; $i <= 31; $i++) {
+                                $num = str_pad($i, 2, '0', STR_PAD_LEFT); // Format number as 23, 24, etc.
+                                echo '<th class="border border-gray-300 bg-sky-50 p-2" colspan="1">' . $num . '</th>';
+                                echo '<th class="border border-gray-300 bg-sky-50 p-2 w-32" rowspan="2">Keterangan</th>';
+                            }
+                            ?>
+                        </tr>
+                        <tr>
+                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-28">Checked Items</th>
+                            <?php
+                            // Generate "Check" cells for each column
+                            for ($i = 23; $i <= 31; $i++) {
+                                echo '<th class="border border-gray-300 bg-sky-50 p-2">Check</th>';
+                            }
+                            ?>
+                        </tr>
+                    </thead>                        
+                    <tbody>
+                        @php
+                            $items = [
+                                1 => 'Filter',
+                                2 => 'Selang',
+                                3 => 'Panel Kelistrikan',
+                                4 => 'Kontaktor',
+                                5 => 'Thermal Overload',
+                                6 => 'MCB',
+                            ];
+                            
+                            $options = [
+                                'V' => '✓',
+                                'X' => '✗',
+                                '-' => '—',
+                                'OFF' => 'OFF'
+                            ];
+                        @endphp
+                        
+                        @foreach($items as $i => $item)
+                            <tr>
+                                <td class="border border-gray-300 text-center p-1 h-10 text-xs">{{ $i }}</td>
+                                <td class="border border-gray-300 p-1 h-10">
+                                    <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
+                                </td>
+                                
+                                @for($j = 23; $j <= 31; $j++)
+                                    <td class="border border-gray-300 p-1 h-10">
+                                        <select name="check_{{ $j }}[{{ $i }}]" class="w-full h-8 px-1 py-0 text-xs bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                            @foreach($options as $value => $symbol)
+                                                <option value="{{ $value }}">{{ $symbol }}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td class="border border-gray-300 p-1 h-10">
+                                        <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
+                                            class="w-full h-8 px-1 py-0 text-xs bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                            placeholder="Keterangan">
+                                    </td>
+                                @endfor
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    {{-- badan tabel kedua untuk mencatat checker --}}
+                    <tbody class="bg-white">
+                        <tr class="bg-sky-50">
+                            <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs" rowspan="1">-</td>
+                            <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs">Dibuat Oleh</td>
+                            
+                            <!-- Check 23 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user23.value = userName;
+                                                $refs.checkNum23.value = '23';
+                                            } else {
+                                                userName = '';
+                                                $refs.user23.value = '';
+                                                $refs.checkNum23.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_23" x-ref="user23" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_23" x-ref="checkNum23" value="23">
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Check 24 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user24.value = userName;
+                                                $refs.checkNum24.value = '24';
+                                            } else {
+                                                userName = '';
+                                                $refs.user24.value = '';
+                                                $refs.checkNum24.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_24" x-ref="user24" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_24" x-ref="checkNum24" value="24">
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Check 25 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user25.value = userName;
+                                                $refs.checkNum25.value = '25';
+                                            } else {
+                                                userName = '';
+                                                $refs.user25.value = '';
+                                                $refs.checkNum25.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_25" x-ref="user25" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_25" x-ref="checkNum25" value="25">
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Check 26 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user26.value = userName;
+                                                $refs.checkNum26.value = '26';
+                                            } else {
+                                                userName = '';
+                                                $refs.user26.value = '';
+                                                $refs.checkNum26.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_26" x-ref="user26" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_26" x-ref="checkNum26" value="26">
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Check 27 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user27.value = userName;
+                                                $refs.checkNum27.value = '27';
+                                            } else {
+                                                userName = '';
+                                                $refs.user27.value = '';
+                                                $refs.checkNum27.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_27" x-ref="user27" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_27" x-ref="checkNum27" value="27">
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Check 28 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user28.value = userName;
+                                                $refs.checkNum28.value = '28';
+                                            } else {
+                                                userName = '';
+                                                $refs.user28.value = '';
+                                                $refs.checkNum28.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_28" x-ref="user28" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_28" x-ref="checkNum28" value="28">
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Check 29 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user29.value = userName;
+                                                $refs.checkNum29.value = '29';
+                                            } else {
+                                                userName = '';
+                                                $refs.user29.value = '';
+                                                $refs.checkNum29.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_29" x-ref="user29" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_29" x-ref="checkNum29" value="29">
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Check 30 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user30.value = userName;
+                                                $refs.checkNum30.value = '30';
+                                            } else {
+                                                userName = '';
+                                                $refs.user30.value = '';
+                                                $refs.checkNum30.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_30" x-ref="user30" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_30" x-ref="checkNum30" value="30">
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Check 31 -->
+                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                <div x-data="{ selected: false, userName: '' }">
+                                    <button type="button" 
+                                        @click="selected = !selected; 
+                                            if(selected) {
+                                                userName = '{{ Auth::user()->username }}'; 
+                                                $refs.user31.value = userName;
+                                                $refs.checkNum31.value = '31';
+                                            } else {
+                                                userName = '';
+                                                $refs.user31.value = '';
+                                                $refs.checkNum31.value = '';
+                                            }"
+                                        class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
+                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                    </button>
+                                    <div class="mt-1" x-show="selected">
+                                        <input type="text" name="checked_by_31" x-ref="user31" x-bind:value="userName"
+                                            class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
+                                            readonly>
+                                        <input type="hidden" name="check_num_31" x-ref="checkNum31" value="31">
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
-            <div class="flex justify-between mt-6">
-                <a href="{{ route('autoloader.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Kembali
-                </a>
-                <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Simpan
-                </button>
-            </div>
+            @include('partials.form-buttons', ['backRoute' => route('autoloader.index')])
         </form>
     </div>
 </div>
