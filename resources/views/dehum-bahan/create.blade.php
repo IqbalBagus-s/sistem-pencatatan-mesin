@@ -315,7 +315,7 @@
                 </table>
             </div>
 
-            @include('partials.form-buttons', ['backRoute' => route('dehum-bahan.index')])
+            @include('components.form-buttons', ['backRoute' => route('dehum-bahan.index')])
         </form>
     </div>
 </div>

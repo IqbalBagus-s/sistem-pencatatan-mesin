@@ -313,7 +313,7 @@
                 </table>
             </div>
 
-            @include('partials.form-buttons', ['backRoute' => route('hopper.index')])
+            @include('components.form-buttons', ['backRoute' => route('hopper.index')])
         </form>
     </div>
 </div>

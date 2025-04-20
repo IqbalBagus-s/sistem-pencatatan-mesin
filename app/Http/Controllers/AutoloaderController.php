@@ -211,4 +211,90 @@ class AutoloaderController extends Controller
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    public function edit($id)
+    {
+        // Ambil data AutoloaderCheck berdasarkan ID
+        $check = AutoloaderCheck::findOrFail($id);
+        
+        // Ambil semua detail checker untuk check ini
+        $checkerDetails = AutoloaderDetail::where('tanggal_check_id', $check->id)->get();
+        
+        // Muat tabel hasil untuk form
+        $resultTable1 = $check->resultTable1;
+        $resultTable2 = $check->resultTable2;
+        $resultTable3 = $check->resultTable3;
+        
+        // Buat collection untuk hasil check yang lebih mudah digunakan dalam view
+        $results = collect();
+        
+        // Buat pemetaan tanggal ke checked_by dari detail checker
+        $checkerMap = [];
+        foreach ($checkerDetails as $detail) {
+            $checkerMap[$detail->tanggal] = $detail->checked_by;
+        }
+        
+        // Tambahkan debugging untuk melihat isi tabel hasil
+        // dd($resultTable1->toArray(), $resultTable2->toArray(), $resultTable3->toArray());
+        
+        // Proses tabel 1 (hari 1-11)
+        foreach ($resultTable1 as $result) {
+            $itemId = $result->checked_items;
+            
+            for ($i = 1; $i <= 11; $i++) {
+                $tanggalField = "tanggal{$i}";
+                $keteranganField = "keterangan_tanggal{$i}";
+                
+                // Pastikan kita tidak mengubah nilai null menjadi string kosong untuk field result
+                $results->push([
+                    'tanggal' => $i,
+                    'item_id' => $itemId,
+                    'result' => $result->$tanggalField, // Simpan nilai asli (bahkan jika null)
+                    'keterangan' => $result->$keteranganField ?? '',
+                    'checked_by' => $checkerMap[$i] ?? ''
+                ]);
+            }
+        }
+        
+        // Proses tabel 2 (hari 12-22)
+        foreach ($resultTable2 as $result) {
+            $itemId = $result->checked_items;
+            
+            for ($i = 12; $i <= 22; $i++) {
+                $tanggalField = "tanggal{$i}";
+                $keteranganField = "keterangan_tanggal{$i}";
+                
+                $results->push([
+                    'tanggal' => $i,
+                    'item_id' => $itemId,
+                    'result' => $result->$tanggalField, // Simpan nilai asli (bahkan jika null)
+                    'keterangan' => $result->$keteranganField ?? '',
+                    'checked_by' => $checkerMap[$i] ?? ''
+                ]);
+            }
+        }
+        
+        // Proses tabel 3 (hari 23-31)
+        foreach ($resultTable3 as $result) {
+            $itemId = $result->checked_items;
+            
+            for ($i = 23; $i <= 31; $i++) {
+                $tanggalField = "tanggal{$i}";
+                $keteranganField = "keterangan_tanggal{$i}";
+                
+                $results->push([
+                    'tanggal' => $i,
+                    'item_id' => $itemId,
+                    'result' => $result->$tanggalField, // Simpan nilai asli (bahkan jika null)
+                    'keterangan' => $result->$keteranganField ?? '',
+                    'checked_by' => $checkerMap[$i] ?? ''
+                ]);
+            }
+        }
+        
+        // Tambahkan debugging untuk melihat hasil akhir collection
+        // dd($results->toArray());
+        
+        return view('autoloader.edit', compact('check', 'results'));
+    }
 }

@@ -290,14 +290,7 @@
         </table>
     </div>
 
-    <div class="flex justify-between mt-6">
-        <a href="{{ route('hopper.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-            Kembali
-        </a>
-        <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-            Simpan Perubahan
-        </button>
-    </div>
+    @include('components.form-buttons', ['backRoute' => route('hopper.index')])
 </form>
 @endsection
 
