@@ -14,7 +14,7 @@ class AutoloaderDetail extends Model
 
     protected $fillable = [
         'tanggal_check_id',
-        'tanggal',  // Note: there's a typo in the migration 'tangal' instead of 'tanggal'
+        'tanggal',  
         'checked_by',
         'approved_by',
     ];

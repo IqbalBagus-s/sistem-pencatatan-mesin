@@ -200,9 +200,13 @@
                             </span>
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if($check->checkerAndApprover && $check->checkerAndApprover->checked_by)
-                                <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm inline-block">
-                                    {{ $check->checkerAndApprover->checked_by }}
+                            @if(count($check->allCheckers) > 0)
+                                <div class="flex flex-col items-center space-y-1">
+                                    @foreach($check->allCheckers as $checker)
+                                        <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm inline-block">
+                                            {{ $checker }}
+                                        </div>
+                                    @endforeach
                                 </div>
                             @else
                                 <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">

@@ -17,7 +17,7 @@ class AutoloaderController extends Controller
     public function index(Request $request)
     {
         $query = AutoloaderCheck::query();
-
+    
         // Filter berdasarkan checked_by atau approved_by jika ada
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
@@ -26,12 +26,12 @@ class AutoloaderController extends Controller
                   ->orWhere('approved_by', 'LIKE', $search);
             });
         }
-
+    
         // Filter berdasarkan nomor autoloader
         if ($request->filled('search_autoloader')) {
             $query->where('nomer_autoloader', $request->search_autoloader);
         }
-
+    
         // Filter berdasarkan bulan
         if ($request->filled('bulan')) {
             try {
@@ -41,15 +41,24 @@ class AutoloaderController extends Controller
                 return redirect()->back()->with('error', 'Format bulan tidak valid.');
             }
         }
-
+    
         // Filter berdasarkan shift
         if ($request->filled('shift')) {
             $query->where('shift', $request->shift);
         }
-
-        // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
+    
+        // Ambil data dengan paginasi
         $checks = $query->with('checkerAndApprover')->paginate(10)->appends($request->query());
-
+        
+        // Load all unique checkers for each check
+        foreach ($checks as $check) {
+            $check->allCheckers = AutoloaderDetail::where('tanggal_check_id', $check->id)
+                ->whereNotNull('checked_by')
+                ->pluck('checked_by')
+                ->unique()
+                ->toArray();
+        }
+    
         return view('autoloader.index', compact('checks'));
     }
     
@@ -76,7 +85,7 @@ class AutoloaderController extends Controller
         if ($existingRecord) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Data dengan nomor autoloader, shift, dan bulan yang sama sudah ada!');
+                ->with('error', 'Data tersebut sudah ada!');
         }
 
         // Start a database transaction
@@ -200,7 +209,7 @@ class AutoloaderController extends Controller
             DB::commit();
             
             return redirect()->route('autoloader.index')
-                ->with('success', 'Data Autoloader berhasil disimpan!');
+                ->with('success', 'Data berhasil disimpan!');
                 
         } catch (\Exception $e) {
             // Rollback the transaction if something goes wrong
@@ -535,7 +544,7 @@ class AutoloaderController extends Controller
             DB::commit();
             
             return redirect()->route('autoloader.index')
-                ->with('success', 'Data Autoloader berhasil diperbarui!');
+                ->with('success', 'Data berhasil diperbarui!');
                 
         } catch (\Exception $e) {
             // Rollback transaksi jika terjadi kesalahan
