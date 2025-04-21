@@ -11,6 +11,8 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     
     <style>
         @font-face {
@@ -185,72 +187,72 @@
         </div>
     </div>
 
+    <!-- Include Footer Component -->
     @include('components.footer')
 
     @vite('resources/js/app.js')
     @yield('scripts')
-
     <script>
         // Function to show notification
-    function showNotification(message, type = 'success') {
-        const popup = document.getElementById('notification-popup');
-        const successNotification = document.getElementById('success-notification');
-        const errorNotification = document.getElementById('error-notification');
-        const warningNotification = document.getElementById('warning-notification');
-        
-        // Hide all notifications first
-        successNotification.classList.add('hidden');
-        errorNotification.classList.add('hidden');
-        warningNotification.classList.add('hidden');
-        
-        // Show the popup container
-        popup.classList.remove('hidden');
-        
-        // Show the appropriate notification type
-        if (type === 'success') {
-            document.getElementById('success-message').textContent = message;
-            successNotification.classList.remove('hidden');
-        } else if (type === 'error') {
-            document.getElementById('error-message').textContent = message;
-            errorNotification.classList.remove('hidden');
-        } else if (type === 'warning') {
-            document.getElementById('warning-message').textContent = message;
-            warningNotification.classList.remove('hidden');
+        function showNotification(message, type = 'success') {
+            const popup = document.getElementById('notification-popup');
+            const successNotification = document.getElementById('success-notification');
+            const errorNotification = document.getElementById('error-notification');
+            const warningNotification = document.getElementById('warning-notification');
+            
+            // Hide all notifications first
+            successNotification.classList.add('hidden');
+            errorNotification.classList.add('hidden');
+            warningNotification.classList.add('hidden');
+            
+            // Show the popup container
+            popup.classList.remove('hidden');
+            
+            // Show the appropriate notification type
+            if (type === 'success') {
+                document.getElementById('success-message').textContent = message;
+                successNotification.classList.remove('hidden');
+            } else if (type === 'error') {
+                document.getElementById('error-message').textContent = message;
+                errorNotification.classList.remove('hidden');
+            } else if (type === 'warning') {
+                document.getElementById('warning-message').textContent = message;
+                warningNotification.classList.remove('hidden');
+            }
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                popup.classList.add('hidden');
+            }, 5000);
         }
-        
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-            popup.classList.add('hidden');
-        }, 5000);
-    }
 
-    // Close button handling
-    document.addEventListener('DOMContentLoaded', () => {
-        // Add click event to all close buttons
-        const closeButtons = document.querySelectorAll('.close-notification');
-        closeButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                document.getElementById('notification-popup').classList.add('hidden');
+        // Close button handling
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add click event to all close buttons
+            const closeButtons = document.querySelectorAll('.close-notification');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    document.getElementById('notification-popup').classList.add('hidden');
+                });
             });
+            
+            // Check for flash messages on page load
+            const successMessage = "{{ session('success') }}";
+            const errorMessage = "{{ session('error') }}";
+            const warningMessage = "{{ session('warning') }}";
+            
+            if (successMessage) {
+                showNotification(successMessage, 'success');
+            }
+            
+            if (errorMessage) {
+                showNotification(errorMessage, 'error');
+            }
+            
+            if (warningMessage) {
+                showNotification(warningMessage, 'warning');
+            }
         });
-        
-        // Check for flash messages on page load
-        const successMessage = "{{ session('success') }}";
-        const errorMessage = "{{ session('error') }}";
-        const warningMessage = "{{ session('warning') }}";
-        
-        if (successMessage) {
-            showNotification(successMessage, 'success');
-        }
-        
-        if (errorMessage) {
-            showNotification(errorMessage, 'error');
-        }
-        
-        if (warningMessage) {
-            showNotification(warningMessage, 'warning');
-        }
-    });
     </script>
 </body>
 </html>

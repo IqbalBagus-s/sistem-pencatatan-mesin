@@ -1,8 +1,8 @@
 @extends('layouts.index-layout')
 
-@section('title', 'Pencatatan Mesin Giling')
+@section('title', 'Pemeriksaan Mesin Giling')
 
-@section('page-title', 'Pencatatan Mesin Giling')
+@section('page-title', 'Pemeriksaan Mesin Giling')
 
 @section('form-action')
     {{ route('giling.index') }}
@@ -38,7 +38,7 @@
 @endsection
 
 @section('create-button-text')
-    Tambah Pencatatan
+    Tambah Pemeriksaan
 @endsection
 
 @section('table-content')
@@ -85,14 +85,18 @@
                             @endphp
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->minggu }}</td>
-                        <td class="py-3 px-4 border-b border-gray-200">{{ $check->checked_by }}</td>
+                        <td class="py-3 px-4 border-b border-gray-200">
+                            <span class="bg-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm">
+                                {{ $check->checked_by }}
+                            </span>
+                        </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             @if($check->approved_by1 && $check->approved_by2)
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui Lengkap
                                 </span>
                             @elseif($check->approved_by1 || $check->approved_by2)
-                                <span class="bg-warning text-warningText px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui Sebagian
                                 </span>
                             @else

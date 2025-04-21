@@ -14,6 +14,11 @@ class GilingController extends Controller
     {
         $query = GilingCheck::query();
 
+        // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
+        if (Auth::user() instanceof \App\Models\Checker) {
+            $query->where('checked_by', Auth::user()->username);
+        }
+
         // Filter berdasarkan nama checker jika ada
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
@@ -112,7 +117,7 @@ class GilingController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('giling.index')->with('success', 'Data berhasil disimpan');
+            return redirect()->route('giling.index')->with('success', 'Data berhasil disimpan!');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -183,6 +188,42 @@ class GilingController extends Controller
         }
         
         // Redirect with success message
-        return redirect()->route('giling.index')->with('success', 'Data berhasil diperbarui');
+        return redirect()->route('giling.index')->with('success', 'Data berhasil diperbarui!');
+    }
+
+    public function show($id)
+    {
+        // Fetch the GilingCheck record with its results
+        $check = GilingCheck::with('result')->findOrFail($id);
+        
+        // Get the associated results and organize into a more usable format
+        $results = $check->result->keyBy('checked_items');
+        
+        // Return the view with the GilingCheck data and its results
+        return view('giling.show', compact('check', 'results'));
+    }
+
+    public function approve(Request $request, $id)
+    {
+        // Validate the request
+        $request->validate([
+            'approved_by1' => 'nullable|string|max:255',
+            'approved_by2' => 'nullable|string|max:255',
+            'approval_date1' => 'nullable|date',
+        ]);
+
+        // Find the check record
+        $check = GilingCheck::findOrFail($id);
+        
+        // Update approval fields
+        $check->approved_by1 = $request->approved_by1;
+        $check->approved_by2 = $request->approved_by2;
+        $check->approval_date1 = $request->approval_date1;
+        
+        // Save the changes
+        $check->save();
+        
+        // Redirect back with success message
+        return redirect()->route('giling.index', $check->id)->with('success', 'Data berhasil disetujui!');
     }
 }

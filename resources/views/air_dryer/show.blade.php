@@ -56,13 +56,14 @@
 @endsection
 
 @section('machine-detail')
-<div class="flex flex-col md:flex-row gap-4 mt-5">
+<div class="flex flex-col  gap-4 mt-5">
     <!-- Detail Mesin -->
-    <div class="bg-gray-100 p-4 rounded-md md:w-auto">
+    <div class="bg-sky-50 p-4 rounded-md ">
         <h5 class="mb-3 font-medium">Detail Mesin:</h5>
         <p class="mb-1">AD 1 : HIGH PRESS 1 &nbsp;&nbsp;&nbsp; AD 5 : SUPPLY INJECT</p>
         <p class="mb-1">AD 2 : HIGH PRESS 2 &nbsp;&nbsp;&nbsp; AD 6 : LOW PRESS 3</p>
         <p class="mb-1">AD 3 : LOW PRESS 1 &nbsp;&nbsp;&nbsp;&nbsp; AD 7 : LOW PRESS 4</p>
         <p class="mb-1">AD 4 : LOW PRESS 2 &nbsp;&nbsp;&nbsp;&nbsp; AD 8 : LOW PRESS 5</p>
     </div>
+</div>
 @endsection

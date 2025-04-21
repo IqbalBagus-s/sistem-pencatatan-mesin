@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('minggu'); // Kolom hari
             $table->string('checked_by'); // Kolom checked_by
             $table->string('approved_by1')->nullable(); // Kolom approved_by1 (nullable)
+            $table->date('approval_date1')->nullable(); // tanggal approved_by1 (nullable)
             $table->string('approved_by2')->nullable(); // Kolom approved_by2 (nullable)
             $table->text('keterangan')->nullable(); // Kolom keterangan (text dan nullable)
             $table->timestamps(); // Kolom created_at dan updated_at
