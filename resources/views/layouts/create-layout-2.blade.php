@@ -13,6 +13,7 @@
 <body class="bg-sky-50 font-sans">
     <div class="container mx-auto mt-4 px-4">
         @yield('content')
+        
         <div id="error-notification" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 hidden">
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-md flex items-center max-w-md">
                 <div class="mr-2">
@@ -50,9 +51,11 @@
             const errorMessage = document.getElementById('error-message');
             
             // Check if there's an error message from the session
-            @if(session('error'))
+            const sessionError = "{{ session('error') }}";
+            
+            if (sessionError) {
                 // Update the error message text
-                errorMessage.textContent = "{{ session('error') }}";
+                errorMessage.textContent = sessionError;
                 
                 // Show the notification
                 errorNotification.classList.remove('hidden');
@@ -61,7 +64,7 @@
                 setTimeout(function() {
                     errorNotification.classList.add('hidden');
                 }, 5000);
-            @endif
+            }
             
             // Close button functionality
             if (closeNotification) {
