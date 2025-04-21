@@ -49,7 +49,7 @@
                     </button>
                     
                     <!-- Dropdown List -->
-                    <div x-show="open" @click.away="open = false" class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md p-2 z-10 max-h-60 overflow-y-auto">
+                    <div x-show="open" @click.away="open = false" class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md p-2 z-50 max-h-60 overflow-y-auto">
                         <div class="grid grid-cols-4 gap-2">
                             <template x-for="i in 23" :key="i">
                                 <div @click.stop>
@@ -145,249 +145,255 @@
                 ];
             @endphp
             <!-- Tabel Inspeksi -->
-            <div class="overflow-x-auto">
+            <div class="mb-6">
                 <!-- Tabel untuk tanggal 1-11 -->
-                <table class="w-full border-collapse border border-gray-300 mb-6">
-                    <thead>
-                        <tr>
-                            <th class="border border-gray-300 bg-sky-50 p-2 w-10" rowspan="2">No.</th>
-                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-28" colspan="1">Tanggal</th>
-                            
-                            @for ($i = 1; $i <= 11; $i++)
-                                @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
-                                <th class="border border-gray-300 bg-sky-50 p-2" colspan="1">{{ $num }}</th>
-                                <th class="border border-gray-300 bg-sky-50 p-2 w-32" rowspan="2">Keterangan</th>
-                            @endfor
-                        </tr>
-                        <tr>
-                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-28">Checked Items</th>
-                            @for ($i = 1; $i <= 11; $i++)
-                                <th class="border border-gray-300 bg-sky-50 p-2">Check</th>
-                            @endfor
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($items as $i => $item)
+                <div class="overflow-x-auto mb-6 border border-gray-300">
+                    <table class="w-full border-collapse">
+                        <thead>
                             <tr>
-                                <td class="border border-gray-300 text-center p-1 h-10 text-xs">{{ $i }}</td>
-                                <td class="border border-gray-300 p-1 h-10">
-                                    <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
-                                </td>
+                                <th class="border border-gray-300 bg-sky-50 p-2 w-10 sticky left-0 z-10" rowspan="2">No.</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10" colspan="1">Tanggal</th>
+                                
+                                @for ($i = 1; $i <= 11; $i++)
+                                    @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
+                                    <th class="border border-gray-300 bg-sky-50 p-2 w-24" colspan="1">{{ $num }}</th>
+                                    <th class="border border-gray-300 bg-sky-50 p-2 w-40" rowspan="2">Keterangan</th>
+                                @endfor
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
+                                @for ($i = 1; $i <= 11; $i++)
+                                    <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Cek</th>
+                                @endfor
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($items as $i => $item)
+                                <tr>
+                                    <td class="border border-gray-300 text-center p-1 h-10 text-xs sticky left-0 bg-white z-10">{{ $i }}</td>
+                                    <td class="border border-gray-300 p-1 h-10 sticky left-10 bg-white z-10">
+                                        <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
+                                    </td>
+                                    
+                                    @for($j = 1; $j <= 11; $j++)
+                                        <td class="border border-gray-300 p-1 h-10">
+                                            <select name="check_{{ $j }}[{{ $i }}]" class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                                @foreach($options as $value => $symbol)
+                                                    <option value="{{ $value }}">{{ $symbol }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td class="border border-gray-300 p-1 h-10">
+                                            <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
+                                                class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                placeholder="Keterangan">
+                                        </td>
+                                    @endfor
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tbody class="bg-white">
+                            <tr class="bg-sky-50">
+                                <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
+                                <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10">Dibuat Oleh</td>
                                 
                                 @for($j = 1; $j <= 11; $j++)
-                                    <td class="border border-gray-300 p-1 h-10">
-                                        <select name="check_{{ $j }}[{{ $i }}]" class="w-full h-8 px-1 py-0 text-xs bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                            @foreach($options as $value => $symbol)
-                                                <option value="{{ $value }}">{{ $symbol }}</option>
-                                            @endforeach
-                                        </select>
-                                    </td>
-                                    <td class="border border-gray-300 p-1 h-10">
-                                        <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
-                                            class="w-full h-8 px-1 py-0 text-xs bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                            placeholder="Keterangan">
+                                    <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                        <div x-data="{ selected: false, userName: '' }">
+                                            <button type="button" 
+                                                @click="selected = !selected; 
+                                                    if(selected) {
+                                                        userName = '{{ Auth::user()->username }}'; 
+                                                        $refs.user{{ $j }}.value = userName;
+                                                        $refs.checkNum{{ $j }}.value = '{{ $j }}';
+                                                    } else {
+                                                        userName = '';
+                                                        $refs.user{{ $j }}.value = '';
+                                                        $refs.checkNum{{ $j }}.value = '';
+                                                    }"
+                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                                :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                                <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                            </button>
+                                            <div class="mt-1" x-show="selected">
+                                                <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
+                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                    readonly>
+                                                <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                            </div>
+                                        </div>
                                     </td>
                                 @endfor
                             </tr>
-                        @endforeach
-                    </tbody>
-                    <tbody class="bg-white">
-                        <tr class="bg-sky-50">
-                            <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs" rowspan="1">-</td>
-                            <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs">Dibuat Oleh</td>
-                            
-                            @for($j = 1; $j <= 11; $j++)
-                                <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
-                                        <button type="button" 
-                                            @click="selected = !selected; 
-                                                if(selected) {
-                                                    userName = '{{ Auth::user()->username }}'; 
-                                                    $refs.user{{ $j }}.value = userName;
-                                                    $refs.checkNum{{ $j }}.value = '{{ $j }}';
-                                                } else {
-                                                    userName = '';
-                                                    $refs.user{{ $j }}.value = '';
-                                                    $refs.checkNum{{ $j }}.value = '';
-                                                }"
-                                            class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
-                                            :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                            <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                                        </button>
-                                        <div class="mt-1" x-show="selected">
-                                            <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
-                                                readonly>
-                                            <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
-                                        </div>
-                                    </div>
-                                </td>
-                            @endfor
-                        </tr>
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
                 
                 <!-- Tabel untuk tanggal 12-22 -->
-                <table class="w-full border-collapse border border-gray-300 mb-6">
-                    <thead>
-                        <tr>
-                            <th class="border border-gray-300 bg-sky-50 p-2 w-10" rowspan="2">No.</th>
-                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-28" colspan="1">Tanggal</th>
-                            
-                            @for ($i = 12; $i <= 22; $i++)
-                                @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
-                                <th class="border border-gray-300 bg-sky-50 p-2" colspan="1">{{ $num }}</th>
-                                <th class="border border-gray-300 bg-sky-50 p-2 w-32" rowspan="2">Keterangan</th>
-                            @endfor
-                        </tr>
-                        <tr>
-                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-28">Checked Items</th>
-                            @for ($i = 12; $i <= 22; $i++)
-                                <th class="border border-gray-300 bg-sky-50 p-2">Check</th>
-                            @endfor
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($items as $i => $item)
+                <div class="overflow-x-auto mb-6 border border-gray-300">
+                    <table class="w-full border-collapse">
+                        <thead>
                             <tr>
-                                <td class="border border-gray-300 text-center p-1 h-10 text-xs">{{ $i }}</td>
-                                <td class="border border-gray-300 p-1 h-10">
-                                    <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
-                                </td>
+                                <th class="border border-gray-300 bg-sky-50 p-2 w-10 sticky left-0 z-10" rowspan="2">No.</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10" colspan="1">Tanggal</th>
+                                
+                                @for ($i = 12; $i <= 22; $i++)
+                                    @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
+                                    <th class="border border-gray-300 bg-sky-50 p-2 w-24" colspan="1">{{ $num }}</th>
+                                    <th class="border border-gray-300 bg-sky-50 p-2 w-40" rowspan="2">Keterangan</th>
+                                @endfor
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
+                                @for ($i = 12; $i <= 22; $i++)
+                                    <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Cek</th>
+                                @endfor
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($items as $i => $item)
+                                <tr>
+                                    <td class="border border-gray-300 text-center p-1 h-10 text-xs sticky left-0 bg-white z-10">{{ $i }}</td>
+                                    <td class="border border-gray-300 p-1 h-10 sticky left-10 bg-white z-10">
+                                        <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
+                                    </td>
+                                    
+                                    @for($j = 12; $j <= 22; $j++)
+                                        <td class="border border-gray-300 p-1 h-10">
+                                            <select name="check_{{ $j }}[{{ $i }}]" class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                                @foreach($options as $value => $symbol)
+                                                    <option value="{{ $value }}">{{ $symbol }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td class="border border-gray-300 p-1 h-10">
+                                            <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
+                                                class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                placeholder="Keterangan">
+                                        </td>
+                                    @endfor
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tbody class="bg-white">
+                            <tr class="bg-sky-50">
+                                <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
+                                <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10">Dibuat Oleh</td>
                                 
                                 @for($j = 12; $j <= 22; $j++)
-                                    <td class="border border-gray-300 p-1 h-10">
-                                        <select name="check_{{ $j }}[{{ $i }}]" class="w-full h-8 px-1 py-0 text-xs bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                            @foreach($options as $value => $symbol)
-                                                <option value="{{ $value }}">{{ $symbol }}</option>
-                                            @endforeach
-                                        </select>
-                                    </td>
-                                    <td class="border border-gray-300 p-1 h-10">
-                                        <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
-                                            class="w-full h-8 px-1 py-0 text-xs bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                            placeholder="Keterangan">
+                                    <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                        <div x-data="{ selected: false, userName: '' }">
+                                            <button type="button" 
+                                                @click="selected = !selected; 
+                                                    if(selected) {
+                                                        userName = '{{ Auth::user()->username }}'; 
+                                                        $refs.user{{ $j }}.value = userName;
+                                                        $refs.checkNum{{ $j }}.value = '{{ $j }}';
+                                                    } else {
+                                                        userName = '';
+                                                        $refs.user{{ $j }}.value = '';
+                                                        $refs.checkNum{{ $j }}.value = '';
+                                                    }"
+                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                                :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                                <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                            </button>
+                                            <div class="mt-1" x-show="selected">
+                                                <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
+                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                    readonly>
+                                                <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                            </div>
+                                        </div>
                                     </td>
                                 @endfor
                             </tr>
-                        @endforeach
-                    </tbody>
-                    <tbody class="bg-white">
-                        <tr class="bg-sky-50">
-                            <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs" rowspan="1">-</td>
-                            <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs">Dibuat Oleh</td>
-                            
-                            @for($j = 12; $j <= 22; $j++)
-                                <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
-                                        <button type="button" 
-                                            @click="selected = !selected; 
-                                                if(selected) {
-                                                    userName = '{{ Auth::user()->username }}'; 
-                                                    $refs.user{{ $j }}.value = userName;
-                                                    $refs.checkNum{{ $j }}.value = '{{ $j }}';
-                                                } else {
-                                                    userName = '';
-                                                    $refs.user{{ $j }}.value = '';
-                                                    $refs.checkNum{{ $j }}.value = '';
-                                                }"
-                                            class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
-                                            :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                            <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                                        </button>
-                                        <div class="mt-1" x-show="selected">
-                                            <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
-                                                readonly>
-                                            <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
-                                        </div>
-                                    </div>
-                                </td>
-                            @endfor
-                        </tr>
-                    </tbody>
-                </table>
-
+                        </tbody>
+                    </table>
+                </div>
+            
                 <!-- Tabel untuk tanggal 23-31 -->
-                <table class="w-full border-collapse border border-gray-300 mb-6">
-                    <thead>
-                        <tr>
-                            <th class="border border-gray-300 bg-sky-50 p-2 w-10" rowspan="2">No.</th>
-                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-28" colspan="1">Tanggal</th>
-                            
-                            @for ($i = 23; $i <= 31; $i++)
-                                @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
-                                <th class="border border-gray-300 bg-sky-50 p-2" colspan="1">{{ $num }}</th>
-                                <th class="border border-gray-300 bg-sky-50 p-2 w-32" rowspan="2">Keterangan</th>
-                            @endfor
-                        </tr>
-                        <tr>
-                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-28">Checked Items</th>
-                            @for ($i = 23; $i <= 31; $i++)
-                                <th class="border border-gray-300 bg-sky-50 p-2">Check</th>
-                            @endfor
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($items as $i => $item)
+                <div class="overflow-x-auto mb-6 border border-gray-300">
+                    <table class="w-full border-collapse">
+                        <thead>
                             <tr>
-                                <td class="border border-gray-300 text-center p-1 h-10 text-xs">{{ $i }}</td>
-                                <td class="border border-gray-300 p-1 h-10">
-                                    <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
-                                </td>
+                                <th class="border border-gray-300 bg-sky-50 p-2 w-10 sticky left-0 z-10" rowspan="2">No.</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10" colspan="1">Tanggal</th>
+                                
+                                @for ($i = 23; $i <= 31; $i++)
+                                    @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
+                                    <th class="border border-gray-300 bg-sky-50 p-2 w-24" colspan="1">{{ $num }}</th>
+                                    <th class="border border-gray-300 bg-sky-50 p-2 w-40" rowspan="2">Keterangan</th>
+                                @endfor
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
+                                @for ($i = 23; $i <= 31; $i++)
+                                    <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Cek</th>
+                                @endfor
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($items as $i => $item)
+                                <tr>
+                                    <td class="border border-gray-300 text-center p-1 h-10 text-xs sticky left-0 bg-white z-10">{{ $i }}</td>
+                                    <td class="border border-gray-300 p-1 h-10 sticky left-10 bg-white z-10">
+                                        <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
+                                    </td>
+                                    
+                                    @for($j = 23; $j <= 31; $j++)
+                                        <td class="border border-gray-300 p-1 h-10">
+                                            <select name="check_{{ $j }}[{{ $i }}]" class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                                @foreach($options as $value => $symbol)
+                                                    <option value="{{ $value }}">{{ $symbol }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td class="border border-gray-300 p-1 h-10">
+                                            <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
+                                                class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                placeholder="Keterangan">
+                                        </td>
+                                    @endfor
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tbody class="bg-white">
+                            <tr class="bg-sky-50">
+                                <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
+                                <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10">Dibuat Oleh</td>
                                 
                                 @for($j = 23; $j <= 31; $j++)
-                                    <td class="border border-gray-300 p-1 h-10">
-                                        <select name="check_{{ $j }}[{{ $i }}]" class="w-full h-8 px-1 py-0 text-xs bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                            @foreach($options as $value => $symbol)
-                                                <option value="{{ $value }}">{{ $symbol }}</option>
-                                            @endforeach
-                                        </select>
-                                    </td>
-                                    <td class="border border-gray-300 p-1 h-10">
-                                        <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
-                                            class="w-full h-8 px-1 py-0 text-xs bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                            placeholder="Keterangan">
+                                    <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                        <div x-data="{ selected: false, userName: '' }">
+                                            <button type="button" 
+                                                @click="selected = !selected; 
+                                                    if(selected) {
+                                                        userName = '{{ Auth::user()->username }}'; 
+                                                        $refs.user{{ $j }}.value = userName;
+                                                        $refs.checkNum{{ $j }}.value = '{{ $j }}';
+                                                    } else {
+                                                        userName = '';
+                                                        $refs.user{{ $j }}.value = '';
+                                                        $refs.checkNum{{ $j }}.value = '';
+                                                    }"
+                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                                :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                                <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                            </button>
+                                            <div class="mt-1" x-show="selected">
+                                                <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
+                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                    readonly>
+                                                <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                            </div>
+                                        </div>
                                     </td>
                                 @endfor
                             </tr>
-                        @endforeach
-                    </tbody>
-                    <tbody class="bg-white">
-                        <tr class="bg-sky-50">
-                            <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs" rowspan="1">-</td>
-                            <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs">Dibuat Oleh</td>
-                            
-                            @for($j = 23; $j <= 31; $j++)
-                                <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
-                                        <button type="button" 
-                                            @click="selected = !selected; 
-                                                if(selected) {
-                                                    userName = '{{ Auth::user()->username }}'; 
-                                                    $refs.user{{ $j }}.value = userName;
-                                                    $refs.checkNum{{ $j }}.value = '{{ $j }}';
-                                                } else {
-                                                    userName = '';
-                                                    $refs.user{{ $j }}.value = '';
-                                                    $refs.checkNum{{ $j }}.value = '';
-                                                }"
-                                            class="w-full px-1 py-0 text-xs border border-gray-300 rounded text-center"
-                                            :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                            <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                                        </button>
-                                        <div class="mt-1" x-show="selected">
-                                            <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                class="w-full px-1 py-0 text-xs bg-gray-100 border border-gray-300 rounded"
-                                                readonly>
-                                            <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
-                                        </div>
-                                    </div>
-                                </td>
-                            @endfor
-                        </tr>
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             </div>
 
