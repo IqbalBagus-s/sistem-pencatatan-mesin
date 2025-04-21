@@ -66,7 +66,7 @@ class GilingController extends Controller
                                 ->first();
         
         if ($existingCheck) {
-            return redirect()->back()->with('error', "Pencatatan tersebut sudah ada!")->withInput();
+            return redirect()->back()->with('error', "Data tersebut sudah ada!")->withInput();
         }
 
         try {
@@ -112,7 +112,7 @@ class GilingController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('giling.index')->with('success', 'Data pemeriksaan mesin giling berhasil disimpan');
+            return redirect()->route('giling.index')->with('success', 'Data berhasil disimpan');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -183,6 +183,6 @@ class GilingController extends Controller
         }
         
         // Redirect with success message
-        return redirect()->route('giling.index')->with('success', 'Data pemeriksaan mesin giling berhasil diperbarui');
+        return redirect()->route('giling.index')->with('success', 'Data berhasil diperbarui');
     }
 }
