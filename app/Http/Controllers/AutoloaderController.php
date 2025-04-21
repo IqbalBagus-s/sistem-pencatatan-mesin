@@ -213,136 +213,337 @@ class AutoloaderController extends Controller
     }
 
     public function edit($id)
-{
-    // Ambil data utama autoloader check
-    $check = AutoloaderCheck::findOrFail($id);
-    
-    // Ambil data hasil dari ketiga tabel
-    $resultsTable1 = AutoloaderResultTable1::where('check_id', $id)->get();
-    $resultsTable2 = AutoloaderResultTable2::where('check_id', $id)->get();
-    $resultsTable3 = AutoloaderResultTable3::where('check_id', $id)->get();
-    
-    // Ambil data detail (checked_by)
-    $detailChecks = AutoloaderDetail::where('tanggal_check_id', $id)->get();
-    
-    // Siapkan data untuk view dalam format yang sesuai dengan helper function
-    $results = collect();
-    
-    // Buat array untuk menyimpan data checked_by berdasarkan tanggal
-    $checkedByData = [];
-    
-    // Proses data checked_by dulu agar tersedia untuk digunakan kemudian
-    foreach ($detailChecks as $detail) {
-        $checkedByData[$detail->tanggal] = $detail->checked_by;
-    }
-    
-    // Proses data dari tabel 1 (tanggal 1-11)
-    foreach ($resultsTable1 as $row) {
-        $itemId = array_search($row->checked_items, [
-            1 => 'Filter',
-            2 => 'Selang',
-            3 => 'Panel Kelistrikan',
-            4 => 'Kontaktor',
-            5 => 'Thermal Overload',
-            6 => 'MCB',
-        ]);
+    {
+        // Ambil data utama autoloader check
+        $check = AutoloaderCheck::findOrFail($id);
         
-        // Jika item ditemukan, proses untuk setiap tanggal (1-11)
-        if ($itemId) {
-            for ($j = 1; $j <= 11; $j++) {
-                $tanggalField = "tanggal{$j}";
-                $keteranganField = "keterangan_tanggal{$j}";
-                
-                if (isset($row->$tanggalField)) {
-                    // Cek apakah ada data checked_by untuk tanggal ini
-                    $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
-                    
-                    $results->push([
-                        'tanggal' => $j,
-                        'item_id' => $itemId,
-                        'result' => $row->$tanggalField,
-                        'keterangan' => $row->$keteranganField,
-                        'checked_by' => $checkedBy
-                    ]);
-                }
-            }
-        }
-    }
-    
-    // Proses data dari tabel 2 (tanggal 12-22)
-    foreach ($resultsTable2 as $row) {
-        $itemId = array_search($row->checked_items, [
-            1 => 'Filter',
-            2 => 'Selang',
-            3 => 'Panel Kelistrikan',
-            4 => 'Kontaktor',
-            5 => 'Thermal Overload',
-            6 => 'MCB',
-        ]);
+        // Ambil data hasil dari ketiga tabel
+        $resultsTable1 = AutoloaderResultTable1::where('check_id', $id)->get();
+        $resultsTable2 = AutoloaderResultTable2::where('check_id', $id)->get();
+        $resultsTable3 = AutoloaderResultTable3::where('check_id', $id)->get();
         
-        if ($itemId) {
-            for ($j = 12; $j <= 22; $j++) {
-                $tanggalField = "tanggal{$j}";
-                $keteranganField = "keterangan_tanggal{$j}";
-                
-                if (isset($row->$tanggalField)) {
-                    // Cek apakah ada data checked_by untuk tanggal ini
-                    $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
-                    
-                    $results->push([
-                        'tanggal' => $j,
-                        'item_id' => $itemId,
-                        'result' => $row->$tanggalField,
-                        'keterangan' => $row->$keteranganField,
-                        'checked_by' => $checkedBy
-                    ]);
-                }
-            }
-        }
-    }
-    
-    // Proses data dari tabel 3 (tanggal 23-31)
-    foreach ($resultsTable3 as $row) {
-        $itemId = array_search($row->checked_items, [
-            1 => 'Filter',
-            2 => 'Selang',
-            3 => 'Panel Kelistrikan',
-            4 => 'Kontaktor',
-            5 => 'Thermal Overload',
-            6 => 'MCB',
-        ]);
+        // Ambil data detail (checked_by)
+        $detailChecks = AutoloaderDetail::where('tanggal_check_id', $id)->get();
         
-        if ($itemId) {
-            for ($j = 23; $j <= 31; $j++) {
-                $tanggalField = "tanggal{$j}";
-                $keteranganField = "keterangan_tanggal{$j}";
-                
-                if (isset($row->$tanggalField)) {
-                    // Cek apakah ada data checked_by untuk tanggal ini
-                    $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
-                    
-                    $results->push([
-                        'tanggal' => $j,
-                        'item_id' => $itemId,
-                        'result' => $row->$tanggalField,
-                        'keterangan' => $row->$keteranganField,
-                        'checked_by' => $checkedBy
-                    ]);
-                }
-            }
+        // Siapkan data untuk view dalam format yang sesuai dengan helper function
+        $results = collect();
+        
+        // Buat array untuk menyimpan data checked_by berdasarkan tanggal
+        $checkedByData = [];
+        
+        // Proses data checked_by dulu agar tersedia untuk digunakan kemudian
+        foreach ($detailChecks as $detail) {
+            $checkedByData[$detail->tanggal] = $detail->checked_by;
         }
-    }
-    
-    // Tambahkan data checked_by untuk tanggal yang mungkin belum memiliki item
-    for ($j = 1; $j <= 31; $j++) {
-        if (isset($checkedByData[$j]) && !$results->where('tanggal', $j)->where('checked_by', '!=', null)->count()) {
-            $results->push([
-                'tanggal' => $j,
-                'checked_by' => $checkedByData[$j]
+        
+        // Proses data dari tabel 1 (tanggal 1-11)
+        foreach ($resultsTable1 as $row) {
+            $itemId = array_search($row->checked_items, [
+                1 => 'Filter',
+                2 => 'Selang',
+                3 => 'Panel Kelistrikan',
+                4 => 'Kontaktor',
+                5 => 'Thermal Overload',
+                6 => 'MCB',
             ]);
+            
+            // Jika item ditemukan, proses untuk setiap tanggal (1-11)
+            if ($itemId) {
+                for ($j = 1; $j <= 11; $j++) {
+                    $tanggalField = "tanggal{$j}";
+                    $keteranganField = "keterangan_tanggal{$j}";
+                    
+                    if (isset($row->$tanggalField)) {
+                        // Cek apakah ada data checked_by untuk tanggal ini
+                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        
+                        $results->push([
+                            'tanggal' => $j,
+                            'item_id' => $itemId,
+                            'result' => $row->$tanggalField,
+                            'keterangan' => $row->$keteranganField,
+                            'checked_by' => $checkedBy
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Proses data dari tabel 2 (tanggal 12-22)
+        foreach ($resultsTable2 as $row) {
+            $itemId = array_search($row->checked_items, [
+                1 => 'Filter',
+                2 => 'Selang',
+                3 => 'Panel Kelistrikan',
+                4 => 'Kontaktor',
+                5 => 'Thermal Overload',
+                6 => 'MCB',
+            ]);
+            
+            if ($itemId) {
+                for ($j = 12; $j <= 22; $j++) {
+                    $tanggalField = "tanggal{$j}";
+                    $keteranganField = "keterangan_tanggal{$j}";
+                    
+                    if (isset($row->$tanggalField)) {
+                        // Cek apakah ada data checked_by untuk tanggal ini
+                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        
+                        $results->push([
+                            'tanggal' => $j,
+                            'item_id' => $itemId,
+                            'result' => $row->$tanggalField,
+                            'keterangan' => $row->$keteranganField,
+                            'checked_by' => $checkedBy
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Proses data dari tabel 3 (tanggal 23-31)
+        foreach ($resultsTable3 as $row) {
+            $itemId = array_search($row->checked_items, [
+                1 => 'Filter',
+                2 => 'Selang',
+                3 => 'Panel Kelistrikan',
+                4 => 'Kontaktor',
+                5 => 'Thermal Overload',
+                6 => 'MCB',
+            ]);
+            
+            if ($itemId) {
+                for ($j = 23; $j <= 31; $j++) {
+                    $tanggalField = "tanggal{$j}";
+                    $keteranganField = "keterangan_tanggal{$j}";
+                    
+                    if (isset($row->$tanggalField)) {
+                        // Cek apakah ada data checked_by untuk tanggal ini
+                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        
+                        $results->push([
+                            'tanggal' => $j,
+                            'item_id' => $itemId,
+                            'result' => $row->$tanggalField,
+                            'keterangan' => $row->$keteranganField,
+                            'checked_by' => $checkedBy
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Tambahkan data checked_by untuk tanggal yang mungkin belum memiliki item
+        for ($j = 1; $j <= 31; $j++) {
+            if (isset($checkedByData[$j]) && !$results->where('tanggal', $j)->where('checked_by', '!=', null)->count()) {
+                $results->push([
+                    'tanggal' => $j,
+                    'checked_by' => $checkedByData[$j]
+                ]);
+            }
+        }
+        
+        return view('autoloader.edit', compact('check', 'results'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'nomer_autoloader' => 'required|integer|between:1,23',
+            'shift' => 'required|integer|between:1,3',
+            'bulan' => 'required|date_format:Y-m',
+        ]);
+    
+        // Cari data autoloader yang akan diupdate
+        $autoloaderCheck = AutoloaderCheck::findOrFail($id);
+    
+        // Cek apakah ada perubahan pada data utama (nomer_autoloader, shift, bulan)
+        if ($autoloaderCheck->nomer_autoloader != $request->nomer_autoloader || 
+            $autoloaderCheck->shift != $request->shift || 
+            $autoloaderCheck->bulan != $request->bulan) {
+            
+            // Periksa apakah data dengan kombinasi baru sudah ada
+            $existingRecord = AutoloaderCheck::where('nomer_autoloader', $request->nomer_autoloader)
+                ->where('shift', $request->shift)
+                ->where('bulan', $request->bulan)
+                ->where('id', '!=', $id) // Kecualikan record saat ini
+                ->first();
+            
+            if ($existingRecord) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Data dengan nomor autoloader, shift, dan bulan yang sama sudah ada!');
+            }
+        }
+    
+        // Mulai transaksi database
+        DB::beginTransaction();
+    
+        try {
+            // Update data AutoloaderCheck
+            $autoloaderCheck->update([
+                'nomer_autoloader' => $request->nomer_autoloader,
+                'shift' => $request->shift,
+                'bulan' => $request->bulan,
+            ]);
+            
+            // Definisikan items yang diperiksa
+            $items = [
+                1 => 'Filter',
+                2 => 'Selang',
+                3 => 'Panel Kelistrikan',
+                4 => 'Kontaktor',
+                5 => 'Thermal Overload',
+                6 => 'MCB',
+            ];
+            
+            // Ambil data existing dari ketiga tabel
+            $existingTable1Data = AutoloaderResultTable1::where('check_id', $id)->get()->keyBy('checked_items');
+            $existingTable2Data = AutoloaderResultTable2::where('check_id', $id)->get()->keyBy('checked_items');
+            $existingTable3Data = AutoloaderResultTable3::where('check_id', $id)->get()->keyBy('checked_items');
+            
+            // Proses setiap item
+            foreach ($items as $itemId => $itemName) {
+                // Update atau buat record untuk tabel 1 (hari 1-11)
+                $table1Record = $existingTable1Data->get($itemName);
+                $resultData1 = [];
+                
+                for ($j = 1; $j <= 11; $j++) {
+                    $checkKey = "check_{$j}";
+                    $keteranganKey = "keterangan_{$j}";
+                    
+                    if (isset($request->$checkKey) && isset($request->$checkKey[$itemId])) {
+                        $resultData1["tanggal{$j}"] = $request->$checkKey[$itemId];
+                    } else {
+                        $resultData1["tanggal{$j}"] = '-';
+                    }
+                    
+                    if (isset($request->$keteranganKey) && isset($request->$keteranganKey[$itemId])) {
+                        $resultData1["keterangan_tanggal{$j}"] = $request->$keteranganKey[$itemId];
+                    } else {
+                        $resultData1["keterangan_tanggal{$j}"] = null;
+                    }
+                }
+                
+                if ($table1Record) {
+                    // Update record yang sudah ada
+                    $table1Record->update($resultData1);
+                } else {
+                    // Buat record baru jika belum ada
+                    $resultData1['check_id'] = $id;
+                    $resultData1['checked_items'] = $itemName;
+                    AutoloaderResultTable1::create($resultData1);
+                }
+                
+                // Update atau buat record untuk tabel 2 (hari 12-22)
+                $table2Record = $existingTable2Data->get($itemName);
+                $resultData2 = [];
+                
+                for ($j = 12; $j <= 22; $j++) {
+                    $checkKey = "check_{$j}";
+                    $keteranganKey = "keterangan_{$j}";
+                    
+                    if (isset($request->$checkKey) && isset($request->$checkKey[$itemId])) {
+                        $resultData2["tanggal{$j}"] = $request->$checkKey[$itemId];
+                    } else {
+                        $resultData2["tanggal{$j}"] = '-';
+                    }
+                    
+                    if (isset($request->$keteranganKey) && isset($request->$keteranganKey[$itemId])) {
+                        $resultData2["keterangan_tanggal{$j}"] = $request->$keteranganKey[$itemId];
+                    } else {
+                        $resultData2["keterangan_tanggal{$j}"] = null;
+                    }
+                }
+                
+                if ($table2Record) {
+                    // Update record yang sudah ada
+                    $table2Record->update($resultData2);
+                } else {
+                    // Buat record baru jika belum ada
+                    $resultData2['check_id'] = $id;
+                    $resultData2['checked_items'] = $itemName;
+                    AutoloaderResultTable2::create($resultData2);
+                }
+                
+                // Update atau buat record untuk tabel 3 (hari 23-31)
+                $table3Record = $existingTable3Data->get($itemName);
+                $resultData3 = [];
+                
+                for ($j = 23; $j <= 31; $j++) {
+                    $checkKey = "check_{$j}";
+                    $keteranganKey = "keterangan_{$j}";
+                    
+                    if (isset($request->$checkKey) && isset($request->$checkKey[$itemId])) {
+                        $resultData3["tanggal{$j}"] = $request->$checkKey[$itemId];
+                    } else {
+                        $resultData3["tanggal{$j}"] = '-';
+                    }
+                    
+                    if (isset($request->$keteranganKey) && isset($request->$keteranganKey[$itemId])) {
+                        $resultData3["keterangan_tanggal{$j}"] = $request->$keteranganKey[$itemId];
+                    } else {
+                        $resultData3["keterangan_tanggal{$j}"] = null;
+                    }
+                }
+                
+                if ($table3Record) {
+                    // Update record yang sudah ada
+                    $table3Record->update($resultData3);
+                } else {
+                    // Buat record baru jika belum ada
+                    $resultData3['check_id'] = $id;
+                    $resultData3['checked_items'] = $itemName;
+                    AutoloaderResultTable3::create($resultData3);
+                }
+            }
+            
+            // Ambil data checked_by yang sudah ada
+            $existingDetails = AutoloaderDetail::where('tanggal_check_id', $id)
+                ->get()
+                ->keyBy('tanggal');
+            
+            // Proses informasi checked_by untuk semua hari (1-31)
+            for ($i = 1; $i <= 31; $i++) {
+                $checkedByKey = "checked_by_{$i}";
+                
+                if ($request->has($checkedByKey) && !empty($request->$checkedByKey)) {
+                    $detailData = [
+                        'checked_by' => $request->$checkedByKey,
+                    ];
+                    
+                    $existingDetail = $existingDetails->get($i);
+                    
+                    if ($existingDetail) {
+                        // Update data yang sudah ada
+                        $existingDetail->update($detailData);
+                    } else {
+                        // Buat data baru
+                        $detailData['tanggal_check_id'] = $id;
+                        $detailData['tanggal'] = $i;
+                        $detailData['approved_by'] = null;
+                        AutoloaderDetail::create($detailData);
+                    }
+                } elseif ($existingDetails->has($i)) {
+                    // Jika tidak ada data di form tapi ada di database, update nilai checked_by menjadi null
+                    $existingDetails->get($i)->update(['checked_by' => null]);
+                }
+            }
+            
+            // Commit transaksi
+            DB::commit();
+            
+            return redirect()->route('autoloader.index')
+                ->with('success', 'Data Autoloader berhasil diperbarui!');
+                
+        } catch (\Exception $e) {
+            // Rollback transaksi jika terjadi kesalahan
+            DB::rollBack();
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
-    
-    return view('autoloader.edit', compact('check', 'results'));
-}
 }
