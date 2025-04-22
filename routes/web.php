@@ -10,6 +10,7 @@ use App\Http\Controllers\HopperController;
 use App\Http\Controllers\DehumBahanController;
 use App\Http\Controllers\GilingController;
 use App\Http\Controllers\AutoloaderController;
+use App\Http\Controllers\DehumMatrasController;
 
 
 Route::get('/', function () {
@@ -104,4 +105,15 @@ Route::middleware(['auth:approver,checker'])->group(function () {
     Route::post('/autoloader/{id}/approve', [AutoloaderController::class, 'approve'])->name('autoloader.approve');
     // Route download PDF
     Route::get('/autoloader/{id}/download-pdf', [AutoloaderController::class, 'downloadPdf'])->name('autoloader.downloadPdf');
+
+    // Route Mesin Dehum Matras
+    Route::get('/dehum-matras', [DehumMatrasController::class, 'index'])->name('dehum-matras.index');
+    Route::get('/dehum-matras/create', [DehumMatrasController::class, 'create'])->name('dehum-matras.create');
+    Route::post('/dehum-matras', [DehumMatrasController::class, 'store'])->name('dehum-matras.store');
+    Route::get('/dehum-matras/{id}/edit', [DehumMatrasController::class, 'edit'])->name('dehum-matras.edit');
+    Route::put('/dehum-matras/{id}', [DehumMatrasController::class, 'update'])->name('dehum-matras.update');
+    Route::get('/dehum-matras/{id}', [DehumMatrasController::class, 'show'])->name('dehum-matras.show');
+    Route::post('/dehum-matras/{id}/approve', [DehumMatrasController::class, 'approve'])->name('dehum-matras.approve');
+    // Route download PDF
+    Route::get('/dehum-matras/{id}/download-pdf', [DehumMatrasController::class, 'downloadPdf'])->name('dehum-matras.downloadPdf');
 });
