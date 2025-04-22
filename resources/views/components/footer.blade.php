@@ -29,7 +29,7 @@
                                 <img src="/images/foto-iqbal.jpg" alt="Iqbal Bagus Satriawan" class="w-full h-full object-cover">
                             </div>
                         </a>
-                        <a href="https://iqbalbagus-s.github.io/my-portfolio/" target="_blank" class="text-xs text-gray-600 hover:text-blue-500">Iqbal Bagus Satriawan</a>
+                        <a href="https://iqbalbagus-s.github.io/my-portfolio/" target="_blank" class="text-xs text-gray-600 hover:text-blue-500">Iqbal</a>
                     </div>
                     <div class="flex flex-col items-center">
                         <a href="https://reiirei.github.io/MyPortofolio/" target="_blank" class="block">
@@ -37,7 +37,7 @@
                                 <img src="/images/foto-orie.jpg" alt="Orie Esra Yuwangga" class="w-full h-full object-cover">
                             </div>
                         </a>
-                        <a href="https://reiirei.github.io/MyPortofolio/" target="_blank" class="text-xs text-gray-600 hover:text-blue-500">Orie Esra Yuwangga</a>
+                        <a href="https://reiirei.github.io/MyPortofolio/" target="_blank" class="text-xs text-gray-600 hover:text-blue-500">Orie</a>
                     </div>
                 </div>
             </div>

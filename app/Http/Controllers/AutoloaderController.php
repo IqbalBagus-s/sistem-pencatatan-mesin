@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Support\Facades\Log;
 use App\Models\AutoloaderCheck;
 use App\Models\AutoloaderDetail;
 use App\Models\AutoloaderResultTable1;
@@ -53,11 +52,24 @@ class AutoloaderController extends Controller
         
         // Load all unique checkers for each check
         foreach ($checks as $check) {
+            // Get all unique checkers
             $check->allCheckers = AutoloaderDetail::where('tanggal_check_id', $check->id)
                 ->whereNotNull('checked_by')
                 ->pluck('checked_by')
                 ->unique()
                 ->toArray();
+                
+            // Get year and month from bulan field
+            $year = substr($check->bulan, 0, 4);
+            $month = substr($check->bulan, 5, 2);
+            
+            // Calculate days in month
+            $check->daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+            
+            // Count checked dates
+            $check->filledDatesCount = AutoloaderDetail::where('tanggal_check_id', $check->id)
+                ->whereNotNull('checked_by')
+                ->count();
         }
     
         return view('autoloader.index', compact('checks'));

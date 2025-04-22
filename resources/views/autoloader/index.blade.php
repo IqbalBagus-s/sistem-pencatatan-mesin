@@ -215,9 +215,13 @@
                             @endif
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if($check->checkerAndApprover && $check->checkerAndApprover->approved_by)
+                            @if($check->checkerAndApprover && $check->checkerAndApprover->approved_by && $check->filledDatesCount == $check->daysInMonth)
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui
+                                </span>
+                            @elseif($check->filledDatesCount > 0 && $check->filledDatesCount < $check->daysInMonth)
+                                <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Disetujui Sebagian
                                 </span>
                             @else
                                 <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
@@ -233,7 +237,13 @@
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @if(!($check->checkerAndApprover && $check->checkerAndApprover->approved_by))
+                                @php
+                                    $isFullyApproved = $check->checkerAndApprover && 
+                                                        $check->checkerAndApprover->approved_by && 
+                                                        $check->filledDatesCount == $check->daysInMonth;
+                                @endphp
+                                
+                                @if(!$isFullyApproved)
                                     <a href="{{ route('autoloader.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>

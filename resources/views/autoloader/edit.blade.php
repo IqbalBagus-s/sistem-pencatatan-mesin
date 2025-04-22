@@ -362,7 +362,7 @@
             </div>
             </div>
 
-            @include('components.form-buttons', ['backRoute' => route('autoloader.index')])
+            @include('components.edit-form-buttons', ['backRoute' => route('autoloader.index')])
         </form>
     </div>
 </div>

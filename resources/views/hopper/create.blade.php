@@ -313,7 +313,7 @@
                 </table>
             </div>
 
-            @include('components.form-buttons', ['backRoute' => route('hopper.index')])
+            @include('components.create-form-buttons', ['backRoute' => route('hopper.index')])
         </form>
     </div>
 </div>

@@ -290,7 +290,7 @@
         </table>
     </div>
 
-    @include('components.form-buttons', ['backRoute' => route('hopper.index')])
+    @include('components.edit-form-buttons', ['backRoute' => route('hopper.index')])
 </form>
 @endsection
 
