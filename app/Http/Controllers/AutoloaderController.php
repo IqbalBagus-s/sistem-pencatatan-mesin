@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Log;
 use App\Models\AutoloaderCheck;
 use App\Models\AutoloaderDetail;
 use App\Models\AutoloaderResultTable1;
@@ -552,6 +553,209 @@ class AutoloaderController extends Controller
             
             return redirect()->back()
                 ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function show($id)
+    {
+        // Ambil data utama autoloader check
+        $check = AutoloaderCheck::findOrFail($id);
+        
+        // Ambil data hasil dari ketiga tabel
+        $resultsTable1 = AutoloaderResultTable1::where('check_id', $id)->get();
+        $resultsTable2 = AutoloaderResultTable2::where('check_id', $id)->get();
+        $resultsTable3 = AutoloaderResultTable3::where('check_id', $id)->get();
+        
+        // Ambil data detail (checked_by dan approved_by)
+        $detailChecks = AutoloaderDetail::where('tanggal_check_id', $id)->get();
+        
+        // Siapkan data untuk view dalam format yang sesuai dengan helper function
+        $results = collect();
+        
+        // Buat array untuk menyimpan data checked_by dan approved_by berdasarkan tanggal
+        $checkedByData = [];
+        $approvedByData = [];
+        
+        // Proses data checked_by dan approved_by dulu agar tersedia untuk digunakan kemudian
+        foreach ($detailChecks as $detail) {
+            $checkedByData[$detail->tanggal] = $detail->checked_by;
+            $approvedByData[$detail->tanggal] = $detail->approved_by;
+        }
+        
+        // Proses data dari tabel 1 (tanggal 1-11)
+        foreach ($resultsTable1 as $row) {
+            $itemId = array_search($row->checked_items, [
+                1 => 'Filter',
+                2 => 'Selang',
+                3 => 'Panel Kelistrikan',
+                4 => 'Kontaktor',
+                5 => 'Thermal Overload',
+                6 => 'MCB',
+            ]);
+            
+            // Jika item ditemukan, proses untuk setiap tanggal (1-11)
+            if ($itemId) {
+                for ($j = 1; $j <= 11; $j++) {
+                    $tanggalField = "tanggal{$j}";
+                    $keteranganField = "keterangan_tanggal{$j}";
+                    
+                    if (isset($row->$tanggalField)) {
+                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
+                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
+                        
+                        $results->push([
+                            'tanggal' => $j,
+                            'item_id' => $itemId,
+                            'result' => $row->$tanggalField,
+                            'keterangan' => $row->$keteranganField,
+                            'checked_by' => $checkedBy,
+                            'approved_by' => $approvedBy
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Proses data dari tabel 2 (tanggal 12-22)
+        foreach ($resultsTable2 as $row) {
+            $itemId = array_search($row->checked_items, [
+                1 => 'Filter',
+                2 => 'Selang',
+                3 => 'Panel Kelistrikan',
+                4 => 'Kontaktor',
+                5 => 'Thermal Overload',
+                6 => 'MCB',
+            ]);
+            
+            if ($itemId) {
+                for ($j = 12; $j <= 22; $j++) {
+                    $tanggalField = "tanggal{$j}";
+                    $keteranganField = "keterangan_tanggal{$j}";
+                    
+                    if (isset($row->$tanggalField)) {
+                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
+                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
+                        
+                        $results->push([
+                            'tanggal' => $j,
+                            'item_id' => $itemId,
+                            'result' => $row->$tanggalField,
+                            'keterangan' => $row->$keteranganField,
+                            'checked_by' => $checkedBy,
+                            'approved_by' => $approvedBy
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Proses data dari tabel 3 (tanggal 23-31)
+        foreach ($resultsTable3 as $row) {
+            $itemId = array_search($row->checked_items, [
+                1 => 'Filter',
+                2 => 'Selang',
+                3 => 'Panel Kelistrikan',
+                4 => 'Kontaktor',
+                5 => 'Thermal Overload',
+                6 => 'MCB',
+            ]);
+            
+            if ($itemId) {
+                for ($j = 23; $j <= 31; $j++) {
+                    $tanggalField = "tanggal{$j}";
+                    $keteranganField = "keterangan_tanggal{$j}";
+                    
+                    if (isset($row->$tanggalField)) {
+                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
+                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
+                        
+                        $results->push([
+                            'tanggal' => $j,
+                            'item_id' => $itemId,
+                            'result' => $row->$tanggalField,
+                            'keterangan' => $row->$keteranganField,
+                            'checked_by' => $checkedBy,
+                            'approved_by' => $approvedBy
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Tambahkan data checked_by dan approved_by untuk tanggal yang mungkin belum memiliki item
+        for ($j = 1; $j <= 31; $j++) {
+            if ((isset($checkedByData[$j]) || isset($approvedByData[$j])) && 
+                !$results->where('tanggal', $j)->where('checked_by', '!=', null)->count()) {
+                $results->push([
+                    'tanggal' => $j,
+                    'checked_by' => $checkedByData[$j] ?? null,
+                    'approved_by' => $approvedByData[$j] ?? null
+                ]);
+            }
+        }
+        
+        // Kembalikan view dengan data yang diperlukan
+        return view('autoloader.show', compact('check', 'results'));
+    }
+
+    public function approve(Request $request, $id)
+    {
+        // Validasi input
+        $request->validate([
+            'approved_by_*' => 'sometimes|string',
+            'approve_num_*' => 'sometimes|integer|between:1,31',
+        ]);
+
+        // Mulai transaksi database
+        DB::beginTransaction();
+
+        try {
+            // Ambil data AutoloaderCheck berdasarkan ID
+            $check = AutoloaderCheck::findOrFail($id);
+            
+            // Proses informasi penanggung jawab untuk semua hari (1-31)
+            for ($i = 1; $i <= 31; $i++) {
+                $approvedByKey = "approved_by_{$i}";
+                $approveNumKey = "approve_num_{$i}";
+                
+                if ($request->has($approvedByKey) && !empty($request->input($approvedByKey))) {
+                    // Cari detail yang sudah ada untuk tanggal ini
+                    $detail = AutoloaderDetail::where('tanggal_check_id', $id)
+                        ->where('tanggal', $i)
+                        ->first();
+                    
+                    if ($detail) {
+                        // Update jika detail sudah ada
+                        $detail->update([
+                            'approved_by' => $request->$approvedByKey
+                        ]);
+                    } else {
+                        // Buat baru jika tidak ada detail
+                        AutoloaderDetail::create([
+                            'tanggal_check_id' => $id,
+                            'tanggal' => $i,
+                            'checked_by' => null, // Checker akan diisi nanti
+                            'approved_by' => $request->$approvedByKey,
+                        ]);
+                    }
+                }
+            }
+            
+            // Commit transaksi
+            DB::commit();
+            
+            return redirect()->route('autoloader.index')
+                ->with('success', 'Data penanggung jawab berhasil disimpan!');
+                
+        } catch (\Exception $e) {
+            // Rollback transaksi jika ada kesalahan
+            DB::rollBack();
+            
+            return redirect()->back()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }

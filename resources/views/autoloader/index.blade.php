@@ -11,8 +11,8 @@
 @section('custom-filters')
     @if(auth()->user() instanceof \App\Models\Approver)
     <div>
-        <label for="search" class="block font-medium text-gray-700 mb-2">Cari berdasarkan nama Checker/Approver:</label>
-        <input type="text" name="search" id="search" placeholder="Masukkan nama checker/approver..." 
+        <label for="search" class="block font-medium text-gray-700 mb-2">Cari berdasarkan nama Checker:</label>
+        <input type="text" name="search" id="search" placeholder="Masukkan nama checker..." 
             value="{{ request('search') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
     </div>
     @endif
