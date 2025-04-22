@@ -11,8 +11,8 @@
 @section('custom-filters')
     @if(auth()->user() instanceof \App\Models\Approver)
     <div>
-        <label for="search" class="block font-medium text-gray-700 mb-2">Cari berdasarkan nama Checker/Approver:</label>
-        <input type="text" name="search" id="search" placeholder="Masukkan nama checker/approver..." 
+        <label for="search" class="block font-medium text-gray-700 mb-2">Cari berdasarkan nama Checker:</label>
+        <input type="text" name="search" id="search" placeholder="Masukkan nama checker..." 
             value="{{ request('search') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
     </div>
     @endif
@@ -215,10 +215,16 @@
                             @endif
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if($check->checkerAndApprover && $check->checkerAndApprover->approved_by)
-                                <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                    Disetujui
-                                </span>
+                            @if($check->approvedDatesCount > 0)
+                                @if($check->approvedDatesCount >= $check->daysInMonth)
+                                    <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                        Disetujui
+                                    </span>
+                                @else
+                                    <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                        Disetujui Sebagian
+                                    </span>
+                                @endif
                             @else
                                 <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Belum Disetujui
@@ -233,7 +239,12 @@
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @if(!($check->checkerAndApprover && $check->checkerAndApprover->approved_by))
+                                @php
+                                    // Cek apakah disetujui sepenuhnya
+                                    $isFullyApproved = $check->approvedDatesCount >= $check->daysInMonth;
+                                @endphp
+                                
+                                @if(!$isFullyApproved)
                                     <a href="{{ route('autoloader.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
