@@ -94,7 +94,7 @@ Route::middleware(['auth:approver,checker'])->group(function () {
     // Route download PDF
     Route::get('/giling/{id}/download-pdf', [GilingController::class, 'downloadPdf'])->name('giling.downloadPdf');
 
-    // Route Mesin Auto Loader
+    // Route Mesin Giling
     Route::get('/autoloader', [AutoloaderController::class, 'index'])->name('autoloader.index');
     Route::get('/autoloader/create', [AutoloaderController::class, 'create'])->name('autoloader.create');
     Route::post('/autoloader', [AutoloaderController::class, 'store'])->name('autoloader.store');

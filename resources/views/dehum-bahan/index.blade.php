@@ -169,13 +169,13 @@
                         <td class="py-3 px-4 border-b border-gray-200">
                             {{-- Menu lihat --}}
                             @if(auth()->user() instanceof \App\Models\Approver)
-                                <a href="{{ route('dehum.show', $check->id) }}" title="Lihat Detail">
+                                <a href="{{ route('dehum-bahan.show', $check->id) }}" title="Lihat Detail">
                                     <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
                                 @if(!$check->approved_by)
-                                    <a href="{{ route('dehum.edit', $check->id) }}" title="Edit">
+                                    <a href="{{ route('dehum-bahan.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
                                 @else

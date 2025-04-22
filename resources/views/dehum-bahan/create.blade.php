@@ -51,7 +51,7 @@
                     <!-- Dropdown List -->
                     <div x-show="open" @click.away="open = false" class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md p-2 z-10">
                         <div class="grid grid-cols-4 gap-2">
-                            <template x-for="i in 10" :key="i">
+                            <template x-for="i in 9" :key="i">
                                 <div @click.stop>
                                     <button type="button" @click="selected = i; open = false" class="w-full px-3 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white rounded-md">
                                         <span x-text="'Dehum ' + i"></span>
@@ -62,7 +62,7 @@
                     </div>
                     
                     <!-- Hidden Input untuk dikirim ke server -->
-                    <input type="hidden" name="nomer_dehum" x-model="selected">
+                    <input type="hidden" name="nomer_dehum_bahan" x-model="selected">
                 </div>                      
             
                 <div>
@@ -99,23 +99,23 @@
                     <tbody>
                         @php
                             $items = [
-                                1 => 'Filter Udara',
-                                2 => 'Kondensor',
-                                3 => 'Kompresor',
-                                4 => 'Humidity Control',
-                                5 => 'Fan',
-                                6 => 'Drain System',
-                                7 => 'Kondisi Refrigerant'
+                                1 => 'Filter',
+                                2 => 'Selang',
+                                3 => 'Kontraktor',
+                                4 => 'Temperatur Control',
+                                5 => 'MCB',
+                                6 => 'Dew Point',
+                                
                             ];
                             
                             $options = [
                                 1 => ['Bersih', 'Kotor', 'OFF'],
-                                2 => ['Baik', 'Kotor', 'OFF'],
-                                3 => ['Normal', 'Berisik', 'OFF'],
-                                4 => ['Akurat', 'Tidak Akurat', 'OFF'],
-                                5 => ['Normal', 'Berisik', 'OFF'],
-                                6 => ['Lancar', 'Tersumbat', 'OFF'],
-                                7 => ['Normal', 'Kurang', 'OFF']
+                                2 => ['Tidak Bocor', 'Bocor', 'OFF'],
+                                3 => ['Baik', 'Buruk', 'OFF'],
+                                4 => ['Baik', 'Buruk', 'OFF'],
+                                5 => ['Baik', 'Buruk', 'OFF'],
+                                6 => ['Baik', 'Buruk', 'OFF'],
+                                
                             ];
                         @endphp
                         
@@ -180,10 +180,10 @@
                                         placeholder="Keterangan">
                                 </td>
                             </tr>
-                            @if($i == 3)
+                            @if($i == 2)
                             <tr>
                                 <td colspan="10" class="border border-gray-300 text-center p-2 h-12 bg-gray-100 font-medium">
-                                    Komponen Elektrik
+                                    Panel Kelistrikan
                                 </td>
                             </tr>
                             @endif
@@ -315,14 +315,7 @@
                 </table>
             </div>
 
-            <div class="flex justify-between mt-6">
-                <a href="{{ route('dehum-bahan.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Kembali
-                </a>
-                <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Simpan
-                </button>
-            </div>
+            @include('components.create-form-buttons', ['backRoute' => route('dehum-bahan.index')])
         </form>
     </div>
 </div>
