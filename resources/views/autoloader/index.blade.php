@@ -215,14 +215,16 @@
                             @endif
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if($check->checkerAndApprover && $check->checkerAndApprover->approved_by && $check->filledDatesCount == $check->daysInMonth)
-                                <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                    Disetujui
-                                </span>
-                            @elseif($check->filledDatesCount > 0 && $check->filledDatesCount < $check->daysInMonth)
-                                <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                    Disetujui Sebagian
-                                </span>
+                            @if($check->approvedDatesCount > 0)
+                                @if($check->approvedDatesCount >= $check->daysInMonth)
+                                    <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                        Disetujui
+                                    </span>
+                                @else
+                                    <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                        Disetujui Sebagian
+                                    </span>
+                                @endif
                             @else
                                 <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Belum Disetujui
@@ -238,9 +240,8 @@
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
                                 @php
-                                    $isFullyApproved = $check->checkerAndApprover && 
-                                                        $check->checkerAndApprover->approved_by && 
-                                                        $check->filledDatesCount == $check->daysInMonth;
+                                    // Cek apakah disetujui sepenuhnya
+                                    $isFullyApproved = $check->approvedDatesCount >= $check->daysInMonth;
                                 @endphp
                                 
                                 @if(!$isFullyApproved)

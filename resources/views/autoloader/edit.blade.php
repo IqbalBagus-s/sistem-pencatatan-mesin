@@ -71,9 +71,6 @@
                     // Filter hasil berdasarkan tanggal dan item_id
                     $result = $results->where('tanggal', $date)->where('item_id', $itemId)->first();
                     
-                    // Debug untuk melihat data yang dikembalikan
-                    // echo "Date: $date, Item: $itemId, Result: " . ($result ? $result['result'] : 'null') . "<br>";
-                    
                     // Jika hasil ditemukan, kembalikan nilai result, jika tidak kembalikan null
                     return $result && isset($result['result']) ? $result['result'] : null;
                 }
@@ -103,6 +100,15 @@
                     
                     // Jika nama checker ditemukan, kembalikan nilainya, jika tidak kembalikan string kosong
                     return $result && isset($result['checked_by']) ? $result['checked_by'] : '';
+                }
+
+                // Helper function untuk mendapatkan nama penanggung jawab berdasarkan tanggal
+                function getApprovedBy($results, $date) {
+                    // Filter hasil berdasarkan tanggal
+                    $result = $results->where('tanggal', $date)->first();
+                    
+                    // Jika nama penanggung jawab ditemukan, kembalikan nilainya, jika tidak kembalikan string kosong
+                    return $result && isset($result['approved_by']) ? $result['approved_by'] : '';
                 }
             @endphp
             
@@ -155,6 +161,7 @@
                                 </tr>
                             @endforeach
                         </tbody>
+                        {{-- baris dibuat oleh --}}
                         <tbody class="bg-white">
                             <tr class="bg-sky-50">
                                 <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
@@ -162,28 +169,56 @@
                                 
                                 @for($j = 1; $j <= 11; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                        <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ getCheckerName($results, $j) }}' }">
-                                            <button type="button" 
-                                                @click="selected = !selected; 
-                                                    if(selected) {
-                                                        userName = '{{ Auth::user()->username }}'; 
-                                                        $refs.user{{ $j }}.value = userName;
-                                                        $refs.checkNum{{ $j }}.value = '{{ $j }}';
-                                                    } else {
-                                                        userName = '';
-                                                        $refs.user{{ $j }}.value = '';
-                                                        $refs.checkNum{{ $j }}.value = '';
-                                                    }"
-                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
-                                                :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                                <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                                            </button>
-                                            <div class="mt-1" x-show="selected">
-                                                <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
-                                                    readonly>
-                                                <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                        <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ getCheckerName($results, $j) }}', isExistingData: {{ getCheckerName($results, $j) ? 'true' : 'false' }} }">
+                                            <!-- Show just the name if data already exists -->
+                                            <div x-show="isExistingData" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
+                                                {{ getCheckerName($results, $j) }}
+                                                <input type="hidden" name="checked_by_{{ $j }}" value="{{ getCheckerName($results, $j) }}">
+                                                <input type="hidden" name="check_num_{{ $j }}" value="{{ $j }}">
                                             </div>
+                                            
+                                            <!-- Show the button only if it's new data -->
+                                            <div x-show="!isExistingData">
+                                                <button type="button" 
+                                                    @click="selected = !selected; 
+                                                        if(selected) {
+                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            $refs.user{{ $j }}.value = userName;
+                                                            $refs.checkNum{{ $j }}.value = '{{ $j }}';
+                                                        } else {
+                                                            userName = '';
+                                                            $refs.user{{ $j }}.value = '';
+                                                            $refs.checkNum{{ $j }}.value = '';
+                                                        }"
+                                                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                                </button>
+                                                <div class="mt-1" x-show="selected">
+                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
+                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                        readonly>
+                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                @endfor
+                            </tr>
+                        </tbody>
+                        {{-- baris penanggung jawab --}}
+                        <tbody class="bg-white">
+                            <tr class="bg-green-50">
+                                <td class="border border-gray-300 text-center p-1 bg-green-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
+                                <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10">Penanggung Jawab</td>
+                                
+                                @for($j = 1; $j <= 11; $j++)
+                                    <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
+                                        <div class="w-full px-2 py-1 text-sm">
+                                            <input type="text" name="approved_by_{{ $j }}" value="{{ getApprovedBy($results, $j) }}"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                readonly>
+                                            <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
                                         </div>
                                     </td>
                                 @endfor
@@ -239,6 +274,7 @@
                                 </tr>
                             @endforeach
                         </tbody>
+                        {{-- baris dibuat oleh --}}
                         <tbody class="bg-white">
                             <tr class="bg-sky-50">
                                 <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
@@ -246,28 +282,56 @@
                                 
                                 @for($j = 12; $j <= 22; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                        <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ getCheckerName($results, $j) }}' }">
-                                            <button type="button" 
-                                                @click="selected = !selected; 
-                                                    if(selected) {
-                                                        userName = '{{ Auth::user()->username }}'; 
-                                                        $refs.user{{ $j }}.value = userName;
-                                                        $refs.checkNum{{ $j }}.value = '{{ $j }}';
-                                                    } else {
-                                                        userName = '';
-                                                        $refs.user{{ $j }}.value = '';
-                                                        $refs.checkNum{{ $j }}.value = '';
-                                                    }"
-                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
-                                                :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                                <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                                            </button>
-                                            <div class="mt-1" x-show="selected">
-                                                <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
-                                                    readonly>
-                                                <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                        <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ getCheckerName($results, $j) }}', isExistingData: {{ getCheckerName($results, $j) ? 'true' : 'false' }} }">
+                                            <!-- Show just the name if data already exists -->
+                                            <div x-show="isExistingData" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
+                                                {{ getCheckerName($results, $j) }}
+                                                <input type="hidden" name="checked_by_{{ $j }}" value="{{ getCheckerName($results, $j) }}">
+                                                <input type="hidden" name="check_num_{{ $j }}" value="{{ $j }}">
                                             </div>
+                                            
+                                            <!-- Show the button only if it's new data -->
+                                            <div x-show="!isExistingData">
+                                                <button type="button" 
+                                                    @click="selected = !selected; 
+                                                        if(selected) {
+                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            $refs.user{{ $j }}.value = userName;
+                                                            $refs.checkNum{{ $j }}.value = '{{ $j }}';
+                                                        } else {
+                                                            userName = '';
+                                                            $refs.user{{ $j }}.value = '';
+                                                            $refs.checkNum{{ $j }}.value = '';
+                                                        }"
+                                                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                                </button>
+                                                <div class="mt-1" x-show="selected">
+                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
+                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                        readonly>
+                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                @endfor
+                            </tr>
+                        </tbody>
+                        {{-- baris penanggung jawab --}}
+                        <tbody class="bg-white">
+                            <tr class="bg-green-50">
+                                <td class="border border-gray-300 text-center p-1 bg-green-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
+                                <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10">Penanggung Jawab</td>
+                                
+                                @for($j = 12; $j <= 22; $j++)
+                                    <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
+                                        <div class="w-full px-2 py-1 text-sm">
+                                            <input type="text" name="approved_by_{{ $j }}" value="{{ getApprovedBy($results, $j) }}"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                readonly>
+                                            <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
                                         </div>
                                     </td>
                                 @endfor
@@ -323,6 +387,7 @@
                                 </tr>
                             @endforeach
                         </tbody>
+                        {{-- baris dibuat oleh --}}
                         <tbody class="bg-white">
                             <tr class="bg-sky-50">
                                 <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
@@ -330,28 +395,56 @@
                                 
                                 @for($j = 23; $j <= 31; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                        <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ getCheckerName($results, $j) }}' }">
-                                            <button type="button" 
-                                                @click="selected = !selected; 
-                                                    if(selected) {
-                                                        userName = '{{ Auth::user()->username }}'; 
-                                                        $refs.user{{ $j }}.value = userName;
-                                                        $refs.checkNum{{ $j }}.value = '{{ $j }}';
-                                                    } else {
-                                                        userName = '';
-                                                        $refs.user{{ $j }}.value = '';
-                                                        $refs.checkNum{{ $j }}.value = '';
-                                                    }"
-                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
-                                                :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                                <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                                            </button>
-                                            <div class="mt-1" x-show="selected">
-                                                <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
-                                                    readonly>
-                                                <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                        <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ getCheckerName($results, $j) }}', isExistingData: {{ getCheckerName($results, $j) ? 'true' : 'false' }} }">
+                                            <!-- Show just the name if data already exists -->
+                                            <div x-show="isExistingData" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
+                                                {{ getCheckerName($results, $j) }}
+                                                <input type="hidden" name="checked_by_{{ $j }}" value="{{ getCheckerName($results, $j) }}">
+                                                <input type="hidden" name="check_num_{{ $j }}" value="{{ $j }}">
                                             </div>
+                                            
+                                            <!-- Show the button only if it's new data -->
+                                            <div x-show="!isExistingData">
+                                                <button type="button" 
+                                                    @click="selected = !selected; 
+                                                        if(selected) {
+                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            $refs.user{{ $j }}.value = userName;
+                                                            $refs.checkNum{{ $j }}.value = '{{ $j }}';
+                                                        } else {
+                                                            userName = '';
+                                                            $refs.user{{ $j }}.value = '';
+                                                            $refs.checkNum{{ $j }}.value = '';
+                                                        }"
+                                                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                                </button>
+                                                <div class="mt-1" x-show="selected">
+                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
+                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                        readonly>
+                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                @endfor
+                            </tr>
+                        </tbody>
+                        {{-- baris penanggung jawab --}}
+                        <tbody class="bg-white">
+                            <tr class="bg-green-50">
+                                <td class="border border-gray-300 text-center p-1 bg-green-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
+                                <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10">Penanggung Jawab</td>
+                                
+                                @for($j = 23; $j <= 31; $j++)
+                                    <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
+                                        <div class="w-full px-2 py-1 text-sm">
+                                            <input type="text" name="approved_by_{{ $j }}" value="{{ getApprovedBy($results, $j) }}"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                readonly>
+                                            <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
                                         </div>
                                     </td>
                                 @endfor

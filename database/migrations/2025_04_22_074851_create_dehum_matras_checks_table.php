@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('dehum_matras_checks', function (Blueprint $table) {
             $table->id();
+            $table->string('nomer_autoloader');
+            $table->string('shift');
+            $table->string('bulan');
+            
+
             $table->timestamps();
+            $table->softDeletes(); // Soft delete untuk menyimpan data yang dihapus
         });
     }
 

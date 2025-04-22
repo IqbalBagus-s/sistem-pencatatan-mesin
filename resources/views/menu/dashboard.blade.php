@@ -454,7 +454,7 @@
                             ['name' => 'Compressor', 'route' => 'compressor.index'],
                             ['name' => 'Hopper', 'route' => 'hopper.index'],
                             ['name' => 'Dehum Bahan', 'route' => 'dehum-bahan.index'],
-                            ['name' => 'Dehum Matras', 'route' => null],
+                            ['name' => 'Dehum Matras', 'route' => 'dehum-matras.index'],
                             ['name' => 'Auto Loader', 'route' => 'autoloader.index'],
                             ['name' => 'Gilingan', 'route' => 'giling.index'],
                             ['name' => 'Caplining', 'route' => null],

@@ -13,7 +13,15 @@ return new class extends Migration
     {
         Schema::create('dehum_matras_details', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('tanggal_check_id'); // Foreign key dari dehum_matras_checks
+            $table->string('tanggal')->nullable();
+            $table->string('checked_by')->nullable();
+            $table->string('approved_by')->nullable();
+
             $table->timestamps();
+            $table->softDeletes(); // Soft delete untuk menyimpan data yang dihapus
+            // Tambahkan foreign key constraint
+            $table->foreign('tanggal_check_id')->references('id')->on('dehum_matras_checks')->onDelete('cascade'); // jika parent dihapus, data ini ikut terhapus
         });
     }
 

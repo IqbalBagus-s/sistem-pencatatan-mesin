@@ -13,7 +13,17 @@ return new class extends Migration
     {
         Schema::create('dehum_matras_results_table1', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('check_id'); // Foreign key dari dehum_matras_checks
+            $table->string('checked_items')->nullable();
+            // Kolom tanggal1 sampai tanggal11 
+            for ($i = 1; $i <= 11; $i++) {
+                $table->string('tanggal' . $i, 30)->nullable();
+            }
+
             $table->timestamps();
+            $table->softDeletes(); // Soft delete untuk menyimpan data yang dihapus
+            // Tambahkan foreign key constraint
+            $table->foreign('check_id')->references('id')->on('dehum_matras_checks')->onDelete('cascade'); // jika parent dihapus, data ini ikut terhapus
         });
     }
 
