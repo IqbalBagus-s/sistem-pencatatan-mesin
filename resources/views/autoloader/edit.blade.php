@@ -360,7 +360,7 @@
                     </table>
                 </div>
             </div>
-
+                                                        
             @include('components.edit-form-buttons', ['backRoute' => route('autoloader.index')])
         </form>
     </div>
