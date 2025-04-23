@@ -44,8 +44,21 @@
 </head>
 <body class="bg-sky-50 font-sans">
     <!-- Notification Popup -->
-    <div id="notification-popup" class="notification-success">
-        <span id="notification-message"></span>
+    <!-- Notification Popup -->
+    <div id="error-notification" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 hidden">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-md flex items-center max-w-md">
+            <div class="mr-2">
+                <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <p class="mr-6 text-sm" id="error-message">There was a problem sending your mail. Please try again.</p>
+            <button type="button" id="close-notification" class="ml-auto">
+                <svg class="w-4 h-4 text-red-500 hover:text-red-700" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+            </button>
+        </div>
     </div>
 
     <div class="container mx-auto mt-4 px-4">
@@ -412,44 +425,62 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white py-4 text-center shadow-md mt-auto w-full">
-        <p class="mb-0 font-bold">2025 © PT Asia Pramulia</p>
-    </footer>
-
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
     <script>
-        document.getElementById("tanggal").addEventListener("change", function() {
-            let tanggal = new Date(this.value);
-            let hari = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(tanggal);
-            document.getElementById("hari").value = hari;
+        document.addEventListener('DOMContentLoaded', function() {
+            // Existing code for date handling - only run if tanggal element exists
+            const tanggalEl = document.getElementById("tanggal");
+            const hariEl = document.getElementById("hari");
+            
+            if (tanggalEl && hariEl) {
+                tanggalEl.addEventListener("change", function() {
+                    let tanggal = new Date(this.value);
+                    let hari = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(tanggal);
+                    hariEl.value = hari;
+                });
+            }
+            
+            // Error notification handling
+            const errorNotification = document.getElementById('error-notification');
+            const closeNotification = document.getElementById('close-notification');
+            const errorMessage = document.getElementById('error-message');
+            
+            // Check if there's an error or warning message from the session
+            const sessionError = "{{ session('error') }}";
+            const sessionWarning = "{{ session('warning') }}";
+            
+            if (sessionError && sessionError.trim() !== '') {
+                // Update the error message text
+                errorMessage.textContent = sessionError;
+                
+                // Show the notification
+                errorNotification.classList.remove('hidden');
+                
+                // Auto-hide after 5 seconds
+                setTimeout(function() {
+                    errorNotification.classList.add('hidden');
+                }, 5000);
+            } else if (sessionWarning && sessionWarning.trim() !== '') {
+                // Update the error message text
+                errorMessage.textContent = sessionWarning;
+                
+                // Show the notification
+                errorNotification.classList.remove('hidden');
+                
+                // Auto-hide after 5 seconds
+                setTimeout(function() {
+                    errorNotification.classList.add('hidden');
+                }, 5000);
+            }
+            
+            // Close button functionality
+            if (closeNotification) {
+                closeNotification.addEventListener('click', function() {
+                    errorNotification.classList.add('hidden');
+                });
+            }
         });
-
-
-        // Function to show notification
-        function showNotification(message, type = 'success') {
-            const popup = document.getElementById('notification-popup');
-            const messageEl = document.getElementById('notification-message');
-            
-            // Reset classes
-            popup.classList.remove('notification-success', 'notification-warning');
-            
-            // Add appropriate class based on type
-            popup.classList.add(`notification-${type}`);
-            
-            messageEl.textContent = message;
-            popup.style.display = 'block';
-            
-            setTimeout(() => {
-                popup.style.display = 'none';
-            }, 3000);
-        }
-
-        // Handle date duplicate warning
-        @if(session('warning'))
-            showNotification("{{ session('warning') }}", 'warning');
-        @endif
     </script>
 </body>
 </html>

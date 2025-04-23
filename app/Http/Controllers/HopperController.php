@@ -170,110 +170,131 @@ class HopperController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Validate the request
+        // Validasi hanya untuk field yang dibutuhkan, tidak perlu validasi semua field
         $validatedData = $request->validate([
             'nomer_hopper' => 'required|integer|min:1|max:15',
             'bulan' => 'required|date_format:Y-m',
-            
-            // Validation for creator fields
-            'created_by_1' => 'nullable|string|max:255',
-            'created_date_1' => 'nullable|date',
-            'created_by_2' => 'nullable|string|max:255',
-            'created_date_2' => 'nullable|date',
-            'created_by_3' => 'nullable|string|max:255',
-            'created_date_3' => 'nullable|date',
-            'created_by_4' => 'nullable|string|max:255',
-            'created_date_4' => 'nullable|date',
-            
-            // Validation for checked items and checks
-            'checked_items' => 'required|array',
-            'check_1' => 'required|array',
-            'keterangan_1' => 'nullable|array',
-            'check_2' => 'nullable|array',
-            'keterangan_2' => 'nullable|array',
-            'check_3' => 'nullable|array',
-            'keterangan_3' => 'nullable|array',
-            'check_4' => 'nullable|array',
-            'keterangan_4' => 'nullable|array',
         ]);
-
+    
         // Find the existing HopperCheck record
         $hopperCheck = HopperCheck::findOrFail($id);
-
+        $hopperResults = $hopperCheck->results;
+    
         // Check for existing record with the same nomer_hopper and bulan, excluding the current record
         $existingRecord = HopperCheck::where('nomer_hopper', $request->input('nomer_hopper'))
             ->where('bulan', $request->input('bulan'))
             ->where('id', '!=', $id)
             ->first();
-
+    
         if ($existingRecord) {
             // If a record with the same hopper number and month exists, return an error
-            return redirect()->back()->with('error', 'A record for this hopper number and month already exists.')
+            return redirect()->back()->with('error', 'Data untuk nomor hopper dan bulan ini sudah ada.')
                             ->withInput();
         }
-
+    
         try {
             // Start a database transaction
             DB::beginTransaction();
-
-            // Update HopperCheck record
-            $hopperCheck->update([
+    
+            // Update HopperCheck record - hanya perbarui nilai yang tidak disetujui
+            $updateData = [
                 'nomer_hopper' => $request->input('nomer_hopper'),
                 'bulan' => $request->input('bulan'),
-                
-                // Update weekly dates
-                'tanggal_minggu1' => $request->input('created_date_1'),
-                'tanggal_minggu2' => $request->input('created_date_2'),
-                'tanggal_minggu3' => $request->input('created_date_3'),
-                'tanggal_minggu4' => $request->input('created_date_4'),
-                
-                // Update weekly checkers
-                'checked_by_minggu1' => $request->input('created_by_1'),
-                'checked_by_minggu2' => $request->input('created_by_2'),
-                'checked_by_minggu3' => $request->input('created_by_3'),
-                'checked_by_minggu4' => $request->input('created_by_4'),
-            ]);
-
+            ];
+            
+            // Update data checked_by dan tanggal hanya jika minggu tersebut belum disetujui
+            if (!$hopperCheck->approved_by_minggu1 || $hopperCheck->approved_by_minggu1 == '-') {
+                $updateData['checked_by_minggu1'] = $request->input('created_by_1');
+                $updateData['tanggal_minggu1'] = $request->input('created_date_1');
+            }
+            
+            if (!$hopperCheck->approved_by_minggu2 || $hopperCheck->approved_by_minggu2 == '-') {
+                $updateData['checked_by_minggu2'] = $request->input('created_by_2');
+                $updateData['tanggal_minggu2'] = $request->input('created_date_2');
+            }
+            
+            if (!$hopperCheck->approved_by_minggu3 || $hopperCheck->approved_by_minggu3 == '-') {
+                $updateData['checked_by_minggu3'] = $request->input('created_by_3');
+                $updateData['tanggal_minggu3'] = $request->input('created_date_3');
+            }
+            
+            if (!$hopperCheck->approved_by_minggu4 || $hopperCheck->approved_by_minggu4 == '-') {
+                $updateData['checked_by_minggu4'] = $request->input('created_by_4');
+                $updateData['tanggal_minggu4'] = $request->input('created_date_4');
+            }
+    
+            $hopperCheck->update($updateData);
+    
             // Delete existing HopperResult records for this check
             HopperResult::where('check_id', $hopperCheck->id)->delete();
-
+    
             // Prepare and create new HopperResult records
             $checkedItems = $request->input('checked_items');
             
             foreach ($checkedItems as $index => $item) {
-                HopperResult::create([
+                $resultData = [
                     'check_id' => $hopperCheck->id,
                     'checked_items' => $item,
-                    
-                    // Week 1 data
-                    'minggu1' => $request->input("check_1.{$index}", null),
-                    'keterangan_minggu1' => $request->input("keterangan_1.{$index}", null),
-                    
-                    // Week 2 data
-                    'minggu2' => $request->input("check_2.{$index}", null),
-                    'keterangan_minggu2' => $request->input("keterangan_2.{$index}", null),
-                    
-                    // Week 3 data
-                    'minggu3' => $request->input("check_3.{$index}", null),
-                    'keterangan_minggu3' => $request->input("keterangan_3.{$index}", null),
-                    
-                    // Week 4 data
-                    'minggu4' => $request->input("check_4.{$index}", null),
-                    'keterangan_minggu4' => $request->input("keterangan_4.{$index}", null),
-                ]);
+                ];
+                
+                // Data minggu 1
+                if (!$hopperCheck->approved_by_minggu1 || $hopperCheck->approved_by_minggu1 == '-') {
+                    $resultData['minggu1'] = $request->input("check_1.{$index}", null);
+                    $resultData['keterangan_minggu1'] = $request->input("keterangan_1.{$index}", null);
+                } else {
+                    // Jika sudah disetujui, gunakan data lama
+                    $oldResult = $hopperResults->firstWhere('checked_items', $item);
+                    $resultData['minggu1'] = $oldResult ? $oldResult->minggu1 : null;
+                    $resultData['keterangan_minggu1'] = $oldResult ? $oldResult->keterangan_minggu1 : null;
+                }
+                
+                // Data minggu 2
+                if (!$hopperCheck->approved_by_minggu2 || $hopperCheck->approved_by_minggu2 == '-') {
+                    $resultData['minggu2'] = $request->input("check_2.{$index}", null);
+                    $resultData['keterangan_minggu2'] = $request->input("keterangan_2.{$index}", null);
+                } else {
+                    // Jika sudah disetujui, gunakan data lama
+                    $oldResult = $hopperResults->firstWhere('checked_items', $item);
+                    $resultData['minggu2'] = $oldResult ? $oldResult->minggu2 : null;
+                    $resultData['keterangan_minggu2'] = $oldResult ? $oldResult->keterangan_minggu2 : null;
+                }
+                
+                // Data minggu 3
+                if (!$hopperCheck->approved_by_minggu3 || $hopperCheck->approved_by_minggu3 == '-') {
+                    $resultData['minggu3'] = $request->input("check_3.{$index}", null);
+                    $resultData['keterangan_minggu3'] = $request->input("keterangan_3.{$index}", null);
+                } else {
+                    // Jika sudah disetujui, gunakan data lama
+                    $oldResult = $hopperResults->firstWhere('checked_items', $item);
+                    $resultData['minggu3'] = $oldResult ? $oldResult->minggu3 : null;
+                    $resultData['keterangan_minggu3'] = $oldResult ? $oldResult->keterangan_minggu3 : null;
+                }
+                
+                // Data minggu 4
+                if (!$hopperCheck->approved_by_minggu4 || $hopperCheck->approved_by_minggu4 == '-') {
+                    $resultData['minggu4'] = $request->input("check_4.{$index}", null);
+                    $resultData['keterangan_minggu4'] = $request->input("keterangan_4.{$index}", null);
+                } else {
+                    // Jika sudah disetujui, gunakan data lama
+                    $oldResult = $hopperResults->firstWhere('checked_items', $item);
+                    $resultData['minggu4'] = $oldResult ? $oldResult->minggu4 : null;
+                    $resultData['keterangan_minggu4'] = $oldResult ? $oldResult->keterangan_minggu4 : null;
+                }
+                
+                HopperResult::create($resultData);
             }
-
+    
             // Commit the transaction
             DB::commit();
-
+    
             // Redirect with success message
-            return redirect()->route('hopper.index')->with('success', 'Hopper check data successfully updated.');
+            return redirect()->route('hopper.index')->with('success', 'Data pencatatan mesin Hopper berhasil diperbarui.');
         } catch (\Exception $e) {
             // Rollback the transaction in case of error
             DB::rollBack();
-
+    
             // Redirect back with error message
-            return redirect()->back()->with('error', 'Failed to update hopper check data: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui data pencatatan mesin Hopper: ' . $e->getMessage());
         }
     }
 
