@@ -44,7 +44,6 @@
 </head>
 <body class="bg-sky-50 font-sans">
     <!-- Notification Popup -->
-    <!-- Notification Popup -->
     <div id="error-notification" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 hidden">
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-md flex items-center max-w-md">
             <div class="mr-2">
