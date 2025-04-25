@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('dehum_matras_checks', function (Blueprint $table) {
             $table->id();
-            $table->string('nomer_autoloader');
+            $table->string('nomer_dehum_matras');
             $table->string('shift');
             $table->string('bulan');
             
