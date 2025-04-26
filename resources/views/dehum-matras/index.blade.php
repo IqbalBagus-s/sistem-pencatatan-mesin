@@ -212,14 +212,6 @@
                             @endif
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            <div class="flex flex-col items-center">
-                                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1">
-                                    <div class="bg-primary h-2.5 rounded-full" style="width: {{ $check->completionPercentage }}%"></div>
-                                </div>
-                                <span class="text-xs text-gray-600">{{ $check->completionPercentage }}%</span>
-                            </div>
-                        </td>
-                        <td class="py-3 px-4 border-b border-gray-200">
                             @if($check->approvedDatesCount > 0)
                                 @if($check->approvedDatesCount >= $check->daysInMonth)
                                     <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">

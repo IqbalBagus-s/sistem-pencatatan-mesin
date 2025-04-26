@@ -1,9 +1,9 @@
 @extends('layouts.create-layout-2')
 
-@section('title', 'Form Pencatatan Mesin Dehum Bahan')
+@section('title', 'Form Pencatatan Mesin Dehum Matras')
 
 @section('content')
-<h2 class="mb-4 text-xl font-bold">Pencatatan Mesin Dehum Bahan</h2>
+<h2 class="mb-4 text-xl font-bold">Pencatatan Mesin Dehum Matras</h2>
 
 <div class="bg-white rounded-lg shadow-md mb-5">
     <div class="p-4">
@@ -14,10 +14,10 @@
         </div>
 
         <!-- Form Input -->
-        <form action="{{ route('dehum-bahan.store') }}" method="POST">
+        <form action="{{ route('dehum-matras.store') }}" method="POST">
             @csrf
             <div class="grid md:grid-cols-3 gap-4 mb-4">
-                <!-- Dropdown Pilih No Dehum Bahan -->
+                <!-- Dropdown Pilih No Dehum Matras -->
                 <div x-data="{ 
                     open: false, 
                     selected: null,
@@ -27,11 +27,11 @@
                     }
                     }" class="relative w-full">
                     <!-- Label -->
-                    <label class="block mb-2 text-sm font-medium text-gray-700">Pilih No Dehum Bahan:</label>
+                    <label class="block mb-2 text-sm font-medium text-gray-700">Pilih No Dehum Matras:</label>
                     
                     <!-- Dropdown Button -->
                     <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative">
-                        <span x-text="selected ? 'Dehum Bahan ' + selected : 'Pilih Dehum Bahan'"></span>
+                        <span x-text="selected ? 'Dehum Matras ' + selected : 'Pilih Dehum Matras'"></span>
                         
                         <!-- Selection Indicator -->
                         <div class="absolute right-3 top-1/2 -translate-y-1/2">
@@ -69,7 +69,7 @@
                     </div>
                     
                     <!-- Hidden Input untuk dikirim ke server -->
-                    <input type="hidden" name="nomer_dehum_bahan" x-model="selected">
+                    <input type="hidden" name="nomer_dehum_matras" x-model="selected">
                 </div>
                 
                 <!-- Dropdown Pilih Shift -->
@@ -133,7 +133,7 @@
                 </div>
             </div>                    
                 @php
-                    // Items yang perlu di-check untuk Dehum Bahan
+                    // Items yang perlu di-check untuk Dehum Matras
                     $items = [
                         1 => 'Kompressor',
                         2 => 'Kabel',
@@ -296,89 +296,89 @@
                     </div>
                 
                     <!-- Tabel untuk tanggal 23-31 plus 2 kolom kosong -->
-<div class="overflow-x-auto mb-6 border border-gray-300">
-    <table class="w-full border-collapse">
-        <thead>
-            <tr>
-                <th class="border border-gray-300 bg-sky-50 p-2 w-10 sticky left-0 z-10">No.</th>
-                <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
-                
-                @for ($i = 23; $i <= 31; $i++)
-                    @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
-                    <th class="border border-gray-300 bg-sky-50 p-2 w-24">{{ $num }}</th>
-                @endfor
-                
-                <!-- Kolom tambahan yang "tidak terlihat" -->
-                <th class="p-2 w-24 border-0"></th>
-                <th class="p-2 w-24 border-0"></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($items as $i => $item)
-                <tr>
-                    <td class="border border-gray-300 text-center p-1 h-10 text-xs sticky left-0 bg-white z-10">{{ $i }}</td>
-                    <td class="border border-gray-300 p-1 h-10 sticky left-10 bg-white z-10">
-                        <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
-                    </td>
-                    
-                    @for($j = 23; $j <= 31; $j++)
-                        <td class="border border-gray-300 p-1 h-10">
-                            <input type="text" name="check_{{ $j }}[{{ $i }}]" 
-                                placeholder="{{ $placeholders[$i] }}"
-                                class="w-full h-8 px-2 py-0 text-xs bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white placeholder:text-xs placeholder:text-gray-400">
-                        </td>
-                    @endfor
-                    
-                    <!-- Kolom tambahan yang "tidak terlihat" -->
-                    <td class="p-1 h-10 border-0"></td>
-                    <td class="p-1 h-10 border-0"></td>
-                </tr>
-            @endforeach
-        </tbody>
-        <tbody class="bg-white">
-            <tr class="bg-sky-50">
-                <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10">-</td>
-                <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10">Dibuat Oleh</td>
-                
-                @for($j = 23; $j <= 31; $j++)
-                    <td class="border border-gray-300 p-1 bg-sky-50">
-                        <div x-data="{ selected: false, userName: '' }">
-                            <button type="button" 
-                                @click="selected = !selected; 
-                                    if(selected) {
-                                        userName = '{{ Auth::user()->username }}'; 
-                                        $refs.user{{ $j }}.value = userName;
-                                        $refs.checkNum{{ $j }}.value = '{{ $j }}';
-                                    } else {
-                                        userName = '';
-                                        $refs.user{{ $j }}.value = '';
-                                        $refs.checkNum{{ $j }}.value = '';
-                                    }"
-                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
-                                :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                            </button>
-                            <div class="mt-1" x-show="selected">
-                                <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
-                                    readonly>
-                                <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
-                            </div>
-                        </div>
-                    </td>
-                @endfor
-                
-                <!-- Kolom tambahan yang "tidak terlihat" -->
-                <td class="p-1 border-0"></td>
-                <td class="p-1 border-0"></td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+                    <div class="overflow-x-auto mb-6 border border-gray-300">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="border border-gray-300 bg-sky-50 p-2 w-10 sticky left-0 z-10">No.</th>
+                                    <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
+                                    
+                                    @for ($i = 23; $i <= 31; $i++)
+                                        @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
+                                        <th class="border border-gray-300 bg-sky-50 p-2 w-24">{{ $num }}</th>
+                                    @endfor
+                                    
+                                    <!-- Kolom tambahan yang "tidak terlihat" -->
+                                    <th class="p-2 w-24 border-0"></th>
+                                    <th class="p-2 w-24 border-0"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($items as $i => $item)
+                                    <tr>
+                                        <td class="border border-gray-300 text-center p-1 h-10 text-xs sticky left-0 bg-white z-10">{{ $i }}</td>
+                                        <td class="border border-gray-300 p-1 h-10 sticky left-10 bg-white z-10">
+                                            <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
+                                        </td>
+                                        
+                                        @for($j = 23; $j <= 31; $j++)
+                                            <td class="border border-gray-300 p-1 h-10">
+                                                <input type="text" name="check_{{ $j }}[{{ $i }}]" 
+                                                    placeholder="{{ $placeholders[$i] }}"
+                                                    class="w-full h-8 px-2 py-0 text-xs bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white placeholder:text-xs placeholder:text-gray-400">
+                                            </td>
+                                        @endfor
+                                        
+                                        <!-- Kolom tambahan yang "tidak terlihat" -->
+                                        <td class="p-1 h-10 border-0"></td>
+                                        <td class="p-1 h-10 border-0"></td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tbody class="bg-white">
+                                <tr class="bg-sky-50">
+                                    <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10">-</td>
+                                    <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10">Dibuat Oleh</td>
+                                    
+                                    @for($j = 23; $j <= 31; $j++)
+                                        <td class="border border-gray-300 p-1 bg-sky-50">
+                                            <div x-data="{ selected: false, userName: '' }">
+                                                <button type="button" 
+                                                    @click="selected = !selected; 
+                                                        if(selected) {
+                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            $refs.user{{ $j }}.value = userName;
+                                                            $refs.checkNum{{ $j }}.value = '{{ $j }}';
+                                                        } else {
+                                                            userName = '';
+                                                            $refs.user{{ $j }}.value = '';
+                                                            $refs.checkNum{{ $j }}.value = '';
+                                                        }"
+                                                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                                </button>
+                                                <div class="mt-1" x-show="selected">
+                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
+                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                        readonly>
+                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    @endfor
+                                    
+                                    <!-- Kolom tambahan yang "tidak terlihat" -->
+                                    <td class="p-1 border-0"></td>
+                                    <td class="p-1 border-0"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            @include('components.create-form-buttons', ['backRoute' => route('dehum-bahan.index')])
+            @include('components.create-form-buttons', ['backRoute' => route('dehum-matras.index')])
         </form>
     </div>
 </div>
