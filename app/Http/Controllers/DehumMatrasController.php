@@ -165,7 +165,7 @@ class DehumMatrasController extends Controller
                     if (isset($request->$checkKey) && isset($request->$checkKey[$itemId])) {
                         $resultData1["tanggal{$j}"] = $request->$checkKey[$itemId];
                     } else {
-                        $resultData1["tanggal{$j}"] = '-'; // Default value
+                        $resultData1["tanggal{$j}"] = null; // Default value
                     }
                 }
                 
@@ -176,7 +176,7 @@ class DehumMatrasController extends Controller
                     if (isset($request->$checkKey) && isset($request->$checkKey[$itemId])) {
                         $resultData2["tanggal{$j}"] = $request->$checkKey[$itemId];
                     } else {
-                        $resultData2["tanggal{$j}"] = '-'; // Default value
+                        $resultData2["tanggal{$j}"] = null; // Default value
                     }
                 }
                 
@@ -187,7 +187,7 @@ class DehumMatrasController extends Controller
                     if (isset($request->$checkKey) && isset($request->$checkKey[$itemId])) {
                         $resultData3["tanggal{$j}"] = $request->$checkKey[$itemId];
                     } else {
-                        $resultData3["tanggal{$j}"] = '-'; // Default value
+                        $resultData3["tanggal{$j}"] = null; // Default value
                     }
                 }
                 

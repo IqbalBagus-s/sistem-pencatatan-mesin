@@ -15,7 +15,7 @@
         </div>
 
         <!-- Form Input -->
-        <form action="{{ route('dehum-matras.update', $check->id) }}" method="POST">
+        <form action="{{ route('dehum-matras.update', $check->id) }}" method="POST" autocomplete="off">
             @csrf
             @method('PUT')
             <!-- Info Display (Not Editable) -->
@@ -216,14 +216,13 @@
                             <tr class="bg-green-50">
                                 <td class="border border-gray-300 text-center p-1 bg-green-50 h-10 text-xs sticky left-0 z-10">-</td>
                                 <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10">Penanggung Jawab</td>
-                                
                                 @for($j = 1; $j <= 11; $j++)
                                     <td class="border border-gray-300 p-1 bg-green-50">
                                         <div class="w-full px-2 py-1 text-sm">
-                                            <input type="text" name="approved_by_{{ $j }}" value="{{ getApprovedBy($results, $j) }}"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
-                                                readonly>
-                                            <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
+                                            <!-- Menampilkan saja, bukan sebagai input field -->
+                                            <div class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
+                                                {{ getApprovedBy($results, $j) }}
+                                            </div>
                                         </div>
                                     </td>
                                 @endfor
@@ -335,10 +334,10 @@
                                 @for($j = 12; $j <= 22; $j++)
                                     <td class="border border-gray-300 p-1 bg-green-50">
                                         <div class="w-full px-2 py-1 text-sm">
-                                            <input type="text" name="approved_by_{{ $j }}" value="{{ getApprovedBy($results, $j) }}"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
-                                                readonly>
-                                            <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
+                                            <!-- Menampilkan saja, bukan sebagai input field -->
+                                            <div class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
+                                                {{ getApprovedBy($results, $j) }}
+                                            </div>
                                         </div>
                                     </td>
                                 @endfor
@@ -450,10 +449,10 @@
                                 @for($j = 23; $j <= 31; $j++)
                                     <td class="border border-gray-300 p-1 bg-green-50">
                                         <div class="w-full px-2 py-1 text-sm">
-                                            <input type="text" name="approved_by_{{ $j }}" value="{{ getApprovedBy($results, $j) }}"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
-                                                readonly>
-                                            <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
+                                            <!-- Menampilkan saja, bukan sebagai input field -->
+                                            <div class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
+                                                {{ getApprovedBy($results, $j) }}
+                                            </div>
                                         </div>
                                     </td>
                                 @endfor
