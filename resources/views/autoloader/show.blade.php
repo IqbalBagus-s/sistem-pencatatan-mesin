@@ -148,7 +148,7 @@
                                 
                                 @for($j = 1; $j <= 11; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
-                                        {{ getCheckerName($results, $j) }}
+                                        {{ getCheckerName($results, $j) ?: '-' }}
                                     </td>
                                 @endfor
                             </tr>
@@ -259,7 +259,7 @@
                                 
                                 @for($j = 12; $j <= 22; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
-                                        {{ getCheckerName($results, $j) }}
+                                        {{ getCheckerName($results, $j) ?: '-' }}
                                     </td>
                                 @endfor
                             </tr>
@@ -370,7 +370,7 @@
                                 
                                 @for($j = 23; $j <= 31; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
-                                        {{ getCheckerName($results, $j) }}
+                                        {{ getCheckerName($results, $j) ?: '-' }}
                                     </td>
                                 @endfor
                             </tr>

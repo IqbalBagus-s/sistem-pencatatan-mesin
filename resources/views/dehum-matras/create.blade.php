@@ -197,6 +197,12 @@
                                     @for($j = 1; $j <= 11; $j++)
                                         <td class="border border-gray-300 p-1 bg-sky-50">
                                             <div x-data="{ selected: false, userName: '' }">
+                                                <div class="mt-1" x-show="selected">
+                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
+                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                    readonly>
+                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                                </div>
                                                 <button type="button" 
                                                     @click="selected = !selected; 
                                                         if(selected) {
@@ -212,12 +218,6 @@
                                                     :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
                                                     <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
                                                 </button>
-                                                <div class="mt-1" x-show="selected">
-                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
-                                                        readonly>
-                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
-                                                </div>
                                             </div>
                                         </td>
                                     @endfor
@@ -266,6 +266,12 @@
                                     @for($j = 12; $j <= 22; $j++)
                                         <td class="border border-gray-300 p-1 bg-sky-50">
                                             <div x-data="{ selected: false, userName: '' }">
+                                                <div class="mt-1" x-show="selected">
+                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
+                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                        readonly>
+                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                                </div>
                                                 <button type="button" 
                                                     @click="selected = !selected; 
                                                         if(selected) {
@@ -281,12 +287,6 @@
                                                     :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
                                                     <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
                                                 </button>
-                                                <div class="mt-1" x-show="selected">
-                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
-                                                        readonly>
-                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
-                                                </div>
                                             </div>
                                         </td>
                                     @endfor
@@ -343,6 +343,12 @@
                                     @for($j = 23; $j <= 31; $j++)
                                         <td class="border border-gray-300 p-1 bg-sky-50">
                                             <div x-data="{ selected: false, userName: '' }">
+                                                <div class="mt-1" x-show="selected">
+                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
+                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                        readonly>
+                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                                </div>
                                                 <button type="button" 
                                                     @click="selected = !selected; 
                                                         if(selected) {
@@ -358,12 +364,6 @@
                                                     :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
                                                     <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
                                                 </button>
-                                                <div class="mt-1" x-show="selected">
-                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
-                                                        readonly>
-                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
-                                                </div>
                                             </div>
                                         </td>
                                     @endfor
