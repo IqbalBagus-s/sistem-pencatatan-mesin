@@ -458,7 +458,7 @@
                             ['name' => 'Auto Loader', 'route' => 'autoloader.index'],
                             ['name' => 'Gilingan', 'route' => 'giling.index'],
                             ['name' => 'Caplining', 'route' => null],
-                            ['name' => 'Vacum Cleaner', 'route' => null],
+                            ['name' => 'Vacum Cleaner', 'route' => 'vacum-cleaner.index'],
                             ['name' => 'Mesin Sleeting', 'route' => null],
                             ['name' => 'Crane', 'route' => null]
                         ];
