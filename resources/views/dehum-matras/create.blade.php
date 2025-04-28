@@ -295,22 +295,18 @@
                         </table>
                     </div>
                 
-                    <!-- Tabel untuk tanggal 23-31 plus 2 kolom kosong -->
-                    <div class="overflow-x-auto mb-6 border border-gray-300">
-                        <table class="w-full border-collapse">
+                    <!-- Tabel untuk tanggal 23-31 -->
+                    <div class="overflow-x-auto mb-6">
+                        <table class="border-collapse table-fixed" style="width: max-content;">
                             <thead>
                                 <tr>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 w-10 sticky left-0 z-10">No.</th>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
+                                    <th class="border border-gray-300 bg-sky-50 p-2 sticky left-0 z-10" style="width: 40px;">No.</th>
+                                    <th class="border border-gray-300 bg-sky-50 p-2 sticky left-10 z-10" style="width: 160px;">Item Terperiksa</th>
                                     
                                     @for ($i = 23; $i <= 31; $i++)
                                         @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
-                                        <th class="border border-gray-300 bg-sky-50 p-2 w-24">{{ $num }}</th>
+                                        <th class="border border-gray-300 bg-sky-50 p-2" style="width: 90px;">{{ $num }}</th>
                                     @endfor
-                                    
-                                    <!-- Kolom tambahan yang "tidak terlihat" -->
-                                    <th class="p-2 w-24 border-0"></th>
-                                    <th class="p-2 w-24 border-0"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -322,16 +318,12 @@
                                         </td>
                                         
                                         @for($j = 23; $j <= 31; $j++)
-                                            <td class="border border-gray-300 p-1 h-10">
+                                            <td class="border border-gray-300 p-1 h-10" style="width: 90px;">
                                                 <input type="text" name="check_{{ $j }}[{{ $i }}]" 
                                                     placeholder="{{ $placeholders[$i] }}"
                                                     class="w-full h-8 px-2 py-0 text-xs bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white placeholder:text-xs placeholder:text-gray-400">
                                             </td>
                                         @endfor
-                                        
-                                        <!-- Kolom tambahan yang "tidak terlihat" -->
-                                        <td class="p-1 h-10 border-0"></td>
-                                        <td class="p-1 h-10 border-0"></td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -341,7 +333,7 @@
                                     <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10">Dibuat Oleh</td>
                                     
                                     @for($j = 23; $j <= 31; $j++)
-                                        <td class="border border-gray-300 p-1 bg-sky-50">
+                                        <td class="border border-gray-300 p-1 bg-sky-50" style="width: 90px;">
                                             <div x-data="{ selected: false, userName: '' }">
                                                 <div class="mt-1" x-show="selected">
                                                     <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
@@ -367,10 +359,6 @@
                                             </div>
                                         </td>
                                     @endfor
-                                    
-                                    <!-- Kolom tambahan yang "tidak terlihat" -->
-                                    <td class="p-1 border-0"></td>
-                                    <td class="p-1 border-0"></td>
                                 </tr>
                             </tbody>
                         </table>
