@@ -10,6 +10,9 @@ use App\Http\Controllers\HopperController;
 use App\Http\Controllers\DehumBahanController;
 use App\Http\Controllers\GilingController;
 use App\Http\Controllers\AutoloaderController;
+use App\Http\Controllers\DehumMatrasController;
+use App\Http\Controllers\CapliningController;
+use App\Http\Controllers\VacumCleanerController;
 
 
 Route::get('/', function () {
@@ -104,4 +107,37 @@ Route::middleware(['auth:approver,checker'])->group(function () {
     Route::post('/autoloader/{id}/approve', [AutoloaderController::class, 'approve'])->name('autoloader.approve');
     // Route download PDF
     Route::get('/autoloader/{id}/download-pdf', [AutoloaderController::class, 'downloadPdf'])->name('autoloader.downloadPdf');
+
+    // Route Mesin Dehum Matras
+    Route::get('/dehum-matras', [DehumMatrasController::class, 'index'])->name('dehum-matras.index');
+    Route::get('/dehum-matras/create', [DehumMatrasController::class, 'create'])->name('dehum-matras.create');
+    Route::post('/dehum-matras', [DehumMatrasController::class, 'store'])->name('dehum-matras.store');
+    Route::get('/dehum-matras/{id}/edit', [DehumMatrasController::class, 'edit'])->name('dehum-matras.edit');
+    Route::put('/dehum-matras/{id}', [DehumMatrasController::class, 'update'])->name('dehum-matras.update');
+    Route::get('/dehum-matras/{id}', [DehumMatrasController::class, 'show'])->name('dehum-matras.show');
+    Route::post('/dehum-matras/{id}/approve', [DehumMatrasController::class, 'approve'])->name('dehum-matras.approve');
+    // Route download PDF
+    Route::get('/dehum-matras/{id}/download-pdf', [DehumMatrasController::class, 'downloadPdf'])->name('dehum-matras.downloadPdf');
+
+    // Route Mesin Caplining
+    Route::get('/caplining', [CapliningController::class, 'index'])->name('caplining.index');
+    Route::get('/caplining/create', [CapliningController::class, 'create'])->name('caplining.create');
+    Route::post('/caplining', [CapliningController::class, 'store'])->name('caplining.store');
+    Route::get('/caplining/{id}/edit', [CapliningController::class, 'edit'])->name('caplining.edit');
+    Route::put('/caplining/{id}', [CapliningController::class, 'update'])->name('caplining.update');
+    Route::get('/caplining/{id}', [CapliningController::class, 'show'])->name('caplining.show');
+    Route::post('/caplining/{id}/approve', [CapliningController::class, 'approve'])->name('caplining.approve');
+    // Route download PDF
+    Route::get('/caplining/{id}/download-pdf', [CapliningController::class, 'downloadPdf'])->name('caplining.downloadPdf');
+
+    // Route Mesin Vacum Cleaner
+    Route::get('/vacum-cleaner', [VacumCleanerController::class, 'index'])->name('vacum-cleaner.index');
+    Route::get('/vacum-cleaner/create', [VacumCleanerController::class, 'create'])->name('vacum-cleaner.create');
+    Route::post('/vacum-cleaner', [VacumCleanerController::class, 'store'])->name('vacum-cleaner.store');
+    Route::get('/vacum-cleaner/{id}/edit', [VacumCleanerController::class, 'edit'])->name('vacum-cleaner.edit');
+    Route::put('/vacum-cleaner/{id}', [VacumCleanerController::class, 'update'])->name('vacum-cleaner.update');
+    Route::get('/vacum-cleaner/{id}', [VacumCleanerController::class, 'show'])->name('vacum-cleaner.show');
+    Route::post('/vacum-cleaner/{id}/approve', [VacumCleanerController::class, 'approve'])->name('vacum-cleaner.approve');
+    // Route download PDF
+    Route::get('/vacum-cleaner/{id}/download-pdf', [VacumCleanerController::class, 'downloadPdf'])->name('vacum-cleaner.downloadPdf');
 });

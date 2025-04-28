@@ -150,7 +150,7 @@
 
         <!-- Form Pencarian dan Tombol Tambah -->
         <div class="bg-white rounded-lg shadow-md p-4 md:p-5 mb-5">
-            <form method="GET" action="@yield('form-action')">
+            <form method="GET" action="@yield('form-action')" autocomplete="off">
                 <div class="flex flex-col md:flex-row md:justify-between md:items-end">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end flex-grow">
                         @yield('custom-filters')

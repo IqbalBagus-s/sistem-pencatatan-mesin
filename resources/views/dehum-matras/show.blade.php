@@ -1,14 +1,14 @@
-<!-- resources/views/autoloader/show.blade.php -->
+<!-- resources/views/dehum-matras/show.blade.php -->
 @extends('layouts.create-layout-2')
 
-@section('title', 'Detail Pencatatan Mesin Autoloader')
+@section('title', 'Detail Pencatatan Mesin Dehum Matras')
 
 @section('content')
-<h2 class="mb-4 text-xl font-bold">Detail Pencatatan Mesin Autoloader</h2>
+<h2 class="mb-4 text-xl font-bold">Detail Pencatatan Mesin Dehum Matras</h2>
 
 <div class="bg-white rounded-lg shadow-md mb-5">
     <div class="p-4">
-        <form method="POST" action="{{ route('autoloader.approve', $check->id) }}" id="approveForm">
+        <form method="POST" action="{{ route('dehum-matras.approve', $check->id) }}" id="approveForm">
             @csrf
             <!-- Menampilkan Nama Checker -->
             <div class="bg-sky-50 p-4 rounded-md mb-5">
@@ -24,11 +24,11 @@
 
             <!-- Info Display -->
             <div class="grid md:grid-cols-3 gap-4 mb-4">
-                <!-- No Autoloader Display -->
+                <!-- No Dehum Matras Display -->
                 <div class="w-full">
-                    <label class="block mb-2 text-sm font-medium text-gray-700">No Autoloader:</label>
+                    <label class="block mb-2 text-sm font-medium text-gray-700">No Dehum Matras:</label>
                     <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
-                        Autoloader {{ $check->nomer_autoloader }}
+                        Dehum Matras {{ $check->nomer_dehum_matras }}
                     </div>
                 </div>
                 
@@ -49,22 +49,15 @@
                 </div>
             </div>                 
             @php
-                // Items yang perlu di-check
+                // Items yang perlu di-check untuk Dehum Matras
                 $items = [
-                    1 => 'Filter',
-                    2 => 'Selang',
-                    3 => 'Panel Kelistrikan',
-                    4 => 'Kontaktor',
-                    5 => 'Thermal Overload',
-                    6 => 'MCB',
-                ];
-
-                // Opsi check
-                $options = [
-                    'V' => '✓',
-                    'X' => '✗',
-                    '-' => '—',
-                    'OFF' => 'OFF'
+                    1 => 'Kompressor',
+                    2 => 'Kabel',
+                    3 => 'NFB',
+                    4 => 'Motor',
+                    5 => 'Water Cooler in',
+                    6 => 'Water Cooler Out',
+                    7 => 'Temperatur Output Udara',
                 ];
                 
                 // Helper function untuk mendapatkan hasil check berdasarkan tanggal dan item
@@ -95,7 +88,6 @@
                     return $result && isset($result['approved_by']) ? $result['approved_by'] : '';
                 }
             @endphp
-            
             <!-- Tabel Inspeksi -->
             <div class="mb-6">
                 <!-- Tabel untuk tanggal 1-11 -->
@@ -109,13 +101,12 @@
                                 @for ($i = 1; $i <= 11; $i++)
                                     @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
                                     <th class="border border-gray-300 bg-sky-50 p-2 w-24" colspan="1">{{ $num }}</th>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 w-40" rowspan="2">Keterangan</th>
                                 @endfor
                             </tr>
                             <tr>
                                 <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
                                 @for ($i = 1; $i <= 11; $i++)
-                                    <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Cek</th>
+                                    <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Hasil</th>
                                 @endfor
                             </tr>
                         </thead>
@@ -129,13 +120,7 @@
                                     
                                     @for($j = 1; $j <= 11; $j++)
                                         <td class="border border-gray-300 p-1 h-10 text-center">
-                                            @php
-                                                $result = getCheckResult($results, $j, $i);
-                                                echo isset($options[$result]) ? $options[$result] : '';
-                                            @endphp
-                                        </td>
-                                        <td class="border border-gray-300 p-1 h-10 text-sm">
-                                            {{ getKeterangan($results, $j, $i) }}
+                                            {{ getCheckResult($results, $j, $i) ?: '-' }}
                                         </td>
                                     @endfor
                                 </tr>
@@ -147,7 +132,7 @@
                                 <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10">Dibuat Oleh</td>
                                 
                                 @for($j = 1; $j <= 11; $j++)
-                                    <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
+                                    <td class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
                                         {{ getCheckerName($results, $j) ?: '-' }}
                                     </td>
                                 @endfor
@@ -160,7 +145,7 @@
                                 <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10">Penanggung Jawab</td>
                                 
                                 @for($j = 1; $j <= 11; $j++)
-                                    <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
+                                    <td class="border border-gray-300 p-1 bg-green-50">
                                         @php
                                             $approvedBy = getApprovedBy($results, $j);
                                         @endphp
@@ -220,13 +205,12 @@
                                 @for ($i = 12; $i <= 22; $i++)
                                     @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
                                     <th class="border border-gray-300 bg-sky-50 p-2 w-24" colspan="1">{{ $num }}</th>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 w-40" rowspan="2">Keterangan</th>
                                 @endfor
                             </tr>
                             <tr>
                                 <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
                                 @for ($i = 12; $i <= 22; $i++)
-                                    <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Cek</th>
+                                    <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Hasil</th>
                                 @endfor
                             </tr>
                         </thead>
@@ -240,13 +224,7 @@
                                     
                                     @for($j = 12; $j <= 22; $j++)
                                         <td class="border border-gray-300 p-1 h-10 text-center">
-                                            @php
-                                                $result = getCheckResult($results, $j, $i);
-                                                echo isset($options[$result]) ? $options[$result] : '';
-                                            @endphp
-                                        </td>
-                                        <td class="border border-gray-300 p-1 h-10 text-sm">
-                                            {{ getKeterangan($results, $j, $i) }}
+                                            {{ getCheckResult($results, $j, $i) ?: '-' }}
                                         </td>
                                     @endfor
                                 </tr>
@@ -258,7 +236,7 @@
                                 <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10">Dibuat Oleh</td>
                                 
                                 @for($j = 12; $j <= 22; $j++)
-                                    <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
+                                    <td class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
                                         {{ getCheckerName($results, $j) ?: '-' }}
                                     </td>
                                 @endfor
@@ -271,7 +249,7 @@
                                 <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10">Penanggung Jawab</td>
                                 
                                 @for($j = 12; $j <= 22; $j++)
-                                    <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
+                                    <td class="border border-gray-300 p-1 bg-green-50">
                                         @php
                                             $approvedBy = getApprovedBy($results, $j);
                                         @endphp
@@ -319,7 +297,6 @@
                         </tbody>
                     </table>
                 </div>
-            
                 <!-- Tabel untuk tanggal 23-31 -->
                 <div class="overflow-x-auto mb-6 border border-gray-300">
                     <table class="w-full border-collapse">
@@ -331,13 +308,12 @@
                                 @for ($i = 23; $i <= 31; $i++)
                                     @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
                                     <th class="border border-gray-300 bg-sky-50 p-2 w-24" colspan="1">{{ $num }}</th>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 w-40" rowspan="2">Keterangan</th>
                                 @endfor
                             </tr>
                             <tr>
                                 <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
                                 @for ($i = 23; $i <= 31; $i++)
-                                    <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Cek</th>
+                                    <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Hasil</th>
                                 @endfor
                             </tr>
                         </thead>
@@ -351,13 +327,7 @@
                                     
                                     @for($j = 23; $j <= 31; $j++)
                                         <td class="border border-gray-300 p-1 h-10 text-center">
-                                            @php
-                                                $result = getCheckResult($results, $j, $i);
-                                                echo isset($options[$result]) ? $options[$result] : '';
-                                            @endphp
-                                        </td>
-                                        <td class="border border-gray-300 p-1 h-10 text-sm">
-                                            {{ getKeterangan($results, $j, $i) }}
+                                            {{ getCheckResult($results, $j, $i) ?: '-' }}
                                         </td>
                                     @endfor
                                 </tr>
@@ -369,7 +339,7 @@
                                 <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10">Dibuat Oleh</td>
                                 
                                 @for($j = 23; $j <= 31; $j++)
-                                    <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
+                                    <td class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
                                         {{ getCheckerName($results, $j) ?: '-' }}
                                     </td>
                                 @endfor
@@ -382,7 +352,7 @@
                                 <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10">Penanggung Jawab</td>
                                 
                                 @for($j = 23; $j <= 31; $j++)
-                                    <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
+                                    <td class="border border-gray-300 p-1 bg-green-50">
                                         @php
                                             $approvedBy = getApprovedBy($results, $j);
                                         @endphp
@@ -431,10 +401,10 @@
                     </table>
                 </div>
             </div>
-            
+
             <!-- Button Controls -->
             <div class="flex justify-between mt-6">
-                <a href="{{ route('autoloader.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                <a href="{{ route('dehum-matras.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Kembali
                 </a>
                 <button type="submit" class="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800">

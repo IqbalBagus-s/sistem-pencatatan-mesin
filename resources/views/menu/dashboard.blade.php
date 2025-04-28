@@ -11,62 +11,72 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        /* Font loading fixes - exactly matching index page */
+        /* Font loading fixes */
         @font-face {
             font-family: 'Poppins';
             src: url("{{ asset('fonts/Poppins-Regular.ttf') }}") format('truetype');
             font-weight: 400;
             font-style: normal;
+            font-display: swap;
         }
         @font-face {
             font-family: 'Poppins';
             src: url("{{ asset('fonts/Poppins-Medium.ttf') }}") format('truetype');
             font-weight: 500;
             font-style: normal;
+            font-display: swap;
         }
         @font-face {
             font-family: 'Poppins';
             src: url("{{ asset('fonts/Poppins-SemiBold.ttf') }}") format('truetype');
             font-weight: 600;
             font-style: normal;
+            font-display: swap;
         }
         @font-face {
             font-family: 'Poppins';
             src: url("{{ asset('fonts/Poppins-Bold.ttf') }}") format('truetype');
             font-weight: 700;
             font-style: normal;
+            font-display: swap;
         }
         
-        /* Basic styles */
+        /* Ensure font is applied to all elements */
+        * {
+            font-family: 'Poppins', sans-serif !important;
+            box-sizing: border-box;
+        }
+        
         html, body {
             height: 100%;
             margin: 0;
             overflow-x: hidden;
-            font-family: 'Poppins', sans-serif;
         }
         
-        /* Main container styling - Flexbox untuk footer sticky */
+        /* Main container styling */
         #app-container {
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-            padding-top: 65px; /* Header height + padding */
-            font-family: 'Poppins', sans-serif;
+            min-height: 100vh; /* Full viewport height */
+            padding-top: 65px; /* Header height + some padding */
+            padding-bottom: 0; /* No bottom padding - footer will add space */
         }
         
-        /* Content area that expands */
+        /* Content area that can expand */
         #content-area {
-            flex: 1;
+            flex: 1 0 auto; /* Grow but don't shrink */
             width: 100%;
-            padding-bottom: 2rem; /* Space before footer */
+            padding-bottom: 2rem; /* Add some space before footer */
         }
         
-        /* Footer stays at bottom */
+        /* Footer fixes */
         #footer {
-            margin-top: auto; /* Key property to push footer to bottom */
+            flex-shrink: 0; /* Don't let footer shrink */
+            width: 100%;
+            position: relative; /* Ensure it sits above any content */
+            z-index: 10;
         }
         
-        /* Rest of your styles... */
         .btn-check-machine {
             background-color: #1565c0;
             transition: background-color 0.2s ease;
@@ -79,26 +89,26 @@
             background-color: #0d47a1;
         }
 
-        /* Notification popup styles */
+        /* Notification popup styles - dengan lebar yang ditambah */
         #notification-popup {
             position: fixed;
-            top: 90px;
+            top: 90px; /* Positioned just below the header and near the "Hello" text */
             left: 50%;
             transform: translateX(-50%);
             z-index: 1000;
             display: none;
-            min-width: 250px;
+            min-width: 250px; /* Lebar minimum */
         }
         
         #login-notification {
-            background-color: #e6f3ff;
-            border: 1px solid #1565c0;
-            color: #1565c0;
+            background-color: #e6f3ff; /* Light blue background */
+            border: 1px solid #1565c0; /* Blue border */
+            color: #1565c0; /* Blue text */
             padding: 12px 20px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            width: auto;
-            white-space: nowrap;
+            width: auto; /* Auto width based on content */
+            white-space: nowrap; /* Hindari text wrap */
             text-align: center;
             display: flex;
             align-items: center;
@@ -107,7 +117,7 @@
         #login-message {
             margin-right: 20px;
             font-size: 0.9rem;
-            white-space: nowrap;
+            white-space: nowrap; /* Pastikan teks tidak terpotong */
         }
         
         .close-notification {
@@ -253,6 +263,11 @@
                 height: 2rem;
             }
             
+            /* Ensure footer has enough space on small screens */
+            #content-area {
+                padding-bottom: 1rem;
+            }
+            
             #app-container {
                 padding-top: 55px; /* Smaller header on mobile */
             }
@@ -280,7 +295,7 @@
             /* Responsive notification on mobile */
             #notification-popup {
                 top: 70px;
-                max-width: 90%;
+                max-width: 90%; /* Batasi lebar maksimum pada mobile */
             }
             
             #login-notification {
@@ -375,10 +390,17 @@
                 height: 14px;
             }
         }
+        
+        /* Sticky footer for larger screens */
+        @media (min-height: 900px) {
+            #content-area {
+                min-height: calc(100vh - 130px); /* Viewport height - (header + footer) */
+            }
+        }
     </style>
 </head>
-<body class="bg-blue-50 font-poppins">
-    <div id="app-container" class="font-poppins"> <!-- Main flex container with font class -->
+<body class="bg-blue-50">
+    <div id="app-container"> <!-- Main flex container -->
         <!-- Header Fixed -->
         <header class="fixed top-0 left-0 w-full bg-white shadow-md z-50 touch-pan-y">
             <div class="header-container">
@@ -401,8 +423,9 @@
             </div>
         </header>
 
-        <!-- Notification popup -->
+        <!-- Notification popup - diperlebar agar tidak terpotong -->
         <div id="notification-popup">
+            <!-- Login notification (blue) dengan lebar yang cukup -->
             <div id="login-notification">
                 <p id="login-message">Anda berhasil login</p>
                 <button type="button" class="close-notification">
@@ -431,11 +454,11 @@
                             ['name' => 'Compressor', 'route' => 'compressor.index'],
                             ['name' => 'Hopper', 'route' => 'hopper.index'],
                             ['name' => 'Dehum Bahan', 'route' => 'dehum-bahan.index'],
-                            ['name' => 'Dehum Matras', 'route' => null],
+                            ['name' => 'Dehum Matras', 'route' => 'dehum-matras.index'],
                             ['name' => 'Auto Loader', 'route' => 'autoloader.index'],
                             ['name' => 'Gilingan', 'route' => 'giling.index'],
                             ['name' => 'Caplining', 'route' => null],
-                            ['name' => 'Vacum Cleaner', 'route' => null],
+                            ['name' => 'Vacum Cleaner', 'route' => 'vacum-cleaner.index'],
                             ['name' => 'Mesin Sleeting', 'route' => null],
                             ['name' => 'Crane', 'route' => null]
                         ];
@@ -467,6 +490,7 @@
 
     @vite('resources/js/app.js')
     
+    <!-- Script untuk menampilkan tanggal dan waktu terkini dan mengelola notifikasi -->
     <script>
         function updateDateTime() {
             const now = new Date();
@@ -488,7 +512,7 @@
             setTimeout(updateDateTime, 1000);
         }
         
-        // Responsive adjustments for very small screens
+        // Responsive adjustments
         function handleResize() {
             const width = window.innerWidth;
             const dateTimeElement = document.getElementById('currentDateTime');
@@ -505,13 +529,34 @@
             }
         }
         
+        // Menyesuaikan tinggi konten berdasarkan ukuran layar
+        function adjustContentHeight() {
+            const header = document.querySelector('header');
+            const footer = document.getElementById('footer');
+            const appContainer = document.getElementById('app-container');
+            
+            const headerHeight = header.offsetHeight;
+            const footerHeight = footer.offsetHeight;
+            const windowHeight = window.innerHeight;
+            
+            // Pastikan content area memiliki ruang yang cukup
+            appContainer.style.paddingTop = headerHeight + 'px';
+            
+            // Atur tinggi minimum content-area untuk menghindari footer melayang
+            const contentArea = document.getElementById('content-area');
+            contentArea.style.minHeight = (windowHeight - headerHeight - footerHeight) + 'px';
+        }
+        
+        // Mulai saat halaman dimuat
         document.addEventListener('DOMContentLoaded', function() {
             updateDateTime();
             handleResize();
+            adjustContentHeight();
             
             // Listen for window resize events
             window.addEventListener('resize', function() {
                 handleResize();
+                adjustContentHeight();
             });
 
             // Check if user just logged in
