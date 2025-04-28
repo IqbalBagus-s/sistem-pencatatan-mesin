@@ -26,7 +26,7 @@
         this.selected = null;
         this.open = false;
     }
-}" class="relative w-full font-sans max-w-xs mx-auto">
+}" class="relative w-full font-sans">
     <!-- Label -->
     <label class="block mb-2 font-medium text-gray-700">Filter Berdasarkan Nomor Dehum Matras:</label>
     
