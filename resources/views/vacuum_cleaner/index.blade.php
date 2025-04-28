@@ -110,7 +110,7 @@
             @else
                 @foreach($checks as $check)
                     <tr class="text-center hover:bg-gray-50">
-                        <td class="py-3 px-4 border-b border-gray-200">{{ $check->nomer_vacuum_cleaner }}</td>
+                        <td class="py-3 px-4 border-b border-gray-200">{{ $check->nomer_vacum_cleaner }}</td>
                         <td 
                             x-data="{ 
                                 formatMonth(monthYear) {

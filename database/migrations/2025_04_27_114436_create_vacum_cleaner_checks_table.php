@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('nomer_vacum_cleaner');
             $table->string('bulan');
-            $table->string('tanggal_dibuat');
-            $table->string('checker_minggu1');
-            $table->string('checker_minggu2');
-            $table->string('approver_minggu1');
-            $table->string('approver_minggu2');
+            $table->string('tanggal_dibuat')->nullable();
+            $table->string('checker_minggu1')->nullable();
+            $table->string('checker_minggu2')->nullable();
+            $table->string('approver_minggu1')->nullable();
+            $table->string('approver_minggu2')->nullable();
             
 
             $table->timestamps();
