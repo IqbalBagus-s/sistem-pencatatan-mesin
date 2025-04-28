@@ -376,7 +376,6 @@
                         </table>
                     </div>
                 </div>
-            </div>
 
             @include('components.create-form-buttons', ['backRoute' => route('dehum-matras.index')])
         </form>

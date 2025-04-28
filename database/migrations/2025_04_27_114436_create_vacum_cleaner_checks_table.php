@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nomer_vacum_cleaner');
             $table->string('bulan');
+            $table->string('tanggal_dibuat');
             $table->string('checker_minggu1');
             $table->string('checker_minggu2');
             $table->string('approver_minggu1');

@@ -50,3 +50,7 @@ php artisan migrate
 ```
 npm run build
 ```
+11. Jalankan servernya 
+```
+php -S 192.168.1.4:8888 -t public
+```

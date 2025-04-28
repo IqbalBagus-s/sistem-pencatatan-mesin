@@ -395,8 +395,6 @@
                     </table>
                 </div>
             </div>
-            </div>
-
             @include('components.create-form-buttons', ['backRoute' => route('autoloader.index')])
         </form>
     </div>

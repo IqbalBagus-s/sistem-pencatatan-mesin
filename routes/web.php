@@ -131,13 +131,13 @@ Route::middleware(['auth:approver,checker'])->group(function () {
     Route::get('/caplining/{id}/download-pdf', [CapliningController::class, 'downloadPdf'])->name('caplining.downloadPdf');
 
     // Route Mesin Vacum Cleaner
-    Route::get('/vacum-cleaner', [VacumCleanerController::class, 'index'])->name('vacum-cleaner.index');
-    Route::get('/vacum-cleaner/create', [VacumCleanerController::class, 'create'])->name('vacum-cleaner.create');
-    Route::post('/vacum-cleaner', [VacumCleanerController::class, 'store'])->name('vacum-cleaner.store');
-    Route::get('/vacum-cleaner/{id}/edit', [VacumCleanerController::class, 'edit'])->name('vacum-cleaner.edit');
-    Route::put('/vacum-cleaner/{id}', [VacumCleanerController::class, 'update'])->name('vacum-cleaner.update');
-    Route::get('/vacum-cleaner/{id}', [VacumCleanerController::class, 'show'])->name('vacum-cleaner.show');
-    Route::post('/vacum-cleaner/{id}/approve', [VacumCleanerController::class, 'approve'])->name('vacum-cleaner.approve');
+    Route::get('/vacuum-cleaner', [VacumCleanerController::class, 'index'])->name('vacuum-cleaner.index');
+    Route::get('/vacuum-cleaner/create', [VacumCleanerController::class, 'create'])->name('vacuum-cleaner.create');
+    Route::post('/vacuum-cleaner', [VacumCleanerController::class, 'store'])->name('vacuum-cleaner.store');
+    Route::get('/vacuum-cleaner/{id}/edit', [VacumCleanerController::class, 'edit'])->name('vacuum-cleaner.edit');
+    Route::put('/vacuum-cleaner/{id}', [VacumCleanerController::class, 'update'])->name('vacuum-cleaner.update');
+    Route::get('/vacuum-cleaner/{id}', [VacumCleanerController::class, 'show'])->name('vacuum-cleaner.show');
+    Route::post('/vacuum-cleaner/{id}/approve', [VacumCleanerController::class, 'approve'])->name('vacuum-cleaner.approve');
     // Route download PDF
-    Route::get('/vacum-cleaner/{id}/download-pdf', [VacumCleanerController::class, 'downloadPdf'])->name('vacum-cleaner.downloadPdf');
+    Route::get('/vacuum-cleaner/{id}/download-pdf', [VacumCleanerController::class, 'downloadPdf'])->name('vacuum-cleaner.downloadPdf');
 });
