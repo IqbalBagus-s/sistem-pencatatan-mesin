@@ -92,7 +92,7 @@
             @endphp
             <!-- Tabel Inspeksi -->
             <div class="mb-6">
-                <!-- Tabel untuk tanggal 1 saja -->
+                <!-- Tabel untuk minggu ke-2 -->
                 <div class="overflow-x-auto mb-6 border border-gray-300">
                     <table class="w-full border-collapse">
                         <thead>
@@ -160,7 +160,7 @@
                                                     document.getElementById('user1').value = '{{ Auth::user()->username }}';
                                                     document.getElementById('checkNum1').value = '1';
                                                     
-                                                    // Format date properly
+                                                    // Format date properly as DD-MM-YYYY (for display)
                                                     const now = new Date();
                                                     const day = String(now.getDate()).padStart(2, '0');
                                                     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -184,7 +184,7 @@
                     </table>
 
                 </div>
-                <!-- Tabel untuk minggu keempat -->
+                <!-- Tabel untuk minggu ke-4 -->
                 <div class="overflow-x-auto mb-6 border border-gray-300">
                     <table class="w-full border-collapse">
                         <thead>
@@ -252,7 +252,7 @@
                                                     document.getElementById('user2').value = '{{ Auth::user()->username }}';
                                                     document.getElementById('checkNum2').value = '2';
                                                     
-                                                    // Format date properly
+                                                    // Format date properly as DD-MM-YYYY (for display)
                                                     const now = new Date();
                                                     const day = String(now.getDate()).padStart(2, '0');
                                                     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -325,7 +325,6 @@
                 </div>
             </div>
 
-            
             @include('components.create-form-buttons', ['backRoute' => route('vacuum-cleaner.index')])
         </form>
     </div>

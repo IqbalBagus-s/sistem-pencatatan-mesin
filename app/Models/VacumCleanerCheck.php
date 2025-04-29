@@ -15,11 +15,12 @@ class VacumCleanerCheck extends Model
     protected $fillable = [
         'nomer_vacum_cleaner',
         'bulan',
-        'tanggal_dibuat',
-        'checker_minggu1',
+        'tanggal_dibuat_minggu2',
+        'tanggal_dibuat_minggu4',
         'checker_minggu2',
-        'approver_minggu1',
+        'checker_minggu4',
         'approver_minggu2',
+        'approver_minggu4',
     ];
 
     /**
