@@ -252,7 +252,7 @@ class AutoloaderController extends Controller
         $resultsTable2 = AutoloaderResultTable2::where('check_id', $id)->get();
         $resultsTable3 = AutoloaderResultTable3::where('check_id', $id)->get();
         
-        // Ambil data detail (checked_by)
+        // Ambil data detail (checked_by dan approved_by)
         $detailChecks = AutoloaderDetail::where('tanggal_check_id', $id)->get();
         
         // Siapkan data untuk view dalam format yang sesuai dengan helper function
@@ -261,9 +261,13 @@ class AutoloaderController extends Controller
         // Buat array untuk menyimpan data checked_by berdasarkan tanggal
         $checkedByData = [];
         
-        // Proses data checked_by dulu agar tersedia untuk digunakan kemudian
+        // Buat array untuk menyimpan data approved_by berdasarkan tanggal
+        $approvedByData = [];
+        
+        // Proses data checked_by dan approved_by dulu agar tersedia untuk digunakan kemudian
         foreach ($detailChecks as $detail) {
             $checkedByData[$detail->tanggal] = $detail->checked_by;
+            $approvedByData[$detail->tanggal] = $detail->approved_by ?? '';
         }
         
         // Proses data dari tabel 1 (tanggal 1-11)
@@ -284,15 +288,17 @@ class AutoloaderController extends Controller
                     $keteranganField = "keterangan_tanggal{$j}";
                     
                     if (isset($row->$tanggalField)) {
-                        // Cek apakah ada data checked_by untuk tanggal ini
+                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
                         $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
                         
                         $results->push([
                             'tanggal' => $j,
                             'item_id' => $itemId,
                             'result' => $row->$tanggalField,
                             'keterangan' => $row->$keteranganField,
-                            'checked_by' => $checkedBy
+                            'checked_by' => $checkedBy,
+                            'approved_by' => $approvedBy
                         ]);
                     }
                 }
@@ -316,15 +322,17 @@ class AutoloaderController extends Controller
                     $keteranganField = "keterangan_tanggal{$j}";
                     
                     if (isset($row->$tanggalField)) {
-                        // Cek apakah ada data checked_by untuk tanggal ini
+                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
                         $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
                         
                         $results->push([
                             'tanggal' => $j,
                             'item_id' => $itemId,
                             'result' => $row->$tanggalField,
                             'keterangan' => $row->$keteranganField,
-                            'checked_by' => $checkedBy
+                            'checked_by' => $checkedBy,
+                            'approved_by' => $approvedBy
                         ]);
                     }
                 }
@@ -348,27 +356,30 @@ class AutoloaderController extends Controller
                     $keteranganField = "keterangan_tanggal{$j}";
                     
                     if (isset($row->$tanggalField)) {
-                        // Cek apakah ada data checked_by untuk tanggal ini
+                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
                         $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
                         
                         $results->push([
                             'tanggal' => $j,
                             'item_id' => $itemId,
                             'result' => $row->$tanggalField,
                             'keterangan' => $row->$keteranganField,
-                            'checked_by' => $checkedBy
+                            'checked_by' => $checkedBy,
+                            'approved_by' => $approvedBy
                         ]);
                     }
                 }
             }
         }
         
-        // Tambahkan data checked_by untuk tanggal yang mungkin belum memiliki item
+        // Tambahkan data checked_by dan approved_by untuk tanggal yang mungkin belum memiliki item
         for ($j = 1; $j <= 31; $j++) {
             if (isset($checkedByData[$j]) && !$results->where('tanggal', $j)->where('checked_by', '!=', null)->count()) {
                 $results->push([
                     'tanggal' => $j,
-                    'checked_by' => $checkedByData[$j]
+                    'checked_by' => $checkedByData[$j],
+                    'approved_by' => $approvedByData[$j] ?? ''
                 ]);
             }
         }
