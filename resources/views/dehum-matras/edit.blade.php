@@ -1,21 +1,15 @@
 <!-- resources/views/dehum-matras/edit.blade.php -->
-@extends('layouts.create-layout-2')
+@extends('layouts.edit-layout-2')
 
 @section('title', 'Edit Pencatatan Mesin Dehum Matras')
+@section('page-title', 'Edit Pencatatan Mesin Dehum Matras')
+@section('show-checker')
+    <div></div>
+@endsection
 
 @section('content')
-<h2 class="mb-4 text-xl font-bold">Edit Pencatatan Mesin Dehum Matras</h2>
-
-<div class="bg-white rounded-lg shadow-md mb-5">
-    <div class="p-4">
-        <!-- Menampilkan Nama Checker -->
-        <div class="bg-sky-50 p-4 rounded-md mb-5">
-            <span class="text-gray-600 font-bold">Checker: </span>
-            <span class="font-bold text-blue-700">{{ Auth::user()->username }}</span>
-        </div>
-
-        <!-- Form Input -->
-        <form action="{{ route('dehum-matras.update', $check->id) }}" method="POST" autocomplete="off">
+    <!-- Form Input -->
+    <form action="{{ route('dehum-matras.update', $check->id) }}" method="POST" autocomplete="off">
             @csrf
             @method('PUT')
             <!-- Info Display (Not Editable) -->
@@ -462,9 +456,7 @@
                 </div>
                 </div>
                 @include('components.edit-form-buttons', ['backRoute' => route('dehum-matras.index')])
-        </form>
-    </div>
-</div>
+    </form>
 @endsection
 
 @section('scripts')

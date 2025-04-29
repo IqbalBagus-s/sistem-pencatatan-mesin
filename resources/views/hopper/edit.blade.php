@@ -3,6 +3,8 @@
 @section('title', 'Edit Pencatatan Mesin Hopper')
 @section('page-title', 'Edit Pencatatan Mesin Hopper')
 @section('show-checker')
+<div></div>
+@endsection
 
 @section('content')
 <!-- Form Edit -->

@@ -3,6 +3,8 @@
 @section('title', 'Edit Pencatatan Mesin Dehum')
 @section('page-title', 'Edit Pencatatan Mesin Dehum')
 @section('show-checker')
+<div></div>
+@endsection
 
 @section('content')
 <!-- Form Edit -->

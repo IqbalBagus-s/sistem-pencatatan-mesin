@@ -1,19 +1,13 @@
 <!-- resources/views/autoloader/edit.blade.php -->
-@extends('layouts.create-layout-2')
+@extends('layouts.edit-layout-2')
 
 @section('title', 'Edit Pencatatan Mesin Autoloader')
+@section('page-title', 'Edit Pencatatan Mesin Autoloader')
+@section('show-checker')
+<div></div>
+@endsection
 
 @section('content')
-<h2 class="mb-4 text-xl font-bold">Edit Pencatatan Mesin Autoloader</h2>
-
-<div class="bg-white rounded-lg shadow-md mb-5">
-    <div class="p-4">
-        <!-- Menampilkan Nama Checker -->
-        <div class="bg-sky-50 p-4 rounded-md mb-5">
-            <span class="text-gray-600 font-bold">Checker: </span>
-            <span class="font-bold text-blue-700">{{ Auth::user()->username }}</span>
-        </div>
-
         <!-- Form Input -->
         <form action="{{ route('autoloader.update', $check->id) }}" method="POST">
             @csrf
@@ -116,8 +110,7 @@
                 $approvedBy = getApprovedBy($results, $date);
                 return $approvedBy !== '-' && !empty($approvedBy);
             }
-        @endphp
-        
+        @endphp       
         <!-- Tabel Inspeksi -->
         <div class="mb-6">
             <!-- Tabel untuk tanggal 1-11 -->
@@ -520,8 +513,6 @@
 
             @include('components.edit-form-buttons', ['backRoute' => route('autoloader.index')])
         </form>
-    </div>
-</div>
 @endsection
 
 @section('scripts')
