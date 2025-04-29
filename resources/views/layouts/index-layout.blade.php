@@ -72,15 +72,42 @@
         .bg-secondary {
             background-color: #6c757d;
         }
-        .search-button {
-            width: 100%;
-            max-width: 120px;
-        }
-        .add-button {
-            width: 100%;
-            max-width: 180px;
+        /* Perbaikan untuk button styling */
+        .action-button {
+            min-width: 140px;
+            padding: 0.5rem 1rem;
+            text-align: center;
+            font-weight: 500;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s;
+            display: inline-block;
             white-space: nowrap;
         }
+        
+        /* Spesifik untuk tombol cari */
+        .search-button {
+            background-color: #1565c0;
+            color: white;
+            min-width: 140px;
+            max-width: 140px;
+        }
+        
+        .search-button:hover {
+            background-color: #0d47a1;
+        }
+        
+        /* Spesifik untuk tombol tambah */
+        .add-button {
+            background-color: #28a745;
+            color: white;
+            min-width: 180px;
+            max-width: 180px;
+        }
+        
+        .add-button:hover {
+            background-color: #218838;
+        }
+        
         .focus\:ring-primary:focus {
             --tw-ring-color: #1565c0;
         }
@@ -129,6 +156,19 @@
                 content: attr(data-label);
                 font-weight: 600;
                 text-align: left;
+            }
+            
+            /* Memperbaiki tombol pada layar kecil untuk tetap konsisten */
+            .button-container {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                gap: 0.5rem;
+            }
+            
+            .button-container .action-button {
+                flex: 0 0 auto;
+                width: auto;
             }
         }
 
@@ -197,18 +237,18 @@
         <!-- Form Pencarian dan Tombol Tambah -->
         <div class="bg-white rounded-lg shadow-md p-3 sm:p-4 md:p-5 mb-4 sm:mb-5">
             <form method="GET" action="@yield('form-action')" autocomplete="off">
-                <div class="flex flex-col space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-end">
-                    <!-- Modified this section for the filters -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 items-end flex-grow">
-                        @yield('custom-filters')
+                <div class="flex flex-col space-y-4">
+                    <!-- Filter section -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 items-end">
+                        @yield('custom-filters') 
                     </div>
                     
-                    <!-- Button container to keep them side by side -->
-                    <div class="flex flex-row space-x-2 justify-end items-center">
-                        <button type="submit" class="bg-primary hover:bg-primaryDark text-white py-2 px-4 rounded-md transition duration-200 search-button">Cari</button>
+                    <!-- Button container - perbaikan di sini -->
+                    <div class="button-container flex justify-end items-center gap-2">
+                        <button type="submit" class="action-button search-button">Cari</button>
                         
                         @if(auth()->user() instanceof \App\Models\Checker)
-                            <a href="@yield('create-route')" class="bg-success hover:bg-successDark text-white py-2 px-4 rounded-md font-medium transition duration-200 text-center add-button">
+                            <a href="@yield('create-route')" class="action-button add-button">
                                 @yield('create-button-text', 'Tambah Pencatatan')
                             </a>
                         @endif
