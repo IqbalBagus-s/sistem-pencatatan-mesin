@@ -477,4 +477,135 @@ class VacumCleanerController extends Controller
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    public function show($id)
+    {
+        try {
+            // Ambil data utama vacuum cleaner check
+            $check = VacumCleanerCheck::findOrFail($id);
+            
+            // Ambil data hasil dari kedua tabel
+            $resultsTable1 = VacumCleanerResultsTable1::where('check_id', $id)->get();
+            $resultsTable2 = VacumCleanerResultsTable2::where('check_id', $id)->get();
+            
+            // Siapkan collection untuk menyimpan semua hasil dalam format terstruktur
+            $results = collect();
+            
+            // Definisikan item-item yang diperiksa untuk vacuum cleaner
+            $itemsMap = [
+                1 => 'Kebersihan Body',
+                2 => 'Motor',
+                3 => 'Selang',
+                4 => 'Aksesoris',
+                5 => 'Filter',
+                6 => 'Bostel',
+                7 => 'Kabel',
+            ];
+            
+            // Proses data dari tabel 1 (data minggu 2)
+            foreach ($resultsTable1 as $row) {
+                $itemId = array_search($row->checked_items, $itemsMap);
+                
+                if ($itemId) {
+                    $results->push([
+                        'minggu' => 2,
+                        'item_id' => $itemId,
+                        'item_name' => $row->checked_items,
+                        'result' => $row->minggu2,
+                        'keterangan' => $row->keterangan_minggu2,
+                        'checked_by' => $check->checker_minggu1,
+                        'approved_by' => $check->approver_minggu1
+                    ]);
+                }
+            }
+            
+            // Proses data dari tabel 2 (data minggu 4)
+            foreach ($resultsTable2 as $row) {
+                $itemId = array_search($row->checked_items, $itemsMap);
+                
+                if ($itemId) {
+                    $results->push([
+                        'minggu' => 4,
+                        'item_id' => $itemId,
+                        'item_name' => $row->checked_items,
+                        'result' => $row->minggu4,
+                        'keterangan' => $row->keterangan_minggu4,
+                        'checked_by' => $check->checker_minggu2,
+                        'approved_by' => $check->approver_minggu2
+                    ]);
+                }
+            }
+            
+            // Kelompokkan hasil berdasarkan minggu untuk akses yang lebih mudah di view
+            $groupedResults = $results->groupBy('minggu');
+            
+            // Periksa minggu mana yang memiliki checker
+            $check_num_1 = $check->checker_minggu1 ? 1 : null;
+            $check_num_2 = $check->checker_minggu2 ? 2 : null;
+            
+            // Siapkan semua data yang dibutuhkan untuk view
+            $data = [
+                'check' => $check,
+                'results' => $results,
+                'groupedResults' => $groupedResults,
+                'itemsMap' => $itemsMap,
+                'check_num_1' => $check_num_1,
+                'check_num_2' => $check_num_2,
+            ];
+            
+            return view('vacuum_cleaner.show', $data);
+            
+        } catch (\Exception $e) {
+            // Catat detail error untuk debugging
+            Log::error('Error saat menampilkan data vacuum cleaner: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            
+            return redirect()->route('vacuum-cleaner.index')
+                ->with('error', 'Terjadi kesalahan saat menampilkan data: ' . $e->getMessage());
+        }
+    }
+
+    public function approve(Request $request, $id)
+    {
+        // Validasi input data
+        $request->validate([
+            'approved_by_minggu2' => 'sometimes|string',
+            'approved_by_minggu4' => 'sometimes|string',
+            'approve_minggu2' => 'sometimes|string',
+            'approve_minggu4' => 'sometimes|string',
+        ]);
+    
+        try {
+            // Ambil data VacumCleanerCheck berdasarkan ID
+            $check = VacumCleanerCheck::findOrFail($id);
+            $updated = false; // Flag untuk menandakan apakah ada data yang diupdate
+            
+            // Update penanggung jawab minggu ke-2 jika ada
+            if ($request->has('approve_minggu2') && $request->approve_minggu2 == '2') {
+                $check->approver_minggu2 = $request->approved_by_minggu2;
+                $updated = true;
+            }
+            
+            // Update penanggung jawab minggu ke-4 jika ada
+            if ($request->has('approve_minggu4') && $request->approve_minggu4 == '4') {
+                $check->approver_minggu4 = $request->approved_by_minggu4;
+                $updated = true;
+            }
+            
+            // Simpan perubahan jika ada data yang diupdate
+            if ($updated) {
+                $check->save();
+                return redirect()->route('vacuum-cleaner.index')
+                    ->with('success', 'Data penanggung jawab berhasil disimpan!');
+            } else {
+                // Jika tidak ada data yang diupdate, berikan pesan peringatan
+                return redirect()->back()
+                    ->with('warning', 'Tidak ada data penanggung jawab yang dipilih untuk disimpan.');
+            }
+                    
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
 }

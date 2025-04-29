@@ -73,7 +73,7 @@
                 </div>
 
                 <!-- Form Input -->
-                <form action="{{ route('compressor.store') }}" method="POST" id="compressor-form">
+                <form action="{{ route('compressor.store') }}" method="POST" id="compressor-form" autocomplete="off">
                     @csrf
                     <div class="grid md:grid-cols-2 gap-4 mb-4">
                         <div>

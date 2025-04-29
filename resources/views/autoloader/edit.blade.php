@@ -9,7 +9,7 @@
 
 @section('content')
         <!-- Form Input -->
-        <form action="{{ route('autoloader.update', $check->id) }}" method="POST">
+        <form action="{{ route('autoloader.update', $check->id) }}" method="POST" autocomplete="off">
             @csrf
             @method('PUT')
             <!-- Info Display (Not Editable) -->
@@ -42,75 +42,75 @@
                 </div>
             </div>                 
             @php
-            // Items yang perlu di-check
-            $items = [
-                1 => 'Filter',
-                2 => 'Selang',
-                3 => 'Panel Kelistrikan',
-                4 => 'Kontaktor',
-                5 => 'Thermal Overload',
-                6 => 'MCB',
-            ];
-        
-            // Opsi check
-            $options = [
-                'V' => '✓',
-                'X' => '✗',
-                '-' => '—',
-                'OFF' => 'OFF'
-            ];
+                // Items yang perlu di-check
+                $items = [
+                    1 => 'Filter',
+                    2 => 'Selang',
+                    3 => 'Panel Kelistrikan',
+                    4 => 'Kontaktor',
+                    5 => 'Thermal Overload',
+                    6 => 'MCB',
+                ];
             
-            // Helper function untuk mendapatkan hasil check berdasarkan tanggal dan item
-            function getCheckResult($results, $date, $itemId) {
-                // Filter hasil berdasarkan tanggal dan item_id
-                $result = $results->where('tanggal', $date)->where('item_id', $itemId)->first();
+                // Opsi check
+                $options = [
+                    'V' => '✓',
+                    'X' => '✗',
+                    '-' => '—',
+                    'OFF' => 'OFF'
+                ];
                 
-                // Jika hasil ditemukan, kembalikan nilai result, jika tidak kembalikan null
-                return $result && isset($result['result']) ? $result['result'] : null;
-            }
-        
-            // Helper function untuk mendapatkan keterangan berdasarkan tanggal dan item
-            function getKeterangan($results, $date, $itemId) {
-                // Filter hasil berdasarkan tanggal dan item_id
-                $result = $results->where('tanggal', $date)->where('item_id', $itemId)->first();
-                
-                // Jika keterangan ditemukan, kembalikan nilainya, jika tidak kembalikan string kosong
-                return $result && isset($result['keterangan']) ? $result['keterangan'] : '';
-            }
-        
-            // Helper function untuk memeriksa apakah tanggal tertentu sudah diperiksa oleh user
-            function wasCheckedByUser($results, $date) {
-                // Filter hasil berdasarkan tanggal
-                $result = $results->where('tanggal', $date)->first();
-                
-                // Return true jika result ditemukan dan memiliki checked_by yang tidak kosong
-                return $result && !empty($result['checked_by']);
-            }
-        
-            // Helper function untuk mendapatkan nama checker berdasarkan tanggal
-            function getCheckerName($results, $date) {
-                // Filter hasil berdasarkan tanggal
-                $result = $results->where('tanggal', $date)->first();
-                
-                // Jika nama checker ditemukan, kembalikan nilainya, jika tidak kembalikan string kosong
-                return $result && isset($result['checked_by']) ? $result['checked_by'] : '';
-            }
-        
-            // Helper function untuk mendapatkan nama penanggung jawab berdasarkan tanggal
-            function getApprovedBy($results, $date) {
-                // Filter hasil berdasarkan tanggal
-                $result = $results->where('tanggal', $date)->first();
-                
-                // Jika nama penanggung jawab ditemukan, kembalikan nilainya, jika tidak kembalikan "-"
-                return $result && isset($result['approved_by']) && !empty($result['approved_by']) ? $result['approved_by'] : '-';
-            }
-        
-            // Helper function untuk memeriksa apakah kolom harus readonly berdasarkan penanggung jawab
-            function isReadOnly($results, $date) {
-                $approvedBy = getApprovedBy($results, $date);
-                return $approvedBy !== '-' && !empty($approvedBy);
-            }
-        @endphp       
+                // Helper function untuk mendapatkan hasil check berdasarkan tanggal dan item
+                function getCheckResult($results, $date, $itemId) {
+                    // Filter hasil berdasarkan tanggal dan item_id
+                    $result = $results->where('tanggal', $date)->where('item_id', $itemId)->first();
+                    
+                    // Jika hasil ditemukan, kembalikan nilai result, jika tidak kembalikan null
+                    return $result && isset($result['result']) ? $result['result'] : null;
+                }
+            
+                // Helper function untuk mendapatkan keterangan berdasarkan tanggal dan item
+                function getKeterangan($results, $date, $itemId) {
+                    // Filter hasil berdasarkan tanggal dan item_id
+                    $result = $results->where('tanggal', $date)->where('item_id', $itemId)->first();
+                    
+                    // Jika keterangan ditemukan, kembalikan nilainya, jika tidak kembalikan string kosong
+                    return $result && isset($result['keterangan']) ? $result['keterangan'] : '';
+                }
+            
+                // Helper function untuk memeriksa apakah tanggal tertentu sudah diperiksa oleh user
+                function wasCheckedByUser($results, $date) {
+                    // Filter hasil berdasarkan tanggal
+                    $result = $results->where('tanggal', $date)->first();
+                    
+                    // Return true jika result ditemukan dan memiliki checked_by yang tidak kosong
+                    return $result && !empty($result['checked_by']);
+                }
+            
+                // Helper function untuk mendapatkan nama checker berdasarkan tanggal
+                function getCheckerName($results, $date) {
+                    // Filter hasil berdasarkan tanggal
+                    $result = $results->where('tanggal', $date)->first();
+                    
+                    // Jika nama checker ditemukan, kembalikan nilainya, jika tidak kembalikan string kosong
+                    return $result && isset($result['checked_by']) ? $result['checked_by'] : '';
+                }
+            
+                // Helper function untuk mendapatkan nama penanggung jawab berdasarkan tanggal
+                function getApprovedBy($results, $date) {
+                    // Filter hasil berdasarkan tanggal
+                    $result = $results->where('tanggal', $date)->first();
+                    
+                    // Jika nama penanggung jawab ditemukan, kembalikan nilainya, jika tidak kembalikan "-"
+                    return $result && isset($result['approved_by']) && !empty($result['approved_by']) ? $result['approved_by'] : '-';
+                }
+            
+                // Helper function untuk memeriksa apakah kolom harus readonly berdasarkan penanggung jawab
+                function isReadOnly($results, $date) {
+                    $approvedBy = getApprovedBy($results, $date);
+                    return $approvedBy !== '-' && !empty($approvedBy);
+                }
+            @endphp       
         <!-- Tabel Inspeksi -->
         <div class="mb-6">
             <!-- Tabel untuk tanggal 1-11 -->

@@ -1,5 +1,5 @@
 <!-- resources/views/autoloader/show.blade.php -->
-@extends('layouts.create-layout-2')
+@extends('layouts.show-layout-2')
 
 @section('title', 'Detail Pencatatan Mesin Autoloader')
 

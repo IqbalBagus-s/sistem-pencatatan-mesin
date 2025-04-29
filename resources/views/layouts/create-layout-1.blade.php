@@ -45,7 +45,7 @@
                 </div>
 
                 <!-- Form Input -->
-                <form action="@yield('form-action')" method="POST" id="air-dryer-form">
+                <form action="@yield('form-action')" method="POST" id="air-dryer-form" autocomplete="off">
                     @csrf
                     
                     <!-- Date-time fields -->

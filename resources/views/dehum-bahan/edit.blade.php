@@ -8,7 +8,7 @@
 
 @section('content')
 <!-- Form Edit -->
-<form action="{{ route('dehum-bahan.update', $dehumCheck->id) }}" method="POST">
+<form action="{{ route('dehum-bahan.update', $dehumCheck->id) }}" method="POST" autocomplete="off">
     @csrf
     @method('PUT')
     <div class="grid md:grid-cols-2 gap-4 mb-4">

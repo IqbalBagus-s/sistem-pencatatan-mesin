@@ -19,7 +19,7 @@
         </div>
 
         <!-- Form Edit -->
-        <form action="@yield('form-action')" method="POST">
+        <form action="@yield('form-action')" method="POST" autocomplete="off">
             @csrf
             @method('PUT')
 

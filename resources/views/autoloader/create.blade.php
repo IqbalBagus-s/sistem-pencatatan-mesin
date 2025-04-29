@@ -15,7 +15,7 @@
         </div>
 
         <!-- Form Input -->
-        <form action="{{ route('autoloader.store') }}" method="POST">
+        <form action="{{ route('autoloader.store') }}" method="POST" autocomplete="off">
             @csrf
             <div class="grid md:grid-cols-3 gap-4 mb-4">
                 <!-- Dropdown Pilih No Autoloader -->

@@ -54,7 +54,7 @@
         <div class="bg-white rounded-lg shadow-md mb-5">
             <div class="p-4">
                 <!-- Form Input -->
-                <form action="{{ route('compressor.update', $check->id) }}" method="POST" id="compressor-form">
+                <form action="{{ route('compressor.update', $check->id) }}" method="POST" id="compressor-form" autocomplete="off">
                     @csrf
                     @method('PUT')
                     <div class="grid md:grid-cols-2 gap-4 mb-4">
