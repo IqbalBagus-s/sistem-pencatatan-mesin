@@ -298,8 +298,8 @@
                     </table>
                 </div>
                 <!-- Tabel untuk tanggal 23-31 -->
-                <div class="overflow-x-auto mb-6 border border-gray-300">
-                    <table class="w-full border-collapse">
+                <div class="overflow-x-auto mb-6">
+                    <table class="w-full border-collapse table-fixed" style="width: max-content;">
                         <thead>
                             <tr>
                                 <th class="border border-gray-300 bg-sky-50 p-2 w-10 sticky left-0 z-10" rowspan="2">No.</th>
