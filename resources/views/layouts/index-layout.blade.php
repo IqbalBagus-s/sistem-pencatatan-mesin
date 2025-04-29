@@ -76,6 +76,11 @@
             width: 100%;
             max-width: 120px;
         }
+        .add-button {
+            width: 100%;
+            max-width: 180px;
+            white-space: nowrap;
+        }
         .focus\:ring-primary:focus {
             --tw-ring-color: #1565c0;
         }
@@ -193,21 +198,21 @@
         <div class="bg-white rounded-lg shadow-md p-3 sm:p-4 md:p-5 mb-4 sm:mb-5">
             <form method="GET" action="@yield('form-action')" autocomplete="off">
                 <div class="flex flex-col space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-end">
+                    <!-- Modified this section for the filters -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 items-end flex-grow">
                         @yield('custom-filters')
-                        
-                        <div class="col-span-1">
-                            <button type="submit" class="bg-primary hover:bg-primaryDark text-white py-2 px-4 rounded-md transition duration-200 search-button w-full">Cari</button>
-                        </div>
                     </div>
                     
-                    @if(auth()->user() instanceof \App\Models\Checker)
-                        <div class="mt-2 md:mt-0 flex">
-                            <a href="@yield('create-route')" class="bg-success hover:bg-successDark text-white py-2 px-4 rounded-md font-medium transition duration-200 w-full text-center md:w-auto">
+                    <!-- Button container to keep them side by side -->
+                    <div class="flex flex-row space-x-2 justify-end items-center">
+                        <button type="submit" class="bg-primary hover:bg-primaryDark text-white py-2 px-4 rounded-md transition duration-200 search-button">Cari</button>
+                        
+                        @if(auth()->user() instanceof \App\Models\Checker)
+                            <a href="@yield('create-route')" class="bg-success hover:bg-successDark text-white py-2 px-4 rounded-md font-medium transition duration-200 text-center add-button">
                                 @yield('create-button-text', 'Tambah Pencatatan')
                             </a>
-                        </div>
-                    @endif
+                        @endif
+                    </div>
                 </div>
             </form>
         </div>

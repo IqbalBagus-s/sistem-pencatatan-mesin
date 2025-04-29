@@ -52,7 +52,7 @@
             </div>
             <h2 class="text-center text-gray-600 text-xl sm:text-2xl mb-4 md:mb-6">Login</h2>
 
-            <form action="{{ route('login.post') }}" method="POST" id="loginForm">
+            <form action="{{ route('login.post') }}" method="POST" id="loginForm" autocomplete="off">
                 @csrf
                 <div class="mb-4">
                     <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>

@@ -15,7 +15,7 @@
         </div>
 
         <!-- Form Input -->
-        <form action="{{ route('autoloader.update', $check->id) }}" method="POST">
+        <form action="{{ route('autoloader.update', $check->id) }}" method="POST" autocomplete="off">
             @csrf
             @method('PUT')
             <!-- Info Display (Not Editable) -->

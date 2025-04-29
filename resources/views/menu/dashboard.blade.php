@@ -409,7 +409,7 @@
                     <div class="font-medium text-blue-700" id="currentDateTime">
                         <!-- Tanggal dan waktu akan ditampilkan di sini -->
                     </div>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST">
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" autocomplete="off">
                         @csrf
                         <button type="submit" class="logout-btn" title="Logout">
                             <!-- SVG door icon -->

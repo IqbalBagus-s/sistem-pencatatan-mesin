@@ -8,7 +8,7 @@
 
 <div class="bg-white rounded-lg shadow-md mb-5">
     <div class="p-4">
-        <form method="POST" action="{{ route('dehum-matras.approve', $check->id) }}" id="approveForm">
+        <form method="POST" action="{{ route('dehum-matras.approve', $check->id) }}" id="approveForm" autocomplete="off">
             @csrf
             <!-- Menampilkan Nama Checker -->
             <div class="bg-sky-50 p-4 rounded-md mb-5">

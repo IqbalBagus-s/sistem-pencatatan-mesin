@@ -1,5 +1,5 @@
 <!-- resources/views/dehum-matras/edit.blade.php -->
-@extends('layouts.create-layout-2')
+@extends('layouts.edit-layout-2')
 
 @section('title', 'Edit Pencatatan Mesin Dehum Matras')
 

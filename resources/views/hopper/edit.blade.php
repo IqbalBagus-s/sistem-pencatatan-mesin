@@ -6,7 +6,7 @@
 
 @section('content')
 <!-- Form Edit -->
-<form action="{{ route('hopper.update', $hopperCheck->id) }}" method="POST">
+<form action="{{ route('hopper.update', $hopperCheck->id) }}" method="POST" autocomplete="off">
     @csrf
     @method('PUT')
     <div class="grid md:grid-cols-2 gap-4 mb-4">

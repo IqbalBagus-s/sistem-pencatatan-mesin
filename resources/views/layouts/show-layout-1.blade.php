@@ -79,7 +79,7 @@
             
             <div>
                 @if(!($check->approved_by1 && $check->approved_by2) && !$check->approved_by)
-                    <form action="@yield('approval-route')" method="POST" class="inline">
+                    <form action="@yield('approval-route')" method="POST" class="inline" autocomplete="off">
                         @csrf
                         <input type="hidden" name="approved_by1" x-model="approver1">
                         <input type="hidden" name="approved_by2" x-model="approver2">
