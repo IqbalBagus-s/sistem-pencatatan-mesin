@@ -47,6 +47,10 @@
                 // Format tanggal untuk tampilan DD-MM-YYYY
                 $tanggal_minggu2 = $check->tanggal_dibuat_minggu2 ? date('d-m-Y', strtotime($check->tanggal_dibuat_minggu2)) : '';
                 $tanggal_minggu4 = $check->tanggal_dibuat_minggu4 ? date('d-m-Y', strtotime($check->tanggal_dibuat_minggu4)) : '';
+                
+                // Check if approvers exist to set readonly status
+                $isReadonlyMinggu2 = !empty($check->approver_minggu2) && $check->approver_minggu2 != '-';
+                $isReadonlyMinggu4 = !empty($check->approver_minggu4) && $check->approver_minggu4 != '-';
             @endphp
             <!-- Tabel Inspeksi -->
             <div class="mb-6">
@@ -86,16 +90,19 @@
                                         <div class="w-full h-8 px-1 py-0 text-sm flex items-center">{{ $item }}</div>
                                     </td>
                                     <td class="border border-gray-300 p-1 h-10 w-20">
-                                        <select name="check_1[{{ $i }}]" class="w-full h-8 px-2 py-0 text-center text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                        <select name="check_1[{{ $i }}]" class="w-full h-8 px-2 py-0 text-center text-sm {{ $isReadonlyMinggu2 ? 'bg-gray-100' : 'bg-white' }} border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white" {{ $isReadonlyMinggu2 ? 'disabled' : '' }}>
                                             @foreach($options as $value => $symbol)
                                                 <option value="{{ $value }}" {{ $result == $value ? 'selected' : '' }}>{{ $symbol }}</option>
                                             @endforeach
                                         </select>
+                                        @if($isReadonlyMinggu2)
+                                            <input type="hidden" name="check_1[{{ $i }}]" value="{{ $result }}">
+                                        @endif
                                     </td>
                                     <td class="border border-gray-300 p-1 h-10 w-64">
                                         <input type="text" name="keterangan_1[{{ $i }}]" 
-                                            class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                            placeholder="Keterangan" value="{{ $keterangan }}">
+                                            class="w-full h-8 px-2 py-0 text-sm {{ $isReadonlyMinggu2 ? 'bg-gray-100' : 'bg-white' }} border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                            placeholder="Keterangan" value="{{ $keterangan }}" {{ $isReadonlyMinggu2 ? 'readonly' : '' }}>
                                     </td>
                                 </tr>
                             @endforeach
@@ -123,7 +130,8 @@
                             <tr class="bg-sky-50">
                                 <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-sm sticky left-12 z-10 w-32"></td>
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: {{ !empty($check->checker_minggu2) ? 'true' : 'false' }} }">
+                                    @if(empty($check->checker_minggu2) && !$isReadonlyMinggu2)
+                                    <div x-data="{ selected: false }">
                                         <button type="button" 
                                             @click="
                                                 selected = !selected; 
@@ -148,6 +156,23 @@
                                             :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
                                             <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
                                         </button>
+                                    </div>
+                                    @else
+                                    <div class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
+                                        Data telah tercatat
+                                    </div>
+                                    @endif
+                                </td>
+                            </tr>
+                        </tbody>
+                        {{-- baris approver --}}
+                        <tbody class="bg-white">
+                            <tr class="bg-gray-50">
+                                <td class="border border-gray-300 text-center p-1 bg-gray-50 h-10 text-sm sticky left-0 z-10 w-12">-</td>
+                                <td class="border border-gray-300 p-1 font-medium text-center bg-gray-50 text-sm sticky left-12 z-10 w-32">Penanggung Jawab</td>
+                                <td colspan="2" class="border border-gray-300 p-1 bg-gray-50">
+                                    <div class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
+                                        {{ !empty($check->approver_minggu2) ? $check->approver_minggu2 : '-' }}
                                     </div>
                                 </td>
                             </tr>
@@ -191,16 +216,19 @@
                                         <div class="w-full h-8 px-1 py-0 text-sm flex items-center">{{ $item }}</div>
                                     </td>
                                     <td class="border border-gray-300 p-1 h-10 w-20">
-                                        <select name="check_2[{{ $i }}]" class="w-full h-8 px-2 py-0 text-center text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                        <select name="check_2[{{ $i }}]" class="w-full h-8 px-2 py-0 text-center text-sm {{ $isReadonlyMinggu4 ? 'bg-gray-100' : 'bg-white' }} border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white" {{ $isReadonlyMinggu4 ? 'disabled' : '' }}>
                                             @foreach($options as $value => $symbol)
                                                 <option value="{{ $value }}" {{ $result == $value ? 'selected' : '' }}>{{ $symbol }}</option>
                                             @endforeach
                                         </select>
+                                        @if($isReadonlyMinggu4)
+                                            <input type="hidden" name="check_2[{{ $i }}]" value="{{ $result }}">
+                                        @endif
                                     </td>
                                     <td class="border border-gray-300 p-1 h-10 w-64">
                                         <input type="text" name="keterangan_2[{{ $i }}]" 
-                                            class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                            placeholder="Keterangan" value="{{ $keterangan }}">
+                                            class="w-full h-8 px-2 py-0 text-sm {{ $isReadonlyMinggu4 ? 'bg-gray-100' : 'bg-white' }} border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                            placeholder="Keterangan" value="{{ $keterangan }}" {{ $isReadonlyMinggu4 ? 'readonly' : '' }}>
                                     </td>
                                 </tr>
                             @endforeach
@@ -228,7 +256,8 @@
                             <tr class="bg-sky-50">
                                 <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-sm sticky left-12 z-10 w-32"></td>
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: {{ !empty($check->checker_minggu4) ? 'true' : 'false' }} }">
+                                    @if(empty($check->checker_minggu4) && !$isReadonlyMinggu4)
+                                    <div x-data="{ selected: false }">
                                         <button type="button" 
                                             @click="
                                                 selected = !selected; 
@@ -253,6 +282,23 @@
                                             :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
                                             <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
                                         </button>
+                                    </div>
+                                    @else
+                                    <div class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
+                                        Data telah tercatat
+                                    </div>
+                                    @endif
+                                </td>
+                            </tr>
+                        </tbody>
+                        {{-- baris approver --}}
+                        <tbody class="bg-white">
+                            <tr class="bg-gray-50">
+                                <td class="border border-gray-300 text-center p-1 bg-gray-50 h-10 text-sm sticky left-0 z-10 w-12">-</td>
+                                <td class="border border-gray-300 p-1 font-medium text-center bg-gray-50 text-sm sticky left-12 z-10 w-32">Penanggung Jawab</td>
+                                <td colspan="2" class="border border-gray-300 p-1 bg-gray-50">
+                                    <div class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
+                                        {{ !empty($check->approver_minggu4) ? $check->approver_minggu4 : '-' }}
                                     </div>
                                 </td>
                             </tr>
