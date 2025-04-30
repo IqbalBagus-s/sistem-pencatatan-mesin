@@ -109,6 +109,14 @@
                 </tr>
             @else
                 @foreach($checks as $check)
+                    @php
+                        // Cek apakah disetujui sepenuhnya
+                        $isFullyApproved = $check->approvedDatesCount >= $check->daysInMonth;
+                        // Cek apakah disetujui sebagian
+                        $isPartiallyApproved = $check->approvedDatesCount > 0 && $check->approvedDatesCount < $check->daysInMonth;
+                        // Cek apakah belum disetujui sama sekali
+                        $isNotApproved = $check->approvedDatesCount == 0;
+                    @endphp
                     <tr class="text-center hover:bg-gray-50">
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->nomer_vacum_cleaner }}</td>
                         <td 
@@ -144,16 +152,14 @@
                             @endif
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if($check->approvedDatesCount > 0)
-                                @if($check->approvedDatesCount >= $check->daysInMonth)
-                                    <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                        Disetujui
-                                    </span>
-                                @else
-                                    <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                        Disetujui Sebagian
-                                    </span>
-                                @endif
+                            @if($isFullyApproved)
+                                <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Disetujui
+                                </span>
+                            @elseif($isPartiallyApproved)
+                                <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Disetujui Sebagian
+                                </span>
                             @else
                                 <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Belum Disetujui
@@ -161,18 +167,13 @@
                             @endif
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            {{-- Menu lihat --}}
+                            {{-- Menu lihat untuk Approver --}}
                             @if(auth()->user() instanceof \App\Models\Approver)
                                 <a href="{{ route('vacuum-cleaner.show', $check->id) }}" title="Lihat Detail">
                                     <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
-                            {{-- Menu edit --}}
+                            {{-- Menu edit untuk Checker --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @php
-                                    // Cek apakah disetujui sepenuhnya
-                                    $isFullyApproved = $check->approvedDatesCount >= $check->daysInMonth;
-                                @endphp
-                                
                                 @if(!$isFullyApproved)
                                     <a href="{{ route('vacuum-cleaner.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>

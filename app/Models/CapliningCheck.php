@@ -24,7 +24,11 @@ class CapliningCheck extends Model
      */
     protected $fillable = [
         'nomer_caplining',
-        'tanggal',
+        'tanggal_check1',
+        'tanggal_check2',
+        'tanggal_check3',
+        'tanggal_check4',
+        'tanggal_check5',
         'checked_by',
         'approved_by',
     ];

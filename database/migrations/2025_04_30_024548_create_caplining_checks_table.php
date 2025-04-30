@@ -14,7 +14,10 @@ return new class extends Migration
         Schema::create('caplining_checks', function (Blueprint $table) {
             $table->id();
             $table->string('nomer_caplining');
-            $table->string('tanggal');
+            for ($i = 1; $i <= 5; $i++) {
+                $table->string('tanggal_check' . $i);
+            }
+            
             $table->string('checked_by')->nullable();
             $table->string('approved_by')->nullable();
             
