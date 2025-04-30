@@ -1,5 +1,5 @@
 <!-- resources/views/dehum-matras/show.blade.php -->
-@extends('layouts.show-layout-2')
+@extends('layouts.create-layout-2')
 
 @section('title', 'Detail Pencatatan Mesin Dehum Matras')
 
@@ -8,7 +8,7 @@
 
 <div class="bg-white rounded-lg shadow-md mb-5">
     <div class="p-4">
-        <form method="POST" action="{{ route('dehum-matras.approve', $check->id) }}" id="approveForm" autocomplete="off">
+        <form method="POST" action="{{ route('dehum-matras.approve', $check->id) }}" id="approveForm">
             @csrf
             <!-- Menampilkan Nama Checker -->
             <div class="bg-sky-50 p-4 rounded-md mb-5">

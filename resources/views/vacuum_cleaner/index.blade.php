@@ -1,11 +1,11 @@
 @extends('layouts.index-layout')
 
-@section('title', 'Pencatatan Mesin Dehum Bahan')
+@section('title', 'Pencatatan Mesin Vacuum Cleaner')
 
-@section('page-title', 'Pencatatan Mesin Dehum Bahan')
+@section('page-title', 'Pencatatan Mesin Vacuum Cleaner')
 
 @section('form-action')
-    {{ route('dehum-bahan.index') }}
+    {{ route('vacuum-cleaner.index') }}
 @endsection
 
 @section('custom-filters')
@@ -17,22 +17,21 @@
     </div>
     @endif
 
-    <!-- Dropdown Filter Dehum -->
+    <!-- Dropdown Filter Vacuum Cleaner dengan 3 opsi horizontal -->
     <div x-data="{ 
         open: false, 
         selected: null,
-        dehums: Array.from({length: 9}, (_, i) => i + 1),
+        vacuumCleaners: Array.from({length: 3}, (_, i) => i + 1),
         reset() {
             this.selected = null;
             this.open = false;
         }
         }" class="relative w-full font-sans">
         <!-- Label -->
-        <label class="block mb-2 font-medium text-gray-700">Filter Berdasarkan Nomor Dehum Bahan:</label>
+        <label class="block mb-2 font-medium text-gray-700">Filter Berdasarkan Nomor Vacuum Cleaner:</label>
         
-        <!-- Rest of the code remains the same -->
         <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 relative">
-            <span x-text="selected ? 'Dehum ' + selected : 'Pilih Dehum Bahan'" class="text-gray-800"></span>
+            <span x-text="selected ? 'Vacuum Cleaner ' + selected : 'Pilih Vacuum Cleaner'" class="text-gray-800"></span>
             
             <!-- Selection Indicator -->
             <div class="absolute right-3 top-1/2 -translate-y-1/2">
@@ -48,36 +47,35 @@
             </div>
         </button>
         
-        <!-- Dropdown List -->
+        <!-- Dropdown List - Horizontal layout for 3 options -->
         <div 
             x-show="open" 
             @click.away="open = false" 
             class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md overflow-hidden z-10"
             style="display: none;"
         >
-            <!-- Dehum List -->
-            <div class="grid grid-cols-5 gap-1 p-1">
-                <template x-for="dehum in dehums" :key="dehum">
-                    <div @click.stop>
-                        <button 
-                            type="button" 
-                            @click="selected = dehum; open = false" 
-                            :class="selected === dehum 
-                                ? 'bg-blue-500 text-white' 
-                                : 'text-gray-700 hover:bg-blue-100 hover:text-blue-800'"
-                            class="w-full px-2 py-1.5 text-xs rounded-md transition-colors duration-200 ease-in-out"
-                        >
-                            <span x-text="'Dehum ' + dehum"></span>
-                        </button>
-                    </div>
+            <!-- Vacuum Cleaner List - Horizontal -->
+            <div class="p-2 flex flex-row justify-between">
+                <template x-for="vacuumCleaner in vacuumCleaners" :key="vacuumCleaner">
+                    <button 
+                        type="button" 
+                        @click="selected = vacuumCleaner; open = false" 
+                        :class="selected === vacuumCleaner 
+                            ? 'bg-blue-500 text-white' 
+                            : 'text-gray-700 hover:bg-blue-100 hover:text-blue-800'"
+                        class="flex-1 mx-1 px-4 py-2 text-sm rounded-md transition-colors duration-200 ease-in-out flex justify-center"
+                    >
+                        <span x-text="vacuumCleaner"></span>
+                    </button>
                 </template>
             </div>
         </div>
         
         <!-- Hidden Input untuk dikirim ke server -->
-        <input type="hidden" name="search_dehum" x-model="selected">
+        <input type="hidden" name="search_vacuum_cleaner" x-model="selected">
     </div>
-
+    
+    <!-- Filter Bulan -->
     <div>
         <label for="filter_bulan" class="block font-medium text-gray-700 mb-2">Filter berdasarkan Bulan:</label>
         <input type="month" name="bulan" id="filter_bulan" value="{{ request('bulan') }}" 
@@ -86,7 +84,7 @@
 @endsection
 
 @section('create-route')
-    {{ route('dehum-bahan.create') }}
+    {{ route('vacuum-cleaner.create') }}
 @endsection
 
 @section('create-button-text')
@@ -97,7 +95,7 @@
     <table class="table-auto w-full">
         <thead class="bg-gray-100">
             <tr class="text-center">
-                <th class="py-3 px-4 border-b border-gray-200 font-semibold w-1/6">No Dehum Bahan</th>
+                <th class="py-3 px-4 border-b border-gray-200 font-semibold">No Vacuum Cleaner</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Bulan</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Checker</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Status</th>
@@ -107,12 +105,12 @@
         <tbody>
             @if($checks->isEmpty())
                 <tr>
-                    <td colspan="5" class="text-center py-4">Tidak ada data ditemukan.</td>
+                    <td colspan="7" class="text-center py-4">Tidak ada data ditemukan.</td>
                 </tr>
             @else
                 @foreach($checks as $check)
                     <tr class="text-center hover:bg-gray-50">
-                        <td class="py-3 px-4 border-b border-gray-200 w-1/6">{{ $check->nomer_dehum_bahan }}</td>
+                        <td class="py-3 px-4 border-b border-gray-200">{{ $check->nomer_vacum_cleaner }}</td>
                         <td 
                             x-data="{ 
                                 formatMonth(monthYear) {
@@ -130,25 +128,15 @@
                             x-text="formatMonth('{{ $check->bulan }}')"
                             class="py-3 px-4 border-b border-gray-200">
                         </td>
-                        @php
-                            $checkedByFields = [
-                                $check->checked_by_minggu1,
-                                $check->checked_by_minggu2,
-                                $check->checked_by_minggu3,
-                                $check->checked_by_minggu4
-                            ];
-
-                            // Remove duplicates and filter out null/empty values
-                            $uniqueCheckedBy = array_unique(array_filter($checkedByFields));
-                        @endphp
-
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if(!empty($uniqueCheckedBy))
-                                @foreach($uniqueCheckedBy as $checkedBy)
-                                    <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm mb-1 inline-block">
-                                        {{ $checkedBy }}
-                                    </div>
-                                @endforeach
+                            @if(count($check->allCheckers) > 0)
+                                <div class="flex flex-col items-center space-y-1">
+                                    @foreach($check->allCheckers as $checker)
+                                        <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm inline-block">
+                                            {{ $checker }}
+                                        </div>
+                                    @endforeach
+                                </div>
                             @else
                                 <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
                                     Belum Diisi
@@ -156,27 +144,16 @@
                             @endif
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @php
-                                $approvedWeeks = [
-                                    $check->approved_by_minggu1,
-                                    $check->approved_by_minggu2,
-                                    $check->approved_by_minggu3,
-                                    $check->approved_by_minggu4
-                                ];
-                                
-                                $totalApproved = count(array_filter($approvedWeeks));
-                                $isFullyApproved = $totalApproved === 4;
-                                $isPartiallyApproved = $totalApproved > 0 && $totalApproved < 4;
-                            @endphp
-
-                            @if($isFullyApproved)
-                                <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                    Disetujui
-                                </span>
-                            @elseif($isPartiallyApproved)
-                                <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                    Disetujui Sebagian
-                                </span>
+                            @if($check->approvedDatesCount > 0)
+                                @if($check->approvedDatesCount >= $check->daysInMonth)
+                                    <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                        Disetujui
+                                    </span>
+                                @else
+                                    <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                        Disetujui Sebagian
+                                    </span>
+                                @endif
                             @else
                                 <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Belum Disetujui
@@ -186,21 +163,22 @@
                         <td class="py-3 px-4 border-b border-gray-200">
                             {{-- Menu lihat --}}
                             @if(auth()->user() instanceof \App\Models\Approver)
-                                <a href="{{ route('dehum-bahan.show', $check->id) }}" title="Lihat Detail">
-                                    @if($isFullyApproved)
-                                        <i class="fas fa-eye text-primary opacity-70" title="Sudah disetujui sepenuhnya"></i>
-                                    @else
-                                        <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
-                                    @endif
+                                <a href="{{ route('vacuum-cleaner.show', $check->id) }}" title="Lihat Detail">
+                                    <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
+                                @php
+                                    // Cek apakah disetujui sepenuhnya
+                                    $isFullyApproved = $check->approvedDatesCount >= $check->daysInMonth;
+                                @endphp
+                                
                                 @if(!$isFullyApproved)
-                                    <a href="{{ route('dehum-bahan.edit', $check->id) }}" title="Edit">
+                                    <a href="{{ route('vacuum-cleaner.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
                                 @else
-                                    <i class="fas fa-pen text-amber-300 opacity-50 text-lg cursor-not-allowed" title="Tidak dapat diedit karena sudah disetujui sepenuhnya"></i>
+                                    <i class="fas fa-pen text-amber-300 opacity-50 text-lg cursor-not-allowed" title="Tidak dapat diedit karena sudah disetujui"></i>
                                 @endif
                             @endif
                         </td>
@@ -239,5 +217,7 @@
 @endsection
 
 @section('scripts')
-    
+    <script>
+        // Any additional JavaScript can be added here
+    </script>
 @endsection

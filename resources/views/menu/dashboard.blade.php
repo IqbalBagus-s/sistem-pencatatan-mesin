@@ -409,7 +409,7 @@
                     <div class="font-medium text-blue-700" id="currentDateTime">
                         <!-- Tanggal dan waktu akan ditampilkan di sini -->
                     </div>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" autocomplete="off">
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button type="submit" class="logout-btn" title="Logout">
                             <!-- SVG door icon -->
@@ -458,7 +458,7 @@
                             ['name' => 'Auto Loader', 'route' => 'autoloader.index'],
                             ['name' => 'Gilingan', 'route' => 'giling.index'],
                             ['name' => 'Caplining', 'route' => null],
-                            ['name' => 'Vacum Cleaner', 'route' => 'vacum-cleaner.index'],
+                            ['name' => 'Vacuum Cleaner', 'route' => null],
                             ['name' => 'Mesin Sleeting', 'route' => null],
                             ['name' => 'Crane', 'route' => null]
                         ];

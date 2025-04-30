@@ -130,19 +130,20 @@
                             x-text="formatMonth('{{ $check->bulan }}')"
                             class="py-3 px-4 border-b border-gray-200">
                         </td>
-                        @php
-                            $checkedByFields = [
-                                $check->checked_by_minggu1,
-                                $check->checked_by_minggu2,
-                                $check->checked_by_minggu3,
-                                $check->checked_by_minggu4
-                            ];
-
-                            // Remove duplicates and filter out null/empty values
-                            $uniqueCheckedBy = array_unique(array_filter($checkedByFields));
-                        @endphp
-
+                        
                         <td class="py-3 px-4 border-b border-gray-200">
+                            @php
+                                $checkedByFields = [
+                                    $check->checked_by_minggu1,
+                                    $check->checked_by_minggu2,
+                                    $check->checked_by_minggu3,
+                                    $check->checked_by_minggu4
+                                ];
+
+                                // Remove duplicates and filter out null/empty values
+                                $uniqueCheckedBy = array_unique(array_filter($checkedByFields));
+                            @endphp
+                            
                             @if(!empty($uniqueCheckedBy))
                                 @foreach($uniqueCheckedBy as $checkedBy)
                                     <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm mb-1 inline-block">
@@ -155,10 +156,27 @@
                                 </span>
                             @endif
                         </td>
+                        
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if($check->approved_by_minggu1 && $check->approved_by_minggu2 && $check->approved_by_minggu3 && $check->approved_by_minggu4)
+                            @php
+                                $approvedFields = [
+                                    $check->approved_by_minggu1,
+                                    $check->approved_by_minggu2,
+                                    $check->approved_by_minggu3,
+                                    $check->approved_by_minggu4
+                                ];
+                                
+                                $approvedCount = count(array_filter($approvedFields));
+                                $totalFields = count($approvedFields);
+                            @endphp
+
+                            @if($approvedCount == $totalFields)
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui
+                                </span>
+                            @elseif($approvedCount > 0)
+                                <span class="bg-amber-100 text-amber-700 px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Disetujui Sebagian
                                 </span>
                             @else
                                 <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
@@ -166,6 +184,7 @@
                                 </span>
                             @endif
                         </td>
+                        
                         <td class="py-3 px-4 border-b border-gray-200">
                             {{-- Menu lihat --}}
                             @if(auth()->user() instanceof \App\Models\Approver)
@@ -174,7 +193,7 @@
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @if(!$check->approved_by)
+                                @if(!($check->approved_by_minggu1 && $check->approved_by_minggu2 && $check->approved_by_minggu3 && $check->approved_by_minggu4))
                                     <a href="{{ route('hopper.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
@@ -219,5 +238,4 @@
 
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-
 @endsection

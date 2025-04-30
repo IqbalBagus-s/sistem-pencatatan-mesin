@@ -85,9 +85,18 @@
                         </td>
                         
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if(!is_null($check->approved_by_shift1) && !is_null($check->approved_by_shift2))
+                            @php
+                                $isFullyApproved = !is_null($check->approved_by_shift1) && !is_null($check->approved_by_shift2);
+                                $isPartiallyApproved = !is_null($check->approved_by_shift1) || !is_null($check->approved_by_shift2);
+                            @endphp
+                            
+                            @if($isFullyApproved)
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui
+                                </span>
+                            @elseif($isPartiallyApproved)
+                                <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Disetujui Sebagian
                                 </span>
                             @else
                                 <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
@@ -99,7 +108,7 @@
                             {{-- Menu lihat --}}
                             @if(auth()->user() instanceof \App\Models\Approver)
                                 <a href="{{ route('compressor.show', $check->id) }}" title="Lihat Detail">
-                                    @if($check->approved_by)
+                                    @if($isFullyApproved)
                                         <i class="fas fa-eye text-primary opacity-70" title="Sudah disetujui"></i>
                                     @else
                                         <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
@@ -107,12 +116,16 @@
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @if(!$check->approved_by)
+                                @php
+                                    $canEdit = !$isFullyApproved;
+                                @endphp
+                                
+                                @if($canEdit)
                                     <a href="{{ route('compressor.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
                                 @else
-                                    <i class="fas fa-pen text-amber-300 opacity-50 text-lg cursor-not-allowed" title="Tidak dapat diedit karena sudah disetujui"></i>
+                                    <i class="fas fa-pen text-amber-300 opacity-50 text-lg cursor-not-allowed" title="Tidak dapat diedit karena sudah disetujui sepenuhnya"></i>
                                 @endif
                             @endif
                         </td>

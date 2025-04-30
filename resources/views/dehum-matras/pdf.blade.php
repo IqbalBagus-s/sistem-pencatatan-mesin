@@ -1,3 +1,3 @@
 <div>
-    <!-- When there is no desire, all things are at peace. - Laozi -->
+    <!-- Do what you can, with what you have, where you are. - Theodore Roosevelt -->
 </div>

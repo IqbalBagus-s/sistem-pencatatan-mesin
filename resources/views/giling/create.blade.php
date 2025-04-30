@@ -8,8 +8,6 @@
 
 @section('back-route', route('giling.index'))
 
-@section('date-time-fields')
-@endsection
 
 @section('table-content')
 @endsection

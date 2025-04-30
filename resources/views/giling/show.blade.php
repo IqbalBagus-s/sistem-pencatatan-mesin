@@ -101,7 +101,7 @@
         <!-- Catatan Pemeriksaan -->
         <div class="bg-sky-50 p-4 rounded-md mt-6">
             <h5 class="mb-3 font-medium">Catatan Pemeriksaan:</h5>
-            <p class="mb-1">- Pengecekan Ketajaman Pisau Putar dan Pisau Duduk Dilakukan Pada minggu ke-4 di setiap bulannya</p>
+            <p class="mb-1">- Pengecekan Ketajaman Pisau Putar dan Pisau Duduk DIlakukan Pada minggu ke-4 di setiap bulannya</p>
         </div>
         @endsection
         @section('approval-menu')
