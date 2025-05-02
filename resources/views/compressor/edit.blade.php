@@ -230,8 +230,14 @@
 
                     <!-- Low Kompressor Table -->
                     <div class="overflow-x-auto mb-4">
+                        <!-- Notifikasi scroll horizontal untuk mobile -->
+                        <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                            ← Geser ke kanan untuk melihat semua kolom →
+                        </div>
                         <h3 class="text-lg font-semibold mb-2">Form Pengisian Low Kompressor</h3>
                         <div class="table-container">
+                        <!-- Lebar minimum pada mobile agar bisa scroll horizontal -->
+                        <div class="min-w-[1200px]">
                             <table class="w-full border border-gray-300 bg-white rounded-lg">
                                 <thead class="bg-gray-200 text-center">
                                     <tr>
@@ -333,8 +339,14 @@
                     
                     <!-- High Kompressor Table -->
                     <div class="overflow-x-auto mb-4">
+                        <!-- Notifikasi scroll horizontal untuk mobile -->
+                        <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                            ← Geser ke kanan untuk melihat semua kolom →
+                        </div>
                         <h3 class="text-lg font-semibold mb-2">Form Pengisian High Kompressor</h3>
                         <div class="table-container">
+                            <!-- Lebar minimum pada mobile agar bisa scroll horizontal -->
+                            <div class="min-w-[1200px]">
                             <table class="w-full border border-gray-300 bg-white rounded-lg">
                                 <thead class="bg-gray-200 text-center">
                                     <tr>
