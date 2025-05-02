@@ -45,17 +45,26 @@ class CapliningController extends Controller
                 return redirect()->back()->with('error', 'Format tanggal tidak valid.');
             }
         }
-    
+        
+        // Mengurutkan data berdasarkan created_at atau updated_at terbaru (descending)
+        $query->orderBy('created_at', 'desc');
+        
         // Ambil data dengan paginasi dan eager load hasil pemeriksaan
         $checks = $query->with('results')->paginate(10)->appends($request->query());
         
         // Load semua data tambahan untuk setiap check
         foreach ($checks as $check) {
-            // Dapatkan informasi checker dan approver
-            $check->allCheckers = collect([$check->checked_by])
-                ->filter()
-                ->unique()
-                ->values()
+            // Dapatkan informasi checker dari semua kolom checked_by
+            $check->allCheckers = collect([
+                $check->checked_by1,
+                $check->checked_by2,
+                $check->checked_by3,
+                $check->checked_by4,
+                $check->checked_by5
+            ])
+                ->filter() // menghapus nilai null/empty
+                ->unique() // menghapus duplikat 
+                ->values() // re-index array
                 ->toArray();
                 
             // Hitung jumlah item yang sudah dicheck
@@ -76,11 +85,95 @@ class CapliningController extends Controller
             
             $check->checkedItemsCount = $checkedItems;
             
-            // Status approval
-            $check->isApproved = !empty($check->approved_by);
+            // Status approval - cek semua kolom approved_by
+            $approvers = collect([
+                $check->approved_by1,
+                $check->approved_by2,
+                $check->approved_by3,
+                $check->approved_by4,
+                $check->approved_by5
+            ])->filter()->values()->toArray();
+            
+            // Hitung jumlah checker yang ada (tidak kosong)
+            $totalCheckers = collect([
+                $check->checked_by1,
+                $check->checked_by2,
+                $check->checked_by3,
+                $check->checked_by4,
+                $check->checked_by5
+            ])->filter()->count();
+            
+            // Tentukan status approval
+            if (count($approvers) === 0) {
+                $check->approvalStatus = 'not_approved'; // Belum Disetujui
+            } elseif (count($approvers) < $totalCheckers) {
+                $check->approvalStatus = 'partially_approved'; // Disetujui Sebagian
+            } else {
+                $check->approvalStatus = 'fully_approved'; // Disetujui
+            }
+            
+            // Simpan juga daftar approver untuk penggunaan lain jika diperlukan
+            $check->allApprovers = $approvers;
+            
+            // Menghitung dan menyimpan rentang tanggal
+            $tanggalFormatted = $this->getFormattedTanggalRange($check);
+            $check->hasTanggal = !is_null($tanggalFormatted);
+            $check->tanggalFormatted = $tanggalFormatted;
         }
     
         return view('caplining.index', compact('checks'));
+    }
+
+    private function getFormattedTanggalRange($check)
+    {
+        // Fields yang berisi tanggal yang ingin kita cek
+        $tanggalFields = [
+            'tanggal_check1', 'tanggal_check2', 'tanggal_check3', 
+            'tanggal_check4', 'tanggal_check5'
+        ];
+        
+        // Kumpulkan tanggal yang valid
+        $validDates = [];
+        
+        foreach ($tanggalFields as $field) {
+            // Periksa jika field ini ada pada model
+            if (isset($check->$field) && !empty($check->$field)) {
+                try {
+                    // Coba untuk parse tanggal
+                    $date = \Carbon\Carbon::parse($check->$field);
+                    $validDates[] = $date;
+                } catch (\Exception $e) {
+                    // Lewati jika parsing gagal
+                    continue;
+                }
+            }
+        }
+        
+        // Jika tidak ada tanggal yang valid, kembalikan null
+        if (empty($validDates)) {
+            return null;
+        }
+        
+        // Jika hanya ada satu tanggal, kembalikan tanggal tersebut
+        if (count($validDates) === 1) {
+            return $validDates[0]->locale('id')->isoFormat('D MMMM Y');
+        }
+        
+        // Urutkan tanggal
+        usort($validDates, function($a, $b) {
+            return $a->timestamp - $b->timestamp;
+        });
+        
+        // Ambil tanggal terkecil dan terbesar
+        $earliestDate = $validDates[0];
+        $latestDate = $validDates[count($validDates) - 1];
+        
+        // Set locale untuk format Bahasa Indonesia
+        $earliestDate->locale('id');
+        $latestDate->locale('id');
+        
+        // Kembalikan rentang tanggal
+        return $earliestDate->isoFormat('D MMMM Y') . ' - ' . $latestDate->isoFormat('D MMMM Y');
     }
 
     public function create()

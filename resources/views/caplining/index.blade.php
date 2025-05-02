@@ -112,7 +112,11 @@
                     <tr class="text-center hover:bg-gray-50">
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->nomer_caplining }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            {{ \Carbon\Carbon::parse($check->tanggal)->format('d-m-Y') }}
+                            @if (!$check->hasTanggal)
+                                <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">Belum Diisi</span>
+                            @else
+                                {{ $check->tanggalFormatted }}
+                            @endif
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             @if(count($check->allCheckers) > 0)
@@ -130,9 +134,13 @@
                             @endif
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if($check->isApproved)
+                            @if($check->approvalStatus === 'fully_approved')
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui
+                                </span>
+                            @elseif($check->approvalStatus === 'partially_approved')
+                                <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Disetujui Sebagian
                                 </span>
                             @else
                                 <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
