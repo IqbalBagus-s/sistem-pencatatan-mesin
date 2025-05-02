@@ -1,11 +1,11 @@
 @extends('layouts.index-layout')
 
-@section('title', 'Pencatatan Mesin Dehum Matras')
+@section('title', 'Pencatatan Mesin Hopper')
 
-@section('page-title', 'Pencatatan Mesin Dehum Matras')
+@section('page-title', 'Pencatatan Mesin Hopper')
 
 @section('form-action')
-    {{ route('dehum-matras.index') }}
+    {{ route('hopper.index') }}
 @endsection
 
 @section('custom-filters')
@@ -17,85 +17,22 @@
     </div>
     @endif
 
-    <!-- Dropdown Filter Dehum Matras -->
-    <div x-data="{ 
-    open: false, 
-    selected: null,
-    dehumMatras: [1, 2, 3], // Hanya 3 Dehum Matras
-    reset() {
-        this.selected = null;
-        this.open = false;
-    }
-}" class="relative w-full font-sans">
-    <!-- Label -->
-    <label class="block mb-2 font-medium text-gray-700">Filter Berdasarkan Nomor Dehum Matras:</label>
-    
-    <!-- Dropdown Button -->
-    <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 relative">
-        <span x-text="selected ? 'Dehum Matras ' + selected : 'Pilih Dehum Matras'" class="text-gray-800"></span>
-        
-        <!-- Icon -->
-        <div class="absolute right-3 top-1/2 -translate-y-1/2">
-            <!-- Checkmark when selected -->
-            <svg x-show="selected" @click.stop="reset()" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            
-            <!-- Dropdown Arrow when not selected -->
-            <svg x-show="!selected" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-        </div>
-    </button>
-    
-    <!-- Dropdown List -->
-    <div 
-        x-show="open" 
-        @click.away="open = false" 
-        class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md overflow-hidden z-10"
-        style="display: none;"
-    >
-        <!-- Horizontal layout for options -->
-        <div class="flex flex-row justify-center items-center gap-2 p-3">
-            <template x-for="matras in dehumMatras" :key="matras">
-                <button 
-                    type="button" 
-                    @click="selected = matras; open = false" 
-                    :class="selected === matras 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-800'"
-                    class="px-3 py-1 text-sm rounded-md transition-colors duration-200 ease-in-out text-center w-16"
-                >
-                    <span x-text="matras"></span>
-                </button>
-            </template>
-        </div>
-    </div>
-    
-    <!-- Hidden Input untuk dikirim ke server -->
-    <input type="hidden" name="search_dehum_matras" x-model="selected">
-</div>
-
-    <!-- Filter Shift -->
+    <!-- Dropdown Filter Hopper -->
     <div x-data="{ 
         open: false, 
-        selected: '{{ request('shift') }}',
-        shifts: [
-            {id: '', label: 'Semua Shift'},
-            {id: '1', label: 'Shift 1'},
-            {id: '2', label: 'Shift 2'},
-            {id: '3', label: 'Shift 3'}
-        ],
+        selected: null,
+        hoppers: Array.from({length: 15}, (_, i) => i + 1),
         reset() {
-            this.selected = '';
+            this.selected = null;
             this.open = false;
         }
-    }" class="relative w-full font-sans">
+        }" class="relative w-full font-sans">
         <!-- Label -->
-        <label class="block mb-2 font-medium text-gray-700">Filter berdasarkan Shift:</label>
+        <label class="block mb-2 font-medium text-gray-700">Filter Berdasarkan Nomor Hopper:</label>
         
+        <!-- Rest of the code remains the same -->
         <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 relative">
-            <span x-text="selected ? (shifts.find(s => s.id === selected) || shifts[0]).label : 'Pilih Shift'" class="text-gray-800"></span>
+            <span x-text="selected ? 'Hopper ' + selected : 'Pilih Hopper'" class="text-gray-800"></span>
             
             <!-- Selection Indicator -->
             <div class="absolute right-3 top-1/2 -translate-y-1/2">
@@ -118,26 +55,29 @@
             class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md overflow-hidden z-10"
             style="display: none;"
         >
-            <div class="py-1">
-                <template x-for="shift in shifts" :key="shift.id">
-                    <button 
-                        type="button" 
-                        @click="selected = shift.id; open = false" 
-                        :class="selected === shift.id 
-                            ? 'bg-blue-500 text-white w-full text-left px-4 py-2 text-sm cursor-pointer' 
-                            : 'text-gray-700 hover:bg-blue-100 hover:text-blue-800 w-full text-left px-4 py-2 text-sm cursor-pointer'"
-                    >
-                        <span x-text="shift.label"></span>
-                    </button>
+            <!-- Hopper List -->
+            <div class="grid grid-cols-5 gap-1 p-1">
+                <template x-for="hopper in hoppers" :key="hopper">
+                    <div @click.stop>
+                        <button 
+                            type="button" 
+                            @click="selected = hopper; open = false" 
+                            :class="selected === hopper 
+                                ? 'bg-blue-500 text-white' 
+                                : 'text-gray-700 hover:bg-blue-100 hover:text-blue-800'"
+                            class="w-full px-2 py-1.5 text-xs rounded-md transition-colors duration-200 ease-in-out"
+                        >
+                            <span x-text="'Hopper ' + hopper"></span>
+                        </button>
+                    </div>
                 </template>
             </div>
         </div>
         
         <!-- Hidden Input untuk dikirim ke server -->
-        <input type="hidden" name="shift" x-model="selected">
+        <input type="hidden" name="search_hopper" x-model="selected">
     </div>
 
-    <!-- Filter Bulan -->
     <div>
         <label for="filter_bulan" class="block font-medium text-gray-700 mb-2">Filter berdasarkan Bulan:</label>
         <input type="month" name="bulan" id="filter_bulan" value="{{ request('bulan') }}" 
@@ -146,7 +86,7 @@
 @endsection
 
 @section('create-route')
-    {{ route('dehum-matras.create') }}
+    {{ route('hopper.create') }}
 @endsection
 
 @section('create-button-text')
@@ -157,9 +97,8 @@
     <table class="table-auto w-full">
         <thead class="bg-gray-100">
             <tr class="text-center">
-                <th class="py-3 px-4 border-b border-gray-200 font-semibold">No Dehum Matras</th>
+                <th class="py-3 px-4 border-b border-gray-200 font-semibold w-1/6">No Hopper</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Bulan</th>
-                <th class="py-3 px-4 border-b border-gray-200 font-semibold">Shift</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Checker</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Status</th>
                 <th class="py-3 px-4 border-b border-gray-200 font-semibold">Aksi</th>
@@ -168,12 +107,12 @@
         <tbody>
             @if($checks->isEmpty())
                 <tr>
-                    <td colspan="7" class="text-center py-4">Tidak ada data ditemukan.</td>
+                    <td colspan="5" class="text-center py-4">Tidak ada data ditemukan.</td>
                 </tr>
             @else
                 @foreach($checks as $check)
                     <tr class="text-center hover:bg-gray-50">
-                        <td class="py-3 px-4 border-b border-gray-200">{{ $check->nomer_dehum_matras }}</td>
+                        <td class="py-3 px-4 border-b border-gray-200 w-1/6">{{ $check->nomer_hopper }}</td>
                         <td 
                             x-data="{ 
                                 formatMonth(monthYear) {
@@ -191,58 +130,71 @@
                             x-text="formatMonth('{{ $check->bulan }}')"
                             class="py-3 px-4 border-b border-gray-200">
                         </td>
+                        
                         <td class="py-3 px-4 border-b border-gray-200">
-                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                                Shift {{ $check->shift }}
-                            </span>
-                        </td>
-                        <td class="py-3 px-4 border-b border-gray-200">
-                            @if(count($check->allCheckers) > 0)
-                                <div class="flex flex-col items-center space-y-1">
-                                    @foreach($check->allCheckers as $checker)
-                                        <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm inline-block">
-                                            {{ $checker }}
-                                        </div>
-                                    @endforeach
-                                </div>
+                            @php
+                                $checkedByFields = [
+                                    $check->checked_by_minggu1,
+                                    $check->checked_by_minggu2,
+                                    $check->checked_by_minggu3,
+                                    $check->checked_by_minggu4
+                                ];
+
+                                // Remove duplicates and filter out null/empty values
+                                $uniqueCheckedBy = array_unique(array_filter($checkedByFields));
+                            @endphp
+                            
+                            @if(!empty($uniqueCheckedBy))
+                                @foreach($uniqueCheckedBy as $checkedBy)
+                                    <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm mb-1 inline-block">
+                                        {{ $checkedBy }}
+                                    </div>
+                                @endforeach
                             @else
                                 <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
                                     Belum Diisi
                                 </span>
                             @endif
                         </td>
+                        
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if($check->approvedDatesCount > 0)
-                                @if($check->approvedDatesCount >= $check->daysInMonth)
-                                    <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                        Disetujui
-                                    </span>
-                                @else
-                                    <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                        Disetujui Sebagian
-                                    </span>
-                                @endif
+                            @php
+                                $approvedFields = [
+                                    $check->approved_by_minggu1,
+                                    $check->approved_by_minggu2,
+                                    $check->approved_by_minggu3,
+                                    $check->approved_by_minggu4
+                                ];
+                                
+                                $approvedCount = count(array_filter($approvedFields));
+                                $totalFields = count($approvedFields);
+                            @endphp
+
+                            @if($approvedCount == $totalFields)
+                                <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Disetujui
+                                </span>
+                            @elseif($approvedCount > 0)
+                                <span class="bg-amber-100 text-amber-700 px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Disetujui Sebagian
+                                </span>
                             @else
                                 <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Belum Disetujui
                                 </span>
                             @endif
                         </td>
+                        
                         <td class="py-3 px-4 border-b border-gray-200">
                             {{-- Menu lihat --}}
                             @if(auth()->user() instanceof \App\Models\Approver)
-                                <a href="{{ route('dehum-matras.show', $check->id) }}" title="Lihat Detail">
+                                <a href="{{ route('hopper.show', $check->id) }}" title="Lihat Detail">
                                     <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @php
-                                    // Cek apakah disetujui sepenuhnya
-                                    $isFullyApproved = $check->approvedDatesCount >= $check->daysInMonth;
-                                @endphp
-                                
-                                @if(!$isFullyApproved)
-                                    <a href="{{ route('dehum-matras.edit', $check->id) }}" title="Edit">
+                                @if(!($check->approved_by_minggu1 && $check->approved_by_minggu2 && $check->approved_by_minggu3 && $check->approved_by_minggu4))
+                                    <a href="{{ route('hopper.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
                                 @else
@@ -285,7 +237,5 @@
 @endsection
 
 @section('scripts')
-    <script>
-        // Additional JavaScript if needed
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 @endsection

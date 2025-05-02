@@ -98,6 +98,31 @@ class CapliningController extends Controller
         // Debug: Cek data yang diterima dari form
         Log::info('Data dari form caplining:', $request->all());
     
+        // Fungsi format tanggal internal
+        $formatTanggalForDB = function($tanggal) {
+            if (empty($tanggal)) {
+                return null;
+            }
+            
+            // Format yang diterima dari form: "DD Mmm YYYY" (contoh: "15 Mei 2025")
+            $bulanMap = [
+                'Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04', 'Mei' => '05', 
+                'Jun' => '06', 'Jul' => '07', 'Ags' => '08', 'Sep' => '09', 'Okt' => '10', 
+                'Nov' => '11', 'Des' => '12'
+            ];
+            
+            $parts = explode(' ', $tanggal);
+            if (count($parts) === 3) {
+                $day = str_pad($parts[0], 2, '0', STR_PAD_LEFT);
+                $month = $bulanMap[$parts[1]] ?? '01';
+                $year = $parts[2];
+                
+                return "$year-$month-$day";
+            }
+            
+            return null;
+        };
+    
         // Mulai transaksi database
         DB::beginTransaction();
     
@@ -107,11 +132,21 @@ class CapliningController extends Controller
                 'nomer_caplining' => $request->nomer_caplining,
             ];
             
+            // Array untuk menyimpan tanggal yang diinput
+            $tanggalChecks = [];
+            
             // Set tanggal dan user data untuk masing-masing kolom check
             for ($i = 1; $i <= 5; $i++) {
                 // Simpan tanggal yang dipilih
                 if ($request->has("tanggal_$i") && !empty($request->{"tanggal_$i"})) {
-                    $data["tanggal_check$i"] = $this->formatTanggalForDB($request->{"tanggal_$i"});
+                    $formattedDate = $formatTanggalForDB($request->{"tanggal_$i"});
+                    $data["tanggal_check$i"] = $formattedDate;
+                    
+                    // Tambahkan ke array tanggal untuk validasi
+                    if ($formattedDate) {
+                        $tanggalChecks[] = $formattedDate;
+                    }
+                    
                     Log::info("Tanggal $i: " . $request->{"tanggal_$i"} . " -> " . $data["tanggal_check$i"]);
                 } else {
                     $data["tanggal_check$i"] = null;
@@ -127,6 +162,53 @@ class CapliningController extends Controller
                 // Untuk approved_by, ini mungkin diisi secara terpisah
                 if ($request->has("approved_by$i")) {
                     $data["approved_by$i"] = $request->{"approved_by$i"};
+                }
+            }
+            
+            // Validasi tanggal - cek apakah tanggal sudah ada di database untuk nomer_caplining yang sama
+            $existingDates = [];
+            if (!empty($tanggalChecks)) {
+                // Query untuk mencari tanggal yang sudah ada
+                $existingRecords = CapliningCheck::where('nomer_caplining', $request->nomer_caplining)
+                    ->where(function($query) use ($tanggalChecks) {
+                        foreach ($tanggalChecks as $date) {
+                            $query->orWhere('tanggal_check1', $date)
+                                  ->orWhere('tanggal_check2', $date)
+                                  ->orWhere('tanggal_check3', $date)
+                                  ->orWhere('tanggal_check4', $date)
+                                  ->orWhere('tanggal_check5', $date);
+                        }
+                    })
+                    ->get();
+                
+                // Jika ada tanggal yang sudah ada, kumpulkan untuk pesan error
+                if ($existingRecords->count() > 0) {
+                    foreach ($existingRecords as $record) {
+                        for ($i = 1; $i <= 5; $i++) {
+                            $dateField = "tanggal_check$i";
+                            if (in_array($record->$dateField, $tanggalChecks)) {
+                                // Format tanggal kembali ke format yang dimengerti user
+                                if ($record->$dateField) {
+                                    $date = \Carbon\Carbon::parse($record->$dateField);
+                                    $bulanSingkat = [
+                                        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 
+                                        6 => 'Jun', 7 => 'Jul', 8 => 'Ags', 9 => 'Sep', 10 => 'Okt', 
+                                        11 => 'Nov', 12 => 'Des'
+                                    ];
+                                    $formattedDate = $date->format('d') . ' ' . $bulanSingkat[$date->format('n')] . ' ' . $date->format('Y');
+                                    $existingDates[] = $formattedDate;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Jika ada tanggal yang sudah ada, kembalikan error
+                if (!empty($existingDates)) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors(['tanggal' => 'Data tersebut sudah ada!'])
+                        ->with('error', 'Data tersebut sudah ada!');
                 }
             }
             
@@ -222,30 +304,5 @@ class CapliningController extends Controller
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
-    }
-    
-    private function formatTanggalForDB($tanggal)
-    {
-        if (empty($tanggal)) {
-            return null;
-        }
-        
-        // Format yang diterima dari form: "DD Mmm YYYY" (contoh: "15 Mei 2025")
-        $bulanMap = [
-            'Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04', 'Mei' => '05', 
-            'Jun' => '06', 'Jul' => '07', 'Ags' => '08', 'Sep' => '09', 'Okt' => '10', 
-            'Nov' => '11', 'Des' => '12'
-        ];
-        
-        $parts = explode(' ', $tanggal);
-        if (count($parts) === 3) {
-            $day = str_pad($parts[0], 2, '0', STR_PAD_LEFT);
-            $month = $bulanMap[$parts[1]] ?? '01';
-            $year = $parts[2];
-            
-            return "$year-$month-$day";
-        }
-        
-        return null;
     }
 }

@@ -65,6 +65,10 @@
             <div class="overflow-x-auto">
                 <!-- Air Dryer Table -->
                 @if(View::hasSection('title') && View::yieldContent('title') == 'Edit Pencatatan Mesin Air Dryer')
+                    <!-- Notifikasi scroll horizontal untuk mobile -->
+                    <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                        ← Geser ke kanan untuk melihat semua kolom →
+                    </div>
                     <table class="w-full border-collapse border border-gray-300">
                         <thead>
                             <tr>
@@ -139,152 +143,166 @@
                 
                 <!-- Water Chiller Table -->
                 @elseif(View::hasSection('title') && View::yieldContent('title') == 'Edit Pencatatan Mesin Water Chiller')
+                    <!-- Notifikasi scroll horizontal untuk mobile -->
+                    <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                        ← Geser ke kanan untuk melihat semua kolom →
+                    </div>
                     <div class="overflow-x-auto max-h-[500px]">
-                        <table class="w-full border-collapse border border-gray-300">
-                            <thead class="sticky top-0 z-10 bg-sky-50">
-                                <tr>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 w-12 sticky top-0">NO.</th>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 w-20 sticky top-0">No Mesin</th>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 sticky top-0">Temperatur Compressor</th>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 sticky top-0">Temperatur Kabel</th>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 sticky top-0">Temperatur Mcb</th>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 sticky top-0">Temperatur Air</th>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 sticky top-0">Temperatur Pompa</th>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 w-24 sticky top-0">Evaporator</th>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 w-28 sticky top-0">Fan Evaporator</th>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 w-24 sticky top-0">Freon</th>
-                                    <th class="border border-gray-300 bg-sky-50 p-2 w-24 sticky top-0">Air</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($results as $index => $result)
-                                    <tr class="bg-white">
-                                        <td class="border border-gray-300 text-center p-2">{{ $index + 1 }}</td>
-                                        <td class="border border-gray-300 text-center p-2">
-                                            <input type="text" name="no_mesin[{{ $result->id }}]" 
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center" 
-                                                value="{{ $result->no_mesin }}" readonly>
-                                        </td>
-                                        <td class="border border-gray-300 p-2">
-                                            <input type="text" name="temperatur_1[{{ $result->id }}]" 
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                                placeholder="30°C - 60°C" value="{{ $result->Temperatur_Compressor }}">
-                                        </td>
-                                        <td class="border border-gray-300 p-2">
-                                            <input type="text" name="temperatur_2[{{ $result->id }}]" 
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                                placeholder="30°C - 60°C" value="{{ $result->Temperatur_Kabel }}">
-                                        </td>
-                                        <td class="border border-gray-300 p-2">
-                                            <input type="text" name="temperatur_3[{{ $result->id }}]" 
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                                placeholder="30°C - 60°C" value="{{ $result->Temperatur_Mcb }}">
-                                        </td>
-                                        <td class="border border-gray-300 p-2">
-                                            <input type="text" name="temperatur_4[{{ $result->id }}]" 
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                                placeholder="30°C - 60°C" value="{{ $result->Temperatur_Air }}">
-                                        </td>
-                                        <td class="border border-gray-300 p-2">
-                                            <input type="text" name="temperatur_5[{{ $result->id }}]" 
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                                placeholder="30°C - 60°C" value="{{ $result->Temperatur_Pompa }}">
-                                        </td>
-                                        <td class="border border-gray-300 p-2">
-                                            <select name="evaporator[{{ $result->id }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                                <option value="Bersih" {{ $result->Evaporator == 'Bersih' ? 'selected' : '' }}>Bersih</option>
-                                                <option value="Kotor" {{ $result->Evaporator == 'Kotor' ? 'selected' : '' }}>Kotor</option>
-                                                <option value="OFF" {{ $result->Evaporator == 'OFF' ? 'selected' : '' }}>OFF</option>
-                                            </select>
-                                        </td>
-                                        <td class="border border-gray-300 p-2">
-                                            <select name="fan_evaporator[{{ $result->id }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                                <option value="Suara Halus" {{ $result->Fan_Evaporator == 'Suara Halus' ? 'selected' : '' }}>Suara Halus</option>
-                                                <option value="Suara Keras" {{ $result->Fan_Evaporator == 'Suara Keras' ? 'selected' : '' }}>Suara Keras</option>
-                                                <option value="OFF" {{ $result->Fan_Evaporator == 'OFF' ? 'selected' : '' }}>OFF</option>
-                                            </select>
-                                        </td>
-                                        <td class="border border-gray-300 p-2">
-                                            <select name="freon[{{ $result->id }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                                <option value="Cukup" {{ $result->Freon == 'Cukup' ? 'selected' : '' }}>Cukup</option>
-                                                <option value="Tidak Cukup" {{ $result->Freon == 'Tidak Cukup' ? 'selected' : '' }}>Tidak Cukup</option>
-                                                <option value="OFF" {{ $result->Freon == 'OFF' ? 'selected' : '' }}>OFF</option>
-                                            </select>
-                                        </td>
-                                        <td class="border border-gray-300 p-2">
-                                            <select name="air[{{ $result->id }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                                <option value="Cukup" {{ $result->Air == 'Cukup' ? 'selected' : '' }}>Cukup</option>
-                                                <option value="Tidak Cukup" {{ $result->Air == 'Tidak Cukup' ? 'selected' : '' }}>Tidak Cukup</option>
-                                                <option value="OFF" {{ $result->Air == 'OFF' ? 'selected' : '' }}>OFF</option>
-                                            </select>
-                                        </td>
+                        <!-- Tetapkan lebar minimum tabel agar selalu bisa di-scroll pada mobile -->
+                        <div class="min-w-[1000px]">
+                            <table class="w-full border-collapse border border-gray-300">
+                                <thead class="sticky top-0 z-10 bg-sky-50">
+                                    <tr>
+                                        <th class="border border-gray-300 bg-sky-50 p-2 w-12 sticky top-0">NO.</th>
+                                        <th class="border border-gray-300 bg-sky-50 p-2 w-20 sticky top-0">No Mesin</th>
+                                        <th class="border border-gray-300 bg-sky-50 p-2 sticky top-0">Temperatur Compressor</th>
+                                        <th class="border border-gray-300 bg-sky-50 p-2 sticky top-0">Temperatur Kabel</th>
+                                        <th class="border border-gray-300 bg-sky-50 p-2 sticky top-0">Temperatur Mcb</th>
+                                        <th class="border border-gray-300 bg-sky-50 p-2 sticky top-0">Temperatur Air</th>
+                                        <th class="border border-gray-300 bg-sky-50 p-2 sticky top-0">Temperatur Pompa</th>
+                                        <th class="border border-gray-300 bg-sky-50 p-2 w-24 sticky top-0">Evaporator</th>
+                                        <th class="border border-gray-300 bg-sky-50 p-2 w-28 sticky top-0">Fan Evaporator</th>
+                                        <th class="border border-gray-300 bg-sky-50 p-2 w-24 sticky top-0">Freon</th>
+                                        <th class="border border-gray-300 bg-sky-50 p-2 w-24 sticky top-0">Air</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach($results as $index => $result)
+                                        <tr class="bg-white">
+                                            <td class="border border-gray-300 text-center p-2">{{ $index + 1 }}</td>
+                                            <td class="border border-gray-300 text-center p-2">
+                                                <input type="text" name="no_mesin[{{ $result->id }}]" 
+                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center" 
+                                                    value="{{ $result->no_mesin }}" readonly>
+                                            </td>
+                                            <td class="border border-gray-300 p-2">
+                                                <input type="text" name="temperatur_1[{{ $result->id }}]" 
+                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                    placeholder="30°C - 60°C" value="{{ $result->Temperatur_Compressor }}">
+                                            </td>
+                                            <td class="border border-gray-300 p-2">
+                                                <input type="text" name="temperatur_2[{{ $result->id }}]" 
+                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                    placeholder="30°C - 60°C" value="{{ $result->Temperatur_Kabel }}">
+                                            </td>
+                                            <td class="border border-gray-300 p-2">
+                                                <input type="text" name="temperatur_3[{{ $result->id }}]" 
+                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                    placeholder="30°C - 60°C" value="{{ $result->Temperatur_Mcb }}">
+                                            </td>
+                                            <td class="border border-gray-300 p-2">
+                                                <input type="text" name="temperatur_4[{{ $result->id }}]" 
+                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                    placeholder="30°C - 60°C" value="{{ $result->Temperatur_Air }}">
+                                            </td>
+                                            <td class="border border-gray-300 p-2">
+                                                <input type="text" name="temperatur_5[{{ $result->id }}]" 
+                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                    placeholder="30°C - 60°C" value="{{ $result->Temperatur_Pompa }}">
+                                            </td>
+                                            <td class="border border-gray-300 p-2">
+                                                <select name="evaporator[{{ $result->id }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                                    <option value="Bersih" {{ $result->Evaporator == 'Bersih' ? 'selected' : '' }}>Bersih</option>
+                                                    <option value="Kotor" {{ $result->Evaporator == 'Kotor' ? 'selected' : '' }}>Kotor</option>
+                                                    <option value="OFF" {{ $result->Evaporator == 'OFF' ? 'selected' : '' }}>OFF</option>
+                                                </select>
+                                            </td>
+                                            <td class="border border-gray-300 p-2">
+                                                <select name="fan_evaporator[{{ $result->id }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                                    <option value="Suara Halus" {{ $result->Fan_Evaporator == 'Suara Halus' ? 'selected' : '' }}>Suara Halus</option>
+                                                    <option value="Suara Keras" {{ $result->Fan_Evaporator == 'Suara Keras' ? 'selected' : '' }}>Suara Keras</option>
+                                                    <option value="OFF" {{ $result->Fan_Evaporator == 'OFF' ? 'selected' : '' }}>OFF</option>
+                                                </select>
+                                            </td>
+                                            <td class="border border-gray-300 p-2">
+                                                <select name="freon[{{ $result->id }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                                    <option value="Cukup" {{ $result->Freon == 'Cukup' ? 'selected' : '' }}>Cukup</option>
+                                                    <option value="Tidak Cukup" {{ $result->Freon == 'Tidak Cukup' ? 'selected' : '' }}>Tidak Cukup</option>
+                                                    <option value="OFF" {{ $result->Freon == 'OFF' ? 'selected' : '' }}>OFF</option>
+                                                </select>
+                                            </td>
+                                            <td class="border border-gray-300 p-2">
+                                                <select name="air[{{ $result->id }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                                    <option value="Cukup" {{ $result->Air == 'Cukup' ? 'selected' : '' }}>Cukup</option>
+                                                    <option value="Tidak Cukup" {{ $result->Air == 'Tidak Cukup' ? 'selected' : '' }}>Tidak Cukup</option>
+                                                    <option value="OFF" {{ $result->Air == 'OFF' ? 'selected' : '' }}>OFF</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                 <!-- Mesin Giling Table -->
                 @elseif(View::hasSection('title') && View::yieldContent('title') == 'Edit Pemeriksaan Mesin Giling')
+                    <!-- Notifikasi scroll horizontal untuk mobile -->
+                    <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                        ← Geser ke kanan untuk melihat semua kolom →
+                    </div>
                     <div class="overflow-x-auto max-h-[600px]">
-                        <table class="w-full border-collapse border border-gray-300">
-                            <thead class="sticky-header">
-                                <tr>
-                                    <th rowspan="2" class="border border-gray-300 bg-sky-50 p-2 w-5 align-middle">No.</th>
-                                    <th rowspan="2" class="border border-gray-300 bg-sky-50 p-2 w-40 align-middle">Checked Items</th>
-                                    <th colspan="10" class="border border-gray-300 bg-sky-50 p-2 text-center">HASIL PEMERIKSAAN GILINGAN</th>
-                                </tr>
-                                <tr>
-                                    @for ($i = 1; $i <= 10; $i++)
-                                        <th class="border border-gray-300 bg-sky-50 p-2 text-center w-24">G{{ $i }}</th>
-                                    @endfor
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $items = [
-                                        1 => 'Cek Motor Mesin Giling',
-                                        2 => 'Cek Vanbelt',
-                                        3 => 'Cek Dustcollector',
-                                        4 => 'Cek Safety Switch',
-                                        5 => 'Cek Ketajaman Pisau Putar dan Pisau Duduk'
-                                    ];
-                                    
-                                    // Standard options for all items
-                                    $options = ['Baik', 'Jelek', 'OFF', '-'];
-                                    
-                                    // Map from checked items to snake_case field names
-                                    $fieldMappings = [
-                                        'Cek Motor Mesin Giling' => 'cek_motor_mesin_giling',
-                                        'Cek Vanbelt' => 'cek_vanbelt',
-                                        'Cek Dustcollector' => 'cek_dustcollector',
-                                        'Cek Safety Switch' => 'cek_safety_switch',
-                                        'Cek Ketajaman Pisau Putar dan Pisau Duduk' => 'cek_ketajaman_pisau_putar_dan_pisau_duduk'
-                                    ];
-                                @endphp
-                                
-                                @foreach($items as $i => $item)
-                                    @php
-                                        $fieldName = $fieldMappings[$item];
-                                        $result = isset($results[$item]) ? $results[$item] : null;
-                                    @endphp
+                        <!-- Tetapkan lebar minimum tabel agar selalu bisa di-scroll pada mobile -->
+                        <div class="min-w-[1000px]">
+                            <table class="w-full border-collapse border border-gray-300">
+                                <thead class="sticky-header">
                                     <tr>
-                                        <td class="border border-gray-300 text-center p-2">{{ $i }}</td>
-                                        <td class="border border-gray-300 p-2">{{ $item }}</td>
-                                        
-                                        @for ($g = 1; $g <= 10; $g++)
-                                            <td class="border border-gray-300 p-2">
-                                                <select name="{{ $fieldName }}[G{{ $g }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                                    @foreach($options as $option)
-                                                        <option value="{{ $option }}" {{ $result && $result->{"g$g"} == $option ? 'selected' : '' }}>{{ $option }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </td>
+                                        <th rowspan="2" class="border border-gray-300 bg-sky-50 p-2 w-5 align-middle">No.</th>
+                                        <th rowspan="2" class="border border-gray-300 bg-sky-50 p-2 w-40 align-middle">Checked Items</th>
+                                        <th colspan="10" class="border border-gray-300 bg-sky-50 p-2 text-center">HASIL PEMERIKSAAN GILINGAN</th>
+                                    </tr>
+                                    <tr>
+                                        @for ($i = 1; $i <= 10; $i++)
+                                            <th class="border border-gray-300 bg-sky-50 p-2 text-center w-24">G{{ $i }}</th>
                                         @endfor
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $items = [
+                                            1 => 'Cek Motor Mesin Giling',
+                                            2 => 'Cek Vanbelt',
+                                            3 => 'Cek Dustcollector',
+                                            4 => 'Cek Safety Switch',
+                                            5 => 'Cek Ketajaman Pisau Putar dan Pisau Duduk'
+                                        ];
+                                        
+                                        // Standard options for all items
+                                        $options = ['Baik', 'Jelek', 'OFF', '-'];
+                                        
+                                        // Map from checked items to snake_case field names
+                                        $fieldMappings = [
+                                            'Cek Motor Mesin Giling' => 'cek_motor_mesin_giling',
+                                            'Cek Vanbelt' => 'cek_vanbelt',
+                                            'Cek Dustcollector' => 'cek_dustcollector',
+                                            'Cek Safety Switch' => 'cek_safety_switch',
+                                            'Cek Ketajaman Pisau Putar dan Pisau Duduk' => 'cek_ketajaman_pisau_putar_dan_pisau_duduk'
+                                        ];
+                                    @endphp
+                                    
+                                    @foreach($items as $i => $item)
+                                        @php
+                                            $fieldName = $fieldMappings[$item];
+                                            $result = isset($results[$item]) ? $results[$item] : null;
+                                        @endphp
+                                        <tr>
+                                            <td class="border border-gray-300 text-center p-2">{{ $i }}</td>
+                                            <td class="border border-gray-300 p-2">{{ $item }}</td>
+                                            
+                                            @for ($g = 1; $g <= 10; $g++)
+                                                <td class="border border-gray-300 p-2">
+                                                    <select name="{{ $fieldName }}[G{{ $g }}]" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                                        @foreach($options as $option)
+                                                            <option value="{{ $option }}" {{ $result && $result->{"g$g"} == $option ? 'selected' : '' }}>{{ $option }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </td>
+                                            @endfor
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                     
                     <!-- Detail Mesin for Giling -->

@@ -51,7 +51,7 @@
             const errorMessage = document.getElementById('error-message');
             
             // Check if there's an error message from the session
-            const sessionError = "{{ session('error') }}";
+            const sessionError = @if(session('error')) "{{ session('error') }}" @else "" @endif;
             
             if (sessionError) {
                 // Update the error message text
