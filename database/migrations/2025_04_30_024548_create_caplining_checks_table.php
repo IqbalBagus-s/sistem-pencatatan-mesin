@@ -15,13 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('nomer_caplining');
             for ($i = 1; $i <= 5; $i++) {
-                $table->string('tanggal_check' . $i);
+                $table->string('tanggal_check' . $i)->nullable();
+                $table->string('checked_by' . $i)->nullable();
+                $table->string('approved_by' . $i)->nullable();
             }
             
-            $table->string('checked_by')->nullable();
-            $table->string('approved_by')->nullable();
-            
-
             $table->timestamps();
             $table->softDeletes(); // Soft delete untuk menyimpan data yang dihapus
         });

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Models\CapliningCheck;
 use App\Models\CapliningResult;
@@ -91,44 +92,43 @@ class CapliningController extends Controller
     {
         // Validasi input
         $validated = $request->validate([
-            'nomer_caplining' => 'required|integer',
-            'tanggal_check1' => 'nullable|date_format:Y-m-d',
-            'tanggal_check2' => 'nullable|date_format:Y-m-d',
-            'tanggal_check3' => 'nullable|date_format:Y-m-d',
-            'tanggal_check4' => 'nullable|date_format:Y-m-d',
-            'tanggal_check5' => 'nullable|date_format:Y-m-d',
-            'checked_by' => 'required|string',
-            'approved_by' => 'required|string',
+            'nomer_caplining' => 'required|integer|between:1,6',
         ]);
-
+    
         // Debug: Cek data yang diterima dari form
         Log::info('Data dari form caplining:', $request->all());
-
-        // Periksa apakah data sudah ada
-        $existingRecord = CapliningCheck::where('nomer_caplining', $request->nomer_caplining)
-            ->first();
-        
-        if ($existingRecord) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Data dengan nomor caplining tersebut sudah ada!');
-        }
-
+    
         // Mulai transaksi database
         DB::beginTransaction();
-
+    
         try {
-            // Data utama untuk tabel caplining checks
+            // Data utama untuk tabel caplining_checks
             $data = [
                 'nomer_caplining' => $request->nomer_caplining,
-                'tanggal_check1' => $request->tanggal_check1,
-                'tanggal_check2' => $request->tanggal_check2,
-                'tanggal_check3' => $request->tanggal_check3,
-                'tanggal_check4' => $request->tanggal_check4,
-                'tanggal_check5' => $request->tanggal_check5,
-                'checked_by' => $request->checked_by,
-                'approved_by' => $request->approved_by,
             ];
+            
+            // Set tanggal dan user data untuk masing-masing kolom check
+            for ($i = 1; $i <= 5; $i++) {
+                // Simpan tanggal yang dipilih
+                if ($request->has("tanggal_$i") && !empty($request->{"tanggal_$i"})) {
+                    $data["tanggal_check$i"] = $this->formatTanggalForDB($request->{"tanggal_$i"});
+                    Log::info("Tanggal $i: " . $request->{"tanggal_$i"} . " -> " . $data["tanggal_check$i"]);
+                } else {
+                    $data["tanggal_check$i"] = null;
+                }
+                
+                // Simpan checked_by jika ada
+                if ($request->has("checked_by$i")) {
+                    $data["checked_by$i"] = $request->{"checked_by$i"};
+                } else {
+                    $data["checked_by$i"] = null;
+                }
+                
+                // Untuk approved_by, ini mungkin diisi secara terpisah
+                if ($request->has("approved_by$i")) {
+                    $data["approved_by$i"] = $request->{"approved_by$i"};
+                }
+            }
             
             // Buat record CapliningCheck
             $capliningCheck = CapliningCheck::create($data);
@@ -141,43 +141,58 @@ class CapliningController extends Controller
             
             // Definisikan item yang diperiksa
             $items = [
-                1 => 'Mesin Pouring System',
-                2 => 'Die & Punch Cylinder',
-                3 => 'Tabang Silicon',
-                4 => 'Conveyor',
-                5 => 'Motor',
-                6 => 'Sensor',
-                7 => 'Selang',
-                8 => 'Kabel',
-                // Tambahkan item lain sesuai kebutuhan
+                1 => 'Kelistrikan',
+                2 => 'MCB',
+                3 => 'PLC',
+                4 => 'Power Supply',
+                5 => 'Relay',
+                6 => 'Selenoid',
+                7 => 'Selang Angin',
+                8 => 'Regulator',
+                9 => 'Pir',
+                10 => 'Motor',
+                11 => 'Vanbelt',
+                12 => 'Conveyor',
+                13 => 'Motor Conveyor',
+                14 => 'Vibrator',
+                15 => 'Motor Vibrator',
+                16 => 'Gear Box',
+                17 => 'Rantai',
+                18 => 'Stang Penggerak',
+                19 => 'Suction Pad',
+                20 => 'Sensor',
             ];
             
             // Proses setiap item
             foreach ($items as $itemId => $itemName) {
-                // Data untuk hasil pemeriksaan
+                // Data untuk tabel hasil
                 $resultData = [
                     'check_id' => $checkId,
                     'checked_items' => $itemName,
                 ];
                 
-                // Set nilai check untuk setiap periode pemeriksaan (1-5)
+                // Set nilai check untuk setiap kolom pemeriksaan (1-5)
                 for ($i = 1; $i <= 5; $i++) {
-                    $checkField = "check{$i}";
-                    $keteranganField = "keterangan{$i}";
-                    
-                    // Set nilai check
-                    if (isset($request->{$checkField}[$itemId])) {
-                        $resultData[$checkField] = $request->{$checkField}[$itemId];
+                    // Simpan data check dan keterangan terlepas dari status tanggal
+                    // Cek apakah ada data check untuk item ini
+                    $checkKey = "check_$i";
+                    if (isset($request->$checkKey) && isset($request->$checkKey[$itemId])) {
+                        $resultData["check$i"] = $request->$checkKey[$itemId];
                     } else {
-                        $resultData[$checkField] = '-';
+                        $resultData["check$i"] = '-';
                     }
                     
-                    // Set keterangan
-                    if (isset($request->{$keteranganField}[$itemId])) {
-                        $resultData[$keteranganField] = $request->{$keteranganField}[$itemId];
+                    // Cek apakah ada keterangan untuk item ini
+                    $keteranganKey = "keterangan_$i";
+                    if (isset($request->$keteranganKey) && isset($request->$keteranganKey[$itemId])) {
+                        $resultData["keterangan$i"] = $request->$keteranganKey[$itemId];
                     } else {
-                        $resultData[$keteranganField] = null;
+                        $resultData["keterangan$i"] = null;
                     }
+                    
+                    // Debug log
+                    Log::info("Item #$itemId ($itemName) - Check$i: " . $resultData["check$i"] . 
+                              ", Keterangan$i: " . $resultData["keterangan$i"]);
                 }
                 
                 // Buat record hasil pemeriksaan
@@ -207,5 +222,30 @@ class CapliningController extends Controller
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+    
+    private function formatTanggalForDB($tanggal)
+    {
+        if (empty($tanggal)) {
+            return null;
+        }
+        
+        // Format yang diterima dari form: "DD Mmm YYYY" (contoh: "15 Mei 2025")
+        $bulanMap = [
+            'Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04', 'Mei' => '05', 
+            'Jun' => '06', 'Jul' => '07', 'Ags' => '08', 'Sep' => '09', 'Okt' => '10', 
+            'Nov' => '11', 'Des' => '12'
+        ];
+        
+        $parts = explode(' ', $tanggal);
+        if (count($parts) === 3) {
+            $day = str_pad($parts[0], 2, '0', STR_PAD_LEFT);
+            $month = $bulanMap[$parts[1]] ?? '01';
+            $year = $parts[2];
+            
+            return "$year-$month-$day";
+        }
+        
+        return null;
     }
 }

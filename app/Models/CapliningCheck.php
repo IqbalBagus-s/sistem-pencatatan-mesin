@@ -29,8 +29,16 @@ class CapliningCheck extends Model
         'tanggal_check3',
         'tanggal_check4',
         'tanggal_check5',
-        'checked_by',
-        'approved_by',
+        'checked_by1',
+        'checked_by2',
+        'checked_by3',
+        'checked_by4',
+        'checked_by5',
+        'approved_by1',
+        'approved_by2',
+        'approved_by3',
+        'approved_by4',
+        'approved_by5',
     ];
 
     /**

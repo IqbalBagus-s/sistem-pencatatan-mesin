@@ -66,61 +66,60 @@
                 </div>
             </div>                    
             @php
-            // Items yang perlu di-check (updated list sesuai permintaan)
-            $items = [
-                1 => 'Kelistrikan',
-                2 => 'MCB',
-                3 => 'PLC',
-                4 => 'Power Supply',
-                5 => 'Relay',
-                6 => 'Selenoid',
-                7 => 'Selang Angin',
-                8 => 'Regulator',
-                9 => 'Pir',
-                10 => 'Motor',
-                11 => 'Vanbelt',
-                12 => 'Conveyor',
-                13 => 'Motor Conveyor',
-                14 => 'Vibrator',
-                15 => 'Motor Vibrator',
-                16 => 'Gear Box',
-                17 => 'Rantai',
-                18 => 'Stang Penggerak',
-                19 => 'Suction Pad',
-                20 => 'Sensor',
-            ];
-        
-            // Opsi check dengan ikon
-            $options = [
-                'V' => '✓',
-                'X' => '✗',
-                '-' => '—',
-                'OFF' => 'OFF'
-            ];
-        
-            // Nama bulan dalam bahasa Indonesia (singkatan)
-            $bulanSingkat = [
-                1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 
-                6 => 'Jun', 7 => 'Jul', 8 => 'Ags', 9 => 'Sep', 10 => 'Okt', 
-                11 => 'Nov', 12 => 'Des'
-            ];
-        @endphp
-        
-        <!-- Tabel Inspeksi -->
-        <div class="mb-6">
-            <div class="overflow-x-auto mb-6 border border-gray-300">
-                <table class="w-full border-collapse">
-                    <thead>
-                        <tr>
-                            <th class="border border-gray-300 bg-sky-50 p-2 w-10 sticky left-0 z-10" rowspan="2">No.</th>
-                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10" colspan="1">Tanggal</th>
-                            
-                            @for ($i = 1; $i <= 5; $i++)
-                                <th class="border border-gray-300 bg-sky-50 p-2 w-24" colspan="1">
+                // Items yang perlu di-check (updated list sesuai permintaan)
+                $items = [
+                    1 => 'Kelistrikan',
+                    2 => 'MCB',
+                    3 => 'PLC',
+                    4 => 'Power Supply',
+                    5 => 'Relay',
+                    6 => 'Selenoid',
+                    7 => 'Selang Angin',
+                    8 => 'Regulator',
+                    9 => 'Pir',
+                    10 => 'Motor',
+                    11 => 'Vanbelt',
+                    12 => 'Conveyor',
+                    13 => 'Motor Conveyor',
+                    14 => 'Vibrator',
+                    15 => 'Motor Vibrator',
+                    16 => 'Gear Box',
+                    17 => 'Rantai',
+                    18 => 'Stang Penggerak',
+                    19 => 'Suction Pad',
+                    20 => 'Sensor',
+                ];
+
+                // Opsi check dengan ikon
+                $options = [
+                    'V' => '✓',
+                    'X' => '✗',
+                    '-' => '—',
+                    'OFF' => 'OFF'
+                ];
+
+                // Nama bulan dalam bahasa Indonesia (singkatan)
+                $bulanSingkat = [
+                    1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 
+                    6 => 'Jun', 7 => 'Jul', 8 => 'Ags', 9 => 'Sep', 10 => 'Okt', 
+                    11 => 'Nov', 12 => 'Des'
+                ];
+            @endphp
+
+            <!-- Tabel Inspeksi -->
+            <div class="mb-6">
+                <div class="overflow-x-auto mb-6 border border-gray-300">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="border border-gray-300 bg-sky-50 p-2 w-10 sticky left-0 z-10" rowspan="2">No.</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10" colspan="1">Tanggal</th>
+                                
+                                @for ($i = 1; $i <= 5; $i++)
+                                <th class="border border-gray-300 bg-sky-50 p-2" colspan="1">
                                     <div x-data="{ 
                                         formattedDate: '', 
-                                        rawDate: '', 
-                                        showPicker: true,
+                                        showPicker: false,
                                         formatDate: function(value) {
                                             if (!value) return '';
                                             const date = new Date(value);
@@ -131,121 +130,126 @@
                                             // Mengambil nama bulan dari array PHP
                                             const monthNames = {{ json_encode($bulanSingkat) }};
                                             this.formattedDate = `${day} ${monthNames[month+1]} ${year}`;
-                                            this.rawDate = value;
-                                            this.showPicker = false;
                                             
-                                            // Update hidden input
+                                            // Update hidden input untuk tanggal_i
                                             document.querySelector('input[name=\'tanggal_' + {{ $i }} + '\']').value = this.formattedDate;
                                             
+                                            this.showPicker = false;
                                             return this.formattedDate;
                                         },
-                                        resetPicker: function() {
-                                            this.showPicker = true;
-                                            this.rawDate = '';
-                                            this.formattedDate = '';
-                                            // Reset hidden input
-                                            document.querySelector('input[name=\'tanggal_' + {{ $i }} + '\']').value = '';
+                                        clearDate: function() {
+                                            if (this.formattedDate) {
+                                                this.formattedDate = '';
+                                                document.querySelector('input[name=\'tanggal_' + {{ $i }} + '\']').value = '';
+                                                document.querySelector('input[name=\'tanggal_raw_' + {{ $i }} + '\']').value = '';
+                                                return true;
+                                            }
+                                            return false;
                                         }
-                                    }">
-                                        <!-- Date picker (shown initially or when editing) -->
-                                        <div x-show="showPicker" class="w-full">
-                                            <input type="date" 
-                                                name="tanggal_raw_{{ $i }}" 
-                                                x-model="rawDate"
-                                                @change="formatDate($event.target.value)"
-                                                class="w-full px-1 py-1 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                required>
+                                    }" class="relative">
+                                        <!-- Tombol kalender dengan ikon dan tampilan tanggal -->
+                                        <div class="flex items-center justify-center">
+                                            <button type="button" 
+                                                @click="formattedDate ? clearDate() : showPicker = !showPicker"
+                                                class="flex items-center justify-center px-2 py-1 border border-gray-300 rounded bg-white hover:bg-gray-50">
+                                                <span x-show="!formattedDate" class="flex items-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                    <span class="text-xs">Pilih</span>
+                                                </span>
+                                                <span x-show="formattedDate" class="text-sm font-medium" x-text="formattedDate"></span>
+                                            </button>
                                         </div>
                                         
-                                        <!-- Formatted date display (shown after date is selected) -->
-                                        <div x-show="!showPicker" class="w-full">
-                                            <div @click="resetPicker()" 
-                                                 class="w-full px-1 py-1 text-sm bg-white border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-center font-medium">
-                                                <span x-text="formattedDate"></span>
-                                            </div>
+                                        <!-- Date picker popup -->
+                                        <div x-show="showPicker" 
+                                            @click.outside="showPicker = false"
+                                            class="absolute z-20 top-full left-0 mt-1 bg-white shadow-lg rounded border border-gray-200 p-1">
+                                            <input type="date" 
+                                                name="tanggal_raw_{{ $i }}" 
+                                                @change="formatDate($event.target.value); showPicker = false;"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
                                         </div>
                                         
                                         <input type="hidden" name="tanggal_{{ $i }}" :value="formattedDate">
                                     </div>
                                 </th>
-                                <th class="border border-gray-300 bg-sky-50 p-2 w-64" rowspan="2">Keterangan</th>
-                            @endfor
-                        </tr>
-                        <tr>
-                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
-                            @for ($i = 1; $i <= 5; $i++)
-                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Cek</th>
-                            @endfor
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($items as $i => $item)
+                                    <th class="border border-gray-300 bg-sky-50 p-2 w-64" rowspan="2">Keterangan</th>
+                                @endfor
+                            </tr>
                             <tr>
-                                <td class="border border-gray-300 text-center p-1 h-10 text-xs sticky left-0 bg-white z-10">{{ $i }}</td>
-                                <td class="border border-gray-300 p-1 h-10 sticky left-10 bg-white z-10">
-                                    <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
-                                </td>
+                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
+                                @for ($i = 1; $i <= 5; $i++)
+                                    <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Cek</th>
+                                @endfor
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($items as $i => $item)
+                                <tr>
+                                    <td class="border border-gray-300 text-center p-1 h-10 text-xs sticky left-0 bg-white z-10">{{ $i }}</td>
+                                    <td class="border border-gray-300 p-1 h-10 sticky left-10 bg-white z-10">
+                                        <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
+                                    </td>
+                                    
+                                    @for($j = 1; $j <= 5; $j++)
+                                        <td class="border border-gray-300 p-1 h-10">
+                                            <select name="check_{{ $j }}[{{ $i }}]" class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                                @foreach($options as $value => $symbol)
+                                                    <option value="{{ $value }}">{!! $symbol !!}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td class="border border-gray-300 p-1 h-10">
+                                            <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
+                                                class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                placeholder="Keterangan"
+                                                style="min-width: 200px;">
+                                        </td>
+                                    @endfor
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tbody class="bg-white">
+                            <tr class="bg-sky-50">
+                                <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
+                                <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10">Dibuat Oleh</td>
                                 
                                 @for($j = 1; $j <= 5; $j++)
-                                    <td class="border border-gray-300 p-1 h-10">
-                                        <select name="check_{{ $j }}[{{ $i }}]" class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                            @foreach($options as $value => $symbol)
-                                                <option value="{{ $value }}">{!! $symbol !!}</option>
-                                            @endforeach
-                                        </select>
-                                    </td>
-                                    <td class="border border-gray-300 p-1 h-10">
-                                        <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
-                                            class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                            placeholder="Keterangan"
-                                            style="min-width: 200px;">
+                                    <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                                        <div x-data="{ selected: false }">
+                                            <div class="mt-1" x-show="selected">
+                                                <span class="block w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
+                                                    {{ Auth::user()->username }}
+                                                </span>
+                                            </div>
+                                            <button type="button" 
+                                                @click="selected = !selected;
+                                                    if(selected) {
+                                                        document.querySelector('input[name=\'checked_by{{ $j }}\']').value = '{{ Auth::user()->username }}';
+                                                        document.querySelector('input[name=\'tanggal_check{{ $j }}\']').value = 
+                                                        document.querySelector('input[name=\'tanggal_{{ $j }}\']').value;
+                                                    } else {
+                                                        document.querySelector('input[name=\'checked_by{{ $j }}\']').value = '';
+                                                        document.querySelector('input[name=\'tanggal_check{{ $j }}\']').value = '';
+                                                    }"
+                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                                :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                                <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                            </button>
+                                            <!-- Hidden input to store who checked this column -->
+                                            <input type="hidden" name="checked_by{{ $j }}" value="">
+                                            <!-- Hidden input to store the check date for the controller -->
+                                            <input type="hidden" name="tanggal_check{{ $j }}" value="">
+                                        </div>
                                     </td>
                                 @endfor
                             </tr>
-                        @endforeach
-                    </tbody>
-                    <tbody class="bg-white">
-                        <tr class="bg-sky-50">
-                            <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
-                            <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10">Dibuat Oleh</td>
-                            
-                            @for($j = 1; $j <= 5; $j++)
-                                <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
-                                        <div class="mt-1" x-show="selected">
-                                            <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
-                                                readonly>
-                                            <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
-                                            <!-- Input tersembunyi untuk menyimpan tanggal yang dipilih ke model -->
-                                            <input type="hidden" name="tanggal_capliningcheck_{{ $j }}" x-ref="tanggalCapliningcheck{{ $j }}" 
-                                                x-bind:value="document.querySelector('input[name=\'tanggal_{{ $j }}\']').value">
-                                        </div>
-                                        <button type="button" 
-                                            @click="selected = !selected; 
-                                                if(selected) {
-                                                    userName = '{{ Auth::user()->username }}'; 
-                                                    $refs.user{{ $j }}.value = userName;
-                                                    $refs.checkNum{{ $j }}.value = '{{ $j }}';
-                                                    $refs.tanggalCapliningcheck{{ $j }}.value = document.querySelector('input[name=\'tanggal_{{ $j }}\']').value;
-                                                } else {
-                                                    userName = '';
-                                                    $refs.user{{ $j }}.value = '';
-                                                    $refs.checkNum{{ $j }}.value = '';
-                                                    $refs.tanggalCapliningcheck{{ $j }}.value = '';
-                                                }"
-                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
-                                            :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                            <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                                        </button>
-                                    </div>
-                                </td>
-                            @endfor
-                        </tr>
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
 
             {{-- catatan pemeriksaan --}}
             <div class="bg-gradient-to-r from-sky-50 to-blue-50 p-5 rounded-lg shadow-sm mb-6 border-l-4 border-blue-400">
