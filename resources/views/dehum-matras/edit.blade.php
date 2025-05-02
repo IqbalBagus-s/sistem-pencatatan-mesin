@@ -111,6 +111,10 @@
             <!-- Tabel Inspeksi -->
             <div class="mb-6">
                 <!-- Tabel untuk tanggal 1-11 -->
+                <!-- Notifikasi scroll horizontal untuk mobile -->
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <div class="overflow-x-auto mb-6 border border-gray-300">
                     <table class="w-full border-collapse">
                         <thead>
@@ -225,6 +229,10 @@
                     </table>
                 </div>
                 <!-- Tabel untuk tanggal 12-22 -->
+                <!-- Notifikasi scroll horizontal untuk mobile -->
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <div class="overflow-x-auto mb-6 border border-gray-300">
                     <table class="w-full border-collapse">
                         <thead>
@@ -340,6 +348,10 @@
                     </table>
                 </div>
                 <!-- Tabel untuk tanggal 23-31 -->
+                <!-- Notifikasi scroll horizontal untuk mobile -->
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <div class="overflow-x-auto mb-6">
                     <table class="w-full border-collapse table-fixed" style="width: max-content;">
                         <thead>
