@@ -398,4 +398,284 @@ class CapliningController extends Controller
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    public function edit($id)
+    {
+        // Ambil data utama caplining check
+        $check = CapliningCheck::findOrFail($id);
+        
+        // Ambil data hasil pemeriksaan
+        $results = CapliningResult::where('check_id', $id)->get();
+        
+        // Siapkan data untuk view dalam format yang mudah digunakan
+        $formattedData = collect();
+        
+        // Definisikan item yang diperiksa (sama seperti di fungsi store)
+        $items = [
+            1 => 'Kelistrikan',
+            2 => 'MCB',
+            3 => 'PLC',
+            4 => 'Power Supply',
+            5 => 'Relay',
+            6 => 'Selenoid',
+            7 => 'Selang Angin',
+            8 => 'Regulator',
+            9 => 'Pir',
+            10 => 'Motor',
+            11 => 'Vanbelt',
+            12 => 'Conveyor',
+            13 => 'Motor Conveyor',
+            14 => 'Vibrator',
+            15 => 'Motor Vibrator',
+            16 => 'Gear Box',
+            17 => 'Rantai',
+            18 => 'Stang Penggerak',
+            19 => 'Suction Pad',
+            20 => 'Sensor',
+        ];
+        
+        // Format tanggal untuk display
+        $formatDisplayTanggal = function($dbDate) {
+            if (empty($dbDate)) {
+                return null;
+            }
+            
+            $date = \Carbon\Carbon::parse($dbDate);
+            $bulanSingkat = [
+                1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 
+                6 => 'Jun', 7 => 'Jul', 8 => 'Ags', 9 => 'Sep', 10 => 'Okt', 
+                11 => 'Nov', 12 => 'Des'
+            ];
+            
+            return $date->format('d') . ' ' . $bulanSingkat[$date->format('n')] . ' ' . $date->format('Y');
+        };
+        
+        // Proses data hasil pemeriksaan untuk setiap item
+        foreach ($items as $itemId => $itemName) {
+            $itemResult = $results->where('checked_items', $itemName)->first();
+            
+            if ($itemResult) {
+                // Untuk setiap kolom check (1-5)
+                for ($i = 1; $i <= 5; $i++) {
+                    $checkField = "check$i";
+                    $keteranganField = "keterangan$i";
+                    
+                    // Hanya tambahkan ke formattedData jika ada tanggal check untuk kolom ini
+                    $tanggalField = "tanggal_check$i";
+                    
+                    if ($check->$tanggalField) {
+                        $formattedData->push([
+                            'check_number' => $i,
+                            'item_id' => $itemId,
+                            'item_name' => $itemName,
+                            'tanggal' => $formatDisplayTanggal($check->$tanggalField),
+                            'tanggal_raw' => $check->$tanggalField,
+                            'result' => $itemResult->$checkField,
+                            'keterangan' => $itemResult->$keteranganField,
+                            'checked_by' => $check->{"checked_by$i"},
+                            'approved_by' => $check->{"approved_by$i"} ?? ''
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Tambahkan informasi untuk tanggal yang mungkin belum memiliki item spesifik
+        for ($i = 1; $i <= 5; $i++) {
+            $tanggalField = "tanggal_check$i";
+            $checkedByField = "checked_by$i";
+            $approvedByField = "approved_by$i";
+            
+            if ($check->$tanggalField && !$formattedData->where('check_number', $i)->count()) {
+                $formattedData->push([
+                    'check_number' => $i,
+                    'tanggal' => $formatDisplayTanggal($check->$tanggalField),
+                    'tanggal_raw' => $check->$tanggalField,
+                    'checked_by' => $check->$checkedByField,
+                    'approved_by' => $check->$approvedByField ?? ''
+                ]);
+            }
+        }
+        
+        // Group data berdasarkan nomor check untuk memudahkan penggunaan di view
+        $groupedData = $formattedData->groupBy('check_number');
+        
+        // Log untuk debugging
+        Log::info('Data caplining untuk edit:', [
+            'check_id' => $id,
+            'nomer_caplining' => $check->nomer_caplining,
+            'total_items' => $formattedData->count()
+        ]);
+        
+        return view('caplining.edit', compact('check', 'groupedData', 'items'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'nomer_caplining' => 'required|integer|between:1,20',
+        ]);
+    
+        // Cari data caplining yang akan diupdate
+        $capCheck = CapliningCheck::findOrFail($id);
+    
+        // Mulai transaksi database
+        DB::beginTransaction();
+    
+        try {
+            // Kumpulkan tanggal-tanggal pemeriksaan dan pelaksana check
+            $tanggalData = [];
+            $checkedByData = [];
+            $tanggalChecks = [];
+            
+            for ($i = 1; $i <= 5; $i++) {
+                // Ambil tanggal dari request jika ada
+                if ($request->has("tanggal_raw_$i") && !empty($request->input("tanggal_raw_$i"))) {
+                    $tanggalData["tanggal_check$i"] = $request->input("tanggal_raw_$i");
+                    $checkedByData["checked_by$i"] = $request->input("checked_by$i");
+                    $tanggalChecks[] = $request->input("tanggal_raw_$i");
+                } elseif ($request->has("tanggal_check$i")) {
+                    // Tanggal yang sudah ada sebelumnya (tidak diubah)
+                    $tanggalData["tanggal_check$i"] = $capCheck->{"tanggal_check$i"};
+                    $checkedByData["checked_by$i"] = $request->input("checked_by$i");
+                    if ($capCheck->{"tanggal_check$i"}) {
+                        $tanggalChecks[] = $capCheck->{"tanggal_check$i"};
+                    }
+                } else {
+                    // Tidak ada tanggal
+                    $tanggalData["tanggal_check$i"] = null;
+                    $checkedByData["checked_by$i"] = null;
+                }
+            }
+    
+            // Validasi tanggal - cek apakah tanggal sudah ada di database untuk nomer_caplining yang sama
+            $existingDates = [];
+            if (!empty($tanggalChecks)) {
+                // Query untuk mencari tanggal yang sudah ada di caplining lain
+                $existingRecords = CapliningCheck::where('nomer_caplining', $request->nomer_caplining)
+                    ->where('id', '!=', $id) // Kecualikan record yang sedang diedit
+                    ->where(function($query) use ($tanggalChecks) {
+                        foreach ($tanggalChecks as $date) {
+                            $query->orWhere('tanggal_check1', $date)
+                                  ->orWhere('tanggal_check2', $date)
+                                  ->orWhere('tanggal_check3', $date)
+                                  ->orWhere('tanggal_check4', $date)
+                                  ->orWhere('tanggal_check5', $date);
+                        }
+                    })
+                    ->get();
+                
+                // Jika ada tanggal yang sudah ada, kumpulkan untuk pesan error
+                if ($existingRecords->count() > 0) {
+                    foreach ($existingRecords as $record) {
+                        for ($i = 1; $i <= 5; $i++) {
+                            $dateField = "tanggal_check$i";
+                            if (in_array($record->$dateField, $tanggalChecks)) {
+                                // Format tanggal kembali ke format yang dimengerti user
+                                if ($record->$dateField) {
+                                    $date = \Carbon\Carbon::parse($record->$dateField);
+                                    $bulanSingkat = [
+                                        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 
+                                        6 => 'Jun', 7 => 'Jul', 8 => 'Ags', 9 => 'Sep', 10 => 'Okt', 
+                                        11 => 'Nov', 12 => 'Des'
+                                    ];
+                                    $formattedDate = $date->format('d') . ' ' . $bulanSingkat[$date->format('n')] . ' ' . $date->format('Y');
+                                    $existingDates[] = $formattedDate;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Jika ada tanggal yang sudah ada, kembalikan error
+                if (!empty($existingDates)) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors(['tanggal' => 'Data tersebut sudah ada!'])
+                        ->with('error', 'Data tersebut sudah ada!');
+                }
+            }
+    
+            // Update data utama CapliningCheck
+            $capCheck->update(array_merge([
+                'nomer_caplining' => $request->nomer_caplining,
+            ], $tanggalData, $checkedByData));
+    
+            // Definisikan items yang diperiksa
+            $items = [
+                1 => 'Kelistrikan',
+                2 => 'MCB',
+                3 => 'PLC',
+                4 => 'Power Supply',
+                5 => 'Relay',
+                6 => 'Selenoid',
+                7 => 'Selang Angin',
+                8 => 'Regulator',
+                9 => 'Pir',
+                10 => 'Motor',
+                11 => 'Vanbelt',
+                12 => 'Conveyor',
+                13 => 'Motor Conveyor',
+                14 => 'Vibrator',
+                15 => 'Motor Vibrator',
+                16 => 'Gear Box',
+                17 => 'Rantai',
+                18 => 'Stang Penggerak',
+                19 => 'Suction Pad',
+                20 => 'Sensor',
+            ];
+    
+            // Ambil data hasil pemeriksaan yang sudah ada
+            $existingResults = CapliningResult::where('check_id', $id)
+                ->get()
+                ->keyBy('checked_items');
+    
+            // Proses setiap item untuk setiap kolom check (1-5)
+            foreach ($items as $itemId => $itemName) {
+                // Ambil atau buat record untuk item ini
+                $itemRecord = $existingResults->get($itemName);
+                
+                if (!$itemRecord) {
+                    $itemRecord = new CapliningResult([
+                        'check_id' => $id,
+                        'checked_items' => $itemName
+                    ]);
+                }
+    
+                // Update data untuk setiap kolom check (1-5)
+                for ($i = 1; $i <= 5; $i++) {
+                    $checkField = "check$i";
+                    $keteranganField = "keterangan$i";
+    
+                    // Update hasil check jika ada input
+                    if (isset($request->{"check_$i"}) && isset($request->{"check_$i"}[$itemId])) {
+                        $itemRecord->$checkField = $request->{"check_$i"}[$itemId];
+                    }
+    
+                    // Update keterangan jika ada input
+                    if (isset($request->{"keterangan_$i"}) && isset($request->{"keterangan_$i"}[$itemId])) {
+                        $itemRecord->$keteranganField = $request->{"keterangan_$i"}[$itemId];
+                    }
+                }
+    
+                // Simpan perubahan
+                $itemRecord->save();
+            }
+    
+            // Commit transaksi
+            DB::commit();
+    
+            return redirect()->route('caplining.index')
+                ->with('success', 'Data mesin caplining berhasil diperbarui!');
+    
+        } catch (\Exception $e) {
+            // Rollback transaksi jika terjadi kesalahan
+            DB::rollBack();
+    
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
 }
