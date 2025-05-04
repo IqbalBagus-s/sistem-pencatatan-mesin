@@ -13,6 +13,7 @@ use App\Http\Controllers\AutoloaderController;
 use App\Http\Controllers\DehumMatrasController;
 use App\Http\Controllers\CapliningController;
 use App\Http\Controllers\VacumCleanerController;
+use App\Http\Controllers\SlittingController;
 
 
 Route::get('/', function () {
@@ -140,4 +141,15 @@ Route::middleware(['auth:approver,checker'])->group(function () {
     Route::post('/vacuum-cleaner/{id}/approve', [VacumCleanerController::class, 'approve'])->name('vacuum-cleaner.approve');
     // Route download PDF
     Route::get('/vacuum-cleaner/{id}/download-pdf', [VacumCleanerController::class, 'downloadPdf'])->name('vacuum-cleaner.downloadPdf');
+
+    // Route Mesin Slitting 
+    Route::get('/slitting', [SlittingController::class, 'index'])->name('slitting.index');
+    Route::get('/slitting/create', [SlittingController::class, 'create'])->name('slitting.create');
+    Route::post('/slitting', [SlittingController::class, 'store'])->name('slitting.store');
+    Route::get('/slitting/{id}/edit', [SlittingController::class, 'edit'])->name('slitting.edit');
+    Route::put('/slitting/{id}', [SlittingController::class, 'update'])->name('slitting.update');
+    Route::get('/slitting/{id}', [SlittingController::class, 'show'])->name('slitting.show');
+    Route::post('/slitting/{id}/approve', [SlittingController::class, 'approve'])->name('slitting.approve');
+    // Route download PDF
+    Route::get('/slitting/{id}/download-pdf', [SlittingController::class, 'downloadPdf'])->name('slitting.downloadPdf');
 });
