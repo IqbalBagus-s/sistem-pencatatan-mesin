@@ -85,35 +85,48 @@ class CapliningController extends Controller
             
             $check->checkedItemsCount = $checkedItems;
             
-            // Status approval - cek semua kolom approved_by
-            $approvers = collect([
+            // PERBAIKAN: Verifikasi status approval dengan perbandingan yang lebih teliti
+            $allFilled = true;
+            $hasApproval = false;
+            $missingApprovals = false;
+    
+            // Cek setiap pasangan checked_by dan approved_by
+            for ($i = 1; $i <= 5; $i++) {
+                $checkerField = "checked_by{$i}";
+                $approverField = "approved_by{$i}";
+                
+                // Jika ada checker tetapi tidak ada approver
+                if (!empty($check->$checkerField) && empty($check->$approverField)) {
+                    $allFilled = false;
+                    $missingApprovals = true;
+                }
+                
+                // Jika ada approver, tandai bahwa setidaknya ada satu approval
+                if (!empty($check->$approverField)) {
+                    $hasApproval = true;
+                }
+            }
+            
+            // Tentukan status approval berdasarkan kondisi yang diverifikasi
+            if (!$hasApproval) {
+                $check->approvalStatus = 'not_approved'; // Belum ada approval sama sekali
+                $check->isApproved = false;
+            } elseif ($missingApprovals) {
+                $check->approvalStatus = 'partially_approved'; // Ada approval tapi tidak lengkap
+                $check->isApproved = false;
+            } else {
+                $check->approvalStatus = 'fully_approved'; // Semua yang perlu diapprove sudah diapprove
+                $check->isApproved = true;
+            }
+            
+            // Kumpulkan daftar semua approver untuk penggunaan lain jika diperlukan
+            $check->allApprovers = collect([
                 $check->approved_by1,
                 $check->approved_by2,
                 $check->approved_by3,
                 $check->approved_by4,
                 $check->approved_by5
             ])->filter()->values()->toArray();
-            
-            // Hitung jumlah checker yang ada (tidak kosong)
-            $totalCheckers = collect([
-                $check->checked_by1,
-                $check->checked_by2,
-                $check->checked_by3,
-                $check->checked_by4,
-                $check->checked_by5
-            ])->filter()->count();
-            
-            // Tentukan status approval
-            if (count($approvers) === 0) {
-                $check->approvalStatus = 'not_approved'; // Belum Disetujui
-            } elseif (count($approvers) < $totalCheckers) {
-                $check->approvalStatus = 'partially_approved'; // Disetujui Sebagian
-            } else {
-                $check->approvalStatus = 'fully_approved'; // Disetujui
-            }
-            
-            // Simpan juga daftar approver untuk penggunaan lain jika diperlukan
-            $check->allApprovers = $approvers;
             
             // Menghitung dan menyimpan rentang tanggal
             $tanggalFormatted = $this->getFormattedTanggalRange($check);
@@ -677,5 +690,140 @@ class CapliningController extends Controller
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    public function show($id)
+    {
+        // Ambil data utama caplining check
+        $check = CapliningCheck::findOrFail($id);
+        
+        // Ambil data hasil pemeriksaan
+        $resultsData = CapliningResult::where('check_id', $id)->get();
+        
+        // Siapkan data untuk view dalam format yang sesuai dengan template show
+        $results = collect();
+        
+        // Definisikan item yang diperiksa (sama seperti di view)
+        $items = [
+            1 => 'Kelistrikan',
+            2 => 'MCB',
+            3 => 'PLC',
+            4 => 'Power Supply',
+            5 => 'Relay',
+            6 => 'Selenoid',
+            7 => 'Selang Angin',
+            8 => 'Regulator',
+            9 => 'Pir',
+            10 => 'Motor',
+            11 => 'Vanbelt',
+            12 => 'Conveyor',
+            13 => 'Motor Conveyor',
+            14 => 'Vibrator',
+            15 => 'Motor Vibrator',
+            16 => 'Gear Box',
+            17 => 'Rantai',
+            18 => 'Stang Penggerak',
+            19 => 'Suction Pad',
+            20 => 'Sensor',
+        ];
+        
+        // Format tanggal untuk display
+        $formatDisplayTanggal = function($dbDate) {
+            if (empty($dbDate)) {
+                return null;
+            }
+            
+            $date = \Carbon\Carbon::parse($dbDate);
+            $bulanSingkat = [
+                1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 
+                6 => 'Jun', 7 => 'Jul', 8 => 'Ags', 9 => 'Sep', 10 => 'Okt', 
+                11 => 'Nov', 12 => 'Des'
+            ];
+            
+            return $date->format('d') . ' ' . $bulanSingkat[$date->format('n')] . ' ' . $date->format('Y');
+        };
+        
+        // Proses data hasil pemeriksaan untuk setiap item
+        foreach ($items as $itemId => $itemName) {
+            $itemResult = $resultsData->where('checked_items', $itemName)->first();
+            
+            if ($itemResult) {
+                // Untuk setiap kolom check (1-5)
+                for ($i = 1; $i <= 5; $i++) {
+                    $checkField = "check$i";
+                    $keteranganField = "keterangan$i";
+                    $tanggalField = "tanggal_check$i";
+                    
+                    if ($check->$tanggalField) {
+                        $results->push([
+                            'tanggal_check' => $i,
+                            'item_id' => $itemId,
+                            'result' => $itemResult->$checkField ?? null,
+                            'keterangan' => $itemResult->$keteranganField ?? '',
+                            'checked_by' => $check->{"checked_by$i"},
+                            'approved_by' => $check->{"approved_by$i"} ?? '',
+                            'tanggal' => $formatDisplayTanggal($check->$tanggalField)
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Tambahkan informasi untuk tanggal yang mungkin belum memiliki item spesifik
+        for ($i = 1; $i <= 5; $i++) {
+            $tanggalField = "tanggal_check$i";
+            $checkedByField = "checked_by$i";
+            $approvedByField = "approved_by$i";
+            
+            if ($check->$tanggalField && !$results->where('tanggal_check', $i)->where('checked_by', '!=', null)->count()) {
+                $results->push([
+                    'tanggal_check' => $i,
+                    'tanggal' => $formatDisplayTanggal($check->$tanggalField),
+                    'checked_by' => $check->$checkedByField,
+                    'approved_by' => $check->$approvedByField ?? ''
+                ]);
+            }
+        }
+        
+        // Log untuk debugging
+        Log::info('Data caplining untuk detail view:', [
+            'check_id' => $id,
+            'nomer_caplining' => $check->nomer_caplining,
+            'total_items' => $results->count()
+        ]);
+        
+        return view('caplining.show', compact('check', 'results', 'items'));
+    }
+
+    public function approve(Request $request, $id)
+    {
+        // Find the caplining check record
+        $check = CapliningCheck::findOrFail($id);
+        
+        // Initialize data array for update
+        $updateData = [];
+        
+        // Loop through potential approval fields
+        for ($i = 1; $i <= 5; $i++) {
+            // Check if this check number was submitted
+            if ($request->has("approve_num_{$i}") && $request->filled("approved_by_{$i}")) {
+                // Get the approved by value
+                $approvedBy = $request->input("approved_by_{$i}");
+                
+                // Add to update data
+                $updateData["approved_by{$i}"] = $approvedBy;
+            }
+        }
+        
+        // Update the record if there are any changes
+        if (!empty($updateData)) {
+            $check->update($updateData);
+            
+            return redirect()->route('caplining.index')
+                ->with('success', 'Persetujuan berhasil disimpan.');
+        }
+        
+        return redirect()->route('caplining.index')
+            ->with('info', 'Tidak ada perubahan yang disimpan.');
     }
 }
