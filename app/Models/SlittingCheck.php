@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class SlettingCheck extends Model
+class SlittingCheck extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -16,7 +16,7 @@ class SlettingCheck extends Model
      * @var array
      */
     protected $fillable = [
-        'nomer_sletting',
+        'nomer_slitting',
         'bulan',
         'checked_by_minggu1',
         'approved_by_minggu1',
@@ -29,10 +29,10 @@ class SlettingCheck extends Model
     ];
 
     /**
-     * Get the results for this sletting check.
+     * Get the results for this slitting check.
      */
     public function results()
     {
-        return $this->hasMany(SlettingResult::class, 'check_id');
+        return $this->hasMany(SlittingResult::class, 'check_id');
     }
 }

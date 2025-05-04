@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sletting_results', function (Blueprint $table) {
+        Schema::create('slitting_results', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('check_id'); // Foreign key dari sletting_checks
             $table->string('checked_items')->nullable();

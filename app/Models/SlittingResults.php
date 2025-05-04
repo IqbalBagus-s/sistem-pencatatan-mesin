@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class SlettingResult extends Model
+class SlittingResult extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -29,10 +29,10 @@ class SlettingResult extends Model
     ];
 
     /**
-     * Get the sletting check that owns this result.
+     * Get the slitting check that owns this result.
      */
-    public function slettingCheck()
+    public function slittingCheck()
     {
-        return $this->belongsTo(SlettingCheck::class, 'check_id');
+        return $this->belongsTo(SlittingCheck::class, 'check_id');
     }
 }

@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sletting_checks', function (Blueprint $table) {
+        Schema::create('slitting_checks', function (Blueprint $table) {
             $table->id();
-            $table->string('nomer_sletting'); // Menyimpan nomor mesin
+            $table->string('nomer_slitting'); // Menyimpan nomor mesin
             $table->string('bulan'); // Menyimpan bulan
             
             // data checker & approver tiap minggu
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sletting_checks');
+        Schema::dropIfExists('slitting_checks');
     }
 };
