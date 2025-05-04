@@ -78,7 +78,11 @@
                         <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10" colspan="1">Tanggal</th>
                         
                         @for ($i = 1; $i <= 5; $i++)
-                            <th class="border border-gray-300 bg-sky-50 p-2" colspan="1">
+                            @php
+                                // Check if this column is approved
+                                $isApproved = !empty($check->{'approved_by'.$i});
+                            @endphp
+                            <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2" colspan="1">
                                 <!-- Conditionally editable date field based on whether date exists -->
                                 <div class="relative">
                                     @php
@@ -87,17 +91,17 @@
                                         $rawDate = $hasDate ? date('Y-m-d', strtotime($check->{'tanggal_check'.$i})) : '';
                                     @endphp
 
-                                    <!-- Read-only display if date exists -->
-                                    @if($hasDate)
+                                    <!-- Read-only display if date exists or is approved -->
+                                    @if($hasDate || $isApproved)
                                         <div class="flex items-center justify-center">
-                                            <div class="px-2 py-1 border border-gray-300 rounded bg-gray-100 text-center">
+                                            <div class="px-2 py-1 border border-gray-300 rounded {{ $isApproved ? 'bg-green-100' : 'bg-gray-100' }} text-center">
                                                 <span class="text-sm font-medium">{{ $formattedDate }}</span>
                                             </div>
                                         </div>
                                         <input type="hidden" name="tanggal_{{ $i }}" value="{{ $formattedDate }}">
                                         <input type="hidden" name="tanggal_raw_{{ $i }}" value="{{ $rawDate }}">
                                     @else
-                                        <!-- Editable date picker if no date exists -->
+                                        <!-- Editable date picker if no date exists and not approved -->
                                         <div x-data="{ 
                                             formattedDate: '', 
                                             showPicker: false,
@@ -161,13 +165,16 @@
                                     @endif
                                 </div>
                             </th>
-                            <th class="border border-gray-300 bg-sky-50 p-2 w-64" rowspan="2">Keterangan</th>
+                            <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 w-64" rowspan="2">Keterangan</th>
                         @endfor
                     </tr>
                     <tr>
                         <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
                         @for ($i = 1; $i <= 5; $i++)
-                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Cek</th>
+                            @php
+                                $isApproved = !empty($check->{'approved_by'.$i});
+                            @endphp
+                            <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 min-w-20">Cek</th>
                         @endfor
                     </tr>
                 </thead>
@@ -186,20 +193,41 @@
                                     $currentItem = $itemData->where('item_id', $i)->first();
                                     $resultValue = $currentItem['result'] ?? '';
                                     $keteranganValue = $currentItem['keterangan'] ?? '';
+                                    
+                                    // Check if this column is approved
+                                    $isApproved = !empty($check->{'approved_by'.$j});
                                 @endphp
-                                <td class="border border-gray-300 p-1 h-10">
-                                    <select name="check_{{ $j }}[{{ $i }}]" class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                        @foreach($options as $value => $symbol)
-                                            <option value="{{ $value }}" {{ $resultValue == $value ? 'selected' : '' }}>{!! $symbol !!}</option>
-                                        @endforeach
-                                    </select>
+                                <td class="border border-gray-300 p-1 h-10 {{ $isApproved ? 'bg-green-50' : '' }}">
+                                    @if($isApproved)
+                                        <!-- Read-only display if approved -->
+                                        <div class="w-full h-8 px-2 py-0 text-sm bg-green-100 border border-gray-300 rounded flex items-center justify-center">
+                                            {!! $options[$resultValue] ?? '—' !!}
+                                        </div>
+                                        <input type="hidden" name="check_{{ $j }}[{{ $i }}]" value="{{ $resultValue }}">
+                                    @else
+                                        <!-- Editable dropdown if not approved -->
+                                        <select name="check_{{ $j }}[{{ $i }}]" class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                            @foreach($options as $value => $symbol)
+                                                <option value="{{ $value }}" {{ $resultValue == $value ? 'selected' : '' }}>{!! $symbol !!}</option>
+                                            @endforeach
+                                        </select>
+                                    @endif
                                 </td>
-                                <td class="border border-gray-300 p-1 h-10">
-                                    <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
-                                        value="{{ $keteranganValue }}"
-                                        class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                        placeholder="Keterangan"
-                                        style="min-width: 200px;">
+                                <td class="border border-gray-300 p-1 h-10 {{ $isApproved ? 'bg-green-50' : '' }}">
+                                    @if($isApproved)
+                                        <!-- Read-only display if approved -->
+                                        <div class="w-full h-8 px-2 py-0 text-sm bg-green-100 border border-gray-300 rounded flex items-center">
+                                            {{ $keteranganValue }}
+                                        </div>
+                                        <input type="hidden" name="keterangan_{{ $j }}[{{ $i }}]" value="{{ $keteranganValue }}">
+                                    @else
+                                        <!-- Editable input if not approved -->
+                                        <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
+                                            value="{{ $keteranganValue }}"
+                                            class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                            placeholder="Keterangan"
+                                            style="min-width: 200px;">
+                                    @endif
                                 </td>
                             @endfor
                         </tr>
@@ -214,19 +242,29 @@
                             @php
                                 $checkedBy = $check->{"checked_by$j"} ?? '';
                                 $isChecked = !empty($checkedBy);
+                                $isApproved = !empty($check->{"approved_by$j"});
                             @endphp
-                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                            <td colspan="2" class="border border-gray-300 p-1 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }}">
                                 <div x-data="{ 
                                     selected: {{ $isChecked ? 'true' : 'false' }},
                                     username: '{{ $isChecked ? $checkedBy : Auth::user()->username }}',
                                     originalUsername: '{{ $checkedBy }}',
-                                    currentUsername: '{{ Auth::user()->username }}'
+                                    currentUsername: '{{ Auth::user()->username }}',
+                                    isPreexisting: {{ $isChecked ? 'true' : 'false' }},
+                                    isApproved: {{ $isApproved ? 'true' : 'false' }}
                                 }">
-                                    <div class="mt-1" x-show="selected">
-                                        <span class="block w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center" x-text="username">
+                                    <div class="mt-1" x-show="selected || isApproved">
+                                        <span class="block w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded text-center" x-text="username">
                                         </span>
+                                        @if($isApproved)
+                                            <div class="mt-1 text-xs text-green-600 text-center">
+                                                Disetujui oleh: {{ $check->{"approved_by$j"} }}
+                                            </div>
+                                        @endif
                                     </div>
+                                    <!-- Only show button when not preexisting and not approved -->
                                     <button type="button" 
+                                        x-show="!isPreexisting && !isApproved"
                                         @click="
                                             selected = !selected;
                                             if(selected) {
@@ -247,6 +285,8 @@
                                     <input type="hidden" name="checked_by{{ $j }}" value="{{ $checkedBy }}">
                                     <!-- Hidden input to store the check date for the controller -->
                                     <input type="hidden" name="tanggal_check{{ $j }}" value="{{ $check->{'tanggal_check'.$j} ? date('d', strtotime($check->{'tanggal_check'.$j})) . ' ' . $bulanSingkat[date('n', strtotime($check->{'tanggal_check'.$j}))] . ' ' . date('Y', strtotime($check->{'tanggal_check'.$j})) : '' }}">
+                                    <!-- Hidden input to maintain approved by value -->
+                                    <input type="hidden" name="approved_by{{ $j }}" value="{{ $check->{'approved_by'.$j} ?? '' }}">
                                 </div>
                             </td>
                         @endfor
@@ -271,6 +311,12 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
                 <span> Pengecekan mesin, empat hari sebelum mesin dijadwalkan jalan.</span>
+            </li>
+            <li class="flex items-start mt-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+                <span>Kolom dengan warna hijau telah disetujui dan tidak dapat diubah.</span>
             </li>
         </ul>
     </div>
