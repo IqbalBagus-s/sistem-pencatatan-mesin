@@ -397,6 +397,58 @@
                             </div>
                         </div>
                     </td>
+                    
+                    <!-- Week 3 - Updated handling for approved state -->
+                    <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
+                        <div x-data="{ selected: '{{ $hopperCheck->checked_by_minggu4 }}' ? true : false, userName: '{{ $hopperCheck->checked_by_minggu4 }}' }" class="h-20">
+                            <!-- Form fields selalu terlihat dengan fixed height -->
+                            <div class="space-y-1 h-12">
+                                @if($hopperCheck->approved_by_minggu4 && $hopperCheck->approved_by_minggu4 != '-')
+                                    <!-- Tambahkan hidden input untuk menyimpan nilai asli -->
+                                    <input type="hidden" name="created_by_4" value="{{ $hopperCheck->checked_by_minggu4 }}">
+                                    <input type="hidden" name="created_date_4" value="{{ $hopperCheck->tanggal_minggu4 }}">
+                                                        
+                                    <input type="text" value="{{ $hopperCheck->checked_by_minggu4 }}" 
+                                        class="w-full px-2 py-1 text-sm bg-gray-200 border border-gray-300 rounded"
+                                        readonly disabled>
+                                    <input type="text" value="{{ $hopperCheck->tanggal_minggu4 }}" 
+                                        class="w-full px-2 py-1 text-sm bg-gray-200 border border-gray-300 rounded"
+                                        readonly disabled>
+                                @else
+                                    <input type="text" name="created_by_4" x-ref="user4" 
+                                        x-bind:value="selected ? (userName || '{{ Auth::user()->username }}') : ''"
+                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                        x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
+                                        readonly>
+                                    <input type="text" name="created_date_4" x-ref="date4" 
+                                        x-bind:value="selected ? ('{{ $hopperCheck->tanggal_minggu4 }}' || '{{ date('Y-m-d') }}') : ''"
+                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                        x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
+                                        readonly>
+                                @endif
+                            </div>
+
+                            <!-- Tombol di tengah div - hilang jika sudah disetujui -->
+                            <div class="flex items-center justify-center mt-1" 
+                                x-show="{{ $hopperCheck->approved_by_minggu4 && $hopperCheck->approved_by_minggu4 != '-' ? 'false' : 'true' }}">
+                                <button type="button" 
+                                    @click="selected = !selected; 
+                                        if(selected) {
+                                            userName = '{{ Auth::user()->username }}'; 
+                                            $refs.user4.value = userName; 
+                                            $refs.date4.value = '{{ date('Y-m-d') }}';
+                                        } else {
+                                            userName = '';
+                                            $refs.user4.value = '';
+                                            $refs.date4.value = '';
+                                        }"
+                                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </td>
                 </tr>
             </tbody>
             <!-- Tbody untuk Approval -->
