@@ -457,8 +457,8 @@
                             ['name' => 'Dehum Matras', 'route' => 'dehum-matras.index'],
                             ['name' => 'Auto Loader', 'route' => 'autoloader.index'],
                             ['name' => 'Gilingan', 'route' => 'giling.index'],
-                            ['name' => 'Caplining', 'route' => null],
-                            ['name' => 'Vacuum Cleaner', 'route' => null],
+                            ['name' => 'Caplining', 'route' => 'caplining.index'],
+                            ['name' => 'Vacuum Cleaner', 'route' => 'vacuum-cleaner.index'],
                             ['name' => 'Mesin Sleeting', 'route' => null],
                             ['name' => 'Crane', 'route' => null]
                         ];
