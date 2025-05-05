@@ -131,35 +131,25 @@
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             <div class="flex flex-col items-center space-y-1">
-                                @if($check->checked_by_minggu1)
-                                    <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-xs inline-block">
-                                        M1: {{ $check->checked_by_minggu1 }}
-                                    </div>
-                                @endif
+                                @php
+                                    // Collect all non-empty checker names
+                                    $checkers = collect([
+                                        $check->checked_by_minggu1,
+                                        $check->checked_by_minggu2,
+                                        $check->checked_by_minggu3,
+                                        $check->checked_by_minggu4
+                                    ])->filter()->unique()->values();
+                                @endphp
                                 
-                                @if($check->checked_by_minggu2)
-                                    <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-xs inline-block">
-                                        M2: {{ $check->checked_by_minggu2 }}
+                                @forelse($checkers as $checker)
+                                    <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm inline-block">
+                                        {{ $checker }}
                                     </div>
-                                @endif
-                                
-                                @if($check->checked_by_minggu3)
-                                    <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-xs inline-block">
-                                        M3: {{ $check->checked_by_minggu3 }}
-                                    </div>
-                                @endif
-                                
-                                @if($check->checked_by_minggu4)
-                                    <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-xs inline-block">
-                                        M4: {{ $check->checked_by_minggu4 }}
-                                    </div>
-                                @endif
-                                
-                                @if(!$check->checked_by_minggu1 && !$check->checked_by_minggu2 && !$check->checked_by_minggu3 && !$check->checked_by_minggu4)
+                                @empty
                                     <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
                                         Belum Diisi
                                     </span>
-                                @endif
+                                @endforelse
                             </div>
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
