@@ -201,4 +201,209 @@ class SlittingController extends Controller
                              ->withInput();
         }
     }
+
+    public function edit($id)
+    {
+        // Ambil data utama slitting check
+        $check = SlittingCheck::findOrFail($id);
+        
+        // Ambil data hasil pemeriksaan
+        $results = SlittingResult::where('check_id', $id)->get();
+        
+        // Definisikan items sama seperti di fungsi store
+        $items = [
+            1 => 'Conveyor',
+            2 => 'Motor Conveyor',
+            3 => 'Kelistrikan',
+            4 => 'Kontaktor',
+            5 => 'Inverter',
+            6 => 'Vibrator',
+            7 => 'Motor Vibrator',
+            8 => 'Motor Blower',
+            9 => 'Selang angin',
+            10 => 'Flow Control',
+            11 => 'Sensor',
+            12 => 'Limit Switch',
+            13 => 'Pisau Cutting',
+            14 => 'Motor Cutting',
+            15 => 'Elemen',
+            16 => 'Regulator',
+            17 => 'Air Filter',
+        ];
+        
+        // Format data untuk view
+        $formattedResults = [];
+        
+        // Siapkan array untuk menyimpan data checker dan approval status
+        $checkerData = [
+            'checked_by_1' => $check->checked_by_minggu1,
+            'check_num_1' => $check->checked_by_minggu1 ? true : false,
+            'checked_by_2' => $check->checked_by_minggu2,
+            'check_num_2' => $check->checked_by_minggu2 ? true : false,
+            'checked_by_3' => $check->checked_by_minggu3,
+            'check_num_3' => $check->checked_by_minggu3 ? true : false,
+            'checked_by_4' => $check->checked_by_minggu4,
+            'check_num_4' => $check->checked_by_minggu4 ? true : false,
+            'approved_by_1' => $check->approved_by_minggu1,
+            'approved_by_2' => $check->approved_by_minggu2,
+            'approved_by_3' => $check->approved_by_minggu3,
+            'approved_by_4' => $check->approved_by_minggu4
+        ];
+        
+        // Format data hasil pemeriksaan berdasarkan item
+        foreach ($items as $key => $item) {
+            $result = $results->where('checked_items', $item)->first();
+            
+            if ($result) {
+                $formattedResults[$key] = [
+                    'item' => $item,
+                    'minggu1' => $result->minggu1,
+                    'keterangan_minggu1' => $result->keterangan_minggu1,
+                    'minggu2' => $result->minggu2,
+                    'keterangan_minggu2' => $result->keterangan_minggu2,
+                    'minggu3' => $result->minggu3,
+                    'keterangan_minggu3' => $result->keterangan_minggu3,
+                    'minggu4' => $result->minggu4,
+                    'keterangan_minggu4' => $result->keterangan_minggu4,
+                ];
+            } else {
+                // Jika tidak ada data untuk item ini, siapkan struktur kosong
+                $formattedResults[$key] = [
+                    'item' => $item,
+                    'minggu1' => null,
+                    'keterangan_minggu1' => null,
+                    'minggu2' => null,
+                    'keterangan_minggu2' => null,
+                    'minggu3' => null,
+                    'keterangan_minggu3' => null,
+                    'minggu4' => null,
+                    'keterangan_minggu4' => null,
+                ];
+            }
+        }
+        
+        // Pass the approval status to the view
+        $approvalStatus = [
+            'minggu1' => !empty($check->approved_by_minggu1),
+            'minggu2' => !empty($check->approved_by_minggu2),
+            'minggu3' => !empty($check->approved_by_minggu3),
+            'minggu4' => !empty($check->approved_by_minggu4)
+        ];
+        
+        return view('slitting.edit', compact('check', 'formattedResults', 'items', 'checkerData', 'approvalStatus'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'nomer_slitting' => 'required|integer|between:1,10',
+            'bulan' => 'required|date_format:Y-m',
+        ]);
+
+        // Cari data slitting yang akan diupdate
+        $slittingCheck = SlittingCheck::findOrFail($id);
+
+        // Cek apakah ada perubahan pada data utama (nomer_slitting, bulan)
+        if ($slittingCheck->nomer_slitting != $request->nomer_slitting || 
+            $slittingCheck->bulan != $request->bulan) {
+            
+            // Periksa apakah data dengan kombinasi baru sudah ada
+            $existingRecord = SlittingCheck::where('nomer_slitting', $request->nomer_slitting)
+                ->where('bulan', $request->bulan)
+                ->where('id', '!=', $id) // Kecualikan record saat ini
+                ->first();
+            
+            if ($existingRecord) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Data dengan nomor slitting dan bulan yang sama sudah ada!');
+            }
+        }
+
+        // Mulai transaksi database
+        DB::beginTransaction();
+
+        try {
+            // Update data SlittingCheck
+            $slittingCheck->update([
+                'nomer_slitting' => $request->nomer_slitting,
+                'bulan' => $request->bulan,
+                'checked_by_minggu1' => $request->checked_by_1,
+                'checked_date_minggu1' => $request->check_num_1 ? now() : null,
+                'checked_by_minggu2' => $request->checked_by_2,
+                'checked_date_minggu2' => $request->check_num_2 ? now() : null,
+                'checked_by_minggu3' => $request->checked_by_3,
+                'checked_date_minggu3' => $request->check_num_3 ? now() : null,
+                'checked_by_minggu4' => $request->checked_by_4,
+                'checked_date_minggu4' => $request->check_num_4 ? now() : null,
+            ]);
+            
+            // Definisikan items yang diperiksa
+            $items = [
+                1 => 'Conveyor',
+                2 => 'Motor Conveyor',
+                3 => 'Kelistrikan',
+                4 => 'Kontaktor',
+                5 => 'Inverter',
+                6 => 'Vibrator',
+                7 => 'Motor Vibrator',
+                8 => 'Motor Blower',
+                9 => 'Selang angin',
+                10 => 'Flow Control',
+                11 => 'Sensor', 
+                12 => 'Limit Switch',
+                13 => 'Pisau Cutting',
+                14 => 'Motor Cutting',
+                15 => 'Elemen',
+                16 => 'Regulator',
+                17 => 'Air Filter',
+            ];
+            
+            // Ambil data existing dari tabel SlittingResult
+            $existingResults = SlittingResult::where('check_id', $id)->get()->keyBy('checked_items');
+            
+            // Proses setiap item
+            foreach ($items as $itemId => $itemName) {
+                // Persiapkan data untuk update atau create
+                $resultData = [
+                    'minggu1' => $request->input("check_1.{$itemId}", '-'),
+                    'keterangan_minggu1' => $request->input("keterangan_1.{$itemId}"),
+                    'minggu2' => $request->input("check_2.{$itemId}", '-'),
+                    'keterangan_minggu2' => $request->input("keterangan_2.{$itemId}"),
+                    'minggu3' => $request->input("check_3.{$itemId}", '-'),
+                    'keterangan_minggu3' => $request->input("keterangan_3.{$itemId}"),
+                    'minggu4' => $request->input("check_4.{$itemId}", '-'),
+                    'keterangan_minggu4' => $request->input("keterangan_4.{$itemId}"),
+                ];
+                
+                // Cek apakah record sudah ada
+                $existingResult = $existingResults->get($itemName);
+                
+                if ($existingResult) {
+                    // Update record yang sudah ada
+                    $existingResult->update($resultData);
+                } else {
+                    // Buat record baru jika belum ada
+                    $resultData['check_id'] = $id;
+                    $resultData['checked_items'] = $itemName;
+                    SlittingResult::create($resultData);
+                }
+            }
+            
+            // Commit transaksi
+            DB::commit();
+            
+            return redirect()->route('slitting.index')
+                ->with('success', 'Data berhasil diperbarui!');
+                
+        } catch (\Exception $e) {
+            // Rollback transaksi jika terjadi kesalahan
+            DB::rollBack();
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
 }

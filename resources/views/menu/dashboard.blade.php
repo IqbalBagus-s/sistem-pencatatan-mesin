@@ -459,7 +459,7 @@
                             ['name' => 'Gilingan', 'route' => 'giling.index'],
                             ['name' => 'Caplining', 'route' => 'caplining.index'],
                             ['name' => 'Vacuum Cleaner', 'route' => 'vacuum-cleaner.index'],
-                            ['name' => 'Mesin Sleeting', 'route' => 'slitting.index'],
+                            ['name' => 'Slitting', 'route' => 'slitting.index'],
                             ['name' => 'Crane', 'route' => null]
                         ];
                     @endphp
