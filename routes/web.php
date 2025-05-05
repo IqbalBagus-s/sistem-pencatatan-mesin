@@ -14,6 +14,7 @@ use App\Http\Controllers\DehumMatrasController;
 use App\Http\Controllers\CapliningController;
 use App\Http\Controllers\VacumCleanerController;
 use App\Http\Controllers\SlittingController;
+use App\Http\Controllers\CraneMatrasControler;
 
 // Route Publik
 Route::get('/', function () {
@@ -45,6 +46,7 @@ Route::middleware(['auth:approver,checker'])->group(function () {
         'caplining' => CapliningController::class,
         'vacuum-cleaner' => VacumCleanerController::class,
         'slitting' => SlittingController::class,
+        'crane-matras' => CraneMatrasControler::class,
     ];
     
     // Alternatif menggunakan Resource Controller (lebih disarankan):

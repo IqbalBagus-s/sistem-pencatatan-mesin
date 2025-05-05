@@ -122,7 +122,7 @@
                                             @if ($hasApprovedBy[$j])
                                                 {!! isset($options[$resultValue]) ? $options[$resultValue] : '—' !!}
                                             @else
-                                                <span class="text-gray-300">—</span>
+                                                <span class="text-gray-600">—</span>
                                             @endif
                                         </td>
                                         
@@ -131,7 +131,7 @@
                                             @if ($hasApprovedBy[$j])
                                                 {{ $keteranganValue }}
                                             @else
-                                                <span class="text-gray-300 italic text-xs">Belum ada data</span>
+                                                <span class="text-gray-600 italic text-xs">Belum ada data</span>
                                             @endif
                                         </td>
                                     @endfor
@@ -209,18 +209,6 @@
                         </tbody>
                     </table>
                 </div>
-                
-                <!-- Notifikasi tentang data yang belum ada penanggung jawab -->
-                @if(!array_sum($hasApprovedBy))
-                    <div class="text-center p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
-                        <p class="text-yellow-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Belum ada data minggu yang memiliki penanggung jawab. Silakan pilih penanggung jawab untuk menampilkan data.
-                        </p>
-                    </div>
-                @endif
             </div>
             
             {{-- catatan pemeriksaan --}}

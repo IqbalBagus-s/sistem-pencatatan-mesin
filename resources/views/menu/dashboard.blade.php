@@ -460,7 +460,7 @@
                             ['name' => 'Caplining', 'route' => 'caplining.index'],
                             ['name' => 'Vacuum Cleaner', 'route' => 'vacuum-cleaner.index'],
                             ['name' => 'Slitting', 'route' => 'slitting.index'],
-                            ['name' => 'Crane', 'route' => null]
+                            ['name' => 'Crane Matras', 'route' => 'crane-matras.index']
                         ];
                     @endphp
                     
