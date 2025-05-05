@@ -157,25 +157,24 @@
                                 $weekCount = 4; // Total minggu
                                 $approvedCount = 0;
                                 
-                                if($check->minggu1_approved == 1) $approvedCount++;
-                                if($check->minggu2_approved == 1) $approvedCount++;
-                                if($check->minggu3_approved == 1) $approvedCount++;
-                                if($check->minggu4_approved == 1) $approvedCount++;
+                                // Periksa jika field approved_by_minggu1-4 terisi (tidak kosong)
+                                if(!empty($check->approved_by_minggu1)) $approvedCount++;
+                                if(!empty($check->approved_by_minggu2)) $approvedCount++;
+                                if(!empty($check->approved_by_minggu3)) $approvedCount++;
+                                if(!empty($check->approved_by_minggu4)) $approvedCount++;
                             @endphp
                             
-                            @if($approvedCount > 0)
-                                @if($approvedCount >= $weekCount)
-                                    <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                        Disetujui
-                                    </span>
-                                @else
-                                    <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                        Disetujui Sebagian
-                                    </span>
-                                @endif
-                            @else
+                            @if($approvedCount == 0)
                                 <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Belum Disetujui
+                                </span>
+                            @elseif($approvedCount < $weekCount)
+                                <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Disetujui Sebagian
+                                </span>
+                            @else
+                                <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Disetujui
                                 </span>
                             @endif
                         </td>

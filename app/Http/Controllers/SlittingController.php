@@ -406,4 +406,122 @@ class SlittingController extends Controller
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    public function show($id)
+    {
+        // Fetch the slitting check with its results
+        $check = SlittingCheck::findOrFail($id);
+        
+        // Get all results related to this check
+        $results = SlittingResult::where('check_id', $id)->get();
+        
+        // Define items like in the edit function
+        $items = [
+            1 => 'Conveyor',
+            2 => 'Motor Conveyor',
+            3 => 'Kelistrikan',
+            4 => 'Kontaktor',
+            5 => 'Inverter',
+            6 => 'Vibrator',
+            7 => 'Motor Vibrator',
+            8 => 'Motor Blower',
+            9 => 'Selang angin',
+            10 => 'Flow Control',
+            11 => 'Sensor',
+            12 => 'Limit Switch',
+            13 => 'Pisau Cutting',
+            14 => 'Motor Cutting',
+            15 => 'Elemen',
+            16 => 'Regulator',
+            17 => 'Air Filter',
+        ];
+        
+        // Format data untuk tampilan
+        $formattedResults = [];
+        
+        // Format hasil inspeksi berdasarkan item
+        foreach ($items as $key => $item) {
+            // First try to find by item text
+            $result = $results->where('checked_items', $item)->first();
+            
+            // If not found, try to find by item number in different formats
+            if (!$result) {
+                $result = $results->first(function($record) use ($key) {
+                    // Try to match item_id if it exists
+                    if (isset($record->item_id) && $record->item_id == $key) {
+                        return true;
+                    }
+                    
+                    // Try to match "1:Conveyor" format
+                    if (strpos($record->checked_items, $key.':') === 0) {
+                        return true;
+                    }
+                    
+                    // Try to match just the number
+                    if ($record->checked_items == (string)$key) {
+                        return true;
+                    }
+                    
+                    return false;
+                });
+            }
+            
+            if ($result) {
+                $formattedResults[$key] = [
+                    'minggu1' => $result->minggu1 ?? '-',
+                    'keterangan_minggu1' => $result->keterangan_minggu1 ?? '',
+                    'minggu2' => $result->minggu2 ?? '-',
+                    'keterangan_minggu2' => $result->keterangan_minggu2 ?? '',
+                    'minggu3' => $result->minggu3 ?? '-',
+                    'keterangan_minggu3' => $result->keterangan_minggu3 ?? '',
+                    'minggu4' => $result->minggu4 ?? '-',
+                    'keterangan_minggu4' => $result->keterangan_minggu4 ?? '',
+                ];
+            } else {
+                // If no data for this item, prepare empty structure with defaults
+                $formattedResults[$key] = [
+                    'minggu1' => '-',
+                    'keterangan_minggu1' => '',
+                    'minggu2' => '-',
+                    'keterangan_minggu2' => '',
+                    'minggu3' => '-',
+                    'keterangan_minggu3' => '',
+                    'minggu4' => '-',
+                    'keterangan_minggu4' => '',
+                ];
+            }
+        }
+        
+        // Periksa kolom mana yang memiliki penanggung jawab
+        $hasApprovedBy = [];
+        for ($i = 1; $i <= 4; $i++) {
+            $approvedBy = $check->{'approved_by_minggu'.$i} ?? '';
+            $hasApprovedBy[$i] = !empty($approvedBy);
+        }
+        
+        return view('slitting.show', compact('check', 'formattedResults', 'hasApprovedBy'));
+    }
+
+    public function approve(Request $request, $id)
+    {
+        $check = SlittingCheck::findOrFail($id);
+        
+        // Process approvals for each week
+        for ($week = 1; $week <= 4; $week++) {
+            $approverKey = "approved_by_minggu{$week}";
+            
+            if ($request->has($approverKey) && !empty($request->input($approverKey))) {
+                // Set the approved_by field if it's not already set
+                if (empty($check->$approverKey)) {
+                    $check->$approverKey = $request->input($approverKey);
+                }
+            }
+        }
+        
+        $check->save();
+        
+        return redirect()
+            ->route('slitting.index')
+            ->with('success', 'Persetujuan berhasil disimpan');
+    }
 }
