@@ -26,7 +26,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Foreign key constraint
-            $table->foreign('check_id')->references('id')->on('sletting_checks')->onDelete('cascade');
+            $table->foreign('check_id')->references('id')->on('slitting_checks')->onDelete('cascade');
         });
     }
 

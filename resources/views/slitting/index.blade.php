@@ -19,62 +19,62 @@
 
     <!-- Dropdown Filter Slitting -->
     <div x-data="{ 
-    open: false, 
-    selected: null,
-    slittingMachines: [1, 2, 3],
-    reset() {
-        this.selected = null;
-        this.open = false;
-    }
-}" class="relative w-full font-sans">
-    <!-- Label -->
-    <label class="block mb-2 font-medium text-gray-700">Filter Berdasarkan Nomor Slitting:</label>
-    
-    <!-- Dropdown Button -->
-    <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 relative">
-        <span x-text="selected ? 'Slitting ' + selected : 'Pilih Slitting'" class="text-gray-800"></span>
+                open: false, 
+                selected: null,
+                slittingMachines: [1, 2, 3],
+                reset() {
+                    this.selected = null;
+                    this.open = false;
+                }
+            }" class="relative w-full font-sans">
+        <!-- Label -->
+        <label class="block mb-2 font-medium text-gray-700">Filter Berdasarkan Nomor Slitting:</label>
         
-        <!-- Icon -->
-        <div class="absolute right-3 top-1/2 -translate-y-1/2">
-            <!-- Checkmark when selected -->
-            <svg x-show="selected" @click.stop="reset()" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+        <!-- Dropdown Button -->
+        <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 relative">
+            <span x-text="selected ? 'Slitting ' + selected : 'Pilih Slitting'" class="text-gray-800"></span>
             
-            <!-- Dropdown Arrow when not selected -->
-            <svg x-show="!selected" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
+            <!-- Icon -->
+            <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                <!-- Checkmark when selected -->
+                <svg x-show="selected" @click.stop="reset()" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                
+                <!-- Dropdown Arrow when not selected -->
+                <svg x-show="!selected" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+        </button>
+        
+        <!-- Dropdown List -->
+        <div 
+            x-show="open" 
+            @click.away="open = false" 
+            class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md overflow-hidden z-10"
+            style="display: none;"
+        >
+            <!-- Horizontal layout for options -->
+            <div class="flex flex-row flex-wrap justify-center items-center gap-2 p-3">
+                <template x-for="machine in slittingMachines" :key="machine">
+                    <button 
+                        type="button" 
+                        @click="selected = machine; open = false" 
+                        :class="selected === machine 
+                            ? 'bg-blue-500 text-white' 
+                            : 'bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-800'"
+                        class="px-3 py-1 text-sm rounded-md transition-colors duration-200 ease-in-out text-center w-16"
+                    >
+                        <span x-text="machine"></span>
+                    </button>
+                </template>
+            </div>
         </div>
-    </button>
-    
-    <!-- Dropdown List -->
-    <div 
-        x-show="open" 
-        @click.away="open = false" 
-        class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md overflow-hidden z-10"
-        style="display: none;"
-    >
-        <!-- Horizontal layout for options -->
-        <div class="flex flex-row flex-wrap justify-center items-center gap-2 p-3">
-            <template x-for="machine in slittingMachines" :key="machine">
-                <button 
-                    type="button" 
-                    @click="selected = machine; open = false" 
-                    :class="selected === machine 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-800'"
-                    class="px-3 py-1 text-sm rounded-md transition-colors duration-200 ease-in-out text-center w-16"
-                >
-                    <span x-text="machine"></span>
-                </button>
-            </template>
-        </div>
+        
+        <!-- Hidden Input untuk dikirim ke server -->
+        <input type="hidden" name="search_slitting" x-model="selected">
     </div>
-    
-    <!-- Hidden Input untuk dikirim ke server -->
-    <input type="hidden" name="search_slitting" x-model="selected">
-</div>
 
     <!-- Filter Bulan -->
     <div>
