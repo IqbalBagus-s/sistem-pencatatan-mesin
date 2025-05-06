@@ -15,6 +15,9 @@ use App\Http\Controllers\CapliningController;
 use App\Http\Controllers\VacumCleanerController;
 use App\Http\Controllers\SlittingController;
 use App\Http\Controllers\CraneMatrasControler;
+use App\Http\Controllers\ApproverController;
+use App\Http\Controllers\CheckerController;
+use App\Http\Controllers\FormController;
 
 // Route Publik
 Route::get('/', function () {
@@ -27,6 +30,28 @@ Route::get('/login', function () {
 
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Admin Routes
+Route::get('/admin-form', function () {
+    return redirect('/admin-form/login');
+})->name('admin-form');
+
+Route::get('/admin-form/login', function () {
+    return view('auth.admin-login');
+})->name('admin.login');
+
+Route::post('/admin-form/login', [AuthController::class, 'adminLogin'])->name('admin.login.post');
+Route::post('/admin-form/logout', [AuthController::class, 'adminLogout'])->name('admin.logout');
+
+// Admin Dashboard (dengan middleware admin)
+Route::middleware(['auth:admin'])->prefix('admin-form')->group(function () {
+    Route::get('/dashboard-admin', [DashboardController::class, 'adminDashboard'])->name('menu.dashboard_admin');
+    
+    // Tambahkan route admin untuk menu items baru
+    Route::resource('/approvers', ApproverController::class)->names('menu.approvers');
+    Route::resource('/checkers', CheckerController::class)->names('menu.checkers');
+    Route::resource('/forms', FormController::class)->names('menu.forms');
+});
 
 // Route yang memerlukan autentikasi
 Route::middleware(['auth:approver,checker'])->group(function () {

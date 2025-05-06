@@ -200,10 +200,10 @@ class CapliningController extends Controller
         $validated = $request->validate([
             'nomer_caplining' => 'required|integer|between:1,6',
         ]);
-    
+
         // Debug: Cek data yang diterima dari form
         Log::info('Data dari form caplining:', $request->all());
-    
+
         // Fungsi format tanggal internal
         $formatTanggalForDB = function($tanggal) {
             if (empty($tanggal)) {
@@ -228,18 +228,79 @@ class CapliningController extends Controller
             
             return null;
         };
-    
+
+        // Array untuk menyimpan tanggal yang diinput
+        $tanggalChecks = [];
+        
+        // Kumpulkan semua tanggal yang diinput untuk validasi
+        for ($i = 1; $i <= 5; $i++) {
+            if ($request->has("tanggal_$i") && !empty($request->{"tanggal_$i"})) {
+                $formattedDate = $formatTanggalForDB($request->{"tanggal_$i"});
+                if ($formattedDate) {
+                    $tanggalChecks[] = $formattedDate;
+                }
+            }
+        }
+        
+        // Validasi tanggal - cek apakah tanggal sudah ada di database untuk nomer_caplining yang sama
+        $existingDates = [];
+        if (!empty($tanggalChecks)) {
+            // Query untuk mencari tanggal yang sudah ada
+            $existingRecords = CapliningCheck::where('nomer_caplining', $request->nomer_caplining)
+                ->where(function($query) use ($tanggalChecks) {
+                    foreach ($tanggalChecks as $date) {
+                        $query->orWhere('tanggal_check1', $date)
+                            ->orWhere('tanggal_check2', $date)
+                            ->orWhere('tanggal_check3', $date)
+                            ->orWhere('tanggal_check4', $date)
+                            ->orWhere('tanggal_check5', $date);
+                    }
+                })
+                ->get();
+            
+            // Jika ada tanggal yang sudah ada, kumpulkan untuk pesan error
+            if ($existingRecords->count() > 0) {
+                foreach ($existingRecords as $record) {
+                    for ($i = 1; $i <= 5; $i++) {
+                        $dateField = "tanggal_check$i";
+                        if ($record->$dateField && in_array($record->$dateField, $tanggalChecks)) {
+                            // Format tanggal kembali ke format yang dimengerti user
+                            $date = \Carbon\Carbon::parse($record->$dateField);
+                            $bulanSingkat = [
+                                1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 
+                                6 => 'Jun', 7 => 'Jul', 8 => 'Ags', 9 => 'Sep', 10 => 'Okt', 
+                                11 => 'Nov', 12 => 'Des'
+                            ];
+                            $formattedDate = $date->format('d') . ' ' . $bulanSingkat[$date->format('n')] . ' ' . $date->format('Y');
+                            $existingDates[] = $formattedDate;
+                        }
+                    }
+                }
+            }
+            
+            // Jika ada tanggal yang sudah ada, kembalikan error
+            if (!empty($existingDates)) {
+                // Log informasi detail tentang error
+                Log::info('Tanggal duplikat terdeteksi: ', $existingDates);
+                
+                // Membuat pesan error yang lebih eksplisit
+                $errorMsg = 'Data di tanggal ' . implode(', ', array_unique($existingDates)) . ' telah ada';
+                
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['tanggal_duplicate' => $errorMsg])
+                    ->with('error', $errorMsg);
+            }
+        }
+
         // Mulai transaksi database
         DB::beginTransaction();
-    
+
         try {
             // Data utama untuk tabel caplining_checks
             $data = [
                 'nomer_caplining' => $request->nomer_caplining,
             ];
-            
-            // Array untuk menyimpan tanggal yang diinput
-            $tanggalChecks = [];
             
             // Set tanggal dan user data untuk masing-masing kolom check
             for ($i = 1; $i <= 5; $i++) {
@@ -247,11 +308,6 @@ class CapliningController extends Controller
                 if ($request->has("tanggal_$i") && !empty($request->{"tanggal_$i"})) {
                     $formattedDate = $formatTanggalForDB($request->{"tanggal_$i"});
                     $data["tanggal_check$i"] = $formattedDate;
-                    
-                    // Tambahkan ke array tanggal untuk validasi
-                    if ($formattedDate) {
-                        $tanggalChecks[] = $formattedDate;
-                    }
                     
                     Log::info("Tanggal $i: " . $request->{"tanggal_$i"} . " -> " . $data["tanggal_check$i"]);
                 } else {
@@ -268,53 +324,6 @@ class CapliningController extends Controller
                 // Untuk approved_by, ini mungkin diisi secara terpisah
                 if ($request->has("approved_by$i")) {
                     $data["approved_by$i"] = $request->{"approved_by$i"};
-                }
-            }
-            
-            // Validasi tanggal - cek apakah tanggal sudah ada di database untuk nomer_caplining yang sama
-            $existingDates = [];
-            if (!empty($tanggalChecks)) {
-                // Query untuk mencari tanggal yang sudah ada
-                $existingRecords = CapliningCheck::where('nomer_caplining', $request->nomer_caplining)
-                    ->where(function($query) use ($tanggalChecks) {
-                        foreach ($tanggalChecks as $date) {
-                            $query->orWhere('tanggal_check1', $date)
-                                  ->orWhere('tanggal_check2', $date)
-                                  ->orWhere('tanggal_check3', $date)
-                                  ->orWhere('tanggal_check4', $date)
-                                  ->orWhere('tanggal_check5', $date);
-                        }
-                    })
-                    ->get();
-                
-                // Jika ada tanggal yang sudah ada, kumpulkan untuk pesan error
-                if ($existingRecords->count() > 0) {
-                    foreach ($existingRecords as $record) {
-                        for ($i = 1; $i <= 5; $i++) {
-                            $dateField = "tanggal_check$i";
-                            if (in_array($record->$dateField, $tanggalChecks)) {
-                                // Format tanggal kembali ke format yang dimengerti user
-                                if ($record->$dateField) {
-                                    $date = \Carbon\Carbon::parse($record->$dateField);
-                                    $bulanSingkat = [
-                                        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 
-                                        6 => 'Jun', 7 => 'Jul', 8 => 'Ags', 9 => 'Sep', 10 => 'Okt', 
-                                        11 => 'Nov', 12 => 'Des'
-                                    ];
-                                    $formattedDate = $date->format('d') . ' ' . $bulanSingkat[$date->format('n')] . ' ' . $date->format('Y');
-                                    $existingDates[] = $formattedDate;
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // Jika ada tanggal yang sudah ada, kembalikan error
-                if (!empty($existingDates)) {
-                    return redirect()->back()
-                        ->withInput()
-                        ->withErrors(['tanggal' => 'Data tersebut sudah ada!'])
-                        ->with('error', 'Data tersebut sudah ada!');
                 }
             }
             
@@ -380,7 +389,7 @@ class CapliningController extends Controller
                     
                     // Debug log
                     Log::info("Item #$itemId ($itemName) - Check$i: " . $resultData["check$i"] . 
-                              ", Keterangan$i: " . $resultData["keterangan$i"]);
+                            ", Keterangan$i: " . $resultData["keterangan$i"]);
                 }
                 
                 // Buat record hasil pemeriksaan
@@ -529,13 +538,38 @@ class CapliningController extends Controller
         $validated = $request->validate([
             'nomer_caplining' => 'required|integer|between:1,20',
         ]);
-    
+
         // Cari data caplining yang akan diupdate
         $capCheck = CapliningCheck::findOrFail($id);
-    
+
+        // Fungsi format tanggal internal (harus sama seperti di fungsi store)
+        $formatTanggalForDB = function($tanggal) {
+            if (empty($tanggal)) {
+                return null;
+            }
+            
+            // Format yang diterima dari form: "DD Mmm YYYY" (contoh: "15 Mei 2025")
+            $bulanMap = [
+                'Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04', 'Mei' => '05', 
+                'Jun' => '06', 'Jul' => '07', 'Ags' => '08', 'Sep' => '09', 'Okt' => '10', 
+                'Nov' => '11', 'Des' => '12'
+            ];
+            
+            $parts = explode(' ', $tanggal);
+            if (count($parts) === 3) {
+                $day = str_pad($parts[0], 2, '0', STR_PAD_LEFT);
+                $month = $bulanMap[$parts[1]] ?? '01';
+                $year = $parts[2];
+                
+                return "$year-$month-$day";
+            }
+            
+            return null;
+        };
+
         // Mulai transaksi database
         DB::beginTransaction();
-    
+
         try {
             // Kumpulkan tanggal-tanggal pemeriksaan dan pelaksana check
             $tanggalData = [];
@@ -544,24 +578,28 @@ class CapliningController extends Controller
             
             for ($i = 1; $i <= 5; $i++) {
                 // Ambil tanggal dari request jika ada
-                if ($request->has("tanggal_raw_$i") && !empty($request->input("tanggal_raw_$i"))) {
-                    $tanggalData["tanggal_check$i"] = $request->input("tanggal_raw_$i");
-                    $checkedByData["checked_by$i"] = $request->input("checked_by$i");
-                    $tanggalChecks[] = $request->input("tanggal_raw_$i");
-                } elseif ($request->has("tanggal_check$i")) {
-                    // Tanggal yang sudah ada sebelumnya (tidak diubah)
-                    $tanggalData["tanggal_check$i"] = $capCheck->{"tanggal_check$i"};
-                    $checkedByData["checked_by$i"] = $request->input("checked_by$i");
-                    if ($capCheck->{"tanggal_check$i"}) {
-                        $tanggalChecks[] = $capCheck->{"tanggal_check$i"};
+                if ($request->has("tanggal_$i") && !empty($request->{"tanggal_$i"})) {
+                    $formattedDate = $formatTanggalForDB($request->{"tanggal_$i"});
+                    $tanggalData["tanggal_check$i"] = $formattedDate;
+                    $checkedByData["checked_by$i"] = $request->{"checked_by$i"};
+                    if ($formattedDate) {
+                        $tanggalChecks[] = $formattedDate;
                     }
+                    
+                    // Log untuk debugging
+                    Log::info("Tanggal $i: " . $request->{"tanggal_$i"} . " -> " . $tanggalData["tanggal_check$i"]);
+                } elseif ($request->has("tanggal_raw_$i") && !empty($request->{"tanggal_raw_$i"})) {
+                    // Untuk tanggal yang tidak diubah
+                    $tanggalData["tanggal_check$i"] = $request->{"tanggal_raw_$i"};
+                    $checkedByData["checked_by$i"] = $request->{"checked_by$i"};
+                    $tanggalChecks[] = $request->{"tanggal_raw_$i"};
                 } else {
                     // Tidak ada tanggal
                     $tanggalData["tanggal_check$i"] = null;
                     $checkedByData["checked_by$i"] = null;
                 }
             }
-    
+
             // Validasi tanggal - cek apakah tanggal sudah ada di database untuk nomer_caplining yang sama
             $existingDates = [];
             if (!empty($tanggalChecks)) {
@@ -571,10 +609,10 @@ class CapliningController extends Controller
                     ->where(function($query) use ($tanggalChecks) {
                         foreach ($tanggalChecks as $date) {
                             $query->orWhere('tanggal_check1', $date)
-                                  ->orWhere('tanggal_check2', $date)
-                                  ->orWhere('tanggal_check3', $date)
-                                  ->orWhere('tanggal_check4', $date)
-                                  ->orWhere('tanggal_check5', $date);
+                                ->orWhere('tanggal_check2', $date)
+                                ->orWhere('tanggal_check3', $date)
+                                ->orWhere('tanggal_check4', $date)
+                                ->orWhere('tanggal_check5', $date);
                         }
                     })
                     ->get();
@@ -584,18 +622,16 @@ class CapliningController extends Controller
                     foreach ($existingRecords as $record) {
                         for ($i = 1; $i <= 5; $i++) {
                             $dateField = "tanggal_check$i";
-                            if (in_array($record->$dateField, $tanggalChecks)) {
+                            if ($record->$dateField && in_array($record->$dateField, $tanggalChecks)) {
                                 // Format tanggal kembali ke format yang dimengerti user
-                                if ($record->$dateField) {
-                                    $date = \Carbon\Carbon::parse($record->$dateField);
-                                    $bulanSingkat = [
-                                        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 
-                                        6 => 'Jun', 7 => 'Jul', 8 => 'Ags', 9 => 'Sep', 10 => 'Okt', 
-                                        11 => 'Nov', 12 => 'Des'
-                                    ];
-                                    $formattedDate = $date->format('d') . ' ' . $bulanSingkat[$date->format('n')] . ' ' . $date->format('Y');
-                                    $existingDates[] = $formattedDate;
-                                }
+                                $date = \Carbon\Carbon::parse($record->$dateField);
+                                $bulanSingkat = [
+                                    1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 
+                                    6 => 'Jun', 7 => 'Jul', 8 => 'Ags', 9 => 'Sep', 10 => 'Okt', 
+                                    11 => 'Nov', 12 => 'Des'
+                                ];
+                                $formattedDate = $date->format('d') . ' ' . $bulanSingkat[$date->format('n')] . ' ' . $date->format('Y');
+                                $existingDates[] = $formattedDate;
                             }
                         }
                     }
@@ -603,18 +639,27 @@ class CapliningController extends Controller
                 
                 // Jika ada tanggal yang sudah ada, kembalikan error
                 if (!empty($existingDates)) {
+                    // Log informasi detail tentang error
+                    Log::info('Tanggal duplikat terdeteksi pada update: ', $existingDates);
+                    
+                    // Membuat pesan error yang lebih eksplisit, seperti di fungsi store
+                    $errorMsg = 'Data di tanggal ' . implode(', ', array_unique($existingDates)) . ' telah ada';
+                    
+                    // Rollback transaksi
+                    DB::rollBack();
+                    
                     return redirect()->back()
                         ->withInput()
-                        ->withErrors(['tanggal' => 'Data tersebut sudah ada!'])
-                        ->with('error', 'Data tersebut sudah ada!');
+                        ->withErrors(['tanggal_duplicate' => $errorMsg])
+                        ->with('error', $errorMsg);
                 }
             }
-    
+
             // Update data utama CapliningCheck
             $capCheck->update(array_merge([
                 'nomer_caplining' => $request->nomer_caplining,
             ], $tanggalData, $checkedByData));
-    
+
             // Definisikan items yang diperiksa
             $items = [
                 1 => 'Kelistrikan',
@@ -638,12 +683,12 @@ class CapliningController extends Controller
                 19 => 'Suction Pad',
                 20 => 'Sensor',
             ];
-    
+
             // Ambil data hasil pemeriksaan yang sudah ada
             $existingResults = CapliningResult::where('check_id', $id)
                 ->get()
                 ->keyBy('checked_items');
-    
+
             // Proses setiap item untuk setiap kolom check (1-5)
             foreach ($items as $itemId => $itemName) {
                 // Ambil atau buat record untuk item ini
@@ -655,37 +700,41 @@ class CapliningController extends Controller
                         'checked_items' => $itemName
                     ]);
                 }
-    
+
                 // Update data untuk setiap kolom check (1-5)
                 for ($i = 1; $i <= 5; $i++) {
                     $checkField = "check$i";
                     $keteranganField = "keterangan$i";
-    
+
                     // Update hasil check jika ada input
                     if (isset($request->{"check_$i"}) && isset($request->{"check_$i"}[$itemId])) {
                         $itemRecord->$checkField = $request->{"check_$i"}[$itemId];
                     }
-    
+
                     // Update keterangan jika ada input
                     if (isset($request->{"keterangan_$i"}) && isset($request->{"keterangan_$i"}[$itemId])) {
                         $itemRecord->$keteranganField = $request->{"keterangan_$i"}[$itemId];
                     }
                 }
-    
+
                 // Simpan perubahan
                 $itemRecord->save();
             }
-    
+
             // Commit transaksi
             DB::commit();
-    
+
             return redirect()->route('caplining.index')
                 ->with('success', 'Data mesin caplining berhasil diperbarui!');
-    
+
         } catch (\Exception $e) {
             // Rollback transaksi jika terjadi kesalahan
             DB::rollBack();
-    
+
+            // Log error detail untuk debugging
+            Log::error('Error saat memperbarui data caplining: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
