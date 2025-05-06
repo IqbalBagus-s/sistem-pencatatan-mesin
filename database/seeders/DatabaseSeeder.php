@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 // Tambahkan import berikut
 use Database\Seeders\CheckerSeeder;
-use Database\Seeders\AdminSeeder;
+use Database\Seeders\HostSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             // CheckerSeeder::class,
-            AdminSeeder::class,
+            HostSeeder::class,
         ]);
     }
 }

@@ -413,7 +413,7 @@
                     <div class="font-medium text-blue-700" id="currentDateTime">
                         <!-- Tanggal dan waktu akan ditampilkan di sini -->
                     </div>
-                    <form id="logout-form" action="{{ route('admin.logout') }}" method="POST">
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button type="submit" class="logout-btn" title="Logout">
                             <!-- SVG door icon -->
@@ -442,7 +442,7 @@
         <!-- Main Content Area -->
         <div id="content-area">
             <div class="container mx-auto px-3 sm:px-4">
-                <h1 class="font-bold text-xl sm:text-2xl page-title mt-3 sm:mt-4">Halo, {{ Auth::guard('admin')->user()->name }} 👋</h1>
+                <h1 class="font-bold text-xl sm:text-2xl page-title mt-3 sm:mt-4">Halo, {{ Auth::guard('host')->user()->name }} 👋</h1>
                 <p class="text-gray-500 text-sm sm:text-base subtitle">Anda login sebagai Administrator</p>
         
                 <h2 class="mt-5 sm:mt-6 text-center font-bold text-lg sm:text-xl section-title">
@@ -452,9 +452,9 @@
                 <div class="menu-grid mt-4 sm:mt-6">
                     @php
                         $menuItems = [
-                            ['name' => 'Kelola Approver', 'route' => 'menu.approvers.index', 'icon' => 'fas fa-user-check'],
-                            ['name' => 'Kelola Checker', 'route' => 'menu.checkers.index', 'icon' => 'fas fa-user-gear'],
-                            ['name' => 'Kelola Form', 'route' => 'menu.forms.index', 'icon' => 'fas fa-file-lines']
+                            ['name' => 'Kelola Approver', 'route' => 'host.approvers.index', 'icon' => 'fas fa-user-check'],
+                            ['name' => 'Kelola Checker', 'route' => 'host.checkers.index', 'icon' => 'fas fa-user-gear'],
+                            ['name' => 'Kelola Form', 'route' => 'host.forms.index', 'icon' => 'fas fa-file-lines']
                         ];
                     @endphp
                     

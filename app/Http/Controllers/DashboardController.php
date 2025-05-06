@@ -16,17 +16,17 @@ class DashboardController extends Controller
         return view('menu.dashboard', compact('user'));
     }
 
-    public function adminDashboard()
+    public function hostDashboard()
     {
-        // Periksa apakah pengguna terautentikasi sebagai admin
-        if (!Auth::guard('admin')->check()) {
-            Log::warning('Akses dashboard admin ditolak: tidak terautentikasi');
-            return redirect()->route('admin.login')
-                ->with('error', 'Anda harus login sebagai admin terlebih dahulu');
+        // Periksa apakah pengguna terautentikasi sebagai host
+        if (!Auth::guard('host')->check()) {
+            Log::warning('Akses dashboard host ditolak: tidak terautentikasi');
+            return redirect()->route('host.login')
+                ->with('error', 'Anda harus login sebagai host terlebih dahulu');
         }
         
         // Log untuk debugging
-        Log::info('Admin mengakses dashboard: ' . Auth::guard('admin')->user()->name);
+        Log::info('host mengakses dashboard: ' . Auth::guard('host')->user()->name);
         
         // Hitung jumlah approver dan checker yang aktif
         $approverCount = Approver::where('status', 'aktif')->count();
@@ -34,7 +34,7 @@ class DashboardController extends Controller
         
         
         // Kirim data ke view
-        return view('menu.dashboard_admin', compact('approverCount', 'checkerCount'));
+        return view('menu.dashboard_host', compact('approverCount', 'checkerCount'));
     }
 }
 

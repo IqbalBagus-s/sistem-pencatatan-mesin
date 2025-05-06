@@ -76,6 +76,7 @@
                             <option value="" disabled selected>Pilih posisi</option>
                             <option value="approver">Approver</option>
                             <option value="checker">Checker</option>
+                            <option value="host">Host</option>
                         </select>
                         <div class="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
                             <i class="fas fa-chevron-down"></i>

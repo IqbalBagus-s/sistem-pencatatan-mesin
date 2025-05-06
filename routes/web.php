@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AirDryerController;
@@ -31,33 +32,34 @@ Route::get('/login', function () {
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Admin Routes
-Route::get('/admin-form', function () {
-    return redirect('/admin-form/login');
-})->name('admin-form');
-
-Route::get('/admin-form/login', function () {
-    return view('auth.admin-login');
-})->name('admin.login');
-
-Route::post('/admin-form/login', [AuthController::class, 'adminLogin'])->name('admin.login.post');
-Route::post('/admin-form/logout', [AuthController::class, 'adminLogout'])->name('admin.logout');
-
-// Admin Dashboard (dengan middleware admin)
-Route::middleware(['auth:admin'])->prefix('admin-form')->group(function () {
-    Route::get('/dashboard-admin', [DashboardController::class, 'adminDashboard'])->name('menu.dashboard_admin');
-    
-    // Tambahkan route admin untuk menu items baru
-    Route::resource('/approvers', ApproverController::class)->names('menu.approvers');
-    Route::resource('/checkers', CheckerController::class)->names('menu.checkers');
-    Route::resource('/forms', FormController::class)->names('menu.forms');
+// Dashboard Routing (Dinamis berdasarkan guard)
+Route::middleware(['auth:approver,checker,host'])->group(function () {
+    // Dashboard Dispatcher - akan mengarahkan ke dashboard sesuai role
+    Route::get('/dashboard', function() {
+        $user = Auth::user();
+        $guard = Auth::getDefaultDriver();
+        
+        if ($guard == 'host') {
+            return redirect()->route('host.dashboard');
+        } else {
+            return app(DashboardController::class)->index();
+        }
+    })->name('dashboard');
 });
 
-// Route yang memerlukan autentikasi
-Route::middleware(['auth:approver,checker'])->group(function () {
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+// Route khusus untuk Host
+Route::middleware(['auth:host'])->prefix('host')->name('host.')->group(function () {
+    // Dashboard Host
+    Route::get('/dashboard', [DashboardController::class, 'hostDashboard'])->name('dashboard');
     
+    // Perbaikan: Menghapus prefix 'menu.' pada nama route
+    Route::resource('/approvers', ApproverController::class);
+    Route::resource('/checkers', CheckerController::class);
+    Route::resource('/forms', FormController::class);
+});
+
+// Route untuk User Approver dan Checker
+Route::middleware(['auth:approver,checker'])->group(function () {
     // Daftar kontroler mesin dengan operasi CRUD yang sama
     $controllers = [
         'air-dryer' => AirDryerController::class,
@@ -74,7 +76,7 @@ Route::middleware(['auth:approver,checker'])->group(function () {
         'crane-matras' => CraneMatrasControler::class,
     ];
     
-    // Alternatif menggunakan Resource Controller (lebih disarankan):
+    // Buat resource route untuk semua controller
     foreach ($controllers as $route => $controller) {
         Route::resource($route, $controller);
         
@@ -82,5 +84,4 @@ Route::middleware(['auth:approver,checker'])->group(function () {
         Route::post("/$route/{id}/approve", [$controller, 'approve'])->name("$route.approve");
         Route::get("/$route/{id}/download-pdf", [$controller, 'downloadPdf'])->name("$route.downloadPdf");
     }
-    
 });

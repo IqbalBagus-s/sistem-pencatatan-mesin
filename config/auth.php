@@ -51,9 +51,9 @@ return [
             'provider' => 'checkers',
         ],
 
-        'admin' => [
+        'host' => [
             'driver' => 'session',
-            'provider' => 'admins',
+            'provider' => 'hosts',
         ],
     ],
 
@@ -87,9 +87,9 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\Checker::class,
         ],
-        'admins' => [
+        'hosts' => [
             'driver' => 'eloquent',
-            'model' => App\Models\Admin::class,
+            'model' => App\Models\Host::class,
         ],
 
         // 'users' => [
@@ -121,12 +121,6 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
-            'expire' => 60,
-            'throttle' => 60,
-        ],
-        'admins' => [
-            'provider' => 'admins',
-            'table' => 'password_resets',
             'expire' => 60,
             'throttle' => 60,
         ],
