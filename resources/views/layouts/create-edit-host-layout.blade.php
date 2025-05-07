@@ -1,4 +1,4 @@
-<!-- resources/views/layouts/create-host-layout.blade.php -->
+<!-- resources/views/layouts/create-edit-host-layout.blade.php -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
