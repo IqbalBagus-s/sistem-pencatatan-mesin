@@ -15,6 +15,7 @@ class Approver extends Authenticatable
     protected $fillable = [
         'username',
         'password',
+        'role',
         'status', 
     ];
 

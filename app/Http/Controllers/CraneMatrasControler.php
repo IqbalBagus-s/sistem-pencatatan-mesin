@@ -67,4 +67,94 @@ class CraneMatrasControler extends Controller
         return view('crane_matras.index', compact('results', 'check'));
     }
 
+    public function create()
+    {
+        return view('crane_matras.create');
+    }
+
+    public function store(Request $request)
+    {
+        // Validate input
+        $validated = $request->validate([
+            'nomer_crane_matras' => 'required|integer|between:1,15',
+            'bulan' => 'required|date_format:Y-m',
+            'tanggal' => 'required|integer|between:1,31',
+            'checked_by' => 'required|string',
+        ]);
+
+        // Check for duplicate record
+        $existingRecord = CraneMatrasCheck::where('nomer_crane_matras', $request->nomer_crane_matras)
+            ->where('bulan', $request->bulan)
+            ->where('tanggal', $request->tanggal)
+            ->first();
+        
+        if ($existingRecord) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Data tersebut sudah ada!');
+        }
+
+        // Start a database transaction
+        DB::beginTransaction();
+
+        try {
+            // Create Crane Matras Check record
+            $craneMatrasCheck = CraneMatrasCheck::create([
+                'nomer_crane_matras' => $request->nomer_crane_matras,
+                'bulan' => $request->bulan,
+                'tanggal' => $request->tanggal,
+                'checked_by' => $request->checked_by,
+                'approved_by' => null, // Will be handled separately
+            ]);
+            
+            // Get the ID of the newly created record
+            $checkId = $craneMatrasCheck->id;
+            
+            // Define the checked items for Crane Matras
+            $items = [
+                1 => 'INVERTER',
+                2 => 'KONTAKTOR',
+                3 => 'THERMAL OVERLOAD',
+                4 => 'PUSH BOTTOM',
+                5 => 'MOTOR',
+                6 => 'BREAKER',
+                7 => 'TRAFO',
+                8 => 'CONECTOR BUSBAR',
+                9 => 'REL BUSBAR',
+                10 => 'GREASE',
+                11 => 'RODA',
+                12 => 'RANTAI',
+            ];
+            
+            // Process each item
+            foreach ($items as $itemId => $itemName) {
+                $checkKey = "check_{$itemId}";
+                $keteranganKey = "keterangan_{$itemId}";
+                
+                $resultData = [
+                    'check_id' => $checkId,
+                    'checked_items' => $itemName,
+                    'check' => isset($request->$checkKey) ? $request->$checkKey : '-',
+                    'keterangan' => isset($request->$keteranganKey) ? $request->$keteranganKey : null,
+                ];
+                
+                // Create the result record
+                CraneMatrasResult::create($resultData);
+            }
+            
+            // Commit the transaction
+            DB::commit();
+            
+            return redirect()->route('crane-matras.index')
+                ->with('success', 'Data berhasil disimpan!');
+                
+        } catch (\Exception $e) {
+            // Rollback the transaction if something goes wrong
+            DB::rollBack();
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
 }
