@@ -52,13 +52,13 @@
             <!-- Buttons group -->
             <div class="flex space-x-2">
                 <!-- Filter button -->
-                <button type="button" @click="submitForm()"
-                    class="flex-1 h-10 px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-600 transition duration-200 ease-in-out flex items-center justify-center">
-                    <i class="fas fa-filter mr-2"></i>Filter
+                <button type="submit"
+                    class="flex-1 h-10 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-200 ease-in-out flex items-center justify-center cursor-pointer">
+                    <i class="fas fa-search mr-2"></i>Cari
                 </button>
                 
                 <!-- Create button -->
-                <a href="@yield('create-route')" 
+                <a href="{{ route('host.approvers.create') }}" 
                     class="flex-1 h-10 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition duration-200 ease-in-out flex items-center justify-center">
                     <i class="fas fa-plus mr-2"></i>Tambah
                 </a>
@@ -66,15 +66,6 @@
         </div>
     </form>
 </div>
-@endsection
-
-
-@section('create-route')
-    {{ route('host.approvers.create') }}
-@endsection
-
-@section('create-button-text')
-    <span class="flex items-center"><i class="fas fa-plus-circle mr-2"></i>Tambah Approver</span>
 @endsection
 
 @section('table-content')
