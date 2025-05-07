@@ -64,14 +64,14 @@ class ApproverController extends Controller
             'status.required' => 'Status harus dipilih',
             'status.in' => 'Status harus aktif atau nonaktif',
         ]);
-
+    
         if ($validator->fails()) {
             return redirect()
                 ->route('host.approvers.create')
                 ->withErrors($validator)
                 ->withInput();
         }
-
+    
         // Buat approver baru
         Approver::create([
             'username' => $request->username,
@@ -79,10 +79,11 @@ class ApproverController extends Controller
             'role' => $request->role,
             'status' => $request->status,
         ]);
-
+    
+        // Kembali ke halaman yang sama dengan pesan sukses, tanpa menyimpan input sebelumnya
         return redirect()
-            ->route('host.approvers.index')
-            ->with('success', 'Approver berhasil ditambahkan!');
+            ->route('host.approvers.create')
+            ->with('success', 'Approver berhasil ditambahkan! Anda dapat menambahkan approver lainnya.');
     }
 
     public function edit($id)
