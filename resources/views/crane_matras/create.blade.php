@@ -116,7 +116,7 @@
             
             <!-- Input untuk menyimpan semua checked items -->
             @foreach($items as $i => $item)
-                <input type="hidden" name="checked_items[{{ $i }}]" value="{{ $item }}">
+                <input type="hidden" name="checked_items[{{ $i-1 }}]" value="{{ $item }}">
             @endforeach
 
             <!-- Tabel Inspeksi Crane Matras -->
@@ -139,16 +139,16 @@
                                         <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
                                     </td>
                                     
-                                    <!-- Check -->
+                                    <!-- Check - DIUBAH MENJADI FORMAT ARRAY -->
                                     <td class="border border-gray-300 p-1 h-10">
-                                        <select name="check_{{ $i }}" class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                        <select name="check[{{ $i-1 }}]" class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
                                             @foreach($options as $value => $symbol)
                                                 <option value="{{ $value }}">{{ $symbol }}</option>
                                             @endforeach
                                         </select>
                                     </td>
                                     <td class="border border-gray-300 p-1 h-10">
-                                        <input type="text" name="keterangan_{{ $i }}" 
+                                        <input type="text" name="keterangan[{{ $i-1 }}]" 
                                             class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
                                             placeholder="Keterangan">
                                     </td>
