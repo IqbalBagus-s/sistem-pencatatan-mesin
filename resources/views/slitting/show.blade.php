@@ -107,11 +107,15 @@
                                     
                                     @for($j = 1; $j <= 4; $j++)
                                         @php
-                                            // Jika tidak ada penanggung jawab, kosongkan data
-                                            if (!$hasApprovedBy[$j]) {
+                                            // Periksa apakah ada checker untuk minggu ini
+                                            $hasChecker = !empty($check->{'checked_by_minggu'.$j});
+                                            
+                                            if (!$hasChecker) {
+                                                // Jika tidak ada checker, tampilkan tanda "-" dan "Belum ada data"
                                                 $resultValue = '-';
                                                 $keteranganValue = '';
                                             } else {
+                                                // Jika ada checker, tampilkan data yang ada
                                                 $resultValue = isset($formattedResults[$i]['minggu'.$j]) ? $formattedResults[$i]['minggu'.$j] : '-';
                                                 $keteranganValue = isset($formattedResults[$i]['keterangan_minggu'.$j]) ? $formattedResults[$i]['keterangan_minggu'.$j] : '';
                                             }
@@ -119,7 +123,7 @@
                                     
                                         <!-- Minggu {{ $j }} Check -->
                                         <td class="border border-gray-300 p-1 h-10 text-center">
-                                            @if ($hasApprovedBy[$j])
+                                            @if ($hasChecker)
                                                 {!! isset($options[$resultValue]) ? $options[$resultValue] : '—' !!}
                                             @else
                                                 <span class="text-gray-600">—</span>
@@ -128,7 +132,7 @@
                                         
                                         <!-- Minggu {{ $j }} Keterangan -->
                                         <td class="border border-gray-300 p-1 h-10 text-sm">
-                                            @if ($hasApprovedBy[$j])
+                                            @if ($hasChecker)
                                                 {{ $keteranganValue }}
                                             @else
                                                 <span class="text-gray-600 italic text-xs">Belum ada data</span>
@@ -235,11 +239,87 @@
                 <a href="{{ route('slitting.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Kembali
                 </a>
-                <button type="submit" class="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800">
-                    Setujui
-                </button>
+                
+                @php
+                    // Check if all 4 weeks have approved_by filled
+                    $allApproved = true;
+                    for ($j = 1; $j <= 4; $j++) {
+                        if (empty($check->{'approved_by_minggu'.$j})) {
+                            $allApproved = false;
+                            break;
+                        }
+                    }
+                @endphp
+                
+                @if ($allApproved)
+                    <!-- All weeks are approved, show "Sudah Disetujui" button and "Download PDF" button -->
+                    <div class="flex space-x-3">
+                        <button type="button" disabled class="bg-green-600 text-white py-2 px-4 rounded opacity-75 cursor-not-allowed">
+                            Sudah Disetujui
+                        </button>
+                        <!-- Tombol untuk review PDF -->
+                        <a href="{{ route('slitting.pdf', $check->id) }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            Preview PDF
+                        </a>
+                        <!-- Tombol untuk download PDF -->
+                        <a href="{{ route('slitting.downloadPdf', $check->id) }}" class="download-pdf-btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Download PDF
+                        </a>
+                    </div>
+                @else
+                    <!-- Not all weeks are approved, show "Setujui" button -->
+                    <button type="submit" class="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800">
+                        Setujui
+                    </button>
+                @endif
             </div>
         </form>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const downloadPdfBtn = document.querySelector('.download-pdf-btn');
+        
+        if (downloadPdfBtn) {
+            downloadPdfBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Get the review URL from the href attribute
+            const reviewUrl = this.getAttribute('href');
+            
+            // Extract the ID from the URL
+            const urlParts = reviewUrl.split('/');
+            const id = urlParts[urlParts.length - 1];
+            
+            // Construct the download URL properly
+            const downloadUrl = `/slitting/download-pdf/${id}`;
+            
+            // Open the review PDF in a new tab
+            window.open(reviewUrl, '_blank');
+            
+            // Trigger the download directly
+            setTimeout(function() {
+                // Buat elemen <a> tersembunyi untuk trigger download
+                const downloadLink = document.createElement('a');
+                    downloadLink.href = downloadUrl;
+                    downloadLink.download = `Dokumen_Slitting_${id}.pdf`;
+                    downloadLink.style.display = 'none';
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                }, 1000);
+            });
+        }
+    });
+</script>
 @endsection

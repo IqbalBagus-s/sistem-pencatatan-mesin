@@ -82,6 +82,7 @@ Route::middleware(['auth:approver,checker'])->group(function () {
         
         // Tambahkan route khusus untuk approve dan download PDF
         Route::post("/$route/{id}/approve", [$controller, 'approve'])->name("$route.approve");
+        Route::get("/$route/{id}/review-pdf", [$controller, 'reviewPdf'])->name("$route.pdf");
         Route::get("/$route/{id}/download-pdf", [$controller, 'downloadPdf'])->name("$route.downloadPdf");
     }
 });

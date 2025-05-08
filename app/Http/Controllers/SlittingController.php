@@ -524,4 +524,51 @@ class SlittingController extends Controller
             ->route('slitting.index')
             ->with('success', 'Persetujuan berhasil disimpan');
     }
+   
+    public function reviewPdf($id)
+    {
+        // Cari dokumen SlittingCheck berdasarkan ID dengan eager loading untuk relasi results
+        $slittingCheck = SlittingCheck::with('results')->findOrFail($id);
+        
+        // Data yang akan dikirim ke view
+        $data = [
+            'slittingCheck' => $slittingCheck,
+            'title' => 'Review PDF ' . $slittingCheck->nomer_slitting,
+            'results' => $slittingCheck->results,
+            'bulan' => $slittingCheck->bulan
+        ];
+        
+        // Gunakan nama view secara langsung
+        return view('slitting.review_pdf', $data);
+    }
+    
+    public function downloadPdf($id)
+    {
+        // Cari dokumen SlittingCheck berdasarkan ID
+        $slittingCheck = SlittingCheck::findOrFail($id);
+        
+        // Ambil data hasil slitting
+        $results = $slittingCheck->results;
+        
+        // Generate PDF dengan menggunakan string HTML langsung
+        $pdf = PDF::loadView('slitting.review_pdf', [
+            'slittingCheck' => $slittingCheck,
+            'results' => $results,
+            'bulan' => $slittingCheck->bulan,
+            'title' => 'Dokumen Check Slitting ' . $slittingCheck->nomer_slitting
+        ]);
+        
+        // Konfigurasi PDF
+        $pdf->setPaper('A4', 'portrait');
+        $pdf->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true
+        ]);
+        
+        // Nama file yang akan didownload
+        $filename = 'Dokumen_Slitting_' . $slittingCheck->nomer_slitting . '_' . $slittingCheck->bulan . '.pdf';
+        
+        // Return response download
+        return $pdf->download($filename);
+    }
 }
