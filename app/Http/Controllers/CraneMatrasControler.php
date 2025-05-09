@@ -159,4 +159,152 @@ class CraneMatrasControler extends Controller
                              ->withInput();
         }
     }
+
+    public function edit($id)
+    {
+        // Ambil data utama crane matras check
+        $check = CraneMatrasCheck::findOrFail($id);
+        
+        // Ambil data hasil pemeriksaan
+        $results = CraneMatrasResult::where('check_id', $id)->get();
+        
+        // Memformat data hasil pemeriksaan untuk tampilan
+        $formattedResults = [];
+        
+        // Mengumpulkan semua items dari hasil pemeriksaan
+        $items = [];
+        $index = 0;
+        
+        foreach ($results as $result) {
+            $items[$index] = $result->checked_items;
+            $formattedResults[$index] = [
+                'item' => $result->checked_items,
+                'check' => $result->check,
+                'keterangan' => $result->keterangan
+            ];
+            $index++;
+        }
+        
+        // Format tanggal jika ada
+        $tanggalFormatted = null;
+        if ($check->tanggal) {
+            $date = new \DateTime($check->tanggal);
+            $bulanIndonesia = [
+                '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
+                '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
+                '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
+            ];
+            $month = $bulanIndonesia[$date->format('m')];
+            $tanggalFormatted = $date->format('d') . ' ' . $month . ' ' . $date->format('Y');
+        }
+        
+        // Siapkan data untuk form
+        $checkerData = [
+            'checked_by_1' => $check->checked_by,
+            'tanggal_1' => $tanggalFormatted,
+            'bulan' => $check->bulan,
+            'nomer_crane_matras' => $check->nomer_crane_matras,
+        ];
+        
+        // Status approval
+        $approvalStatus = !empty($check->approved_by);
+        
+        return view('crane_matras.edit', compact('check', 'formattedResults', 'items', 'checkerData', 'approvalStatus'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        // Validasi input - hanya validasi data yang penting
+        $validated = $request->validate([
+            'nomer_crane_matras' => 'required|integer|between:1,10',
+            'bulan' => 'required|date_format:Y-m',
+        ]);
+    
+        // Cari data crane matras yang akan diupdate
+        $craneMatrasCheck = CraneMatrasCheck::findOrFail($id);
+    
+        // Cek apakah ada perubahan pada data utama (nomer_crane_matras, bulan)
+        if ($craneMatrasCheck->nomer_crane_matras != $request->nomer_crane_matras || 
+            $craneMatrasCheck->bulan != $request->bulan) {
+            
+            // Periksa apakah data dengan kombinasi baru sudah ada
+            $existingRecord = CraneMatrasCheck::where('nomer_crane_matras', $request->nomer_crane_matras)
+                ->where('bulan', $request->bulan)
+                ->where('id', '!=', $id) // Kecualikan record saat ini
+                ->first();
+            
+            if ($existingRecord) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Data dengan nomor crane matras dan bulan yang sama sudah ada!');
+            }
+        }
+    
+        // Mulai transaksi database
+        DB::beginTransaction();
+    
+        try {
+            // Update data CraneMatrasCheck
+            $craneMatrasCheck->update([
+                'nomer_crane_matras' => $request->nomer_crane_matras,
+                'bulan' => $request->bulan,
+                'checked_by' => $request->input('checked_by_1'), // Sesuaikan dengan nama field di form
+                'tanggal' => now(), // Default ke waktu sekarang jika tidak ada input tanggal
+            ]);
+            
+            // Hapus status approval jika sebelumnya sudah diapprove
+            if ($craneMatrasCheck->approved_by && $request->has('check')) {
+                $craneMatrasCheck->update([
+                    'approved_by' => null,
+                    'approved_date' => null
+                ]);
+            }
+            
+            // Ambil data existing dari tabel CraneMatrasResult
+            $existingResults = CraneMatrasResult::where('check_id', $id)->get()->keyBy('checked_items');
+            
+            // Proses setiap item dari form
+            $itemCount = count($request->input('checked_items', []));
+            
+            for ($i = 0; $i < $itemCount; $i++) {
+                $itemName = $request->input("checked_items.{$i}");
+                
+                // Persiapkan data untuk update atau create
+                $resultData = [
+                    'check' => $request->input("check.{$i}", '-'),
+                    'keterangan' => $request->input("keterangan.{$i}", ''),
+                ];
+                
+                // Cek apakah record sudah ada
+                $existingResult = $existingResults->get($itemName);
+                
+                if ($existingResult) {
+                    // Update record yang sudah ada
+                    $existingResult->update($resultData);
+                } else {
+                    // Buat record baru jika belum ada
+                    $resultData['check_id'] = $id;
+                    $resultData['checked_items'] = $itemName;
+                    CraneMatrasResult::create($resultData);
+                }
+            }
+            
+            // Commit transaksi
+            DB::commit();
+            
+            return redirect()->route('crane-matras.index') // Gunakan hyphen (-) bukan underscore (_)
+                ->with('success', 'Data berhasil diperbarui!');
+                
+        } catch (\Exception $e) {
+            // Rollback transaksi jika terjadi kesalahan
+            DB::rollBack();
+            
+            Log::error('Error updating Crane Matras Check: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
 }

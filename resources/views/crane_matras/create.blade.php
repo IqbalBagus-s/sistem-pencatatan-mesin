@@ -125,18 +125,18 @@
                     <table class="w-full border-collapse">
                         <thead>
                             <tr>
-                                <th class="border border-gray-300 bg-sky-50 p-2 w-10 text-sm sticky left-0 z-10">No.</th>
-                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-36 text-sm sticky left-10 z-10">Item Terperiksa</th>
-                                <th class="border border-gray-300 bg-sky-50 p-2 text-sm w-24">Check</th>
-                                <th class="border border-gray-300 bg-sky-50 p-2 w-36 text-sm">Keterangan</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 text-sm sticky left-0 z-10" style="width: 40px;">No.</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 text-sm sticky left-10 z-10" style="width: 180px; max-width: 180px;">Item Terperiksa</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 text-sm" style="width: 80px;">Check</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 text-sm" style="width: auto; min-width: 220px;">Keterangan</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($items as $i => $item)
                                 <tr>
-                                    <td class="border border-gray-300 text-center p-1 h-10 text-xs sticky left-0 bg-white z-10">{{ $i }}</td>
-                                    <td class="border border-gray-300 p-1 h-10 sticky left-10 bg-white z-10">
-                                        <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
+                                    <td class="border border-gray-300 text-center p-1 h-10 text-xs sticky left-0 bg-white z-10" style="width: 40px;">{{ $i }}</td>
+                                    <td class="border border-gray-300 p-1 h-10 sticky left-10 bg-white z-10" style="width: 180px; max-width: 180px;">
+                                        <div class="w-full h-8 px-1 py-0 text-xs flex items-center overflow-hidden text-ellipsis">{{ $item }}</div>
                                     </td>
                                     
                                     <!-- Check - DIUBAH MENJADI FORMAT ARRAY -->
@@ -158,17 +158,17 @@
                         
                         <tbody class="bg-white">
                             <tr class="bg-sky-50">
-                                <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
-                                <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10">Dibuat Oleh</td>
+                                <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1" style="width: 40px;">-</td>
+                                <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10" style="width: 150px; max-width: 150px;">Dibuat Oleh</td>
                                 
                                 <td colspan="4" class="border border-gray-300 p-1 bg-sky-50">
                                     <div x-data="{ selected: false, userName: '', tanggal: '' }">
                                         <div class="mt-1" x-show="selected">
                                             <input type="text" name="checked_by_1" x-ref="user1" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
                                                 readonly>
                                             <input type="text" name="tanggal_1" x-ref="date1" x-bind:value="tanggal"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
                                                 readonly>
                                             <input type="hidden" name="check_num_1" x-ref="checkNum1" value="1">
                                         </div>
