@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Approver;
 use App\Models\Checker;
+use App\Models\Form;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
@@ -31,10 +32,10 @@ class DashboardController extends Controller
         // Hitung jumlah approver dan checker yang aktif
         $approverCount = Approver::where('status', 'aktif')->count();
         $checkerCount = Checker::where('status', 'aktif')->count();
-        
+        $activeFormCount = Form::select('nomor_form')->distinct()->count();
         
         // Kirim data ke view
-        return view('menu.dashboard_host', compact('approverCount', 'checkerCount'));
+        return view('menu.dashboard_host', compact('approverCount', 'checkerCount', 'activeFormCount'));
     }
 }
 
