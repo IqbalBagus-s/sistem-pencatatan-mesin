@@ -307,4 +307,68 @@ class CraneMatrasControler extends Controller
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    public function show($id)
+    {
+        // Ambil data utama crane matras check
+        $check = CraneMatrasCheck::findOrFail($id);
+        
+        // Ambil data hasil pemeriksaan
+        $results = CraneMatrasResult::where('check_id', $id)->get();
+        
+        // Memformat data hasil pemeriksaan untuk tampilan
+        $formattedResults = [];
+        
+        // Mengumpulkan semua item dari hasil pemeriksaan
+        foreach ($results as $result) {
+            $formattedResults[] = [
+                'item' => $result->checked_items,
+                'check' => $result->check,
+                'keterangan' => $result->keterangan
+            ];
+        }
+        
+        // Format tanggal jika ada
+        $tanggalFormatted = null;
+        if ($check->tanggal) {
+            $date = new \DateTime($check->tanggal);
+            $bulanIndonesia = [
+                '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
+                '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
+                '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
+            ];
+            $month = $bulanIndonesia[$date->format('m')];
+            $tanggalFormatted = $date->format('d') . ' ' . $month . ' ' . $date->format('Y');
+        }
+        
+        // Siapkan data untuk tampilan
+        $checkerData = [
+            'checked_by' => $check->checked_by,
+            'tanggal' => $tanggalFormatted,
+            'bulan' => $check->bulan,
+            'nomer_crane_matras' => $check->nomer_crane_matras,
+        ];
+        
+        // Status approval
+        $approvalStatus = !empty($check->approved_by);
+        
+        return view('crane_matras.show', compact('check', 'formattedResults', 'checkerData', 'approvalStatus'));
+    }
+
+    public function approve(Request $request, $id)
+    {
+        // Ambil data crane matras check
+        $check = CraneMatrasCheck::findOrFail($id);
+        
+        // Simpan data approved_by jika belum diisi
+        if (empty($check->approved_by) && $request->has('approved_by') && !empty($request->input('approved_by'))) {
+            $check->approved_by = $request->input('approved_by');
+        }
+        
+        $check->save();
+        
+        return redirect()
+            ->route('crane-matras.index')
+            ->with('success', 'Persetujuan berhasil disimpan');
+    }
 }

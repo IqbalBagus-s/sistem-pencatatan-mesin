@@ -173,10 +173,7 @@
             @endif
 
             <!-- Tombol Submit dan Kembali -->
-            @include('components.create-form-buttons', [
-                'backRoute' => route('crane-matras.index'),
-                'submitText' => 'Update Data'
-            ])
+            @include('components.create-form-buttons', ['backRoute' => route('crane-matras.index')])
         </form>
     </div>
 </div>
