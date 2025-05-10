@@ -17,22 +17,32 @@
         <!-- Form Input -->
         <form action="{{ route('hopper.store') }}" method="POST" autocomplete="off">
             @csrf
-            <!-- Form Grid - Responsive untuk Mobile/Tablet -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <!-- Dropdown Pilih No Hopper -->
+            <div class="grid md:grid-cols-2 gap-4 mb-4">
+                <!-- Dropdown Pilih No Hopper - With Required Validation -->
                 <div x-data="{ 
                     open: false, 
                     selected: null,
+                    error: false,
                     reset() {
                         this.selected = null;
                         this.open = false;
+                        this.error = true;
+                    },
+                    validate() {
+                        this.error = this.selected === null;
+                        return !this.error;
                     }
                 }" class="relative w-full">
-                    <!-- Label -->
-                    <label class="block mb-2 text-sm font-medium text-gray-700">Pilih No Hopper:</label>
+                    <!-- Label with Required Indicator -->
+                    <label class="block mb-2 text-sm font-medium text-gray-700">
+                        Pilih No Hopper: <span class="text-red-500">*</span>
+                    </label>
                     
-                    <!-- Dropdown Button -->
-                    <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative">
+                    <!-- Dropdown Button with Error State -->
+                    <button type="button" 
+                        @click="open = !open" 
+                        class="w-full h-10 px-3 py-2 bg-gray-100 border rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative"
+                        :class="error ? 'border-red-500' : 'border-gray-300'">
                         <span x-text="selected ? 'Hopper ' + selected : 'Pilih Hopper'"></span>
                         
                         <!-- Selection Indicator -->
@@ -49,12 +59,17 @@
                         </div>
                     </button>
                     
+                    <!-- Error Message -->
+                    <div x-show="error" class="text-red-500 text-sm mt-1">
+                        Silakan pilih No Hopper
+                    </div>
+                    
                     <!-- Dropdown List -->
-                    <div x-show="open" @click.away="open = false" class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md p-2 z-10">
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    <div x-show="open" @click.away="open = false" class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md p-2 z-50 max-h-60 overflow-y-auto">
+                        <div class="grid grid-cols-4 gap-2">
                             <template x-for="i in 15" :key="i">
                                 <div @click.stop>
-                                    <button type="button" @click="selected = i; open = false" class="w-full px-3 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white rounded-md">
+                                    <button type="button" @click="selected = i; open = false; error = false;" class="w-full px-3 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white rounded-md">
                                         <span x-text="'Hopper ' + i"></span>
                                     </button>
                                 </div>
@@ -62,30 +77,50 @@
                         </div>
                     </div>
                     
-                    <!-- Hidden Input untuk dikirim ke server -->
-                    <input type="hidden" name="nomer_hopper" x-model="selected">
-                </div>                      
+                    <!-- Hidden Input untuk dikirim ke server (required) -->
+                    <input type="hidden" name="nomer_hopper" x-model="selected" required x-on:invalid="error = true">
+                </div>
             
                 <div>
-                    <label for="bulan" class="block mb-2 text-sm font-medium text-gray-700">Pilih Bulan:</label>
+                    <label for="bulan" class="block mb-2 text-sm font-medium text-gray-700">
+                        Pilih Bulan: <span class="text-red-500">*</span>
+                    </label>
                     <input type="month" id="bulan" name="bulan" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
                 </div>
-            </div>                    
-
-            <!-- Tabel Inspeksi - dengan scroll horizontal pada mobile/tablet -->
-            <div class="overflow-x-auto relative">
-                <!-- Notifikasi scroll horizontal untuk mobile -->
-                <div class="md:hidden text-sm text-gray-500 italic mb-2">
-                    ← Geser ke kanan untuk melihat semua kolom →
-                </div>
+            </div>                  
+            
+            @php
+                // Items yang perlu di-check
+                $items = [
+                    1 => 'Filter',
+                    2 => 'Selang',
+                    3 => 'Kontraktor',
+                    4 => 'Temperatur Kontrol',
+                    5 => 'MCB'
+                ];
                 
-                <!-- Tetapkan lebar minimum tabel agar selalu bisa di-scroll pada mobile -->
-                <div class="min-w-[1000px]">
-                    <table class="w-full border-collapse border border-gray-300">
+                $options = [
+                    1 => ['V', 'X', '-', 'OFF'],
+                    2 => ['V', 'X', '-', 'OFF'],
+                    3 => ['V', 'X', '-', 'OFF'],
+                    4 => ['V', 'X', '-', 'OFF'],
+                    5 => ['V', 'X', '-', 'OFF']
+                ];
+            @endphp
+            
+            <!-- Input untuk menyimpan semua checked items -->
+            @foreach($items as $i => $item)
+                <input type="hidden" name="checked_items[{{ $i }}]" value="{{ $item }}">
+            @endforeach
+
+            <!-- Tabel Inspeksi Mingguan -->
+            <div class="mb-6">
+                <div class="overflow-x-auto mb-6 border border-gray-300">
+                    <table class="w-full border-collapse">
                         <thead>
                             <tr>
-                                <th class="border border-gray-300 bg-sky-50 p-2 w-10 text-sm" rowspan="2">No.</th>
-                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-28 text-sm" colspan="1">Minggu</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 w-10 text-sm sticky left-0 z-10" rowspan="2">No.</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-28 text-sm sticky left-10 z-10" colspan="1">Minggu</th>
                                 
                                 <th class="border border-gray-300 bg-sky-50 p-2 text-sm" colspan="1">01</th>
                                 <th class="border border-gray-300 bg-sky-50 p-2 w-32 text-sm" rowspan="2">Keterangan</th>
@@ -97,268 +132,299 @@
                                 <th class="border border-gray-300 bg-sky-50 p-2 w-32 text-sm" rowspan="2">Keterangan</th>
                             </tr>
                             <tr>
-                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-28 text-sm">Checked Items</th>
-                                <th class="border border-gray-300 bg-sky-50 p-2 text-sm min-w-20">Check</th>
-                                <th class="border border-gray-300 bg-sky-50 p-2 text-sm min-w-20">Check</th>
-                                <th class="border border-gray-300 bg-sky-50 p-2 text-sm min-w-20">Check</th>
-                                <th class="border border-gray-300 bg-sky-50 p-2 text-sm min-w-20">Check</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-28 text-sm sticky left-10 z-10">Item Terperiksa</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 text-sm">Check</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 text-sm">Check</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 text-sm">Check</th>
+                                <th class="border border-gray-300 bg-sky-50 p-2 text-sm">Check</th>
                             </tr>
-                        </thead>                          
+                        </thead>
                         <tbody>
-                            @php
-                                $items = [
-                                    1 => 'Filter',
-                                    2 => 'Selang',
-                                    3 => 'Kontraktor',
-                                    4 => 'Temperatur Kontrol',
-                                    5 => 'MCB'
-                                ];
-                                
-                                $options = [
-                                    1 => ['Bersih', 'Kotor', 'OFF'],
-                                    2 => ['Tidak Bocor', 'Bocor', 'OFF'],
-                                    3 => ['Baik', 'Buruk', 'OFF'],
-                                    4 => ['Baik', 'Buruk', 'OFF'],
-                                    5 => ['Baik', 'Buruk', 'OFF']
-                                ];
-                            @endphp
-                            
                             @foreach($items as $i => $item)
+                                @if($i == 3)
                                 <tr>
-                                    <td class="border border-gray-300 text-center p-2 h-12 text-xs">{{ $i }}</td>
-                                    <td class="border border-gray-300 p-2 h-12 text-xs min-w-28">
-                                        <input type="text" name="checked_items[{{ $i }}]" 
-                                            class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded text-center" 
-                                            value="{{ $item }}" readonly>
-                                    </td>
-                                    <td class="border border-gray-300 p-2 h-12 text-xs min-w-24">
-                                        <select name="check_1[{{ $i }}]" class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                            <option value="">Pilih</option>
-                                            @foreach($options[$i] as $option)
-                                                <option value="{{ $option }}">{{ $option }}</option>
-                                            @endforeach
-                                        </select>
-                                    </td>
-                                    <td class="border border-gray-300 p-2 h-12 text-xs min-w-32">
-                                        <input type="text" name="keterangan_1[{{ $i }}]" 
-                                            class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                            placeholder="Keterangan">
-                                    </td>
-                                    <td class="border border-gray-300 p-2 h-12 text-xs min-w-24">
-                                        <select name="check_2[{{ $i }}]" class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                            <option value="">Pilih</option>
-                                            @foreach($options[$i] as $option)
-                                                <option value="{{ $option }}">{{ $option }}</option>
-                                            @endforeach
-                                        </select>
-                                    </td>
-                                    <td class="border border-gray-300 p-2 h-12 text-xs min-w-32">
-                                        <input type="text" name="keterangan_2[{{ $i }}]" 
-                                            class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                            placeholder="Keterangan">
-                                    </td>
-                                    <td class="border border-gray-300 p-2 h-12 text-xs min-w-24">
-                                        <select name="check_3[{{ $i }}]" class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                            <option value="">Pilih</option>
-                                            @foreach($options[$i] as $option)
-                                                <option value="{{ $option }}">{{ $option }}</option>
-                                            @endforeach
-                                        </select>
-                                    </td>
-                                    <td class="border border-gray-300 p-2 h-12 text-xs min-w-32">
-                                        <input type="text" name="keterangan_3[{{ $i }}]" 
-                                            class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                            placeholder="Keterangan">
-                                    </td>
-                                    <td class="border border-gray-300 p-2 h-12 text-xs min-w-24">
-                                        <select name="check_4[{{ $i }}]" class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                            <option value="">Pilih</option>
-                                            @foreach($options[$i] as $option)
-                                                <option value="{{ $option }}">{{ $option }}</option>
-                                            @endforeach
-                                        </select>
-                                    </td>
-                                    <td class="border border-gray-300 p-2 h-12 text-xs min-w-32">
-                                        <input type="text" name="keterangan_4[{{ $i }}]" 
-                                            class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                            placeholder="Keterangan">
-                                    </td>
-                                </tr>
-                                @if($i == 2)
-                                <tr>
-                                    <td colspan="10" class="border border-gray-300 text-center p-2 h-12 bg-gray-100 font-medium text-xs">
+                                    <td colspan="10" class="border border-gray-300 text-center p-2 bg-gray-100 font-medium text-xs">
                                         Panel Kelistrikan
                                     </td>
                                 </tr>
                                 @endif
+                                <tr>
+                                    <td class="border border-gray-300 text-center p-1 h-10 text-xs sticky left-0 bg-white z-10">{{ $i }}</td>
+                                    <td class="border border-gray-300 p-1 h-10 sticky left-10 bg-white z-10">
+                                        <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
+                                    </td>
+                                    
+                                    <!-- Minggu 1 -->
+                                    <td class="border border-gray-300 p-1 h-10">
+                                        <select name="check_1[{{ $i }}]" class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                            <option value="V" selected>V</option>
+                                            @foreach($options[$i] as $option)
+                                                @if($option != 'V')
+                                                <option value="{{ $option }}">{{ $option }}</option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td class="border border-gray-300 p-1 h-10">
+                                        <input type="text" name="keterangan_1[{{ $i }}]" 
+                                            class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                            placeholder="Keterangan">
+                                    </td>
+                                    
+                                    <!-- Minggu 2 -->
+                                    <td class="border border-gray-300 p-1 h-10">
+                                        <select name="check_2[{{ $i }}]" class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                            <option value="V" selected>V</option>
+                                            @foreach($options[$i] as $option)
+                                                @if($option != 'V')
+                                                <option value="{{ $option }}">{{ $option }}</option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td class="border border-gray-300 p-1 h-10">
+                                        <input type="text" name="keterangan_2[{{ $i }}]" 
+                                            class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                            placeholder="Keterangan">
+                                    </td>
+                                    
+                                    <!-- Minggu 3 -->
+                                    <td class="border border-gray-300 p-1 h-10">
+                                        <select name="check_3[{{ $i }}]" class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                            <option value="V" selected>V</option>
+                                            @foreach($options[$i] as $option)
+                                                @if($option != 'V')
+                                                <option value="{{ $option }}">{{ $option }}</option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td class="border border-gray-300 p-1 h-10">
+                                        <input type="text" name="keterangan_3[{{ $i }}]" 
+                                            class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                            placeholder="Keterangan">
+                                    </td>
+                                    
+                                    <!-- Minggu 4 -->
+                                    <td class="border border-gray-300 p-1 h-10">
+                                        <select name="check_4[{{ $i }}]" class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                            <option value="V" selected>V</option>
+                                            @foreach($options[$i] as $option)
+                                                @if($option != 'V')
+                                                <option value="{{ $option }}">{{ $option }}</option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td class="border border-gray-300 p-1 h-10">
+                                        <input type="text" name="keterangan_4[{{ $i }}]" 
+                                            class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                            placeholder="Keterangan">
+                                    </td>
+                                </tr>
                             @endforeach
                         </tbody>
-                        <tbody class="bg-white">
-                            <tr class="bg-sky-50">
-                                <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs" rowspan="1">-</td>
-                                <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs">Dibuat Oleh</td>
-                                
-                                <!-- Week 1 -->
-                                <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }" class="h-20">
-                                        <!-- Form fields dengan fixed height -->
-                                        <div class="space-y-1 h-12">
-                                            <input type="text" name="created_by_1" x-ref="user1" 
-                                                x-bind:value="selected ? (userName || '{{ Auth::user()->username }}') : ''"
-                                                class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                                x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                                readonly>
-                                            <input type="text" name="created_date_1" x-ref="date1" 
-                                                x-bind:value="selected ? '{{ date('Y-m-d') }}' : ''"
-                                                class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                                x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                                readonly>
-                                        </div>
-                                        
-                                        <!-- Tombol di tengah div -->
-                                        <div class="flex items-center justify-center mt-1">
-                                            <button type="button" 
-                                                @click="selected = !selected; 
-                                                    if(selected) {
-                                                        userName = '{{ Auth::user()->username }}'; 
-                                                        $refs.user1.value = userName; 
-                                                        $refs.date1.value = '{{ date('Y-m-d') }}';
-                                                    } else {
-                                                        userName = '';
-                                                        $refs.user1.value = '';
-                                                        $refs.date1.value = '';
-                                                    }"
-                                                class="w-full px-2 py-1 text-xs border border-gray-300 rounded text-center"
-                                                :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                                <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </td>
-                                
-                                <!-- Week 2 -->
-                                <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }" class="h-20">
-                                        <!-- Form fields dengan fixed height -->
-                                        <div class="space-y-1 h-12">
-                                            <input type="text" name="created_by_2" x-ref="user2" 
-                                                x-bind:value="selected ? (userName || '{{ Auth::user()->username }}') : ''"
-                                                class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                                x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                                readonly>
-                                            <input type="text" name="created_date_2" x-ref="date2" 
-                                                x-bind:value="selected ? '{{ date('Y-m-d') }}' : ''"
-                                                class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                                x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                                readonly>
-                                        </div>
-                                        
-                                        <!-- Tombol di tengah div -->
-                                        <div class="flex items-center justify-center mt-1">
-                                            <button type="button" 
-                                                @click="selected = !selected; 
-                                                    if(selected) {
-                                                        userName = '{{ Auth::user()->username }}'; 
-                                                        $refs.user2.value = userName; 
-                                                        $refs.date2.value = '{{ date('Y-m-d') }}';
-                                                    } else {
-                                                        userName = '';
-                                                        $refs.user2.value = '';
-                                                        $refs.date2.value = '';
-                                                    }"
-                                                class="w-full px-2 py-1 text-xs border border-gray-300 rounded text-center"
-                                                :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                                <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </td>
-                                
-                                <!-- Week 3 -->
-                                <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }" class="h-20">
-                                        <!-- Form fields dengan fixed height -->
-                                        <div class="space-y-1 h-12">
-                                            <input type="text" name="created_by_3" x-ref="user3" 
-                                                x-bind:value="selected ? (userName || '{{ Auth::user()->username }}') : ''"
-                                                class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                                x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                                readonly>
-                                            <input type="text" name="created_date_3" x-ref="date3" 
-                                                x-bind:value="selected ? '{{ date('Y-m-d') }}' : ''"
-                                                class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                                x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                                readonly>
-                                        </div>
-                                        
-                                        <!-- Tombol di tengah div -->
-                                        <div class="flex items-center justify-center mt-1">
-                                            <button type="button" 
-                                                @click="selected = !selected; 
-                                                    if(selected) {
-                                                        userName = '{{ Auth::user()->username }}'; 
-                                                        $refs.user3.value = userName; 
-                                                        $refs.date3.value = '{{ date('Y-m-d') }}';
-                                                    } else {
-                                                        userName = '';
-                                                        $refs.user3.value = '';
-                                                        $refs.date3.value = '';
-                                                    }"
-                                                class="w-full px-2 py-1 text-xs border border-gray-300 rounded text-center"
-                                                :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                                <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </td>
-                                
-                                <!-- Week 4 -->
-                                <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }" class="h-20">
-                                        <!-- Form fields dengan fixed height -->
-                                        <div class="space-y-1 h-12">
-                                            <input type="text" name="created_by_4" x-ref="user4" 
-                                                x-bind:value="selected ? (userName || '{{ Auth::user()->username }}') : ''"
-                                                class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                                x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                                readonly>
-                                            <input type="text" name="created_date_4" x-ref="date4" 
-                                                x-bind:value="selected ? '{{ date('Y-m-d') }}' : ''"
-                                                class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                                x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                                readonly>
-                                        </div>
-                                        
-                                        <!-- Tombol di tengah div -->
-                                        <div class="flex items-center justify-center mt-1">
-                                            <button type="button" 
-                                                @click="selected = !selected; 
-                                                    if(selected) {
-                                                        userName = '{{ Auth::user()->username }}'; 
-                                                        $refs.user4.value = userName; 
-                                                        $refs.date4.value = '{{ date('Y-m-d') }}';
-                                                    } else {
-                                                        userName = '';
-                                                        $refs.user4.value = '';
-                                                        $refs.date4.value = '';
-                                                    }"
-                                                class="w-full px-2 py-1 text-xs border border-gray-300 rounded text-center"
-                                                :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                                <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
+<tbody class="bg-white">
+    <tr class="bg-sky-50">
+        <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
+        <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10 w-24">Dibuat Oleh</td>
+        
+        <!-- Minggu 1 -->
+        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
+            <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
+                <div class="mt-1" x-show="selected">
+                    <input type="text" name="checked_by_minggu1" x-ref="user1" x-bind:value="userName"
+                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
+                        readonly>
+                    <input type="text" x-ref="displayDate1" x-bind:value="tanggal"
+                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                        readonly>
+                    <input type="hidden" name="tanggal_minggu1" x-ref="date1">
+                </div>
+                <button type="button" 
+                    @click="selected = !selected; 
+                        if(selected) {
+                            userName = '{{ Auth::user()->username }}'; 
+                            $refs.user1.value = userName;
+                            
+                            // Format tanggal untuk tampilan: DD Bulan YYYY
+                            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                            const today = new Date();
+                            const day = today.getDate();
+                            const month = monthNames[today.getMonth()];
+                            const year = today.getFullYear();
+                            tanggal = day + ' ' + month + ' ' + year;
+                            
+                            // Format tanggal untuk database: YYYY-MM-DD
+                            const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
+                            const dbDay = String(today.getDate()).padStart(2, '0');
+                            const dbDate = `${year}-${dbMonth}-${dbDay}`;
+                            
+                            $refs.displayDate1.value = tanggal;
+                            $refs.date1.value = dbDate;
+                        } else {
+                            userName = '';
+                            tanggal = '';
+                            $refs.user1.value = '';
+                            $refs.displayDate1.value = '';
+                            $refs.date1.value = '';
+                        }"
+                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center mt-1 max-w-full"
+                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                </button>
+            </div>
+        </td>
+        
+        <!-- Minggu 2 -->
+        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
+            <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
+                <div class="mt-1" x-show="selected">
+                    <input type="text" name="checked_by_minggu2" x-ref="user2" x-bind:value="userName"
+                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
+                        readonly>
+                    <input type="text" x-ref="displayDate2" x-bind:value="tanggal"
+                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                        readonly>
+                    <input type="hidden" name="tanggal_minggu2" x-ref="date2">
+                </div>
+                <button type="button" 
+                    @click="selected = !selected; 
+                        if(selected) {
+                            userName = '{{ Auth::user()->username }}'; 
+                            $refs.user2.value = userName;
+                            
+                            // Format tanggal untuk tampilan: DD Bulan YYYY
+                            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                            const today = new Date();
+                            const day = today.getDate();
+                            const month = monthNames[today.getMonth()];
+                            const year = today.getFullYear();
+                            tanggal = day + ' ' + month + ' ' + year;
+                            
+                            // Format tanggal untuk database: YYYY-MM-DD
+                            const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
+                            const dbDay = String(today.getDate()).padStart(2, '0');
+                            const dbDate = `${year}-${dbMonth}-${dbDay}`;
+                            
+                            $refs.displayDate2.value = tanggal;
+                            $refs.date2.value = dbDate;
+                        } else {
+                            userName = '';
+                            tanggal = '';
+                            $refs.user2.value = '';
+                            $refs.displayDate2.value = '';
+                            $refs.date2.value = '';
+                        }"
+                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center mt-1 max-w-full"
+                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                </button>
+            </div>
+        </td>
+        
+        <!-- Minggu 3 -->
+        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
+            <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
+                <div class="mt-1" x-show="selected">
+                    <input type="text" name="checked_by_minggu3" x-ref="user3" x-bind:value="userName"
+                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
+                        readonly>
+                    <input type="text" x-ref="displayDate3" x-bind:value="tanggal"
+                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                        readonly>
+                    <input type="hidden" name="tanggal_minggu3" x-ref="date3">
+                </div>
+                <button type="button" 
+                    @click="selected = !selected; 
+                        if(selected) {
+                            userName = '{{ Auth::user()->username }}'; 
+                            $refs.user3.value = userName;
+                            
+                            // Format tanggal untuk tampilan: DD Bulan YYYY
+                            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                            const today = new Date();
+                            const day = today.getDate();
+                            const month = monthNames[today.getMonth()];
+                            const year = today.getFullYear();
+                            tanggal = day + ' ' + month + ' ' + year;
+                            
+                            // Format tanggal untuk database: YYYY-MM-DD
+                            const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
+                            const dbDay = String(today.getDate()).padStart(2, '0');
+                            const dbDate = `${year}-${dbMonth}-${dbDay}`;
+                            
+                            $refs.displayDate3.value = tanggal;
+                            $refs.date3.value = dbDate;
+                        } else {
+                            userName = '';
+                            tanggal = '';
+                            $refs.user3.value = '';
+                            $refs.displayDate3.value = '';
+                            $refs.date3.value = '';
+                        }"
+                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center mt-1 max-w-full"
+                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                </button>
+            </div>
+        </td>
+        
+        <!-- Minggu 4 -->
+        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
+            <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
+                <div class="mt-1" x-show="selected">
+                    <input type="text" name="checked_by_minggu4" x-ref="user4" x-bind:value="userName"
+                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
+                        readonly>
+                    <input type="text" x-ref="displayDate4" x-bind:value="tanggal"
+                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                        readonly>
+                    <input type="hidden" name="tanggal_minggu4" x-ref="date4">
+                </div>
+                <button type="button" 
+                    @click="selected = !selected; 
+                        if(selected) {
+                            userName = '{{ Auth::user()->username }}'; 
+                            $refs.user4.value = userName;
+                            
+                            // Format tanggal untuk tampilan: DD Bulan YYYY
+                            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                            const today = new Date();
+                            const day = today.getDate();
+                            const month = monthNames[today.getMonth()];
+                            const year = today.getFullYear();
+                            tanggal = day + ' ' + month + ' ' + year;
+                            
+                            // Format tanggal untuk database: YYYY-MM-DD
+                            const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
+                            const dbDay = String(today.getDate()).padStart(2, '0');
+                            const dbDate = `${year}-${dbMonth}-${dbDay}`;
+                            
+                            $refs.displayDate4.value = tanggal;
+                            $refs.date4.value = dbDate;
+                        } else {
+                            userName = '';
+                            tanggal = '';
+                            $refs.user4.value = '';
+                            $refs.displayDate4.value = '';
+                            $refs.date4.value = '';
+                        }"
+                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center mt-1 max-w-full"
+                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                </button>
+            </div>
+        </td>
+    </tr>
+</tbody>
                     </table>
                 </div>
+                
             </div>
-
-            <!-- Tombol Submit yang lebih besar untuk mobile -->
-            <div class="mt-6">
-                @include('components.create-form-buttons', ['backRoute' => route('hopper.index')])
-            </div>
+            
+            <!-- Tombol Submit dan Kembali -->
+            @include('components.create-form-buttons', ['backRoute' => route('hopper.index')])
         </form>
     </div>
 </div>
@@ -366,14 +432,17 @@
 
 @section('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        if (document.getElementById("tanggal")) {
-            document.getElementById("tanggal").addEventListener("change", function() {
-                let tanggal = new Date(this.value);
-                let hari = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(tanggal);
-                document.getElementById("hari").value = hari;
-            });
-        }
+    document.addEventListener('alpine:init', () => {
+        // Menambahkan validasi sebelum form dikirim
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // Mendapatkan komponen Alpine dari dropdown
+            const dropdown = Alpine.evaluate(document.querySelector('[name="nomer_hopper"]').closest('[x-data]'), 'validate()');
+            
+            // Jika validasi gagal, hentikan pengiriman form
+            if (!dropdown) {
+                e.preventDefault();
+            }
+        });
     });
 </script>
 @endsection
