@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\AirDryerCheck;
 use App\Models\AirDryerResult;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
 
 class AirDryerController extends Controller
@@ -46,94 +47,123 @@ class AirDryerController extends Controller
 
     public function store(Request $request)
     {
-        $existingDate = AirDryerCheck::where('tanggal', $request->tanggal)
-        ->when(Auth::user() instanceof \App\Models\Checker, function ($query) {
-            // Jika user adalah Checker, hanya cek recordnya sendiri
-            return $query->where('checked_by', Auth::user()->username);
-        })
-        ->exists();
-    
-        if ($existingDate) {
-            return redirect()->route('air-dryer.create')->with('warning', 'Data di tanggal tersebut telah dibuat');
-        }
-
+        // Validasi input
         $request->validate([
             'tanggal' => 'required|date',
-            'hari' => 'required|string|max:20',
-            'keterangan' => 'nullable|string',
-        ]);
-    
-        $check = AirDryerCheck::create([
-            'tanggal' => $request->tanggal,
-            'hari' => $request->hari,
-            'checked_by' => Auth::user()->username,
-            'approved_by' => null,
-            'keterangan' => $request->keterangan,
+            'hari' => 'required|string',
         ]);
 
-        // Simpan data per mesin
-        foreach ($request->nomor_mesin as $index => $nomor_mesin) {
-            AirDryerResult::create([
-                'check_id' => $check->id,
-                'nomor_mesin' => $nomor_mesin,
-                'temperatur_kompresor' => $request->temperatur_kompresor[$index] ?? null,
-                'temperatur_kabel' => $request->temperatur_kabel[$index] ?? null,
-                'temperatur_mcb' => $request->temperatur_mcb[$index] ?? null,
-                'temperatur_angin_in' => $request->temperatur_angin_in[$index] ?? null,
-                'temperatur_angin_out' => $request->temperatur_angin_out[$index] ?? null,
-                'evaporator' => $request->evaporator[$index] ?? null,
-                'fan_evaporator' => $request->fan_evaporator[$index] ?? null,
-                'auto_drain' => $request->auto_drain[$index] ?? null,
+        // Mulai transaksi database
+        DB::beginTransaction();
+
+        try {
+            // Simpan data pemeriksaan utama
+            $airDryerCheck = AirDryerCheck::create([
+                'tanggal' => $request->tanggal,
+                'hari' => $request->hari,
+                'checked_by' => Auth::user()->username,
+                'keterangan' => $request->catatan,
             ]);
-        }
 
-        return redirect()->route('air-dryer.index')->with('success', 'Data berhasil disimpan!');
-    }
-
-    public function edit($check_id)
-    {
-        $check = AirDryerCheck::findOrFail($check_id);
-        $results = AirDryerResult::where('check_id', $check_id)->get();
-        return view('air_dryer.edit', compact('check', 'results'));
-    }
-
-    public function update(Request $request, $check_id)
-    {
-        $request->validate([
-            'tanggal' => 'required|date',
-            'hari' => 'required|string|max:20',
-            'keterangan' => 'nullable|string',
-        ]);
-
-        // Update AirDryerCheck
-        $check = AirDryerCheck::findOrFail($check_id);
-        $check->update([
-            'tanggal' => $request->tanggal,
-            'hari' => $request->hari,
-            'keterangan' => $request->keterangan,
-        ]);
-
-        // Update AirDryerResult
-        foreach ($request->nomor_mesin as $index => $nomor_mesin) {
-            $result = AirDryerResult::where('check_id', $check_id)
-                ->where('nomor_mesin', $nomor_mesin)
-                ->first();
-
-            if ($result) {
-                $result->update([
-                    'temperatur_kompresor' => $request->temperatur_kompresor[$index] ?? null,
-                    'temperatur_kabel' => $request->temperatur_kabel[$index] ?? null,
-                    'temperatur_mcb' => $request->temperatur_mcb[$index] ?? null,
-                    'temperatur_angin_in' => $request->temperatur_angin_in[$index] ?? null,
-                    'temperatur_angin_out' => $request->temperatur_angin_out[$index] ?? null,
-                    'evaporator' => $request->evaporator[$index] ?? null,
-                    'fan_evaporator' => $request->fan_evaporator[$index] ?? null,
-                    'auto_drain' => $request->auto_drain[$index] ?? null,
+            // Simpan detail untuk setiap mesin
+            for ($i = 1; $i <= 8; $i++) {
+                AirDryerResult::create([
+                    'check_id' => $airDryerCheck->id,
+                    'nomor_mesin' => 'AD' . $i,
+                    'temperatur_kompresor' => $request->input('temperatur_kompresor.' . $i),
+                    'temperatur_kabel' => $request->input('temperatur_kabel.' . $i),
+                    'temperatur_mcb' => $request->input('temperatur_mcb.' . $i),
+                    'temperatur_angin_in' => $request->input('temperatur_angin_in.' . $i),
+                    'temperatur_angin_out' => $request->input('temperatur_angin_out.' . $i),
+                    'evaporator' => $request->input('evaporator.' . $i),
+                    'fan_evaporator' => $request->input('fan_evaporator.' . $i),
+                    'auto_drain' => $request->input('auto_drain.' . $i),
                 ]);
             }
-        }
 
-        return redirect()->route('air-dryer.index')->with('success', 'Data berhasil diperbarui!');
+            // Commit transaksi jika semua operasi berhasil
+            DB::commit();
+
+            return redirect()->route('air-dryer.index')
+                ->with('success', 'Data pemeriksaan Air Dryer berhasil disimpan!');
+                
+        } catch (\Exception $e) {
+            // Rollback transaksi jika terjadi kesalahan
+            DB::rollBack();
+            
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage())
+                ->withInput();
+        }
+    }
+
+    public function edit($id)
+    {
+        // Ambil data pemeriksaan air dryer berdasarkan ID
+        $airDryer = AirDryerCheck::findOrFail($id);
+        
+        // Ambil semua detail hasil pemeriksaan untuk setiap mesin
+        $details = AirDryerResult::where('check_id', $id)->get();
+        
+        // Kirim data ke view
+        return view('air_dryer.edit', compact('airDryer', 'details'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        // Validasi input
+        $request->validate([
+            'tanggal' => 'required|date',
+            'hari' => 'required|string',
+        ]);
+        
+        // Mulai transaksi database
+        DB::beginTransaction();
+        
+        try {
+            // Update data pemeriksaan utama
+            $airDryer = AirDryerCheck::findOrFail($id);
+            $airDryer->update([
+                'tanggal' => $request->tanggal,
+                'hari' => $request->hari,
+                'keterangan' => $request->catatan,
+                // Tidak update checked_by karena ini adalah user yang membuat record
+            ]);
+            
+            // Update detail untuk setiap mesin
+            for ($i = 1; $i <= 8; $i++) {
+                AirDryerResult::updateOrCreate(
+                    [
+                        'check_id' => $id,
+                        'nomor_mesin' => 'AD' . $i
+                    ],
+                    [
+                        'temperatur_kompresor' => $request->input('temperatur_kompresor.' . $i),
+                        'temperatur_kabel' => $request->input('temperatur_kabel.' . $i),
+                        'temperatur_mcb' => $request->input('temperatur_mcb.' . $i),
+                        'temperatur_angin_in' => $request->input('temperatur_angin_in.' . $i),
+                        'temperatur_angin_out' => $request->input('temperatur_angin_out.' . $i),
+                        'evaporator' => $request->input('evaporator.' . $i),
+                        'fan_evaporator' => $request->input('fan_evaporator.' . $i),
+                        'auto_drain' => $request->input('auto_drain.' . $i),
+                    ]
+                );
+            }
+            
+            // Commit transaksi jika semua operasi berhasil
+            DB::commit();
+            
+            return redirect()->route('air-dryer.index')
+                ->with('success', 'Data pemeriksaan Air Dryer berhasil diperbarui!');
+                
+        } catch (\Exception $e) {
+            // Rollback transaksi jika terjadi kesalahan
+            DB::rollBack();
+            
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     public function show($check_id)
