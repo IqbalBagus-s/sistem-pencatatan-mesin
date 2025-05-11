@@ -162,92 +162,92 @@
                             </tr>
                         @endforeach
                     </tbody>
-<tbody class="bg-white">
-    <tr class="bg-sky-50">
-        <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
-        <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10 w-24">Dibuat Oleh</td>
-        
-        @for($j = 1; $j <= 4; $j++)
-            @php
-                $checkedBy = $hopperCheck->{'checked_by_minggu'.$j} ?? '';
-                $isChecked = !empty($checkedBy);
-                $isApproved = !empty($hopperCheck->{'approved_by_minggu'.$j}) && $hopperCheck->{'approved_by_minggu'.$j} != '-';
-                $tanggal = $hopperCheck->{'tanggal_minggu'.$j} ?? '';
-                
-                // Format tanggal untuk tampilan jika ada
-                $formattedDate = '';
-                if (!empty($tanggal)) {
-                    $date = \Carbon\Carbon::parse($tanggal);
-                    $formattedDate = $date->format('d').' '.$date->locale('id')->monthName.' '.$date->format('Y');
-                }
-            @endphp
-            <td colspan="2" class="border border-gray-300 p-1 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} w-32">
-                <div x-data="{ 
-                    selected: {{ $isChecked ? 'true' : 'false' }}, 
-                    userName: '{{ $checkedBy }}',
-                    tanggal: '{{ $formattedDate }}',
-                    dbTanggal: '{{ $tanggal }}',
-                    isApproved: {{ $isApproved ? 'true' : 'false' }},
-                    hasExistingData: {{ (!empty($checkedBy) && !empty($tanggal)) ? 'true' : 'false' }}
-                }">
-                    <div class="mt-1" x-show="selected || isApproved">
-                        <input type="text" name="checked_by_minggu{{ $j }}" x-ref="user{{ $j }}" value="{{ $checkedBy }}"
-                            class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded mb-1 text-center"
-                            readonly>
-                        <input type="text" x-ref="displayDate{{ $j }}" value="{{ $formattedDate }}"
-                            class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded text-center"
-                            readonly>
-                        <input type="hidden" name="tanggal_minggu{{ $j }}" x-ref="date{{ $j }}" value="{{ $tanggal }}">
-                        
-                        @if($isApproved)
-                            <div class="mt-1 text-xs text-green-600 text-center">
-                                Disetujui oleh: {{ $hopperCheck->{'approved_by_minggu'.$j} }}
-                            </div>
-                            <input type="hidden" name="approved_by_minggu{{ $j }}" value="{{ $hopperCheck->{'approved_by_minggu'.$j} }}">
-                        @endif
-                    </div>
-                    
-                    <!-- Hanya tampilkan tombol jika belum diapprove -->
-                    @if(!$isApproved)
-                    <button type="button" 
-                        x-show="!hasExistingData || !selected"
-                        @click="selected = !selected; 
-                            if(selected) {
-                                userName = '{{ Auth::user()->username }}'; 
-                                $refs.user{{ $j }}.value = userName;
-                                
-                                // Format tanggal untuk tampilan: DD Bulan YYYY
-                                const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-                                const today = new Date();
-                                const day = today.getDate();
-                                const month = monthNames[today.getMonth()];
-                                const year = today.getFullYear();
-                                tanggal = day + ' ' + month + ' ' + year;
-                                
-                                // Format tanggal untuk database: YYYY-MM-DD
-                                const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
-                                const dbDay = String(today.getDate()).padStart(2, '0');
-                                const dbDate = `${year}-${dbMonth}-${dbDay}`;
-                                
-                                $refs.displayDate{{ $j }}.value = tanggal;
-                                $refs.date{{ $j }}.value = dbDate;
-                            } else {
-                                userName = '';
-                                tanggal = '';
-                                $refs.user{{ $j }}.value = '';
-                                $refs.displayDate{{ $j }}.value = '';
-                                $refs.date{{ $j }}.value = '';
-                            }"
-                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center mt-1 max-w-full"
-                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                    </button>
-                    @endif
-                </div>
-            </td>
-        @endfor
-    </tr>
-</tbody>
+                    <tbody class="bg-white">
+                        <tr class="bg-sky-50">
+                            <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
+                            <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10 w-24">Dibuat Oleh</td>
+                            
+                            @for($j = 1; $j <= 4; $j++)
+                                @php
+                                    $checkedBy = $hopperCheck->{'checked_by_minggu'.$j} ?? '';
+                                    $isChecked = !empty($checkedBy);
+                                    $isApproved = !empty($hopperCheck->{'approved_by_minggu'.$j}) && $hopperCheck->{'approved_by_minggu'.$j} != '-';
+                                    $tanggal = $hopperCheck->{'tanggal_minggu'.$j} ?? '';
+                                    
+                                    // Format tanggal untuk tampilan jika ada
+                                    $formattedDate = '';
+                                    if (!empty($tanggal)) {
+                                        $date = \Carbon\Carbon::parse($tanggal);
+                                        $formattedDate = $date->format('d').' '.$date->locale('id')->monthName.' '.$date->format('Y');
+                                    }
+                                @endphp
+                                <td colspan="2" class="border border-gray-300 p-1 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} w-32">
+                                    <div x-data="{ 
+                                        selected: {{ $isChecked ? 'true' : 'false' }}, 
+                                        userName: '{{ $checkedBy }}',
+                                        tanggal: '{{ $formattedDate }}',
+                                        dbTanggal: '{{ $tanggal }}',
+                                        isApproved: {{ $isApproved ? 'true' : 'false' }},
+                                        hasExistingData: {{ (!empty($checkedBy) && !empty($tanggal)) ? 'true' : 'false' }}
+                                    }">
+                                        <div class="mt-1" x-show="selected || isApproved">
+                                            <input type="text" name="checked_by_minggu{{ $j }}" x-ref="user{{ $j }}" value="{{ $checkedBy }}"
+                                                class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded mb-1 text-center"
+                                                readonly>
+                                            <input type="text" x-ref="displayDate{{ $j }}" value="{{ $formattedDate }}"
+                                                class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded text-center"
+                                                readonly>
+                                            <input type="hidden" name="tanggal_minggu{{ $j }}" x-ref="date{{ $j }}" value="{{ $tanggal }}">
+                                            
+                                            @if($isApproved)
+                                                <div class="mt-1 text-xs text-green-600 text-center">
+                                                    Disetujui oleh: {{ $hopperCheck->{'approved_by_minggu'.$j} }}
+                                                </div>
+                                                <input type="hidden" name="approved_by_minggu{{ $j }}" value="{{ $hopperCheck->{'approved_by_minggu'.$j} }}">
+                                            @endif
+                                        </div>
+                                        
+                                        <!-- Hanya tampilkan tombol jika belum diapprove -->
+                                        @if(!$isApproved)
+                                        <button type="button" 
+                                            x-show="!hasExistingData || !selected"
+                                            @click="selected = !selected; 
+                                                if(selected) {
+                                                    userName = '{{ Auth::user()->username }}'; 
+                                                    $refs.user{{ $j }}.value = userName;
+                                                    
+                                                    // Format tanggal untuk tampilan: DD Bulan YYYY
+                                                    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                                                    const today = new Date();
+                                                    const day = today.getDate();
+                                                    const month = monthNames[today.getMonth()];
+                                                    const year = today.getFullYear();
+                                                    tanggal = day + ' ' + month + ' ' + year;
+                                                    
+                                                    // Format tanggal untuk database: YYYY-MM-DD
+                                                    const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
+                                                    const dbDay = String(today.getDate()).padStart(2, '0');
+                                                    const dbDate = `${year}-${dbMonth}-${dbDay}`;
+                                                    
+                                                    $refs.displayDate{{ $j }}.value = tanggal;
+                                                    $refs.date{{ $j }}.value = dbDate;
+                                                } else {
+                                                    userName = '';
+                                                    tanggal = '';
+                                                    $refs.user{{ $j }}.value = '';
+                                                    $refs.displayDate{{ $j }}.value = '';
+                                                    $refs.date{{ $j }}.value = '';
+                                                }"
+                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center mt-1 max-w-full"
+                                            :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                            <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                            @endfor
+                        </tr>
+                    </tbody>
                 </table>
             </div>
             
