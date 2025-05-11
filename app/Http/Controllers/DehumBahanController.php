@@ -162,22 +162,28 @@ class DehumBahanController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Validate the request
+        // Validasi data request
         $validatedData = $request->validate([
             'nomer_dehum_bahan' => 'required|integer|min:1',
             'bulan' => 'required|date_format:Y-m',
             
-            // Validation for creator fields
-            'created_by_1' => 'nullable|string|max:255',
-            'created_date_1' => 'nullable|date',
-            'created_by_2' => 'nullable|string|max:255',
-            'created_date_2' => 'nullable|date',
-            'created_by_3' => 'nullable|string|max:255',
-            'created_date_3' => 'nullable|date',
-            'created_by_4' => 'nullable|string|max:255',
-            'created_date_4' => 'nullable|date',
+            // Validasi untuk checked_by fields
+            'checked_by_minggu1' => 'nullable|string|max:255',
+            'tanggal_minggu1' => 'nullable|date',
+            'checked_by_minggu2' => 'nullable|string|max:255',
+            'tanggal_minggu2' => 'nullable|date',
+            'checked_by_minggu3' => 'nullable|string|max:255',
+            'tanggal_minggu3' => 'nullable|date',
+            'checked_by_minggu4' => 'nullable|string|max:255',
+            'tanggal_minggu4' => 'nullable|date',
             
-            // Validation for checked items and checks
+            // Validasi untuk approved_by fields
+            'approved_by_minggu1' => 'nullable|string|max:255',
+            'approved_by_minggu2' => 'nullable|string|max:255',
+            'approved_by_minggu3' => 'nullable|string|max:255',
+            'approved_by_minggu4' => 'nullable|string|max:255',
+            
+            // Validasi untuk checked items dan checks
             'checked_items' => 'required|array',
             'check_1' => 'required|array',
             'keterangan_1' => 'nullable|array',
@@ -189,83 +195,125 @@ class DehumBahanController extends Controller
             'keterangan_4' => 'nullable|array',
         ]);
 
-        // Find the existing DehumBahanCheck record
+        // Cari record DehumBahanCheck yang akan diupdate
         $dehumCheck = DehumBahanCheck::findOrFail($id);
 
-        // Check for existing record with the same nomer_dehum and bulan, excluding the current record
+        // Cek apakah ada record lain dengan nomor dehum dan bulan yang sama (kecuali record saat ini)
         $existingRecord = DehumBahanCheck::where('nomer_dehum_bahan', $request->input('nomer_dehum_bahan'))
             ->where('bulan', $request->input('bulan'))
             ->where('id', '!=', $id)
             ->first();
 
         if ($existingRecord) {
-            // If a record with the same dehum number and month exists, return an error
-            return redirect()->back()->with('error', 'A record for this dehum number and month already exists.')
+            // Jika ditemukan record dengan nomor dehum dan bulan yang sama, kembalikan error
+            return redirect()->back()->with('error', 'Data dengan nomor dehum dan bulan ini sudah ada.')
                             ->withInput();
         }
 
         try {
-            // Start a database transaction
+            // Mulai transaksi database
             DB::beginTransaction();
 
-            // Update DehumBahanCheck record
+            // Update data utama DehumBahanCheck
             $dehumCheck->update([
                 'nomer_dehum_bahan' => $request->input('nomer_dehum_bahan'),
                 'bulan' => $request->input('bulan'),
                 
-                // Update weekly dates
-                'tanggal_minggu1' => $request->input('created_date_1'),
-                'tanggal_minggu2' => $request->input('created_date_2'),
-                'tanggal_minggu3' => $request->input('created_date_3'),
-                'tanggal_minggu4' => $request->input('created_date_4'),
+                // Update tanggal mingguan
+                'tanggal_minggu1' => $request->input('tanggal_minggu1'),
+                'tanggal_minggu2' => $request->input('tanggal_minggu2'),
+                'tanggal_minggu3' => $request->input('tanggal_minggu3'),
+                'tanggal_minggu4' => $request->input('tanggal_minggu4'),
                 
-                // Update weekly checkers
-                'checked_by_minggu1' => $request->input('created_by_1'),
-                'checked_by_minggu2' => $request->input('created_by_2'),
-                'checked_by_minggu3' => $request->input('created_by_3'),
-                'checked_by_minggu4' => $request->input('created_by_4'),
+                // Update pemeriksa mingguan
+                'checked_by_minggu1' => $request->input('checked_by_minggu1'),
+                'checked_by_minggu2' => $request->input('checked_by_minggu2'),
+                'checked_by_minggu3' => $request->input('checked_by_minggu3'),
+                'checked_by_minggu4' => $request->input('checked_by_minggu4'),
+                
+                // Update status persetujuan
+                'approved_by_minggu1' => $request->input('approved_by_minggu1'),
+                'approved_by_minggu2' => $request->input('approved_by_minggu2'),
+                'approved_by_minggu3' => $request->input('approved_by_minggu3'),
+                'approved_by_minggu4' => $request->input('approved_by_minggu4'),
             ]);
 
-            // Delete existing DehumBahanResult records for this check
-            DehumBahanResult::where('check_id', $dehumCheck->id)->delete();
-
-            // Prepare and create new DehumBahanResult records
+            // Ambil existing DehumBahanResult records untuk check ini
+            $existingResults = DehumBahanResult::where('check_id', $dehumCheck->id)->get();
+            
+            // Persiapkan data yang akan diupdate
             $checkedItems = $request->input('checked_items');
             
+            // Iterasi melalui semua checked items
             foreach ($checkedItems as $index => $item) {
-                DehumBahanResult::create([
-                    'check_id' => $dehumCheck->id,
-                    'checked_items' => $item,
-                    
-                    // Week 1 data
-                    'minggu1' => $request->input("check_1.{$index}", null),
-                    'keterangan_minggu1' => $request->input("keterangan_1.{$index}", null),
-                    
-                    // Week 2 data
-                    'minggu2' => $request->input("check_2.{$index}", null),
-                    'keterangan_minggu2' => $request->input("keterangan_2.{$index}", null),
-                    
-                    // Week 3 data
-                    'minggu3' => $request->input("check_3.{$index}", null),
-                    'keterangan_minggu3' => $request->input("keterangan_3.{$index}", null),
-                    
-                    // Week 4 data
-                    'minggu4' => $request->input("check_4.{$index}", null),
-                    'keterangan_minggu4' => $request->input("keterangan_4.{$index}", null),
-                ]);
+                // Cari result yang sudah ada berdasarkan index/urutan
+                $existingResult = $existingResults->where('checked_items', $item)->first();
+                
+                if ($existingResult) {
+                    // Jika sudah ada, update datanya
+                    $existingResult->update([
+                        // Week 1 data
+                        'minggu1' => $request->input("check_1.{$index}", null),
+                        'keterangan_minggu1' => $request->input("keterangan_1.{$index}", null),
+                        
+                        // Week 2 data
+                        'minggu2' => $request->input("check_2.{$index}", null),
+                        'keterangan_minggu2' => $request->input("keterangan_2.{$index}", null),
+                        
+                        // Week 3 data
+                        'minggu3' => $request->input("check_3.{$index}", null),
+                        'keterangan_minggu3' => $request->input("keterangan_3.{$index}", null),
+                        
+                        // Week 4 data
+                        'minggu4' => $request->input("check_4.{$index}", null),
+                        'keterangan_minggu4' => $request->input("keterangan_4.{$index}", null),
+                    ]);
+                } else {
+                    // Jika belum ada, buat baru
+                    DehumBahanResult::create([
+                        'check_id' => $dehumCheck->id,
+                        'checked_items' => $item,
+                        
+                        // Week 1 data
+                        'minggu1' => $request->input("check_1.{$index}", null),
+                        'keterangan_minggu1' => $request->input("keterangan_1.{$index}", null),
+                        
+                        // Week 2 data
+                        'minggu2' => $request->input("check_2.{$index}", null),
+                        'keterangan_minggu2' => $request->input("keterangan_2.{$index}", null),
+                        
+                        // Week 3 data
+                        'minggu3' => $request->input("check_3.{$index}", null),
+                        'keterangan_minggu3' => $request->input("keterangan_3.{$index}", null),
+                        
+                        // Week 4 data
+                        'minggu4' => $request->input("check_4.{$index}", null),
+                        'keterangan_minggu4' => $request->input("keterangan_4.{$index}", null),
+                    ]);
+                }
+            }
+            
+            // Hapus hasil yang tidak diperlukan lagi (jika ada item yang dihapus dari form)
+            $currentItems = collect($checkedItems);
+            $itemsToDelete = $existingResults->filter(function($result) use ($currentItems) {
+                return !$currentItems->contains($result->checked_items);
+            });
+            
+            if ($itemsToDelete->count() > 0) {
+                DehumBahanResult::whereIn('id', $itemsToDelete->pluck('id'))->delete();
             }
 
-            // Commit the transaction
+            // Commit transaksi
             DB::commit();
 
-            // Redirect with success message
-            return redirect()->route('dehum-bahan.index')->with('success', 'Dehum check data successfully updated.');
+            // Redirect dengan pesan sukses
+            return redirect()->route('dehum-bahan.index')->with('success', 'Data pengecekan dehum berhasil diperbarui.');
         } catch (\Exception $e) {
-            // Rollback the transaction in case of error
+            // Rollback transaksi jika terjadi error
             DB::rollBack();
 
-            // Redirect back with error message
-            return redirect()->back()->with('error', 'Failed to update dehum check data: ' . $e->getMessage());
+            // Redirect kembali dengan pesan error
+            return redirect()->back()->with('error', 'Gagal memperbarui data pengecekan dehum: ' . $e->getMessage());
         }
     }
 

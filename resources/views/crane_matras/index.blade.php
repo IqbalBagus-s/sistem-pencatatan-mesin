@@ -89,7 +89,7 @@
 @endsection
 
 @section('create-button-text')
-    Tambah Pencatatan
+    <i class="fas fa-plus mr-2"></i>Buat Baru
 @endsection
 
 @section('table-content')

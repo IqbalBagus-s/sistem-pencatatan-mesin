@@ -258,12 +258,6 @@
                             </svg>
                             <span><span class="font-medium">MCB:</span> Baik</span>
                         </li>
-                        <li class="flex items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span><span class="font-medium">Dew point:</span> Baik</span>
-                        </li>
                     </ul>
                 </div>
             </div>

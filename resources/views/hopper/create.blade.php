@@ -224,205 +224,249 @@
                                 </tr>
                             @endforeach
                         </tbody>
-<tbody class="bg-white">
-    <tr class="bg-sky-50">
-        <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
-        <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10 w-24">Dibuat Oleh</td>
-        
-        <!-- Minggu 1 -->
-        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
-            <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
-                <div class="mt-1" x-show="selected">
-                    <input type="text" name="checked_by_minggu1" x-ref="user1" x-bind:value="userName"
-                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
-                        readonly>
-                    <input type="text" x-ref="displayDate1" x-bind:value="tanggal"
-                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
-                        readonly>
-                    <input type="hidden" name="tanggal_minggu1" x-ref="date1">
-                </div>
-                <button type="button" 
-                    @click="selected = !selected; 
-                        if(selected) {
-                            userName = '{{ Auth::user()->username }}'; 
-                            $refs.user1.value = userName;
-                            
-                            // Format tanggal untuk tampilan: DD Bulan YYYY
-                            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-                            const today = new Date();
-                            const day = today.getDate();
-                            const month = monthNames[today.getMonth()];
-                            const year = today.getFullYear();
-                            tanggal = day + ' ' + month + ' ' + year;
-                            
-                            // Format tanggal untuk database: YYYY-MM-DD
-                            const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
-                            const dbDay = String(today.getDate()).padStart(2, '0');
-                            const dbDate = `${year}-${dbMonth}-${dbDay}`;
-                            
-                            $refs.displayDate1.value = tanggal;
-                            $refs.date1.value = dbDate;
-                        } else {
-                            userName = '';
-                            tanggal = '';
-                            $refs.user1.value = '';
-                            $refs.displayDate1.value = '';
-                            $refs.date1.value = '';
-                        }"
-                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center mt-1 max-w-full"
-                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                </button>
-            </div>
-        </td>
-        
-        <!-- Minggu 2 -->
-        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
-            <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
-                <div class="mt-1" x-show="selected">
-                    <input type="text" name="checked_by_minggu2" x-ref="user2" x-bind:value="userName"
-                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
-                        readonly>
-                    <input type="text" x-ref="displayDate2" x-bind:value="tanggal"
-                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
-                        readonly>
-                    <input type="hidden" name="tanggal_minggu2" x-ref="date2">
-                </div>
-                <button type="button" 
-                    @click="selected = !selected; 
-                        if(selected) {
-                            userName = '{{ Auth::user()->username }}'; 
-                            $refs.user2.value = userName;
-                            
-                            // Format tanggal untuk tampilan: DD Bulan YYYY
-                            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-                            const today = new Date();
-                            const day = today.getDate();
-                            const month = monthNames[today.getMonth()];
-                            const year = today.getFullYear();
-                            tanggal = day + ' ' + month + ' ' + year;
-                            
-                            // Format tanggal untuk database: YYYY-MM-DD
-                            const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
-                            const dbDay = String(today.getDate()).padStart(2, '0');
-                            const dbDate = `${year}-${dbMonth}-${dbDay}`;
-                            
-                            $refs.displayDate2.value = tanggal;
-                            $refs.date2.value = dbDate;
-                        } else {
-                            userName = '';
-                            tanggal = '';
-                            $refs.user2.value = '';
-                            $refs.displayDate2.value = '';
-                            $refs.date2.value = '';
-                        }"
-                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center mt-1 max-w-full"
-                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                </button>
-            </div>
-        </td>
-        
-        <!-- Minggu 3 -->
-        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
-            <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
-                <div class="mt-1" x-show="selected">
-                    <input type="text" name="checked_by_minggu3" x-ref="user3" x-bind:value="userName"
-                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
-                        readonly>
-                    <input type="text" x-ref="displayDate3" x-bind:value="tanggal"
-                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
-                        readonly>
-                    <input type="hidden" name="tanggal_minggu3" x-ref="date3">
-                </div>
-                <button type="button" 
-                    @click="selected = !selected; 
-                        if(selected) {
-                            userName = '{{ Auth::user()->username }}'; 
-                            $refs.user3.value = userName;
-                            
-                            // Format tanggal untuk tampilan: DD Bulan YYYY
-                            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-                            const today = new Date();
-                            const day = today.getDate();
-                            const month = monthNames[today.getMonth()];
-                            const year = today.getFullYear();
-                            tanggal = day + ' ' + month + ' ' + year;
-                            
-                            // Format tanggal untuk database: YYYY-MM-DD
-                            const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
-                            const dbDay = String(today.getDate()).padStart(2, '0');
-                            const dbDate = `${year}-${dbMonth}-${dbDay}`;
-                            
-                            $refs.displayDate3.value = tanggal;
-                            $refs.date3.value = dbDate;
-                        } else {
-                            userName = '';
-                            tanggal = '';
-                            $refs.user3.value = '';
-                            $refs.displayDate3.value = '';
-                            $refs.date3.value = '';
-                        }"
-                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center mt-1 max-w-full"
-                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                </button>
-            </div>
-        </td>
-        
-        <!-- Minggu 4 -->
-        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
-            <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
-                <div class="mt-1" x-show="selected">
-                    <input type="text" name="checked_by_minggu4" x-ref="user4" x-bind:value="userName"
-                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
-                        readonly>
-                    <input type="text" x-ref="displayDate4" x-bind:value="tanggal"
-                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
-                        readonly>
-                    <input type="hidden" name="tanggal_minggu4" x-ref="date4">
-                </div>
-                <button type="button" 
-                    @click="selected = !selected; 
-                        if(selected) {
-                            userName = '{{ Auth::user()->username }}'; 
-                            $refs.user4.value = userName;
-                            
-                            // Format tanggal untuk tampilan: DD Bulan YYYY
-                            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-                            const today = new Date();
-                            const day = today.getDate();
-                            const month = monthNames[today.getMonth()];
-                            const year = today.getFullYear();
-                            tanggal = day + ' ' + month + ' ' + year;
-                            
-                            // Format tanggal untuk database: YYYY-MM-DD
-                            const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
-                            const dbDay = String(today.getDate()).padStart(2, '0');
-                            const dbDate = `${year}-${dbMonth}-${dbDay}`;
-                            
-                            $refs.displayDate4.value = tanggal;
-                            $refs.date4.value = dbDate;
-                        } else {
-                            userName = '';
-                            tanggal = '';
-                            $refs.user4.value = '';
-                            $refs.displayDate4.value = '';
-                            $refs.date4.value = '';
-                        }"
-                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center mt-1 max-w-full"
-                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                </button>
-            </div>
-        </td>
-    </tr>
-</tbody>
+                        <tbody class="bg-white">
+                            <tr class="bg-sky-50">
+                                <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
+                                <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10 w-24">Dibuat Oleh</td>
+                                
+                                <!-- Minggu 1 -->
+                                <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
+                                    <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
+                                        <div class="mt-1" x-show="selected">
+                                            <input type="text" name="checked_by_minggu1" x-ref="user1" x-bind:value="userName"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
+                                                readonly>
+                                            <input type="text" x-ref="displayDate1" x-bind:value="tanggal"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                readonly>
+                                            <input type="hidden" name="tanggal_minggu1" x-ref="date1">
+                                        </div>
+                                        <button type="button" 
+                                            @click="selected = !selected; 
+                                                if(selected) {
+                                                    userName = '{{ Auth::user()->username }}'; 
+                                                    $refs.user1.value = userName;
+                                                    
+                                                    // Format tanggal untuk tampilan: DD Bulan YYYY
+                                                    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                                                    const today = new Date();
+                                                    const day = today.getDate();
+                                                    const month = monthNames[today.getMonth()];
+                                                    const year = today.getFullYear();
+                                                    tanggal = day + ' ' + month + ' ' + year;
+                                                    
+                                                    // Format tanggal untuk database: YYYY-MM-DD
+                                                    const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
+                                                    const dbDay = String(today.getDate()).padStart(2, '0');
+                                                    const dbDate = `${year}-${dbMonth}-${dbDay}`;
+                                                    
+                                                    $refs.displayDate1.value = tanggal;
+                                                    $refs.date1.value = dbDate;
+                                                } else {
+                                                    userName = '';
+                                                    tanggal = '';
+                                                    $refs.user1.value = '';
+                                                    $refs.displayDate1.value = '';
+                                                    $refs.date1.value = '';
+                                                }"
+                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center mt-1 max-w-full"
+                                            :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                            <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                        </button>
+                                    </div>
+                                </td>
+                                
+                                <!-- Minggu 2 -->
+                                <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
+                                    <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
+                                        <div class="mt-1" x-show="selected">
+                                            <input type="text" name="checked_by_minggu2" x-ref="user2" x-bind:value="userName"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
+                                                readonly>
+                                            <input type="text" x-ref="displayDate2" x-bind:value="tanggal"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                readonly>
+                                            <input type="hidden" name="tanggal_minggu2" x-ref="date2">
+                                        </div>
+                                        <button type="button" 
+                                            @click="selected = !selected; 
+                                                if(selected) {
+                                                    userName = '{{ Auth::user()->username }}'; 
+                                                    $refs.user2.value = userName;
+                                                    
+                                                    // Format tanggal untuk tampilan: DD Bulan YYYY
+                                                    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                                                    const today = new Date();
+                                                    const day = today.getDate();
+                                                    const month = monthNames[today.getMonth()];
+                                                    const year = today.getFullYear();
+                                                    tanggal = day + ' ' + month + ' ' + year;
+                                                    
+                                                    // Format tanggal untuk database: YYYY-MM-DD
+                                                    const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
+                                                    const dbDay = String(today.getDate()).padStart(2, '0');
+                                                    const dbDate = `${year}-${dbMonth}-${dbDay}`;
+                                                    
+                                                    $refs.displayDate2.value = tanggal;
+                                                    $refs.date2.value = dbDate;
+                                                } else {
+                                                    userName = '';
+                                                    tanggal = '';
+                                                    $refs.user2.value = '';
+                                                    $refs.displayDate2.value = '';
+                                                    $refs.date2.value = '';
+                                                }"
+                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center mt-1 max-w-full"
+                                            :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                            <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                        </button>
+                                    </div>
+                                </td>
+                                
+                                <!-- Minggu 3 -->
+                                <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
+                                    <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
+                                        <div class="mt-1" x-show="selected">
+                                            <input type="text" name="checked_by_minggu3" x-ref="user3" x-bind:value="userName"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
+                                                readonly>
+                                            <input type="text" x-ref="displayDate3" x-bind:value="tanggal"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                readonly>
+                                            <input type="hidden" name="tanggal_minggu3" x-ref="date3">
+                                        </div>
+                                        <button type="button" 
+                                            @click="selected = !selected; 
+                                                if(selected) {
+                                                    userName = '{{ Auth::user()->username }}'; 
+                                                    $refs.user3.value = userName;
+                                                    
+                                                    // Format tanggal untuk tampilan: DD Bulan YYYY
+                                                    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                                                    const today = new Date();
+                                                    const day = today.getDate();
+                                                    const month = monthNames[today.getMonth()];
+                                                    const year = today.getFullYear();
+                                                    tanggal = day + ' ' + month + ' ' + year;
+                                                    
+                                                    // Format tanggal untuk database: YYYY-MM-DD
+                                                    const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
+                                                    const dbDay = String(today.getDate()).padStart(2, '0');
+                                                    const dbDate = `${year}-${dbMonth}-${dbDay}`;
+                                                    
+                                                    $refs.displayDate3.value = tanggal;
+                                                    $refs.date3.value = dbDate;
+                                                } else {
+                                                    userName = '';
+                                                    tanggal = '';
+                                                    $refs.user3.value = '';
+                                                    $refs.displayDate3.value = '';
+                                                    $refs.date3.value = '';
+                                                }"
+                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center mt-1 max-w-full"
+                                            :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                            <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                        </button>
+                                    </div>
+                                </td>
+                                
+                                <!-- Minggu 4 -->
+                                <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
+                                    <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
+                                        <div class="mt-1" x-show="selected">
+                                            <input type="text" name="checked_by_minggu4" x-ref="user4" x-bind:value="userName"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
+                                                readonly>
+                                            <input type="text" x-ref="displayDate4" x-bind:value="tanggal"
+                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                readonly>
+                                            <input type="hidden" name="tanggal_minggu4" x-ref="date4">
+                                        </div>
+                                        <button type="button" 
+                                            @click="selected = !selected; 
+                                                if(selected) {
+                                                    userName = '{{ Auth::user()->username }}'; 
+                                                    $refs.user4.value = userName;
+                                                    
+                                                    // Format tanggal untuk tampilan: DD Bulan YYYY
+                                                    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                                                    const today = new Date();
+                                                    const day = today.getDate();
+                                                    const month = monthNames[today.getMonth()];
+                                                    const year = today.getFullYear();
+                                                    tanggal = day + ' ' + month + ' ' + year;
+                                                    
+                                                    // Format tanggal untuk database: YYYY-MM-DD
+                                                    const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
+                                                    const dbDay = String(today.getDate()).padStart(2, '0');
+                                                    const dbDate = `${year}-${dbMonth}-${dbDay}`;
+                                                    
+                                                    $refs.displayDate4.value = tanggal;
+                                                    $refs.date4.value = dbDate;
+                                                } else {
+                                                    userName = '';
+                                                    tanggal = '';
+                                                    $refs.user4.value = '';
+                                                    $refs.displayDate4.value = '';
+                                                    $refs.date4.value = '';
+                                                }"
+                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center mt-1 max-w-full"
+                                            :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                            <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
                 
             </div>
-            
+            {{-- catatan pemeriksaan --}}
+            <div class="bg-gradient-to-r from-sky-50 to-blue-50 p-5 rounded-lg shadow-sm mb-6 border-l-4 border-blue-400">
+                <h5 class="text-lg font-semibold text-blue-700 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Catatan Pemeriksaan
+                </h5>
+                
+                <div class="bg-white p-4 rounded-lg border border-blue-100">
+                    <h6 class="font-medium text-blue-600 mb-2">Standar Kriteria Pemeriksaan:</h6>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span><span class="font-medium">Filter:</span> Kebersihan</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span><span class="font-medium">Selang:</span> Tidak bocor</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span><span class="font-medium">Kontraktor:</span> Baik</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span><span class="font-medium">Temperatur Control:</span> Baik</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span><span class="font-medium">MCB:</span> Baik</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
             <!-- Tombol Submit dan Kembali -->
             @include('components.create-form-buttons', ['backRoute' => route('hopper.index')])
         </form>
