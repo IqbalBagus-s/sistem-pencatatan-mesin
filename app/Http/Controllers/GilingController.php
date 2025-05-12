@@ -7,6 +7,8 @@ use App\Models\GilingCheck;
 use App\Models\GilingResult;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class GilingController extends Controller
 {
@@ -56,86 +58,114 @@ class GilingController extends Controller
         return view('giling.create');
     }
 
-    public function store(Request $request)
-    {
-        // Validasi input dasar
-        $request->validate([
-            'minggu' => 'required|string',
-            'bulan' => 'required|string',
-            'keterangan' => 'nullable|string',
+public function store(Request $request)
+{
+    // Validate basic input
+    $request->validate([
+        'minggu' => 'required|in:1,2,3,4',
+        'bulan' => 'required|date_format:Y-m',
+        'catatan' => 'nullable|string|max:1000',
+    ]);
+
+    // Check if the combination of month and week already exists
+    $existingCheck = GilingCheck::where('bulan', $request->bulan)
+                        ->where('minggu', $request->minggu)
+                        ->first();
+    
+    if ($existingCheck) {
+        return redirect()->back()
+            ->with('error', "Data pemeriksaan untuk bulan dan minggu ini sudah ada!")
+            ->withInput();
+    }
+
+    try {
+        DB::beginTransaction();
+
+        // Create the main Giling Check record
+        $gilingCheck = GilingCheck::create([
+            'bulan' => $request->bulan,
+            'minggu' => $request->minggu,
+            'checked_by' => Auth::user()->username,
+            'keterangan' => $request->catatan ?? '',
         ]);
-
-        // Cek apakah kombinasi bulan dan minggu sudah ada di database
-        $existingCheck = GilingCheck::where('bulan', $request->bulan)
-                                ->where('minggu', $request->minggu)
-                                ->first();
         
-        if ($existingCheck) {
-            return redirect()->back()->with('error', "Data tersebut sudah ada!")->withInput();
-        }
-
-        try {
-            DB::beginTransaction();
-
-            // Simpan data utama pemeriksaan dengan username dari user yang login
-            $gilingCheck = GilingCheck::create([
-                'bulan' => $request->bulan,
-                'minggu' => $request->minggu,
-                'checked_by' => Auth::user()->username, // Mengambil username user yang sedang login
-                'keterangan' => $request->keterangan ?? '',
-                // Perhatikan: approval akan diisi nanti melalui proses terpisah
-            ]);
+        // Mapping of form input names to database column names
+        $checkedItems = [
+            'cek_motor_mesin_giling' => 'Cek Motor Mesin Giling',
+            'cek_vanbelt' => 'Cek Vanbelt',
+            'cek_dustcollector' => 'Cek Dustcollector',
+            'cek_safety_switch' => 'Cek Safety Switch',
+            'cek_ketajaman_pisau_putar_dan_pisau_duduk' => 'Cek Ketajaman Pisau Putar dan Pisau Duduk'
+        ];
+        
+        // Process and save results for each checked item
+        foreach ($checkedItems as $dbColumn => $itemName) {
+            // Get the input for this item
+            $itemInputs = $request->input(Str::snake($itemName), []);
             
-            // Item yang harus dicek berdasarkan form
-            $checkedItems = [
-                'cek_motor_mesin_giling' => 'Cek Motor Mesin Giling',
-                'cek_vanbelt' => 'Cek Vanbelt',
-                'cek_dustcollector' => 'Cek Dustcollector',
-                'cek_safety_switch' => 'Cek Safety Switch',
-                'cek_ketajaman_pisau_putar_dan_pisau_duduk' => 'Cek Ketajaman Pisau Putar dan Pisau Duduk'
+            // Prepare result data
+            $resultData = [
+                'check_id' => $gilingCheck->id,
+                'checked_items' => $itemName,
+                'g1' => $itemInputs['G1'] ?? '-',
+                'g2' => $itemInputs['G2'] ?? '-',
+                'g3' => $itemInputs['G3'] ?? '-',
+                'g4' => $itemInputs['G4'] ?? '-',
+                'g5' => $itemInputs['G5'] ?? '-',
+                'g6' => $itemInputs['G6'] ?? '-',
+                'g7' => $itemInputs['G7'] ?? '-',
+                'g8' => $itemInputs['G8'] ?? '-',
+                'g9' => $itemInputs['G9'] ?? '-',
+                'g10' => $itemInputs['G10'] ?? '-',
             ];
             
-            // Simpan hasil pemeriksaan untuk setiap item
-            foreach ($checkedItems as $itemKey => $itemName) {
-                // Ambil data dari request untuk item ini
-                $itemData = $request->input($itemKey, []);
-                
-                // Buat record hasil dengan data dasar
-                $resultData = [
-                    'check_id' => $gilingCheck->id,
-                    'checked_items' => $itemName,
-                ];
-                
-                // Tambahkan status untuk setiap gilingan (G1-G10)
-                for ($i = 1; $i <= 10; $i++) {
-                    $key = "G{$i}";
-                    $resultData["g{$i}"] = $itemData[$key] ?? '-';
-                }
-                
-                // Simpan hasil ke database menggunakan model GilingResult yang baru
-                GilingResult::create($resultData);
-            }
+            // Create result record
+            GilingResult::create($resultData);
+        }
 
-            DB::commit();
-            return redirect()->route('giling.index')->with('success', 'Data berhasil disimpan!');
+        DB::commit();
+        return redirect()->route('giling.index')
+            ->with('success', 'Data pemeriksaan mesin giling berhasil disimpan!');
 
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Giling Check Save Error: ' . $e->getMessage());
+        return redirect()->back()
+            ->with('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage())
+            ->withInput();
+    }
+}
+
+public function edit($id)
+{
+    $check = GilingCheck::with('result')->findOrFail($id);
+
+    $results = [];
+
+    $items = [
+        'cek_motor_mesin_giling' => 'Cek Motor Mesin Giling',
+        'cek_vanbelt' => 'Cek Vanbelt',
+        'cek_dustcollector' => 'Cek Dustcollector',
+        'cek_safety_switch' => 'Cek Safety Switch',
+        'cek_ketajaman_pisau_putar_dan_pisau_duduk' => 'Cek Ketajaman Pisau Putar dan Pisau Duduk'
+    ];
+
+    foreach ($check->result as $result) {
+        $baseKey = Str::snake($result->checked_items);
+
+        for ($g = 1; $g <= 10; $g++) {
+            $key = "{$baseKey}_G{$g}";
+            $results[$key] = [
+                'status' => $result->{"g{$g}"} ?? '-'
+            ];
         }
     }
 
-    public function edit($id)
-    {
-        // Fetch the GilingCheck record with its results
-        $check = GilingCheck::with('result')->findOrFail($id);
-        
-        // Get the associated results and organize into a more usable format
-        $results = $check->result->keyBy('checked_items');
-        
-        // Return the view with the GilingCheck data and its results
-        return view('giling.edit', compact('check', 'results'));
-    }
+    return view('giling.edit', [
+        'check' => $check,
+        'results' => $results
+    ]);
+}
 
     public function update(Request $request, $id)
     {

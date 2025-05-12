@@ -53,6 +53,16 @@ class AirDryerController extends Controller
             'hari' => 'required|string',
         ]);
 
+        // Check if record for this date already exists
+        $existingRecord = AirDryerCheck::whereDate('tanggal', $request->tanggal)
+            ->first();
+        
+        if ($existingRecord) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Data untuk tanggal tersebut sudah ada!');
+        }
+
         // Mulai transaksi database
         DB::beginTransaction();
 
