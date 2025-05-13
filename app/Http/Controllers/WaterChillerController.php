@@ -192,14 +192,17 @@ class WaterChillerController extends Controller
                 ->withInput();
         }
     }
-
-    public function show($check_id)
-    {
-        $check = WaterChillerCheck::findOrFail($check_id);
-        $results = WaterChillerResult::where('check_id', $check_id)->get();
-        
-        return view('water_chiller.show', compact('check', 'results'));
-    }
+public function show($id)
+{
+    // Mencari data water chiller check berdasarkan ID
+    $waterChillerCheck = WaterChillerCheck::findOrFail($id);
+    
+    // Mengambil detail hasil pemeriksaan water chiller
+    $details = WaterChillerResult::where('check_id', $id)->get();
+    
+    // Menampilkan view dengan data yang sesuai
+    return view('water_chiller.show', compact('waterChillerCheck', 'details'));
+}
 
     public function approve(Request $request, $check_id)
     {

@@ -28,30 +28,17 @@
                 <!-- Input Minggu -->
                 <div>
                     <label class="block mb-2">Minggu:</label>
-                    <select 
-                        x-model="selectedWeek" 
-                        name="minggu" 
-                        class="w-full px-3 py-2 bg-white border border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded-md"
-                    >
-                        <option value="">Pilih Minggu</option>
-                        <option value="1" {{ $check->minggu == 1 ? 'selected' : '' }}>Minggu ke-1</option>
-                        <option value="2" {{ $check->minggu == 2 ? 'selected' : '' }}>Minggu ke-2</option>
-                        <option value="3" {{ $check->minggu == 3 ? 'selected' : '' }}>Minggu ke-3</option>
-                        <option value="4" {{ $check->minggu == 4 ? 'selected' : '' }}>Minggu ke-4</option>
-                    </select>
+                    <div class="px-3 py-2 bg-white border border-blue-400 rounded-md">
+                        Minggu ke-{{ $check->minggu }}
+                    </div>
                 </div>
                 
                 <!-- Input Bulan -->
                 <div>
                     <label for="bulan" class="block mb-2">Bulan:</label>
-                    <input 
-                        type="month" 
-                        id="bulan" 
-                        name="bulan" 
-                        value="{{ $check->bulan }}"
-                        class="w-full px-3 py-2 bg-white border border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded-md" 
-                        required
-                    >
+                    <div class="px-3 py-2 bg-white border border-blue-400 rounded-md">
+                        {{ \Carbon\Carbon::parse($check->bulan)->translatedFormat('F Y') }}
+                    </div>
                 </div>
             </div>
             

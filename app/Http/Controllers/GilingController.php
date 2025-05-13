@@ -235,25 +235,25 @@ public function edit($id)
 
     public function approve(Request $request, $id)
     {
-        // Validate the request
+        // Validate the incoming request
         $request->validate([
             'approved_by1' => 'nullable|string|max:255',
             'approved_by2' => 'nullable|string|max:255',
             'approval_date1' => 'nullable|date',
         ]);
 
-        // Find the check record
-        $check = GilingCheck::findOrFail($id);
-        
-        // Update approval fields
-        $check->approved_by1 = $request->approved_by1;
-        $check->approved_by2 = $request->approved_by2;
-        $check->approval_date1 = $request->approval_date1;
-        
-        // Save the changes
-        $check->save();
-        
+        // Find the specified giling check
+        $gilingCheck = GilingCheck::findOrFail($id);
+
+        // Update the approval information
+        $gilingCheck->update([
+            'approved_by1' => $request->input('approved_by1'),
+            'approval_date1' => $request->input('approval_date1'),
+            'approved_by2' => $request->input('approved_by2'),
+        ]);
+
         // Redirect back with success message
-        return redirect()->route('giling.index', $check->id)->with('success', 'Data berhasil disetujui!');
+        return redirect()->route('giling.show', $id)
+            ->with('success', 'Persetujuan berhasil disimpan!');
     }
 }
