@@ -3,9 +3,7 @@
 
 @section('title', 'Edit Pencatatan Mesin Autoloader')
 @section('page-title', 'Edit Pencatatan Mesin Autoloader')
-@section('show-checker')
-<div></div>
-@endsection
+@section('show-checker', true)
 
 @section('content')
 <!-- Form Input -->

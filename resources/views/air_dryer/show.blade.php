@@ -4,7 +4,7 @@
 @section('title', 'Detail Pencatatan Mesin Air Dryer')
 
 @section('content')
-<h2 class="mb-4 text-xl font-bold">Detail Pencatatan Mesin Autoloader</h2>
+<h2 class="mb-4 text-xl font-bold">Detail Pencatatan Mesin Air Dryer</h2>
 
 <div class="bg-white rounded-lg shadow-md mb-5">
     <div class="p-4">
@@ -16,7 +16,7 @@
             </div>
             <div class="bg-sky-50 p-4 rounded-md">
                 <span class="text-gray-600 font-bold">Approver: </span>
-                <span class="font-bold text-blue-700">{{ Auth::user()->username }}</span>
+                <span class="font-bold text-blue-700">{{ $airDryer->approved_by }}</span>
             </div>
         </div>
 
@@ -24,13 +24,13 @@
         <div class="grid md:grid-cols-2 gap-4 mb-4">
             <div class="w-full">
                 <label class="block mb-2 text-sm font-medium text-gray-700">Hari:</label>
-                <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
+                <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
                     {{ $airDryer->hari }}
                 </div>
             </div>
             <div class="w-full">
                 <label class="block mb-2 text-sm font-medium text-gray-700">Tanggal:</label>
-                <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
+                <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
                     {{ \Carbon\Carbon::parse($airDryer->tanggal)->translatedFormat('d F Y') }}
                 </div>
             </div>

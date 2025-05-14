@@ -99,69 +99,113 @@
                 </div>
             </div>
             
-            {{-- catatan pemeriksaan --}}
-            <div class="bg-gradient-to-r from-sky-50 to-blue-50 p-5 rounded-lg shadow-sm mb-6 border-l-4 border-blue-400">
+            <!-- Informasi Mesin dan Kriteria -->
+            <div class="bg-blue-50 rounded-lg p-4 mb-6">
                 <h5 class="text-lg font-semibold text-blue-700 mb-4 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    Catatan Pemeriksaan
+                    Informasi Standar Pemeriksaan
                 </h5>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <!-- Kriteria Pemeriksaan -->
-                    <div class="bg-white p-6 rounded-lg border border-blue-200 col-span-2 shadow-sm">
-                        <h6 class="font-medium text-blue-600 mb-4 text-lg">Standar Kriteria Pemeriksaan:</h6>
-                        <ul class="space-y-3 text-gray-700 text-sm leading-relaxed">
-                            <li class="flex items-start">
-                                <svg class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" ...></svg>
+                    <div class="bg-white p-4 rounded-lg border border-blue-100">
+                        <h6 class="font-medium text-blue-600 mb-3">Standar Kriteria Pemeriksaan:</h6>
+                        <ul class="space-y-2 text-gray-700 text-sm">
+                            <li class="flex items-center">
+                                <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 <span><strong>Temperatur Kompresor:</strong> 30°C - 60°C</span>
                             </li>
-                            <li class="flex items-start">
-                                <svg class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" ...></svg>
+                            <li class="flex items-center">
+                                <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 <span><strong>Temperatur Kabel:</strong> 30°C - 60°C</span>
                             </li>
-                            <li class="flex items-start">
-                                <svg class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" ...></svg>
+                            <li class="flex items-center">
+                                <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 <span><strong>Temperatur MCB:</strong> 30°C - 60°C</span>
                             </li>
-                            <li class="flex items-start">
-                                <svg class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" ...></svg>
+                            <li class="flex items-center">
+                                <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 <span><strong>Temperatur Angin In:</strong> 30°C - 60°C</span>
                             </li>
-                            <li class="flex items-start">
-                                <svg class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" ...></svg>
+                            <li class="flex items-center">
+                                <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 <span><strong>Temperatur Angin Out:</strong> 30°C - 60°C</span>
                             </li>
-                            <li class="flex items-start">
-                                <svg class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" ...></svg>
+                            <li class="flex items-center">
+                                <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 <span><strong>Evaporator:</strong> Bersih/Kotor</span>
                             </li>
-                            <li class="flex items-start">
-                                <svg class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" ...></svg>
+                            <li class="flex items-center">
+                                <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 <span><strong>Fan Evaporator:</strong> Suara Halus/Kasar</span>
                             </li>
-                            <li class="flex items-start">
-                                <svg class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" ...></svg>
+                            <li class="flex items-center">
+                                <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 <span><strong>Auto Drain:</strong> Berfungsi/Tidak Berfungsi</span>
                             </li>
                         </ul>
                     </div>
 
-                    <!-- Detail Mesin -->
-                    <div class="bg-white p-6 rounded-lg border border-blue-200 shadow-sm">
-                        <h5 class="mb-4 font-medium text-blue-600 text-lg">Detail Mesin:</h5>
-                        <div class="space-y-2 text-sm text-gray-800">
-                            <p>AD 1 : HIGH PRESS 1 &nbsp;&nbsp;&nbsp; AD 5 : SUPPLY INJECT</p>
-                            <p>AD 2 : HIGH PRESS 2 &nbsp;&nbsp;&nbsp; AD 6 : LOW PRESS 3</p>
-                            <p>AD 3 : LOW PRESS 1 &nbsp;&nbsp;&nbsp;&nbsp; AD 7 : LOW PRESS 4</p>
-                            <p>AD 4 : LOW PRESS 2 &nbsp;&nbsp;&nbsp;&nbsp; AD 8 : LOW PRESS 5</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Detail Mesin -->
+                        <div class="bg-white p-4 rounded-lg border border-blue-100">
+                            <h6 class="font-medium text-blue-600 mb-3">Detail Mesin:</h6>
+                            <div class="space-y-1 text-sm text-gray-800">
+                                <p>AD 1 : HIGH PRESS 1</p>
+                                <p>AD 2 : HIGH PRESS 2</p>
+                                <p>AD 3 : LOW PRESS 1</p>
+                                <p>AD 4 : LOW PRESS 2</p>
+                                <p>AD 5 : SUPPLY INJECT</p>
+                                <p>AD 6 : LOW PRESS 3</p>
+                                <p>AD 7 : LOW PRESS 4</p>
+                                <p>AD 8 : LOW PRESS 5</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Keterangan Status -->
+                        <div class="bg-white p-4 rounded-lg border border-blue-100">
+                            <h6 class="font-medium text-blue-600 mb-3">Keterangan Status:</h6>
+                            <div class="grid grid-cols-1 gap-2 text-sm text-gray-800">
+                                <div class="flex items-center">
+                                    <span class="inline-block w-6 h-6 bg-green-100 text-green-700 text-center font-bold mr-3 rounded">V</span>
+                                    <span>Baik/Normal</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="inline-block w-6 h-6 bg-red-100 text-red-700 text-center font-bold mr-3 rounded">X</span>
+                                    <span>Tidak Baik/Abnormal</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="inline-block w-6 h-6 border border-gray-300 text-gray-500 text-center font-bold mr-3 rounded">-</span>
+                                    <span>Tidak Diisi</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="inline-block w-6 h-6 border border-gray-300 text-gray-500 text-center font-bold mr-3 rounded">OFF</span>
+                                    <span>Mesin Mati</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            
             <!-- Catatan Tambahan -->
             <div class="mb-6">
                 <label for="catatan" class="block mb-2 text-sm font-medium text-gray-700">Catatan Tambahan:</label>

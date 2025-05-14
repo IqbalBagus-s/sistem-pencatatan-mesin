@@ -415,7 +415,7 @@
                     </div>
                     <form id="logout-form" action="{{ route('logout') }}" method="POST">
                         @csrf
-                        <button type="submit" class="logout-btn" title="Logout">
+                        <button type="submit" class="logout-btn" title="Logout" onclick="this.disabled=true; this.form.submit();">
                             <!-- SVG door icon -->
                             <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M17 8l-1.41 1.41L17.17 11H9v2h8.17l-1.58 1.58L17 16l4-4-4-4z"></path>
