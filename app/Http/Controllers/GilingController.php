@@ -13,45 +13,47 @@ use Illuminate\Support\Str;
 class GilingController extends Controller
 {
     public function index(Request $request)
-    {
-        $query = GilingCheck::query();
+{
+    $query = GilingCheck::query();
 
-        // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
-        if (Auth::user() instanceof \App\Models\Checker) {
-            $query->where('checked_by', Auth::user()->username);
-        }
-
-        // Filter berdasarkan nama checker jika ada
-        if ($request->filled('search')) {
-            $search = '%' . $request->search . '%';
-            $query->where(function ($q) use ($search) {
-                $q->where('checked_by', 'LIKE', $search)
-                ->orWhere('approved_by1', 'LIKE', $search)
-                ->orWhere('approved_by2', 'LIKE', $search);
-            });
-        }
-
-        // Filter berdasarkan minggu
-        if ($request->filled('minggu')) {
-            $query->where('minggu', $request->minggu);
-        }
-
-        // Filter berdasarkan bulan
-        if ($request->filled('bulan')) {
-            try {
-                $bulan = date('m', strtotime($request->bulan));
-                $tahun = date('Y', strtotime($request->bulan));
-                $query->where('bulan', $tahun . '-' . $bulan); // Sesuaikan dengan format penyimpanan di DB
-            } catch (\Exception $e) {
-                return redirect()->back()->with('error', 'Format bulan tidak valid.');
-            }
-        }
-
-        // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
-        $checks = $query->paginate(10)->appends($request->query());
-
-        return view('giling.index', compact('checks'));
+    // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
+    if (Auth::user() instanceof \App\Models\Checker) {
+        $query->where('checked_by', Auth::user()->username);
     }
+
+    // Filter berdasarkan nama checker jika ada
+    if ($request->filled('search')) {
+        $search = '%' . $request->search . '%';
+        $query->where(function ($q) use ($search) {
+            $q->where('checked_by', 'LIKE', $search)
+              ->orWhere('approved_by1', 'LIKE', $search)
+              ->orWhere('approved_by2', 'LIKE', $search);
+        });
+    }
+
+    // Filter berdasarkan minggu - perbaikan karena di database hanya angka
+    if ($request->filled('minggu')) {
+        // Ekstrak angka dari string "Minggu X"
+        $mingguNum = (int) filter_var($request->minggu, FILTER_SANITIZE_NUMBER_INT);
+        $query->where('minggu', $mingguNum);
+    }
+
+    // Filter berdasarkan bulan
+    if ($request->filled('bulan')) {
+        try {
+            $bulan = date('m', strtotime($request->bulan));
+            $tahun = date('Y', strtotime($request->bulan));
+            $query->where('bulan', $tahun . '-' . $bulan); // Sesuaikan dengan format penyimpanan di DB
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Format bulan tidak valid.');
+        }
+    }
+
+    // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
+    $checks = $query->paginate(10)->appends($request->query());
+
+    return view('giling.index', compact('checks'));
+}
 
     public function create()
     {

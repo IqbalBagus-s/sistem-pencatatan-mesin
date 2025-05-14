@@ -187,12 +187,8 @@
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
                                 @php
-                                    // Cek apakah disetujui sepenuhnya
-                                    $isFullyApproved = 
-                                        ($check->minggu1_approved == 1) && 
-                                        ($check->minggu2_approved == 1) && 
-                                        ($check->minggu3_approved == 1) && 
-                                        ($check->minggu4_approved == 1);
+                                    // Perbaikan: Cek apakah disetujui sepenuhnya menggunakan $approvedCount
+                                    $isFullyApproved = ($approvedCount == $weekCount);
                                 @endphp
                                 
                                 @if(!$isFullyApproved)

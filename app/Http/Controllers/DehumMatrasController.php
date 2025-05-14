@@ -440,9 +440,11 @@ class DehumMatrasController extends Controller
                     $keteranganKey = "keterangan_{$j}";
                     
                     if (isset($request->$checkKey) && isset($request->$checkKey[$itemId])) {
+                        // Jika ada data di request, gunakan nilai tersebut
                         $resultData1["tanggal{$j}"] = $request->$checkKey[$itemId];
                     } else {
-                        $resultData1["tanggal{$j}"] = '-';
+                        // Jika tidak ada data di request, gunakan null
+                        $resultData1["tanggal{$j}"] = null;
                     }
                     
                     if (isset($request->$keteranganKey) && isset($request->$keteranganKey[$itemId])) {
@@ -471,9 +473,11 @@ class DehumMatrasController extends Controller
                     $keteranganKey = "keterangan_{$j}";
                     
                     if (isset($request->$checkKey) && isset($request->$checkKey[$itemId])) {
+                        // Jika ada data di request, gunakan nilai tersebut
                         $resultData2["tanggal{$j}"] = $request->$checkKey[$itemId];
                     } else {
-                        $resultData2["tanggal{$j}"] = '-';
+                        // Jika tidak ada data di request, gunakan null
+                        $resultData2["tanggal{$j}"] = null;
                     }
                     
                     if (isset($request->$keteranganKey) && isset($request->$keteranganKey[$itemId])) {
@@ -502,9 +506,11 @@ class DehumMatrasController extends Controller
                     $keteranganKey = "keterangan_{$j}";
                     
                     if (isset($request->$checkKey) && isset($request->$checkKey[$itemId])) {
+                        // Jika ada data di request, gunakan nilai tersebut
                         $resultData3["tanggal{$j}"] = $request->$checkKey[$itemId];
                     } else {
-                        $resultData3["tanggal{$j}"] = '-';
+                        // Jika tidak ada data di request, gunakan null
+                        $resultData3["tanggal{$j}"] = null;
                     }
                     
                     if (isset($request->$keteranganKey) && isset($request->$keteranganKey[$itemId])) {

@@ -15,22 +15,17 @@
         <div class="grid md:grid-cols-2 gap-4 mb-4">
             <!-- Dropdown Pilih No Slitting - Already selected -->
             <div class="relative w-full">
-                <label class="block mb-2 text-sm font-medium text-gray-700">
-                    No Slitting: 
-                </label>
-                <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-left flex items-center">
-                    <span>Slitting {{ $check->nomer_slitting }}</span>
+                <label for="bulan" class="block mb-2">No Slitting:</label>
+                <div class="px-3 py-2 bg-white border border-blue-400 rounded-md">
+                    Slitting Nomor {{ $check->nomer_slitting }}
                 </div>
                 <input type="hidden" name="nomer_slitting" value="{{ $check->nomer_slitting }}">
             </div>
         
             <div>
-                <label for="bulan" class="block mb-2 text-sm font-medium text-gray-700">
-                    Bulan:
-                </label>
-                <!-- Mengubah input month menjadi tampilan read-only -->
-                <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-left flex items-center">
-                    <span>{{ date('F Y', strtotime($check->bulan)) }}</span>
+                <label for="bulan" class="block mb-2">Bulan:</label>
+                <div class="px-3 py-2 bg-white border border-blue-400 rounded-md">
+                    {{ \Carbon\Carbon::parse($check->bulan)->translatedFormat('F Y') }}
                 </div>
                 <input type="hidden" name="bulan" value="{{ $check->bulan }}">
             </div>
