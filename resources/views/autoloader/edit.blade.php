@@ -24,7 +24,7 @@
         <!-- Shift Display -->
         <div class="w-full">
             <label class="block mb-2 text-sm font-medium text-gray-700">Shift:</label>
-            <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
+            <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
                 Shift {{ $check->shift }}
             </div>
             <input type="hidden" name="shift" value="{{ $check->shift }}">
@@ -33,7 +33,7 @@
         <!-- Bulan Display -->
         <div class="w-full">
             <label class="block mb-2 text-sm font-medium text-gray-700">Bulan:</label>
-            <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
+            <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
                 {{ \Carbon\Carbon::parse($check->bulan)->format('F Y') }}
             </div>
             <input type="hidden" name="bulan" value="{{ $check->bulan }}">

@@ -6,8 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\HopperCheck;
 use App\Models\HopperResult;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
 
 class HopperController extends Controller
@@ -89,8 +88,15 @@ class HopperController extends Controller
             ->first();
 
         if ($existingRecord) {
-            // If a record with the same hopper number and month exists, return an error
-            return redirect()->back()->with('error', 'A record for this hopper number and month already exists.')
+            // Ambil nilai yang duplikat
+            $nomerHopper = $request->input('nomer_hopper');
+            $bulan = Carbon::parse($request->input('bulan') . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            
+            // Buat pesan error dengan informasi spesifik
+            $pesanError = "Data sudah ada untuk Hopper nomor {$nomerHopper} pada bulan {$bulan}!";
+            
+            // Redirect dengan pesan error yang detail
+            return redirect()->back()->with('error', $pesanError)
                             ->withInput();
         }
 

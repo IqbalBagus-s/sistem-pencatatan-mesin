@@ -5,6 +5,7 @@ use App\Models\CompressorCheck;
 use App\Models\CompressorResultKh;
 use App\Models\CompressorResultKl;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
 
 
@@ -75,13 +76,17 @@ class CompressorController extends Controller
 
         if ($user instanceof \App\Models\Checker) {
             if ($existing) {
+                $formattedDate = Carbon::parse($tanggal)->locale('id')->isoFormat('D MMMM YYYY');
+
                 return redirect()->route('compressor.create')
-                    ->with('warning', 'Data di tanggal tersebut telah dibuat.');
+                    ->with('error', "Data di tanggal $formattedDate tersebut telah dibuat.");
             }
         } else {
             if ($existing) {
+                $formattedDate = Carbon::parse($tanggal)->locale('id')->isoFormat('D MMMM YYYY');
+
                 return redirect()->route('compressor.create')
-                    ->with('warning', 'Data di tanggal tersebut telah dibuat.');
+                    ->with('error', "Data di tanggal $formattedDate tersebut telah dibuat.");
             }
         }
         // Simpan data ke tabel compressor_checks

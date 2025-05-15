@@ -21,12 +21,16 @@
             <div class="grid md:grid-cols-2 gap-4 mb-4">
                 <!-- Input Hari dan Tanggal -->
                 <div>
-                    <label class="block mb-2">Hari:</label>
-                    <input type="text" id="hari" name="hari" value="{{ $waterChillerCheck->hari }}" class="w-full px-3 py-2 bg-white border border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded-md" readonly>
+                    <label class="block mb-2 text-sm font-medium text-gray-700">Hari:</label>
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
+                        {{ $waterChillerCheck->hari }}
+                    </div>
                 </div>
                 <div>
-                    <label class="block mb-2">Tanggal:</label>
-                    <input type="date" id="tanggal" name="tanggal" value="{{ $waterChillerCheck->tanggal }}" class="w-full px-3 py-2 bg-white border border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded-md" readonly>
+                    <label class="block mb-2 text-sm font-medium text-gray-700">Tanggal:</label>
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
+                        {{ \Carbon\Carbon::parse($waterChillerCheck->tanggal)->translatedFormat('d F Y') }}
+                    </div>
                 </div>
             </div>
             

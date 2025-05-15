@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\DehumBahanCheck;
 use App\Models\DehumBahanResult;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
 
 class DehumBahanController extends Controller
 {
@@ -86,8 +88,14 @@ class DehumBahanController extends Controller
             ->first();
 
         if ($existingRecord) {
-            // If a record with the same Dehum bahan number and month exists, return an error
-            return redirect()->back()->with('error', 'Data sudah ada, silahkan buat ulang')
+            // Create a more specific error message showing which values are duplicated
+            $nomerDehum = $request->input('nomer_dehum_bahan');
+            $bulan = Carbon::parse($request->bulan . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            
+            $errorMessage = "Data sudah ada untuk Dehum Bahan nomor {$nomerDehum} pada bulan {$bulan}, silahkan buat ulang";
+            
+            // Return with detailed error message
+            return redirect()->back()->with('error', $errorMessage)
                             ->withInput();
         }
 

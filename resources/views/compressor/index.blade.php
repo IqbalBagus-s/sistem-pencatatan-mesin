@@ -66,7 +66,9 @@
             @else
                 @foreach($checks as $check)
                     <tr class="text-center hover:bg-gray-50">
-                        <td class="py-3 px-4 border-b border-gray-200">{{ $check->tanggal }}</td>
+                        <td class="py-3 px-4 border-b border-gray-200">
+                            {{ \Carbon\Carbon::parse($check->tanggal)->translatedFormat('d F Y') }}
+                        </td>
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->hari }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             @if($check->checked_by_shift1)

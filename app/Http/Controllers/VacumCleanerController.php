@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use App\Models\VacumCleanerCheck;
 use App\Models\VacumCleanerResultsTable1;
 use App\Models\VacumCleanerResultsTable2;
+use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
 
 class VacumCleanerController extends Controller
 {
@@ -98,11 +99,18 @@ class VacumCleanerController extends Controller
         $existingRecord = VacumCleanerCheck::where('nomer_vacum_cleaner', $request->nomer_vacuum_cleaner)
             ->where('bulan', $request->bulan)
             ->first();
-        
+
         if ($existingRecord) {
+            // Ambil nilai yang duplikat
+            $nomerVacuum = $request->nomer_vacuum_cleaner;
+            $bulan = Carbon::parse($request->bulan . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            
+            // Buat pesan error dengan informasi spesifik
+            $pesanError = "Data sudah ada untuk Vacuum Cleaner nomor {$nomerVacuum} pada bulan {$bulan}!";
+            
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Data tersebut sudah ada!');
+                ->with('error', $pesanError);
         }
     
         // Mulai transaksi database

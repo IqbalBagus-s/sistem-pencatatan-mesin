@@ -6,7 +6,7 @@ use App\Models\AutoloaderDetail;
 use App\Models\AutoloaderResultTable1;
 use App\Models\AutoloaderResultTable2;
 use App\Models\AutoloaderResultTable3;
-use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
 
@@ -102,11 +102,17 @@ class AutoloaderController extends Controller
             ->where('shift', $request->shift)
             ->where('bulan', $request->bulan)
             ->first();
-        
+
         if ($existingRecord) {
+            // Format bulan dari Y-m menjadi nama bulan dan tahun (contoh: Mei 2025)
+            $formattedMonth = Carbon::parse($request->bulan . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            
+            // Pesan error dengan detail data duplikat
+            $errorMessage = "Data duplikat ditemukan untuk Autoloader Nomor {$request->nomer_autoloader}, Shift {$request->shift}, dan Bulan {$formattedMonth}!";
+            
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Data tersebut sudah ada!');
+                ->with('error', $errorMessage);
         }
 
         // Start a database transaction

@@ -7,6 +7,7 @@ use App\Models\AirDryerCheck;
 use App\Models\AirDryerResult;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
 
 class AirDryerController extends Controller
@@ -58,9 +59,10 @@ class AirDryerController extends Controller
             ->first();
         
         if ($existingRecord) {
+            $formattedDate = Carbon::parse($request->tanggal)->locale('id')->isoFormat('D MMMM YYYY');
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Data untuk tanggal tersebut sudah ada!');
+                ->with('error', "Data untuk tanggal $formattedDate tersebut sudah ada!");
         }
 
         // Mulai transaksi database

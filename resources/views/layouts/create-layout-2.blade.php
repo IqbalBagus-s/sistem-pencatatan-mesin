@@ -1,4 +1,4 @@
-<!-- resources/views/layouts/app.blade.php -->
+<!-- resources/views/layouts/create-layout-2.blade -->
 <!DOCTYPE html>
 <html lang="id">
 <head>

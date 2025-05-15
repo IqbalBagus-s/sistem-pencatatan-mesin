@@ -1,3 +1,4 @@
+<!-- resources/views/layouts/edit-layout-2.blade -->
 <!DOCTYPE html>
 <html lang="id">
 <head>

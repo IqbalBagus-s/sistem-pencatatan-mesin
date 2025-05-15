@@ -7,6 +7,7 @@ use App\Models\WaterChillerCheck;
 use App\Models\WaterChillerResult;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
 
 class WaterChillerController extends Controller
@@ -56,14 +57,20 @@ class WaterChillerController extends Controller
         // Extract month from the date
         $bulan = date('m', strtotime($request->tanggal));
         
-        // Check if record for this date already exists
+       // Check if record for this date already exists
         $existingRecord = WaterChillerCheck::whereDate('tanggal', $request->tanggal)
             ->first();
-        
+
         if ($existingRecord) {
+            // Format tanggal menggunakan Carbon dengan locale Indonesia
+            $tanggal = Carbon::parse($request->tanggal)->locale('id')->isoFormat('D MMMM YYYY');
+            
+            // Buat pesan error dengan informasi tanggal yang spesifik
+            $pesanError = "Data untuk tanggal {$tanggal} sudah ada!";
+            
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Data untuk tanggal tersebut sudah ada!');
+                ->with('error', $pesanError);
         }
 
         // Begin transaction to ensure data integrity

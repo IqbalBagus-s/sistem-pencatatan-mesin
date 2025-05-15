@@ -24,13 +24,13 @@
         <div class="grid md:grid-cols-2 gap-4 mb-4">
             <div class="w-full">
                 <label class="block mb-2 text-sm font-medium text-gray-700">Hari:</label>
-                <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
+                <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
                     {{ $waterChillerCheck->hari }}
                 </div>
             </div>
             <div class="w-full">
                 <label class="block mb-2 text-sm font-medium text-gray-700">Tanggal:</label>
-                <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
+                <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
                     {{ \Carbon\Carbon::parse($waterChillerCheck->tanggal)->translatedFormat('d F Y') }}
                 </div>
             </div>

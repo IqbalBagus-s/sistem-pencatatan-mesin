@@ -9,8 +9,8 @@ use App\Models\DehumMatrasResultsTable1;
 use App\Models\DehumMatrasResultsTable2;
 use App\Models\DehumMatrasResultsTable3;
 use Illuminate\Support\Facades\DB;
-
-
+use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
 
 class DehumMatrasController extends Controller
 {
@@ -110,9 +110,16 @@ class DehumMatrasController extends Controller
             ->first();
         
         if ($existingRecord) {
+            // Buat pesan error spesifik dengan Carbon
+            $nomorDehum = $request->nomer_dehum_matras;
+            $shift = $request->shift;
+            $bulan = Carbon::parse($request->bulan . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            
+            $pesanError = "Data sudah ada untuk Dehum Matras nomor {$nomorDehum}, Shift {$shift}, dan pada bulan {$bulan}!";
+            
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Data tersebut sudah ada!');
+                ->with('error', $pesanError);
         }
     
         // Start a database transaction

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\CraneMatrasCheck;
 use App\Models\CraneMatrasResult;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
 
@@ -75,11 +76,18 @@ class CraneMatrasControler extends Controller
         $existingRecord = CraneMatrasCheck::where('nomer_crane_matras', $request->input('nomer_crane_matras'))
             ->where('bulan', $request->input('bulan'))
             ->first();
-    
+
         if ($existingRecord) {
-            // Jika data dengan nomor Crane Matras dan bulan yang sama sudah ada, kembalikan error
-            return redirect()->back()->with('error', 'Data sudah ada, silahkan buat ulang')
-                            ->withInput();
+            // Format bulan dari Y-m menjadi nama bulan dan tahun
+            $formattedMonth = Carbon::parse($request->input('bulan') . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            
+            // Buat pesan error dengan detail data yang duplikat
+            $errorMessage = "Data duplikat ditemukan untuk Crane Matras Nomor {$request->input('nomer_crane_matras')} pada bulan {$formattedMonth}!";
+            
+            // Redirect kembali dengan pesan error yang lebih informatif
+            return redirect()->back()
+                ->with('error', $errorMessage)
+                ->withInput();
         }
         
         // Mengubah format tanggal dari "DD Bulan YYYY" menjadi "YYYY-MM-DD"

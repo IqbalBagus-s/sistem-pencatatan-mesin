@@ -7,6 +7,7 @@ use App\Models\SlittingCheck;
 use App\Models\SlittingResult;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
 
 
@@ -87,10 +88,17 @@ class SlittingController extends Controller
         $existingRecord = SlittingCheck::where('nomer_slitting', $request->input('nomer_slitting'))
             ->where('bulan', $request->input('bulan'))
             ->first();
-    
+
         if ($existingRecord) {
-            // If a record with the same Slitting number and month exists, return an error
-            return redirect()->back()->with('error', 'Data sudah ada, silahkan buat ulang')
+            // Ambil nilai yang duplikat
+            $nomerSlitting = $request->input('nomer_slitting');
+            $bulan = Carbon::parse($request->input('bulan') . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            
+            // Buat pesan error dengan informasi spesifik
+            $pesanError = "Data sudah ada untuk Slitting nomor {$nomerSlitting} pada bulan {$bulan}, silahkan buat ulang";
+            
+            // Redirect dengan pesan error yang detail
+            return redirect()->back()->with('error', $pesanError)
                             ->withInput();
         }
     
