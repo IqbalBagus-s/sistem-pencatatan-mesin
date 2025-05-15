@@ -31,7 +31,7 @@
                     <label class="block mb-2 text-sm font-medium text-gray-700">Pilih No Autoloader:</label>
                     
                     <!-- Dropdown Button -->
-                    <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative">
+                    <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative">
                         <span x-text="selected ? 'Autoloader ' + selected : 'Pilih Autoloader'"></span>
                         
                         <!-- Selection Indicator -->
@@ -78,7 +78,7 @@
                     <label class="block mb-2 text-sm font-medium text-gray-700">Pilih Shift:</label>
                     
                     <!-- Dropdown Button -->
-                    <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative">
+                    <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative">
                         <span x-text="selected ? 'Shift ' + selected : 'Pilih Shift'"></span>
                         
                         <!-- Selection Indicator -->
@@ -122,7 +122,7 @@
             
                 <div>
                     <label for="bulan" class="block mb-2 text-sm font-medium text-gray-700">Pilih Bulan:</label>
-                    <input type="month" id="bulan" name="bulan" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
+                    <input type="month" id="bulan" name="bulan" class="w-full h-10 px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
                 </div>
             </div>                    
             @php
@@ -202,7 +202,7 @@
                                         <div x-data="{ selected: false, userName: '' }">
                                             <div class="mt-1" x-show="selected">
                                                 <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded"
                                                     readonly>
                                                 <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
                                             </div>

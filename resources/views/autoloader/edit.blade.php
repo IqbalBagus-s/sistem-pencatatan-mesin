@@ -15,7 +15,7 @@
         <!-- No Autoloader Display -->
         <div class="w-full">
             <label class="block mb-2 text-sm font-medium text-gray-700">No Autoloader:</label>
-            <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
+            <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
                 Autoloader {{ $check->nomer_autoloader }}
             </div>
             <input type="hidden" name="nomer_autoloader" value="{{ $check->nomer_autoloader }}">
@@ -120,15 +120,19 @@
                         <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10" colspan="1">Tanggal</th>
                         
                         @for ($i = 1; $i <= 11; $i++)
-                            @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
-                            <th class="border border-gray-300 bg-sky-50 p-2 w-24" colspan="1">{{ $num }}</th>
-                            <th class="border border-gray-300 bg-sky-50 p-2 w-40" rowspan="2">Keterangan</th>
+                            @php 
+                                $num = str_pad($i, 2, '0', STR_PAD_LEFT);
+                                $isApproved = isReadOnly($results, $i);
+                            @endphp
+                            <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 w-24" colspan="1">{{ $num }}</th>
+                            <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 w-40" rowspan="2">Keterangan</th>
                         @endfor
                     </tr>
                     <tr>
                         <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
                         @for ($i = 1; $i <= 11; $i++)
-                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Cek</th>
+                            @php $isApproved = isReadOnly($results, $i); @endphp
+                            <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 min-w-20">Cek</th>
                         @endfor
                     </tr>
                 </thead>
@@ -141,22 +145,34 @@
                             </td>
                             
                             @for($j = 1; $j <= 11; $j++)
-                                @php $isReadOnly = isReadOnly($results, $j); @endphp
-                                <td class="border border-gray-300 p-1 h-10">
-                                    <select name="check_{{ $j }}[{{ $i }}]" 
-                                        class="w-full h-8 px-2 py-0 text-sm {{ $isReadOnly ? 'bg-gray-100' : 'bg-white' }} border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                        {{ $isReadOnly ? 'disabled' : '' }}>
-                                        @foreach($options as $value => $symbol)
-                                            <option value="{{ $value }}" {{ getCheckResult($results, $j, $i) == $value ? 'selected' : '' }}>{{ $symbol }}</option>
-                                        @endforeach
-                                    </select>
+                                @php $isApproved = isReadOnly($results, $j); @endphp
+                                <td class="border border-gray-300 p-1 h-10 {{ $isApproved ? 'bg-green-50' : '' }}">
+                                    @if($isApproved)
+                                        <div class="w-full h-8 px-2 py-0 text-sm bg-green-100 border border-gray-300 rounded flex items-center justify-center">
+                                            {!! $options[getCheckResult($results, $j, $i)] ?? '—' !!}
+                                        </div>
+                                        <input type="hidden" name="check_{{ $j }}[{{ $i }}]" value="{{ getCheckResult($results, $j, $i) }}">
+                                    @else
+                                        <select name="check_{{ $j }}[{{ $i }}]" 
+                                            class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                            @foreach($options as $value => $symbol)
+                                                <option value="{{ $value }}" {{ getCheckResult($results, $j, $i) == $value ? 'selected' : '' }}>{!! $symbol !!}</option>
+                                            @endforeach
+                                        </select>
+                                    @endif
                                 </td>
-                                <td class="border border-gray-300 p-1 h-10">
-                                    <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
-                                        value="{{ getKeterangan($results, $j, $i) }}"
-                                        class="w-full h-8 px-2 py-0 text-sm {{ $isReadOnly ? 'bg-gray-100' : 'bg-white' }} border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                        placeholder="Keterangan"
-                                        {{ $isReadOnly ? 'readonly' : '' }}>
+                                <td class="border border-gray-300 p-1 h-10 {{ $isApproved ? 'bg-green-50' : '' }}">
+                                    @if($isApproved)
+                                        <div class="w-full h-8 px-2 py-0 text-sm bg-green-100 border border-gray-300 rounded flex items-center">
+                                            {{ getKeterangan($results, $j, $i) }}
+                                        </div>
+                                        <input type="hidden" name="keterangan_{{ $j }}[{{ $i }}]" value="{{ getKeterangan($results, $j, $i) }}">
+                                    @else
+                                        <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
+                                            value="{{ getKeterangan($results, $j, $i) }}"
+                                            class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                            placeholder="Keterangan">
+                                    @endif
                                 </td>
                             @endfor
                         </tr>
@@ -170,72 +186,49 @@
                         
                         <!-- Modifikasi pada bagian "Dibuat Oleh" untuk tabel tanggal 1-11 -->
                         @for($j = 1; $j <= 11; $j++)
-                            @php $isReadOnly = isReadOnly($results, $j); @endphp
-                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ getCheckerName($results, $j) }}', isExistingData: {{ getCheckerName($results, $j) ? 'true' : 'false' }}, isReadOnly: {{ $isReadOnly ? 'true' : 'false' }} }">
-                                    <!-- Show just the name if data already exists -->
-                                    <div x-show="isExistingData" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
-                                        {{ getCheckerName($results, $j) }}
-                                        <input type="hidden" name="checked_by_{{ $j }}" value="{{ getCheckerName($results, $j) }}">
-                                        <input type="hidden" name="check_num_{{ $j }}" value="{{ $j }}">
+                            @php 
+                                $isApproved = isReadOnly($results, $j);
+                                $checkedBy = getCheckerName($results, $j);
+                                $isChecked = !empty($checkedBy);
+                            @endphp
+                            <td colspan="2" class="border border-gray-300 p-1 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }}">
+                                <div x-data="{ 
+                                    selected: {{ $isChecked ? 'true' : 'false' }}, 
+                                    userName: '{{ $checkedBy }}',
+                                    isApproved: {{ $isApproved ? 'true' : 'false' }}
+                                }">
+                                    <!-- Tampilkan nama pengguna hanya jika telah dipilih atau sudah disetujui -->
+                                    <div class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded text-center"
+                                        x-show="selected || isApproved">
+                                        <span x-text="userName"></span>
+                                        <input type="hidden" name="checked_by_{{ $j }}" :value="userName">
+                                        <input type="hidden" name="check_num_{{ $j }}" :value="selected ? '{{ $j }}' : ''">
                                     </div>
                                     
-                                    <!-- Show the form if selected but not existing data -->
-                                    <div x-show="selected && !isExistingData && !isReadOnly" class="w-full">
-                                        <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                            class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
-                                            readonly>
-                                        <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
-                                    </div>
+                                    @if($isApproved)
+                                        <div class="mt-1 text-xs text-green-600 text-center">
+                                            Disetujui oleh: {{ getApprovedBy($results, $j) }}
+                                        </div>
+                                    @endif
                                     
-                                    <!-- Show message if it's read-only -->
-                                    <div x-show="!isExistingData && isReadOnly" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center text-gray-500">
-                                        Sudah dikunci
-                                    </div>
-                                    
-                                    <!-- Tombol Pilih/Batal Pilih selalu di bawah -->
-                                    <div x-show="!isReadOnly" class="mt-1">
-                                        <button type="button" 
-                                            @click="
-                                                if(isExistingData) {
-                                                    isExistingData = false;
-                                                    selected = false;
-                                                } else {
+                                    <!-- Tombol Pilih/Batal Pilih hanya jika belum diapprove -->
+                                    @if(!$isApproved)
+                                        <div class="mt-1">
+                                            <button type="button" 
+                                                @click="
                                                     selected = !selected;
                                                     if(selected) {
                                                         userName = '{{ Auth::user()->username }}'; 
-                                                        $refs.user{{ $j }}.value = userName;
-                                                        $refs.checkNum{{ $j }}.value = '{{ $j }}';
                                                     } else {
                                                         userName = '';
-                                                        $refs.user{{ $j }}.value = '';
-                                                        $refs.checkNum{{ $j }}.value = '';
                                                     }
-                                                }
-                                            "
-                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
-                                            :class="selected || isExistingData ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                            <span x-text="selected || isExistingData ? 'Batal Pilih' : 'Pilih'"></span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </td>
-                        @endfor
-                    </tr>
-                </tbody>
-                {{-- baris penanggung jawab --}}
-                <tbody class="bg-white">
-                    <tr class="bg-green-50">
-                        <td class="border border-gray-300 text-center p-1 bg-green-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
-                        <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10">Penanggung Jawab</td>
-                        
-                        @for($j = 1; $j <= 11; $j++)
-                            <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
-                                <div class="w-full px-2 py-1 text-sm">
-                                    <input type="text" name="approved_by_{{ $j }}" value="{{ getApprovedBy($results, $j) }}"
-                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
-                                        readonly>
-                                    <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
+                                                "
+                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                                :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                                <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                            </button>
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
                         @endfor
@@ -253,15 +246,19 @@
                         <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10" colspan="1">Tanggal</th>
                         
                         @for ($i = 12; $i <= 22; $i++)
-                            @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
-                            <th class="border border-gray-300 bg-sky-50 p-2 w-24" colspan="1">{{ $num }}</th>
-                            <th class="border border-gray-300 bg-sky-50 p-2 w-40" rowspan="2">Keterangan</th>
+                            @php 
+                                $num = str_pad($i, 2, '0', STR_PAD_LEFT);
+                                $isApproved = isReadOnly($results, $i);
+                            @endphp
+                            <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 w-24" colspan="1">{{ $num }}</th>
+                            <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 w-40" rowspan="2">Keterangan</th>
                         @endfor
                     </tr>
                     <tr>
                         <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
                         @for ($i = 12; $i <= 22; $i++)
-                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Cek</th>
+                            @php $isApproved = isReadOnly($results, $i); @endphp
+                            <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 min-w-20">Cek</th>
                         @endfor
                     </tr>
                 </thead>
@@ -274,22 +271,34 @@
                             </td>
                             
                             @for($j = 12; $j <= 22; $j++)
-                                @php $isReadOnly = isReadOnly($results, $j); @endphp
-                                <td class="border border-gray-300 p-1 h-10">
-                                    <select name="check_{{ $j }}[{{ $i }}]" 
-                                        class="w-full h-8 px-2 py-0 text-sm {{ $isReadOnly ? 'bg-gray-100' : 'bg-white' }} border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                        {{ $isReadOnly ? 'disabled' : '' }}>
-                                        @foreach($options as $value => $symbol)
-                                            <option value="{{ $value }}" {{ getCheckResult($results, $j, $i) == $value ? 'selected' : '' }}>{{ $symbol }}</option>
-                                        @endforeach
-                                    </select>
+                                @php $isApproved = isReadOnly($results, $j); @endphp
+                                <td class="border border-gray-300 p-1 h-10 {{ $isApproved ? 'bg-green-50' : '' }}">
+                                    @if($isApproved)
+                                        <div class="w-full h-8 px-2 py-0 text-sm bg-green-100 border border-gray-300 rounded flex items-center justify-center">
+                                            {!! $options[getCheckResult($results, $j, $i)] ?? '—' !!}
+                                        </div>
+                                        <input type="hidden" name="check_{{ $j }}[{{ $i }}]" value="{{ getCheckResult($results, $j, $i) }}">
+                                    @else
+                                        <select name="check_{{ $j }}[{{ $i }}]" 
+                                            class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                            @foreach($options as $value => $symbol)
+                                                <option value="{{ $value }}" {{ getCheckResult($results, $j, $i) == $value ? 'selected' : '' }}>{!! $symbol !!}</option>
+                                            @endforeach
+                                        </select>
+                                    @endif
                                 </td>
-                                <td class="border border-gray-300 p-1 h-10">
-                                    <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
-                                        value="{{ getKeterangan($results, $j, $i) }}"
-                                        class="w-full h-8 px-2 py-0 text-sm {{ $isReadOnly ? 'bg-gray-100' : 'bg-white' }} border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                        placeholder="Keterangan"
-                                        {{ $isReadOnly ? 'readonly' : '' }}>
+                                <td class="border border-gray-300 p-1 h-10 {{ $isApproved ? 'bg-green-50' : '' }}">
+                                    @if($isApproved)
+                                        <div class="w-full h-8 px-2 py-0 text-sm bg-green-100 border border-gray-300 rounded flex items-center">
+                                            {{ getKeterangan($results, $j, $i) }}
+                                        </div>
+                                        <input type="hidden" name="keterangan_{{ $j }}[{{ $i }}]" value="{{ getKeterangan($results, $j, $i) }}">
+                                    @else
+                                        <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
+                                            value="{{ getKeterangan($results, $j, $i) }}"
+                                            class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                            placeholder="Keterangan">
+                                    @endif
                                 </td>
                             @endfor
                         </tr>
@@ -301,73 +310,51 @@
                         <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
                         <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10">Dibuat Oleh</td>
                         
+                        <!-- Modifikasi pada bagian "Dibuat Oleh" untuk tabel tanggal 12-22 -->
                         @for($j = 12; $j <= 22; $j++)
-                            @php $isReadOnly = isReadOnly($results, $j); @endphp
-                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ getCheckerName($results, $j) }}', isExistingData: {{ getCheckerName($results, $j) ? 'true' : 'false' }}, isReadOnly: {{ $isReadOnly ? 'true' : 'false' }} }">
-                                    <!-- Show just the name if data already exists -->
-                                    <div x-show="isExistingData" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
-                                        {{ getCheckerName($results, $j) }}
-                                        <input type="hidden" name="checked_by_{{ $j }}" value="{{ getCheckerName($results, $j) }}">
-                                        <input type="hidden" name="check_num_{{ $j }}" value="{{ $j }}">
+                            @php 
+                                $isApproved = isReadOnly($results, $j);
+                                $checkedBy = getCheckerName($results, $j);
+                                $isChecked = !empty($checkedBy);
+                            @endphp
+                            <td colspan="2" class="border border-gray-300 p-1 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }}">
+                                <div x-data="{ 
+                                    selected: {{ $isChecked ? 'true' : 'false' }}, 
+                                    userName: '{{ $checkedBy }}',
+                                    isApproved: {{ $isApproved ? 'true' : 'false' }}
+                                }">
+                                    <!-- Tampilkan nama pengguna hanya jika telah dipilih atau sudah disetujui -->
+                                    <div class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded text-center"
+                                        x-show="selected || isApproved">
+                                        <span x-text="userName"></span>
+                                        <input type="hidden" name="checked_by_{{ $j }}" :value="userName">
+                                        <input type="hidden" name="check_num_{{ $j }}" :value="selected ? '{{ $j }}' : ''">
                                     </div>
                                     
-                                    <!-- Show the form if selected but not existing data -->
-                                    <div x-show="selected && !isExistingData && !isReadOnly" class="w-full">
-                                        <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                            class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
-                                            readonly>
-                                        <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
-                                    </div>
+                                    @if($isApproved)
+                                        <div class="mt-1 text-xs text-green-600 text-center">
+                                            Disetujui oleh: {{ getApprovedBy($results, $j) }}
+                                        </div>
+                                    @endif
                                     
-                                    <!-- Show message if it's read-only -->
-                                    <div x-show="!isExistingData && isReadOnly" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center text-gray-500">
-                                        Sudah dikunci
-                                    </div>
-                                    
-                                    <!-- Tombol Pilih/Batal Pilih selalu di bawah -->
-                                    <div x-show="!isReadOnly" class="mt-1">
-                                        <button type="button" 
-                                            @click="
-                                                if(isExistingData) {
-                                                    isExistingData = false;
-                                                    selected = false;
-                                                } else {
+                                    <!-- Tombol Pilih/Batal Pilih hanya jika belum diapprove -->
+                                    @if(!$isApproved)
+                                        <div class="mt-1">
+                                            <button type="button" 
+                                                @click="
                                                     selected = !selected;
                                                     if(selected) {
                                                         userName = '{{ Auth::user()->username }}'; 
-                                                        $refs.user{{ $j }}.value = userName;
-                                                        $refs.checkNum{{ $j }}.value = '{{ $j }}';
                                                     } else {
                                                         userName = '';
-                                                        $refs.user{{ $j }}.value = '';
-                                                        $refs.checkNum{{ $j }}.value = '';
                                                     }
-                                                }
-                                            "
-                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
-                                            :class="selected || isExistingData ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                            <span x-text="selected || isExistingData ? 'Batal Pilih' : 'Pilih'"></span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </td>
-                        @endfor
-                    </tr>
-                </tbody>
-                {{-- baris penanggung jawab --}}
-                <tbody class="bg-white">
-                    <tr class="bg-green-50">
-                        <td class="border border-gray-300 text-center p-1 bg-green-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
-                        <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10">Penanggung Jawab</td>
-                        
-                        @for($j = 12; $j <= 22; $j++)
-                            <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
-                                <div class="w-full px-2 py-1 text-sm">
-                                    <input type="text" name="approved_by_{{ $j }}" value="{{ getApprovedBy($results, $j) }}"
-                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
-                                        readonly>
-                                    <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
+                                                "
+                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                                :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                                <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                            </button>
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
                         @endfor
@@ -385,15 +372,19 @@
                         <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10" colspan="1">Tanggal</th>
                         
                         @for ($i = 23; $i <= 31; $i++)
-                            @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
-                            <th class="border border-gray-300 bg-sky-50 p-2 w-24" colspan="1">{{ $num }}</th>
-                            <th class="border border-gray-300 bg-sky-50 p-2 w-40" rowspan="2">Keterangan</th>
+                            @php 
+                                $num = str_pad($i, 2, '0', STR_PAD_LEFT);
+                                $isApproved = isReadOnly($results, $i);
+                            @endphp
+                            <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 w-24" colspan="1">{{ $num }}</th>
+                            <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 w-40" rowspan="2">Keterangan</th>
                         @endfor
                     </tr>
                     <tr>
                         <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
                         @for ($i = 23; $i <= 31; $i++)
-                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Cek</th>
+                            @php $isApproved = isReadOnly($results, $i); @endphp
+                            <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 min-w-20">Cek</th>
                         @endfor
                     </tr>
                 </thead>
@@ -406,22 +397,34 @@
                             </td>
                             
                             @for($j = 23; $j <= 31; $j++)
-                                @php $isReadOnly = isReadOnly($results, $j); @endphp
-                                <td class="border border-gray-300 p-1 h-10">
-                                    <select name="check_{{ $j }}[{{ $i }}]" 
-                                        class="w-full h-8 px-2 py-0 text-sm {{ $isReadOnly ? 'bg-gray-100' : 'bg-white' }} border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                        {{ $isReadOnly ? 'disabled' : '' }}>
-                                        @foreach($options as $value => $symbol)
-                                            <option value="{{ $value }}" {{ getCheckResult($results, $j, $i) == $value ? 'selected' : '' }}>{{ $symbol }}</option>
-                                        @endforeach
-                                    </select>
+                                @php $isApproved = isReadOnly($results, $j); @endphp
+                                <td class="border border-gray-300 p-1 h-10 {{ $isApproved ? 'bg-green-50' : '' }}">
+                                    @if($isApproved)
+                                        <div class="w-full h-8 px-2 py-0 text-sm bg-green-100 border border-gray-300 rounded flex items-center justify-center">
+                                            {!! $options[getCheckResult($results, $j, $i)] ?? '—' !!}
+                                        </div>
+                                        <input type="hidden" name="check_{{ $j }}[{{ $i }}]" value="{{ getCheckResult($results, $j, $i) }}">
+                                    @else
+                                        <select name="check_{{ $j }}[{{ $i }}]" 
+                                            class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                            @foreach($options as $value => $symbol)
+                                                <option value="{{ $value }}" {{ getCheckResult($results, $j, $i) == $value ? 'selected' : '' }}>{!! $symbol !!}</option>
+                                            @endforeach
+                                        </select>
+                                    @endif
                                 </td>
-                                <td class="border border-gray-300 p-1 h-10">
-                                    <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
-                                        value="{{ getKeterangan($results, $j, $i) }}"
-                                        class="w-full h-8 px-2 py-0 text-sm {{ $isReadOnly ? 'bg-gray-100' : 'bg-white' }} border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                        placeholder="Keterangan"
-                                        {{ $isReadOnly ? 'readonly' : '' }}>
+                                <td class="border border-gray-300 p-1 h-10 {{ $isApproved ? 'bg-green-50' : '' }}">
+                                    @if($isApproved)
+                                        <div class="w-full h-8 px-2 py-0 text-sm bg-green-100 border border-gray-300 rounded flex items-center">
+                                            {{ getKeterangan($results, $j, $i) }}
+                                        </div>
+                                        <input type="hidden" name="keterangan_{{ $j }}[{{ $i }}]" value="{{ getKeterangan($results, $j, $i) }}">
+                                    @else
+                                        <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
+                                            value="{{ getKeterangan($results, $j, $i) }}"
+                                            class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                            placeholder="Keterangan">
+                                    @endif
                                 </td>
                             @endfor
                         </tr>
@@ -433,73 +436,51 @@
                         <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
                         <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10">Dibuat Oleh</td>
                         
+                        <!-- Modifikasi pada bagian "Dibuat Oleh" untuk tabel tanggal 23-31 -->
                         @for($j = 23; $j <= 31; $j++)
-                            @php $isReadOnly = isReadOnly($results, $j); @endphp
-                            <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ getCheckerName($results, $j) }}', isExistingData: {{ getCheckerName($results, $j) ? 'true' : 'false' }}, isReadOnly: {{ $isReadOnly ? 'true' : 'false' }} }">
-                                    <!-- Show just the name if data already exists -->
-                                    <div x-show="isExistingData" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center">
-                                        {{ getCheckerName($results, $j) }}
-                                        <input type="hidden" name="checked_by_{{ $j }}" value="{{ getCheckerName($results, $j) }}">
-                                        <input type="hidden" name="check_num_{{ $j }}" value="{{ $j }}">
+                            @php 
+                                $isApproved = isReadOnly($results, $j);
+                                $checkedBy = getCheckerName($results, $j);
+                                $isChecked = !empty($checkedBy);
+                            @endphp
+                            <td colspan="2" class="border border-gray-300 p-1 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }}">
+                                <div x-data="{ 
+                                    selected: {{ $isChecked ? 'true' : 'false' }}, 
+                                    userName: '{{ $checkedBy }}',
+                                    isApproved: {{ $isApproved ? 'true' : 'false' }}
+                                }">
+                                    <!-- Tampilkan nama pengguna hanya jika telah dipilih atau sudah disetujui -->
+                                    <div class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded text-center"
+                                        x-show="selected || isApproved">
+                                        <span x-text="userName"></span>
+                                        <input type="hidden" name="checked_by_{{ $j }}" :value="userName">
+                                        <input type="hidden" name="check_num_{{ $j }}" :value="selected ? '{{ $j }}' : ''">
                                     </div>
                                     
-                                    <!-- Show the form if selected but not existing data -->
-                                    <div x-show="selected && !isExistingData && !isReadOnly" class="w-full">
-                                        <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                            class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
-                                            readonly>
-                                        <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
-                                    </div>
+                                    @if($isApproved)
+                                        <div class="mt-1 text-xs text-green-600 text-center">
+                                            Disetujui oleh: {{ getApprovedBy($results, $j) }}
+                                        </div>
+                                    @endif
                                     
-                                    <!-- Show message if it's read-only -->
-                                    <div x-show="!isExistingData && isReadOnly" class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center text-gray-500">
-                                        Sudah dikunci
-                                    </div>
-                                    
-                                    <!-- Tombol Pilih/Batal Pilih selalu di bawah -->
-                                    <div x-show="!isReadOnly" class="mt-1">
-                                        <button type="button" 
-                                            @click="
-                                                if(isExistingData) {
-                                                    isExistingData = false;
-                                                    selected = false;
-                                                } else {
+                                    <!-- Tombol Pilih/Batal Pilih hanya jika belum diapprove -->
+                                    @if(!$isApproved)
+                                        <div class="mt-1">
+                                            <button type="button" 
+                                                @click="
                                                     selected = !selected;
                                                     if(selected) {
                                                         userName = '{{ Auth::user()->username }}'; 
-                                                        $refs.user{{ $j }}.value = userName;
-                                                        $refs.checkNum{{ $j }}.value = '{{ $j }}';
                                                     } else {
                                                         userName = '';
-                                                        $refs.user{{ $j }}.value = '';
-                                                        $refs.checkNum{{ $j }}.value = '';
                                                     }
-                                                }
-                                            "
-                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
-                                            :class="selected || isExistingData ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                            <span x-text="selected || isExistingData ? 'Batal Pilih' : 'Pilih'"></span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </td>
-                        @endfor
-                    </tr>
-                </tbody>
-                {{-- baris penanggung jawab --}}
-                <tbody class="bg-white">
-                    <tr class="bg-green-50">
-                        <td class="border border-gray-300 text-center p-1 bg-green-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
-                        <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10">Penanggung Jawab</td>
-                        
-                        @for($j = 23; $j <= 31; $j++)
-                            <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
-                                <div class="w-full px-2 py-1 text-sm">
-                                    <input type="text" name="approved_by_{{ $j }}" value="{{ getApprovedBy($results, $j) }}"
-                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
-                                        readonly>
-                                    <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
+                                                "
+                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
+                                                :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                                <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                            </button>
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
                         @endfor
