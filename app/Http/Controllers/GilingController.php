@@ -51,6 +51,8 @@ class GilingController extends Controller
             }
         }
 
+        $query->orderBy('created_at', 'desc');
+
         // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
         $checks = $query->paginate(10)->appends($request->query());
 

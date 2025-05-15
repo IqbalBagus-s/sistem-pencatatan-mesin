@@ -15,7 +15,7 @@ class CompressorController extends Controller
 {
     public function index(Request $request)
     {
-        $query = CompressorCheck::orderBy('tanggal', 'desc');
+        $query = CompressorCheck::orderBy('created_at', 'desc');
 
         // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
         // if (Auth::user() instanceof \App\Models\Checker) {

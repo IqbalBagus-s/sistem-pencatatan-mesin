@@ -46,6 +46,9 @@ class AutoloaderController extends Controller
         if ($request->filled('shift')) {
             $query->where('shift', $request->shift);
         }
+
+        // Urutkan berdasarkan data terbaru
+        $query->orderBy('created_at', 'desc');
     
         // Ambil data dengan paginasi
         $checks = $query->with('checkerAndApprover')->paginate(10)->appends($request->query());

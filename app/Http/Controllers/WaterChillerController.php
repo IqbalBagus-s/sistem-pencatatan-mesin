@@ -14,7 +14,7 @@ class WaterChillerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = WaterChillerCheck::orderBy('tanggal', 'desc');
+        $query = WaterChillerCheck::orderBy('created_at', 'desc');
 
         // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
         if (Auth::user() instanceof \App\Models\Checker) {

@@ -42,6 +42,8 @@ class VacumCleanerController extends Controller
                 return redirect()->back()->with('error', 'Format bulan tidak valid.');
             }
         }
+
+        $query->orderBy('created_at', 'desc');
     
         // Ambil data dengan paginasi
         $checks = $query->paginate(10)->appends($request->query());

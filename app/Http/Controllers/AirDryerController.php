@@ -14,7 +14,7 @@ class AirDryerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = AirDryerCheck::orderBy('tanggal', 'desc');
+        $query = AirDryerCheck::orderBy('created_at', 'desc');
 
         // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
         if (Auth::user() instanceof \App\Models\Checker) {

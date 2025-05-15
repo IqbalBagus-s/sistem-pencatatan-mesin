@@ -47,6 +47,8 @@ class DehumMatrasController extends Controller
             $query->where('shift', $request->shift);
         }
 
+        $query->orderBy('created_at', 'desc');
+
         // Ambil data dengan paginasi
         $checks = $query->with('detail')->paginate(10)->appends($request->query());
         
@@ -75,15 +77,6 @@ class DehumMatrasController extends Controller
             $check->approvedDatesCount = DehumMatrasDetail::where('tanggal_check_id', $check->id)
                 ->whereNotNull('approved_by')
                 ->count();
-                
-            // Hitung persentase kelengkapan hasil pengecekan
-            if ($check->daysInMonth > 0) {
-                $check->completionPercentage = round(($check->filledDatesCount / $check->daysInMonth) * 100, 2);
-                $check->approvalPercentage = round(($check->approvedDatesCount / $check->daysInMonth) * 100, 2);
-            } else {
-                $check->completionPercentage = 0;
-                $check->approvalPercentage = 0;
-            }
         }
 
         return view('dehum-matras.index', compact('checks'));
