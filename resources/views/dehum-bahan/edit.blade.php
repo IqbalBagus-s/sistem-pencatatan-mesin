@@ -1,512 +1,315 @@
 @extends('layouts.edit-layout-2')
 
 @section('title', 'Edit Pencatatan Mesin Dehum')
+
 @section('page-title', 'Edit Pencatatan Mesin Dehum')
-@section('show-checker')
-<div></div>
-@endsection
+
+@section('show-checker', true)
 
 @section('content')
-<!-- Form Edit -->
-<form action="{{ route('dehum-bahan.update', $dehumCheck->id) }}" method="POST" autocomplete="off">
-    @csrf
-    @method('PUT')
-    <div class="grid md:grid-cols-2 gap-4 mb-4">
-        <!-- Dropdown Pilih No Dehum (Read-Only) -->
-        <div class="relative w-full">
-            <label class="block mb-2 text-sm font-medium text-gray-700">Pilih No Dehum:</label>
-            
-            <input type="text" 
-                value="Dehum {{ $dehumCheck->nomer_dehum_bahan }}" 
-                class="w-full h-10 px-3 py-2 bg-gray-200 border border-gray-300 rounded-md text-sm cursor-not-allowed" 
-                readonly>
-            
-            <input type="hidden" name="nomer_dehum_bahan" value="{{ $dehumCheck->nomer_dehum_bahan }}">
-        </div>                      
-    
-        <div>
-            <label for="bulan" class="block mb-2 text-sm font-medium text-gray-700">Pilih Bulan:</label>
-            <input type="text" 
-                value="{{ \Carbon\Carbon::parse($dehumCheck->bulan)->format('F Y') }}" 
-                class="w-full h-10 px-3 py-2 bg-gray-200 border border-gray-300 rounded-md cursor-not-allowed" 
-                readonly>
-            <input type="hidden" id="bulan" name="bulan" value="{{ $dehumCheck->bulan }}">
-        </div>
-    </div>                    
+    <!-- Form Input -->
+    <form action="{{ route('dehum-bahan.update', $dehumCheck->id) }}" method="POST" autocomplete="off">
+        @csrf
+        @method('PUT')
+        <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <!-- Dropdown Pilih No Dehum - Already selected -->
+            <div class="relative w-full">
+                <label class="block mb-2 text-sm font-medium text-gray-700">
+                    No Dehum: 
+                </label>
+                <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-left flex items-center">
+                    <span>Dehum {{ $dehumCheck->nomer_dehum_bahan }}</span>
+                </div>
+                <input type="hidden" name="nomer_dehum_bahan" value="{{ $dehumCheck->nomer_dehum_bahan }}">
+            </div>
+        
+            <div>
+                <label for="bulan" class="block mb-2 text-sm font-medium text-gray-700">
+                    Bulan:
+                </label>
+                <!-- Mengubah input month menjadi tampilan read-only -->
+                <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-left flex items-center">
+                    <span>{{ date('F Y', strtotime($dehumCheck->bulan)) }}</span>
+                </div>
+                <input type="hidden" name="bulan" value="{{ $dehumCheck->bulan }}">
+            </div>
+        </div>                  
+        @php
+            // Items yang perlu di-check
+            $items = [
+                1 => 'Filter',
+                2 => 'Selang',
+                3 => 'Kontraktor',
+                4 => 'Temperatur Control',
+                5 => 'MCB',
+                6 => 'Dew Point'
+            ];
 
-    <!-- Tabel Inspeksi -->
-    <div class="overflow-x-auto">
-        <!-- Notifikasi scroll horizontal untuk mobile -->
-        <div class="md:hidden text-sm text-gray-500 italic mb-2">
-            ← Geser ke kanan untuk melihat semua kolom →
-        </div>
-        <!-- Lebar minimum pada mobile agar bisa scroll horizontal -->
-        <div class="min-w-[1200px]">
-            <table class="w-full border-collapse border border-gray-300">
-                <thead>
-                    <tr>
-                        <th class="border border-gray-300 bg-sky-50 p-2 w-10 text-sm" rowspan="2">No.</th>
-                        <th class="border border-gray-300 bg-sky-50 p-2 min-w-28 text-sm" colspan="1">Minggu</th>
-                        
-                        <th class="border border-gray-300 bg-sky-50 p-2 text-sm" colspan="1">01</th>
-                        <th class="border border-gray-300 bg-sky-50 p-2 w-32 text-sm" rowspan="2">Keterangan</th>
-                        <th class="border border-gray-300 bg-sky-50 p-2 text-sm" colspan="1">02</th>
-                        <th class="border border-gray-300 bg-sky-50 p-2 w-32 text-sm" rowspan="2">Keterangan</th>
-                        <th class="border border-gray-300 bg-sky-50 p-2 text-sm" colspan="1">03</th>
-                        <th class="border border-gray-300 bg-sky-50 p-2 w-32 text-sm" rowspan="2">Keterangan</th>
-                        <th class="border border-gray-300 bg-sky-50 p-2 text-sm" colspan="1">04</th>
-                        <th class="border border-gray-300 bg-sky-50 p-2 w-32 text-sm" rowspan="2">Keterangan</th>
-                    </tr>
-                    <tr>
-                        <th class="border border-gray-300 bg-sky-50 p-2 min-w-28 text-sm">Checked Items</th>
-                        <th class="border border-gray-300 bg-sky-50 p-2 text-sm">Check</th>
-                        <th class="border border-gray-300 bg-sky-50 p-2 text-sm">Check</th>
-                        <th class="border border-gray-300 bg-sky-50 p-2 text-sm">Check</th>
-                        <th class="border border-gray-300 bg-sky-50 p-2 text-sm">Check</th>
-                    </tr>
-                </thead>                          
-                <tbody>
-                    @php
-                        $items = [
-                            1 => 'Filter',
-                            2 => 'Selang',
-                            3 => 'Kontraktor',
-                            4 => 'Temperatur Control',
-                            5 => 'MCB',
-                            6 => 'Dew Point'
-                        ];
-                        
-                        $options = [
-                            1 => ['Baik', 'Bersih', 'Kotor', 'OFF', '-'],
-                            2 => ['Baik', 'Tidak Bocor', 'Bocor', 'OFF', '-'],
-                            3 => ['Baik', 'Buruk', 'OFF', '-'],
-                            4 => ['Baik', 'Buruk', 'OFF', '-'],
-                            5 => ['Baik', 'Buruk', 'OFF', '-'],
-                            6 => ['Baik', 'Buruk', 'OFF', '-']
-                        ];
-                    @endphp
+            // Opsi check baru
+            $options = [
+                1 => ['V', 'X', '-', 'OFF'],
+                2 => ['V', 'X', '-', 'OFF'],
+                3 => ['V', 'X', '-', 'OFF'],
+                4 => ['V', 'X', '-', 'OFF'],
+                5 => ['V', 'X', '-', 'OFF'],
+                6 => ['V', 'X', '-', 'OFF'],
+            ];
+        @endphp
+        
+        <!-- Input untuk menyimpan semua checked items -->
+        @foreach($items as $i => $item)
+            <input type="hidden" name="checked_items[{{ $i }}]" value="{{ $item }}">
+        @endforeach
 
-                    @foreach($items as $i => $item)
-                        @php
-                            $result = $dehumResults->firstWhere('checked_items', $item);
-                        @endphp
+        <!-- Tabel Inspeksi Mingguan -->
+        <div class="mb-6">
+            <div class="overflow-x-auto mb-6 border border-gray-300">
+                <table class="w-full border-collapse">
+                    <thead>
                         <tr>
-                            <td class="border border-gray-300 text-center p-2 h-12 text-xs">{{ $i }}</td>
-                            <td class="border border-gray-300 p-2 h-12 text-xs">
-                                <input type="text" name="checked_items[{{ $i }}]" 
-                                    class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded text-center" 
-                                    value="{{ $item }}" readonly>
-                            </td>
+                            <th class="border border-gray-300 bg-sky-50 p-2 w-10 text-sm sticky left-0 z-10" rowspan="2">No.</th>
+                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-28 text-sm sticky left-10 z-10" colspan="1">Minggu</th>
                             
-                            <!-- Minggu 1 -->
-                            <td class="border border-gray-300 p-2 h-12 text-xs">
-                                @if($dehumCheck->approved_by_minggu1 && $dehumCheck->approved_by_minggu1 != '-')
-                                    <!-- Tambahkan hidden input untuk menyimpan nilai asli -->
-                                    <input type="hidden" name="check_1[{{ $i }}]" value="{{ $result ? $result->minggu1 : '' }}">
-                                    <select class="w-full h-10 px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded cursor-not-allowed" readonly disabled>
-                                        <option value="{{ $result ? $result->minggu1 : 'Baik' }}">{{ $result ? $result->minggu1 : 'Baik' }}</option>
-                                    </select>
-                                @else
-                                    <select name="check_1[{{ $i }}]" class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                        @foreach($options[$i] as $option)
-                                            <option value="{{ $option }}" {{ ($result && $result->minggu1 == $option) ? 'selected' : ($option == 'Baik' && (!$result || !$result->minggu1) ? 'selected' : '') }}>
-                                                {{ $option }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                @endif
-                            </td>
-                            <td class="border border-gray-300 p-2 h-12 text-xs">
-                                @if($dehumCheck->approved_by_minggu1 && $dehumCheck->approved_by_minggu1 != '-')
-                                    <!-- Tambahkan hidden input untuk menyimpan nilai asli -->
-                                    <input type="hidden" name="keterangan_1[{{ $i }}]" value="{{ $result ? $result->keterangan_minggu1 : '' }}">
-                                    <input type="text" value="{{ $result ? $result->keterangan_minggu1 : '' }}" 
-                                        class="w-full h-10 px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded cursor-not-allowed"
-                                        readonly disabled>
-                                @else
-                                    <input type="text" name="keterangan_1[{{ $i }}]" 
-                                        class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                        placeholder="Keterangan" 
-                                        value="{{ $result ? $result->keterangan_minggu1 : '' }}">
-                                @endif
-                            </td>
-                            
-                            <!-- Minggu 2 -->
-                            <td class="border border-gray-300 p-2 h-12 text-xs">
-                                @if($dehumCheck->approved_by_minggu2 && $dehumCheck->approved_by_minggu2 != '-')
-                                    <!-- Tambahkan hidden input untuk menyimpan nilai asli -->
-                                    <input type="hidden" name="check_2[{{ $i }}]" value="{{ $result ? $result->minggu2 : '' }}">
-                                    <select class="w-full h-10 px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded cursor-not-allowed" readonly disabled>
-                                        <option value="{{ $result ? $result->minggu2 : 'Baik' }}">{{ $result ? $result->minggu2 : 'Baik' }}</option>
-                                    </select>
-                                @else
-                                    <select name="check_2[{{ $i }}]" class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                        @foreach($options[$i] as $option)
-                                            <option value="{{ $option }}" {{ ($result && $result->minggu2 == $option) ? 'selected' : ($option == 'Baik' && (!$result || !$result->minggu2) ? 'selected' : '') }}>
-                                                {{ $option }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                @endif
-                            </td>
-                            <td class="border border-gray-300 p-2 h-12 text-xs">
-                                @if($dehumCheck->approved_by_minggu2 && $dehumCheck->approved_by_minggu2 != '-')
-                                    <!-- Tambahkan hidden input untuk menyimpan nilai asli -->
-                                    <input type="hidden" name="keterangan_2[{{ $i }}]" value="{{ $result ? $result->keterangan_minggu2 : '' }}">
-                                    <input type="text" value="{{ $result ? $result->keterangan_minggu2 : '' }}" 
-                                        class="w-full h-10 px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded cursor-not-allowed"
-                                        readonly disabled>
-                                @else
-                                    <input type="text" name="keterangan_2[{{ $i }}]" 
-                                        class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                        placeholder="Keterangan" 
-                                        value="{{ $result ? $result->keterangan_minggu2 : '' }}">
-                                @endif
-                            </td>
-                            
-                            <!-- Minggu 3 -->
-                            <td class="border border-gray-300 p-2 h-12 text-xs">
-                                @if($dehumCheck->approved_by_minggu3 && $dehumCheck->approved_by_minggu3 != '-')
-                                    <!-- Tambahkan hidden input untuk menyimpan nilai asli -->
-                                    <input type="hidden" name="check_3[{{ $i }}]" value="{{ $result ? $result->minggu3 : '' }}">
-                                    <select class="w-full h-10 px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded cursor-not-allowed" readonly disabled>
-                                        <option value="{{ $result ? $result->minggu3 : 'Baik' }}">{{ $result ? $result->minggu3 : 'Baik' }}</option>
-                                    </select>
-                                @else
-                                    <select name="check_3[{{ $i }}]" class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                        @foreach($options[$i] as $option)
-                                            <option value="{{ $option }}" {{ ($result && $result->minggu3 == $option) ? 'selected' : ($option == 'Baik' && (!$result || !$result->minggu3) ? 'selected' : '') }}>
-                                                {{ $option }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                @endif
-                            </td>
-                            <td class="border border-gray-300 p-2 h-12 text-xs">
-                                @if($dehumCheck->approved_by_minggu3 && $dehumCheck->approved_by_minggu3 != '-')
-                                    <!-- Tambahkan hidden input untuk menyimpan nilai asli -->
-                                    <input type="hidden" name="keterangan_3[{{ $i }}]" value="{{ $result ? $result->keterangan_minggu3 : '' }}">
-                                    <input type="text" value="{{ $result ? $result->keterangan_minggu3 : '' }}" 
-                                        class="w-full h-10 px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded cursor-not-allowed"
-                                        readonly disabled>
-                                @else
-                                    <input type="text" name="keterangan_3[{{ $i }}]" 
-                                        class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                        placeholder="Keterangan" 
-                                        value="{{ $result ? $result->keterangan_minggu3 : '' }}">
-                                @endif
-                            </td>
-                            
-                            <!-- Minggu 4 -->
-                            <td class="border border-gray-300 p-2 h-12 text-xs">
-                                @if($dehumCheck->approved_by_minggu4 && $dehumCheck->approved_by_minggu4 != '-')
-                                    <!-- Tambahkan hidden input untuk menyimpan nilai asli -->
-                                    <input type="hidden" name="check_4[{{ $i }}]" value="{{ $result ? $result->minggu4 : '' }}">
-                                    <select class="w-full h-10 px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded cursor-not-allowed" readonly disabled>
-                                        <option value="{{ $result ? $result->minggu4 : 'Baik' }}">{{ $result ? $result->minggu4 : 'Baik' }}</option>
-                                    </select>
-                                @else
-                                    <select name="check_4[{{ $i }}]" class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
-                                        @foreach($options[$i] as $option)
-                                            <option value="{{ $option }}" {{ ($result && $result->minggu4 == $option) ? 'selected' : ($option == 'Baik' && (!$result || !$result->minggu4) ? 'selected' : '') }}>
-                                                {{ $option }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                @endif
-                            </td>
-                            <td class="border border-gray-300 p-2 h-12 text-xs">
-                                @if($dehumCheck->approved_by_minggu4 && $dehumCheck->approved_by_minggu4 != '-')
-                                    <!-- Tambahkan hidden input untuk menyimpan nilai asli -->
-                                    <input type="hidden" name="keterangan_4[{{ $i }}]" value="{{ $result ? $result->keterangan_minggu4 : '' }}">
-                                    <input type="text" value="{{ $result ? $result->keterangan_minggu4 : '' }}" 
-                                        class="w-full h-10 px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded cursor-not-allowed"
-                                        readonly disabled>
-                                @else
-                                    <input type="text" name="keterangan_4[{{ $i }}]" 
-                                        class="w-full h-10 px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-                                        placeholder="Keterangan" 
-                                        value="{{ $result ? $result->keterangan_minggu4 : '' }}">
-                                @endif
-                            </td>
+                            @for ($i = 1; $i <= 4; $i++)
+                                @php
+                                    $isApproved = !empty($dehumCheck->{'approved_by_minggu'.$i}) && $dehumCheck->{'approved_by_minggu'.$i} != '-';
+                                @endphp
+                                <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 text-sm" colspan="1">0{{ $i }}</th>
+                                <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 w-32 text-sm" rowspan="2">Keterangan</th>
+                            @endfor
                         </tr>
-                        @if($i == 2)
                         <tr>
-                            <td colspan="10" class="border border-gray-300 text-center p-2 h-12 bg-gray-100 font-medium text-xs">
-                                Panel Kelistrikan
-                            </td>
+                            <th class="border border-gray-300 bg-sky-50 p-2 min-w-28 text-sm sticky left-10 z-10">Item Terperiksa</th>
+                            @for ($i = 1; $i <= 4; $i++)
+                                @php
+                                    $isApproved = !empty($dehumCheck->{'approved_by_minggu'.$i}) && $dehumCheck->{'approved_by_minggu'.$i} != '-';
+                                @endphp
+                                <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 text-sm">Check</th>
+                            @endfor
                         </tr>
-                        @endif
-                    @endforeach
-                </tbody>
-                <!-- Tbody untuk Checker dan approver-->
-                <tbody class="bg-white">
-                    <tr class="bg-sky-50">
-                        <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs" rowspan="1">-</td>
-                        <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs">Dibuat Oleh</td>
-                        
-                        <!-- Week 1 - Updated handling for approved state -->
-                        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                            <div x-data="{ selected: '{{ $dehumCheck->checked_by_minggu1 }}' ? true : false, userName: '{{ $dehumCheck->checked_by_minggu1 }}' }" class="h-20">
-                                <!-- Form fields selalu terlihat dengan fixed height -->
-                                <div class="space-y-1 h-12">
-                                    @if($dehumCheck->approved_by_minggu1 && $dehumCheck->approved_by_minggu1 != '-')
-                                        <!-- Tambahkan hidden input untuk menyimpan nilai asli -->
-                                        <input type="hidden" name="created_by_1" value="{{ $dehumCheck->checked_by_minggu1 }}">
-                                        <input type="hidden" name="created_date_1" value="{{ $dehumCheck->tanggal_minggu1 }}">
-                                        
-                                        <input type="text" value="{{ $dehumCheck->checked_by_minggu1 }}" 
-                                            class="w-full px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded"
-                                            readonly disabled>
-                                        <input type="text" value="{{ $dehumCheck->tanggal_minggu1 }}" 
-                                            class="w-full px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded"
-                                            readonly disabled>
-                                    @else
-                                        <input type="text" name="created_by_1" x-ref="user1" 
-                                            x-bind:value="selected ? (userName || '{{ Auth::user()->username }}') : ''"
-                                            class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                            x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                            readonly>
-                                        <input type="text" name="created_date_1" x-ref="date1" 
-                                            x-bind:value="selected ? ('{{ $dehumCheck->tanggal_minggu1 }}' || '{{ date('Y-m-d') }}') : ''"
-                                            class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                            x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                            readonly>
-                                    @endif
-                                </div>
+                    </thead>
+                    <tbody>
+                        @foreach($items as $i => $item)
+                            @if($i == 3)
+                                <tr>
+                                    <td colspan="10" class="border border-gray-300 text-center p-2 h-8 bg-gray-100 font-medium text-sm">
+                                        Panel Kelistrikan
+                                    </td>
+                                </tr>
+                            @endif
+                            <tr>
+                                <td class="border border-gray-300 text-center p-1 h-10 text-xs sticky left-0 bg-white z-10">{{ $i }}</td>
+                                <td class="border border-gray-300 p-1 h-10 sticky left-10 bg-white z-10">
+                                    <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
+                                </td>
                                 
-                                <!-- Tombol di tengah div - hilang jika sudah disetujui -->
-                                <div class="flex items-center justify-center mt-1" 
-                                    x-show="{{ $dehumCheck->approved_by_minggu1 && $dehumCheck->approved_by_minggu1 != '-' ? 'false' : 'true' }}">
-                                    <button type="button" 
-                                        @click="selected = !selected; 
-                                            if(selected) {
-                                                userName = '{{ Auth::user()->username }}'; 
-                                                $refs.user1.value = userName; 
-                                                $refs.date1.value = '{{ date('Y-m-d') }}';
-                                            } else {
-                                                userName = '';
-                                                $refs.user1.value = '';
-                                                $refs.date1.value = '';
-                                            }"
-                                        class="w-full px-2 py-1 text-xs border border-gray-300 rounded text-center"
-                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                                    </button>
-                                </div>
-                            </div>
-                        </td>
-                        
-                        <!-- Week 2 - Updated handling for approved state -->
-                        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                            <div x-data="{ selected: '{{ $dehumCheck->checked_by_minggu2 }}' ? true : false, userName: '{{ $dehumCheck->checked_by_minggu2 }}' }" class="h-20">
-                                <!-- Form fields selalu terlihat dengan fixed height -->
-                                <div class="space-y-1 h-12">
-                                    @if($dehumCheck->approved_by_minggu2 && $dehumCheck->approved_by_minggu2 != '-')
-                                        <!-- Tambahkan hidden input untuk menyimpan nilai asli -->
-                                        <input type="hidden" name="created_by_2" value="{{ $dehumCheck->checked_by_minggu2 }}">
-                                        <input type="hidden" name="created_date_2" value="{{ $dehumCheck->tanggal_minggu2 }}">
+                                @for($j = 1; $j <= 4; $j++)
+                                    @php
+                                        $isApproved = !empty($dehumCheck->{'approved_by_minggu'.$j}) && $dehumCheck->{'approved_by_minggu'.$j} != '-';
                                         
-                                        <input type="text" value="{{ $dehumCheck->checked_by_minggu2 }}" 
-                                            class="w-full px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded"
-                                            readonly disabled>
-                                        <input type="text" value="{{ $dehumCheck->tanggal_minggu2 }}" 
-                                            class="w-full px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded"
-                                            readonly disabled>
-                                    @else
-                                        <input type="text" name="created_by_2" x-ref="user2" 
-                                            x-bind:value="selected ? (userName || '{{ Auth::user()->username }}') : ''"
-                                            class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                            x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                            readonly>
-                                        <input type="text" name="created_date_2" x-ref="date2" 
-                                            x-bind:value="selected ? ('{{ $dehumCheck->tanggal_minggu2 }}' || '{{ date('Y-m-d') }}') : ''"
-                                            class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                            x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                            readonly>
-                                    @endif
-                                </div>
+                                        // Get result value from dehumResults
+                                        $result = $dehumResults->firstWhere('checked_items', $item);
+                                        $resultValue = '';
+                                        $keteranganValue = '';
+                                        
+                                        if ($result) {
+                                            $mingguField = 'minggu'.$j;
+                                            $keteranganField = 'keterangan_minggu'.$j;
+                                            
+                                            // Get the value directly
+                                            $resultValue = $result->$mingguField ?? 'V';
+                                            $keteranganValue = $result->$keteranganField ?? '';
+                                        } else {
+                                            // Default to V if no value exists
+                                            $resultValue = 'V';
+                                        }
+                                    @endphp
                                 
-                                <!-- Tombol di tengah div - hilang jika sudah disetujui -->
-                                <div class="flex items-center justify-center mt-1" 
-                                    x-show="{{ $dehumCheck->approved_by_minggu2 && $dehumCheck->approved_by_minggu2 != '-' ? 'false' : 'true' }}">
-                                    <button type="button" 
-                                        @click="selected = !selected; 
-                                            if(selected) {
-                                                userName = '{{ Auth::user()->username }}'; 
-                                                $refs.user2.value = userName; 
-                                                $refs.date2.value = '{{ date('Y-m-d') }}';
-                                            } else {
-                                                userName = '';
-                                                $refs.user2.value = '';
-                                                $refs.date2.value = '';
-                                            }"
-                                        class="w-full px-2 py-1 text-xs border border-gray-300 rounded text-center"
-                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                                    </button>
-                                </div>
-                            </div>
-                        </td>
-                        
-                        <!-- Week 3 - Updated handling for approved state -->
-                        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                            <div x-data="{ selected: '{{ $dehumCheck->checked_by_minggu3 }}' ? true : false, userName: '{{ $dehumCheck->checked_by_minggu3 }}' }" class="h-20">
-                                <!-- Form fields selalu terlihat dengan fixed height -->
-                                <div class="space-y-1 h-12">
-                                    @if($dehumCheck->approved_by_minggu3 && $dehumCheck->approved_by_minggu3 != '-')
-                                        <!-- Tambahkan hidden input untuk menyimpan nilai asli -->
-                                        <input type="hidden" name="created_by_3" value="{{ $dehumCheck->checked_by_minggu3 }}">
-                                        <input type="hidden" name="created_date_3" value="{{ $dehumCheck->tanggal_minggu3 }}">
+                                    <!-- Minggu {{ $j }} Check -->
+                                    <td class="border border-gray-300 p-1 h-10 {{ $isApproved ? 'bg-green-50' : '' }}">
+                                        @if($isApproved)
+                                            <!-- Read-only display if approved -->
+                                            <div class="w-full h-8 px-2 py-0 text-sm bg-green-100 border border-gray-300 rounded flex items-center justify-center">
+                                                {{ $resultValue }}
+                                            </div>
+                                            <input type="hidden" name="check_{{ $j }}[{{ $i }}]" value="{{ $resultValue }}">
+                                        @else
+                                            <!-- Editable dropdown if not approved -->
+                                            <select name="check_{{ $j }}[{{ $i }}]" class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
+                                                @foreach($options[$i] as $option)
+                                                    <option value="{{ $option }}" {{ $resultValue == $option ? 'selected' : '' }}>
+                                                        {{ $option }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        @endif
+                                    </td>
+                                    
+                                    <!-- Minggu {{ $j }} Keterangan -->
+                                    <td class="border border-gray-300 p-1 h-10 {{ $isApproved ? 'bg-green-50' : '' }}">
+                                        @if($isApproved)
+                                            <!-- Read-only display if approved -->
+                                            <div class="w-full h-8 px-2 py-0 text-sm bg-green-100 border border-gray-300 rounded flex items-center">
+                                                {{ $keteranganValue }}
+                                            </div>
+                                            <input type="hidden" name="keterangan_{{ $j }}[{{ $i }}]" value="{{ $keteranganValue }}">
+                                        @else
+                                            <!-- Editable input if not approved -->
+                                            <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
+                                                value="{{ $keteranganValue }}"
+                                                class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                placeholder="Keterangan">
+                                        @endif
+                                    </td>
+                                @endfor
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tbody class="bg-white">
+                        <tr class="bg-sky-50">
+                            <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
+                            <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10 w-24">Dibuat Oleh</td>
+                            
+                            @for($j = 1; $j <= 4; $j++)
+                                @php
+                                    $checkedBy = $dehumCheck->{'checked_by_minggu'.$j} ?? '';
+                                    $isChecked = !empty($checkedBy);
+                                    $isApproved = !empty($dehumCheck->{'approved_by_minggu'.$j}) && $dehumCheck->{'approved_by_minggu'.$j} != '-';
+                                    $tanggal = $dehumCheck->{'tanggal_minggu'.$j} ?? '';
+                                    
+                                    // Format tanggal untuk tampilan jika ada
+                                    $formattedDate = '';
+                                    if (!empty($tanggal)) {
+                                        $date = \Carbon\Carbon::parse($tanggal);
+                                        $formattedDate = $date->format('d').' '.$date->locale('id')->monthName.' '.$date->format('Y');
+                                    }
+                                @endphp
+                                <td colspan="2" class="border border-gray-300 p-1 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} w-32">
+                                    <div x-data="{ 
+                                        selected: {{ $isChecked ? 'true' : 'false' }}, 
+                                        userName: '{{ $checkedBy }}',
+                                        tanggal: '{{ $formattedDate }}',
+                                        dbTanggal: '{{ $tanggal }}',
+                                        isApproved: {{ $isApproved ? 'true' : 'false' }},
+                                        hasExistingData: {{ (!empty($checkedBy) && !empty($tanggal)) ? 'true' : 'false' }}
+                                    }">
+                                        <div class="mt-1" x-show="selected || isApproved">
+                                            <input type="text" name="checked_by_minggu{{ $j }}" x-ref="user{{ $j }}" value="{{ $checkedBy }}"
+                                                class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded mb-1 text-center"
+                                                readonly>
+                                            <input type="text" x-ref="displayDate{{ $j }}" value="{{ $formattedDate }}"
+                                                class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded text-center"
+                                                readonly>
+                                            <input type="hidden" name="tanggal_minggu{{ $j }}" x-ref="date{{ $j }}" value="{{ $tanggal }}">
+                                            
+                                            @if($isApproved)
+                                                <div class="mt-1 text-xs text-green-600 text-center">
+                                                    Disetujui oleh: {{ $dehumCheck->{'approved_by_minggu'.$j} }}
+                                                </div>
+                                                <input type="hidden" name="approved_by_minggu{{ $j }}" value="{{ $dehumCheck->{'approved_by_minggu'.$j} }}">
+                                            @endif
+                                        </div>
                                         
-                                        <input type="text" value="{{ $dehumCheck->checked_by_minggu3 }}" 
-                                            class="w-full px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded"
-                                            readonly disabled>
-                                        <input type="text" value="{{ $dehumCheck->tanggal_minggu3 }}" 
-                                            class="w-full px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded"
-                                            readonly disabled>
-                                    @else
-                                        <input type="text" name="created_by_3" x-ref="user3" 
-                                            x-bind:value="selected ? (userName || '{{ Auth::user()->username }}') : ''"
-                                            class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                            x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                            readonly>
-                                        <input type="text" name="created_date_3" x-ref="date3" 
-                                            x-bind:value="selected ? ('{{ $dehumCheck->tanggal_minggu3 }}' || '{{ date('Y-m-d') }}') : ''"
-                                            class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                            x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                            readonly>
-                                    @endif
-                                </div>
-                                
-                                <!-- Tombol di tengah div - hilang jika sudah disetujui -->
-                                <div class="flex items-center justify-center mt-1" 
-                                    x-show="{{ $dehumCheck->approved_by_minggu3 && $dehumCheck->approved_by_minggu3 != '-' ? 'false' : 'true' }}">
-                                    <button type="button" 
-                                        @click="selected = !selected; 
-                                            if(selected) {
-                                                userName = '{{ Auth::user()->username }}'; 
-                                                $refs.user3.value = userName; 
-                                                $refs.date3.value = '{{ date('Y-m-d') }}';
-                                            } else {
-                                                userName = '';
-                                                $refs.user3.value = '';
-                                                $refs.date3.value = '';
-                                            }"
-                                        class="w-full px-2 py-1 text-xs border border-gray-300 rounded text-center"
-                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                                    </button>
-                                </div>
-                            </div>
-                        </td>
-                        
-                        <!-- Week 4 - Updated handling for approved state -->
-                        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                            <div x-data="{ selected: '{{ $dehumCheck->checked_by_minggu4 }}' ? true : false, userName: '{{ $dehumCheck->checked_by_minggu4 }}' }" class="h-20">
-                                <!-- Form fields selalu terlihat dengan fixed height -->
-                                <div class="space-y-1 h-12">
-                                    @if($dehumCheck->approved_by_minggu4 && $dehumCheck->approved_by_minggu4 != '-')
-                                        <!-- Tambahkan hidden input untuk menyimpan nilai asli -->
-                                        <input type="hidden" name="created_by_4" value="{{ $dehumCheck->checked_by_minggu4 }}">
-                                        <input type="hidden" name="created_date_4" value="{{ $dehumCheck->tanggal_minggu4 }}">
-                                        
-                                        <input type="text" value="{{ $dehumCheck->checked_by_minggu4 }}" 
-                                            class="w-full px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded"
-                                            readonly disabled>
-                                        <input type="text" value="{{ $dehumCheck->tanggal_minggu4 }}" 
-                                            class="w-full px-2 py-1 text-xs bg-gray-200 border border-gray-300 rounded"
-                                            readonly disabled>
-                                    @else
-                                        <input type="text" name="created_by_4" x-ref="user4" 
-                                            x-bind:value="selected ? (userName || '{{ Auth::user()->username }}') : ''"
-                                            class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                            x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                            readonly>
-                                        <input type="text" name="created_date_4" x-ref="date4" 
-                                            x-bind:value="selected ? ('{{ $dehumCheck->tanggal_minggu4 }}' || '{{ date('Y-m-d') }}') : ''"
-                                            class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded"
-                                            x-bind:style="selected ? 'visibility: visible;' : 'visibility: hidden; height: 0;'"
-                                            readonly>
-                                    @endif
-                                </div>
-                                <!-- Tombol di tengah div - hilang jika sudah disetujui -->
-                                <div class="flex items-center justify-center mt-1" 
-                                    x-show="{{ $dehumCheck->approved_by_minggu4 && $dehumCheck->approved_by_minggu4 != '-' ? 'false' : 'true' }}">
-                                    <button type="button" 
-                                        @click="selected = !selected; 
-                                            if(selected) {
-                                                userName = '{{ Auth::user()->username }}'; 
-                                                $refs.user4.value = userName; 
-                                                $refs.date4.value = '{{ date('Y-m-d') }}';
-                                            } else {
-                                                userName = '';
-                                                $refs.user4.value = '';
-                                                $refs.date4.value = '';
-                                            }"
-                                        class="w-full px-2 py-1 text-xs border border-gray-300 rounded text-center"
-                                        :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                        <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
-                                    </button>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    
-                </tbody>
-                <!-- Baris untuk approval -->
-                <tbody class="bg-white">
-                    <tr class="bg-sky-50">
-                        <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs" rowspan="1">-</td>
-                        <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs">Disetujui Oleh</td>
-                        
-                        <!-- Week 1 Approval - Read Only -->
-                        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                            <div class="flex items-center justify-center h-10">
-                                <input type="text" 
-                                    value="{{ $dehumCheck->approved_by_minggu1 ?? '-' }}"
-                                    class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded text-center"
-                                    readonly>
-                            </div>
-                        </td>
-                        
-                        <!-- Week 2 Approval - Read Only -->
-                        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                            <div class="flex items-center justify-center h-10">
-                                <input type="text" 
-                                    value="{{ $dehumCheck->approved_by_minggu2 ?? '-' }}"
-                                    class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded text-center"
-                                    readonly>
-                            </div>
-                        </td>
-                        
-                        <!-- Week 3 Approval - Read Only -->
-                        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                            <div class="flex items-center justify-center h-10">
-                                <input type="text" 
-                                    value="{{ $dehumCheck->approved_by_minggu3 ?? '-' }}"
-                                    class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded text-center"
-                                    readonly>
-                            </div>
-                        </td>
-                        
-                        <!-- Week 4 Approval - Read Only -->
-                        <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                            <div class="flex items-center justify-center h-10">
-                                <input type="text" 
-                                    value="{{ $dehumCheck->approved_by_minggu4 ?? '-' }}"
-                                    class="w-full px-2 py-1 text-xs bg-gray-100 border border-gray-300 rounded text-center"
-                                    readonly>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                                        <!-- Hanya tampilkan tombol jika belum diapprove -->
+                                        @if(!$isApproved)
+                                        <button type="button" 
+                                            x-show="!hasExistingData || !selected"
+                                            @click="selected = !selected; 
+                                                if(selected) {
+                                                    userName = '{{ Auth::user()->username }}'; 
+                                                    $refs.user{{ $j }}.value = userName;
+                                                    
+                                                    // Format tanggal untuk tampilan: DD Bulan YYYY
+                                                    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                                                    const today = new Date();
+                                                    const day = today.getDate();
+                                                    const month = monthNames[today.getMonth()];
+                                                    const year = today.getFullYear();
+                                                    tanggal = day + ' ' + month + ' ' + year;
+                                                    
+                                                    // Format tanggal untuk database: YYYY-MM-DD
+                                                    const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
+                                                    const dbDay = String(today.getDate()).padStart(2, '0');
+                                                    const dbDate = `${year}-${dbMonth}-${dbDay}`;
+                                                    
+                                                    $refs.displayDate{{ $j }}.value = tanggal;
+                                                    $refs.date{{ $j }}.value = dbDate;
+                                                } else {
+                                                    userName = '';
+                                                    tanggal = '';
+                                                    $refs.user{{ $j }}.value = '';
+                                                    $refs.displayDate{{ $j }}.value = '';
+                                                    $refs.date{{ $j }}.value = '';
+                                                }"
+                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center mt-1 max-w-full"
+                                            :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                            <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                            @endfor
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
         </div>
-    </div>
-
-    @include('components.edit-form-buttons', ['backRoute' => route('dehum-bahan.index')])
-</form>
+        
+        {{-- catatan pemeriksaan --}}
+        <div class="bg-gradient-to-r from-sky-50 to-blue-50 p-5 rounded-lg shadow-sm mb-6 border-l-4 border-blue-400">
+            <h5 class="text-lg font-semibold text-blue-700 mb-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Catatan Pemeriksaan
+            </h5>
+            
+            <div class="bg-white p-4 rounded-lg border border-blue-100">
+                <h6 class="font-medium text-blue-600 mb-2">Standar Kriteria Pemeriksaan:</h6>
+                <ul class="space-y-2 text-gray-700">
+                    <li class="flex items-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span><span class="font-medium">Filter:</span> Kebersihan</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span><span class="font-medium">Selang:</span> Tidak bocor</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span><span class="font-medium">Kontraktor:</span> Baik</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span><span class="font-medium">Temperatur Control:</span> Baik</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span><span class="font-medium">MCB:</span> Baik</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span><span class="font-medium">Dew Point:</span> Baik</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- Tombol Submit dan Kembali -->
+        @include('components.edit-form-buttons', ['backRoute' => route('dehum-bahan.index')])
+    </form>
 @endsection
 
 @section('scripts')

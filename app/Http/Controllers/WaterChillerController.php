@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\WaterChillerCheck;
 use App\Models\WaterChillerResult;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
 
 class WaterChillerController extends Controller
@@ -45,102 +46,163 @@ class WaterChillerController extends Controller
 
     public function store(Request $request)
     {
-        // Cek apakah tanggal sudah ada di database
-        $existingDate = WaterChillerCheck::where('tanggal', $request->tanggal)
-        ->when(Auth::user() instanceof \App\Models\Checker, function ($query) {
-            // Jika user adalah Checker, hanya cek recordnya sendiri
-            return $query->where('checked_by', Auth::user()->username);
-        })
-        ->exists();
-    
-        if ($existingDate) {
-            return redirect()->route('water-chiller.create')->with('warning', 'Data di tanggal tersebut telah dibuat');
-        }
+        // Validate the request
         $request->validate([
             'tanggal' => 'required|date',
-            'hari' => 'required|string|max:20',
-            'keterangan' => 'nullable|string',
+            'hari' => 'required|string',
+            'catatan' => 'nullable|string',
         ]);
 
-        $check = WaterChillerCheck::create([
-            'tanggal' => $request->tanggal,
-            'hari' => $request->hari,
-            'checked_by' => Auth::user()->username,
-            'approved_by' => null,
-            'keterangan' => $request->keterangan,
-        ]);
+        // Extract month from the date
+        $bulan = date('m', strtotime($request->tanggal));
+        
+        // Check if record for this date already exists
+        $existingRecord = WaterChillerCheck::whereDate('tanggal', $request->tanggal)
+            ->first();
+        
+        if ($existingRecord) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Data untuk tanggal tersebut sudah ada!');
+        }
 
-        for ($i = 1; $i <= 32; $i++) {
-            WaterChillerResult::create([
-                'check_id' => $check->id,
-                'no_mesin' => "CH{$i}",
-                'Temperatur_Compressor' => $request->input("temperatur_1.{$i}") ?: null,
-                'Temperatur_Kabel' => $request->input("temperatur_2.{$i}") ?: null,
-                'Temperatur_Mcb' => $request->input("temperatur_3.{$i}") ?: null,
-                'Temperatur_Air' => $request->input("temperatur_4.{$i}") ?: null,
-                'Temperatur_Pompa' => $request->input("temperatur_5.{$i}") ?: null,
-                'Evaporator' => $request->input("evaporator.{$i}") ?: null,
-                'Fan_Evaporator' => $request->input("fan_evaporator.{$i}") ?: null,
-                'Freon' => $request->input("freon.{$i}") ?: null,
-                'Air' => $request->input("air.{$i}") ?: null,
+        // Begin transaction to ensure data integrity
+        DB::beginTransaction();
+        
+        try {
+            // Create water chiller check record
+            $waterChillerCheck = WaterChillerCheck::create([
+                'tanggal' => $request->tanggal,
+                'hari' => $request->hari,
+                'checked_by' => Auth::user()->username, 
+                'keterangan' => $request->catatan,
             ]);
-        }
-
-        return redirect()->route('water-chiller.index')->with('success', 'Data berhasil disimpan');
-    }
-
-    public function edit($check_id)
-    {
-        $check = WaterChillerCheck::findOrFail($check_id);
-        $results = WaterChillerResult::where('check_id', $check_id)->get();
-        return view('water_chiller.edit', compact('check', 'results'));
-    }
-
-    public function update(Request $request, $check_id)
-    {
-        $request->validate([
-            'tanggal' => 'required|date',
-            'hari' => 'required|string|max:20',
-            'keterangan' => 'nullable|string',
-        ]);
-
-        // Update WaterChillerCheck
-        $check = WaterChillerCheck::findOrFail($check_id);
-        $check->update([
-            'tanggal' => $request->tanggal,
-            'hari' => $request->hari,
-            'keterangan' => $request->keterangan,
-        ]);
-
-        // Update WaterChillerResult
-        if ($request->has('no_mesin')) {
-            foreach ($request->no_mesin as $resultId => $no_mesin) {
-                $result = WaterChillerResult::findOrFail($resultId);
-                
-                $result->update([
-                    'Temperatur_Compressor' => $request->input("temperatur_1.{$resultId}") ?: null,
-                    'Temperatur_Kabel' => $request->input("temperatur_2.{$resultId}") ?: null,
-                    'Temperatur_Mcb' => $request->input("temperatur_3.{$resultId}") ?: null,
-                    'Temperatur_Air' => $request->input("temperatur_4.{$resultId}") ?: null,
-                    'Temperatur_Pompa' => $request->input("temperatur_5.{$resultId}") ?: null,
-                    'Evaporator' => $request->input("evaporator.{$resultId}") ?: null,
-                    'Fan_Evaporator' => $request->input("fan_evaporator.{$resultId}") ?: null,
-                    'Freon' => $request->input("freon.{$resultId}") ?: null,
-                    'Air' => $request->input("air.{$resultId}") ?: null,
+            
+            // Process each water chiller machine data (32 machines)
+            for ($i = 1; $i <= 32; $i++) {
+                WaterChillerResult::create([
+                    'check_id' => $waterChillerCheck->id,
+                    'no_mesin' => 'CH' . $i,
+                    'Temperatur_Compressor' => $request->input("temperatur_kompresor.$i"),
+                    'Temperatur_Kabel' => $request->input("temperatur_kabel.$i"),
+                    'Temperatur_Mcb' => $request->input("temperatur_mcb.$i"),
+                    'Temperatur_Air' => $request->input("temperatur_air.$i"),
+                    'Temperatur_Pompa' => $request->input("temperatur_pompa.$i"),
+                    'Evaporator' => $request->input("evaporator.$i"),
+                    'Fan_Evaporator' => $request->input("fan_evaporator.$i"),
+                    'Freon' => $request->input("freon.$i"),
+                    'Air' => $request->input("air.$i"),
                 ]);
             }
+            
+            // Commit the transaction if everything is successful
+            DB::commit();
+            
+            return redirect()->route('water-chiller.index')
+                ->with('success', 'Data pemeriksaan Water Chiller berhasil disimpan.');
+                
+        } catch (\Exception $e) {
+            // Rollback transaction if there is an error
+            DB::rollBack();
+            
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage())
+                ->withInput();
         }
-
-        return redirect()->route('water-chiller.index')->with('success', 'Data berhasil diperbarui!');
     }
 
-    public function show($check_id)
+        public function edit($id)
     {
-        $check = WaterChillerCheck::findOrFail($check_id);
-        $results = WaterChillerResult::where('check_id', $check_id)->get();
+        // Find the water chiller check by ID
+        $waterChillerCheck = WaterChillerCheck::findOrFail($id);
         
-        return view('water_chiller.show', compact('check', 'results'));
+        // Ambil semua hasil untuk check ini 
+        // (relasi results seharusnya hasMany, bukan hasOne)
+        $resultsCollection = WaterChillerResult::where('check_id', $id)->get();
+        
+        // Organize results by machine number for easy access in the view
+        $results = [];
+        
+        foreach ($resultsCollection as $result) {
+            $machineNumber = str_replace('CH', '', $result->no_mesin);
+            $results[$machineNumber] = $result;
+        }
+        
+        return view('water_chiller.edit', compact('waterChillerCheck', 'results'));
     }
+
+    public function update(Request $request, $id)
+    {
+        // Validate the request
+        $request->validate([
+            'tanggal' => 'required|date',
+            'hari' => 'required|string',
+            'catatan' => 'nullable|string',
+        ]);
+
+        // Begin transaction to ensure data integrity
+        DB::beginTransaction();
+        
+        try {
+            // Find the existing water chiller check record
+            $waterChillerCheck = WaterChillerCheck::findOrFail($id);
+            
+            // Update the main record
+            $waterChillerCheck->update([
+                'tanggal' => $request->tanggal,
+                'hari' => $request->hari,
+                'keterangan' => $request->catatan,
+                // Not updating checked_by to preserve the original checker's identity
+            ]);
+            
+            // Process each water chiller machine data (32 machines)
+            for ($i = 1; $i <= 32; $i++) {
+                // Find the existing result or create a new one if it doesn't exist
+                $result = WaterChillerResult::updateOrCreate(
+                    [
+                        'check_id' => $waterChillerCheck->id,
+                        'no_mesin' => 'CH' . $i,
+                    ],
+                    [
+                        'Temperatur_Compressor' => $request->input("temperatur_kompresor.$i"),
+                        'Temperatur_Kabel' => $request->input("temperatur_kabel.$i"),
+                        'Temperatur_Mcb' => $request->input("temperatur_mcb.$i"),
+                        'Temperatur_Air' => $request->input("temperatur_air.$i"),
+                        'Temperatur_Pompa' => $request->input("temperatur_pompa.$i"),
+                        'Evaporator' => $request->input("evaporator.$i"),
+                        'Fan_Evaporator' => $request->input("fan_evaporator.$i"),
+                        'Freon' => $request->input("freon.$i"),
+                        'Air' => $request->input("air.$i"),
+                    ]
+                );
+            }
+            
+            // Commit the transaction if everything is successful
+            DB::commit();
+            
+            return redirect()->route('water-chiller.index')
+                ->with('success', 'Data pemeriksaan Water Chiller berhasil diperbarui.');
+                
+        } catch (\Exception $e) {
+            // Rollback transaction if there is an error
+            DB::rollBack();
+            
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage())
+                ->withInput();
+        }
+    }
+public function show($id)
+{
+    // Mencari data water chiller check berdasarkan ID
+    $waterChillerCheck = WaterChillerCheck::findOrFail($id);
+    
+    // Mengambil detail hasil pemeriksaan water chiller
+    $details = WaterChillerResult::where('check_id', $id)->get();
+    
+    // Menampilkan view dengan data yang sesuai
+    return view('water_chiller.show', compact('waterChillerCheck', 'details'));
+}
 
     public function approve(Request $request, $check_id)
     {

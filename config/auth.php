@@ -50,6 +50,11 @@ return [
             'driver' => 'session',
             'provider' => 'checkers',
         ],
+
+        'host' => [
+            'driver' => 'session',
+            'provider' => 'hosts',
+        ],
     ],
 
     /*
@@ -81,6 +86,10 @@ return [
         'checkers' => [
             'driver' => 'eloquent',
             'model' => App\Models\Checker::class,
+        ],
+        'hosts' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Host::class,
         ],
 
         // 'users' => [

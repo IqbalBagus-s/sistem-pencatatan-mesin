@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 
 
@@ -14,7 +16,7 @@ class AuthController extends Controller
         $request->validate([
             'username' => 'required',
             'password' => 'required',
-            'role' => 'required|in:approver,checker',
+            'role' => 'required|in:approver,checker,host',
         ]);
 
         $guard = $request->role;
@@ -22,6 +24,7 @@ class AuthController extends Controller
         // **Logout semua sesi sebelumnya sebelum login baru**
         Auth::guard('approver')->logout();
         Auth::guard('checker')->logout();
+        Auth::guard('host')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
@@ -40,6 +43,8 @@ class AuthController extends Controller
             Auth::guard('approver')->logout();
         } elseif (Auth::guard('checker')->check()) {
             Auth::guard('checker')->logout();
+        } elseif (Auth::guard('host')->check()) {
+            Auth::guard('host')->logout();
         }
 
         $request->session()->invalidate();

@@ -17,6 +17,7 @@ class GilingCheck extends Model
         'minggu',
         'checked_by',
         'approved_by1',
+        'approval_date1',
         'approved_by2',
         'keterangan',
     ];

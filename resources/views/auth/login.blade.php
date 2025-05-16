@@ -76,6 +76,7 @@
                             <option value="" disabled selected>Pilih posisi</option>
                             <option value="approver">Approver</option>
                             <option value="checker">Checker</option>
+                            <option value="host">Host</option>
                         </select>
                         <div class="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
                             <i class="fas fa-chevron-down"></i>
@@ -83,7 +84,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200">Sign in</button>
+                <button type="submit" onclick="this.disabled=true; this.form.submit();" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200">Sign in</button>
             </form>
 
             <p class="text-center text-gray-500 text-xs sm:text-sm mt-5">2025 © PT Asia Pramulia</p>

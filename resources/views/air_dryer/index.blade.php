@@ -28,7 +28,7 @@
 @endsection
 
 @section('create-button-text')
-    Tambah Pencatatan
+    <i class="fas fa-plus mr-2"></i>Buat Baru
 @endsection
 
 @section('table-content')
@@ -50,7 +50,7 @@
             @else
                 @foreach($checks as $check)
                     <tr class="text-center hover:bg-gray-50">
-                        <td class="py-3 px-4 border-b border-gray-200">{{ $check->tanggal }}</td>
+                        <td class="py-3 px-4 border-b border-gray-200">{{ Carbon\Carbon::parse($check->tanggal)->locale('id')->isoFormat('D MMMM Y') }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->hari }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             <span class="bg-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm">

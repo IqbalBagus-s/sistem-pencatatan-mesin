@@ -61,15 +61,15 @@ class HopperController extends Controller
             'nomer_hopper' => 'required|integer|min:1|max:15',
             'bulan' => 'required|date_format:Y-m',
             
-            // Validation for creator fields
-            'created_by_1' => 'nullable|string|max:255',
-            'created_date_1' => 'nullable|date',
-            'created_by_2' => 'nullable|string|max:255',
-            'created_date_2' => 'nullable|date',
-            'created_by_3' => 'nullable|string|max:255',
-            'created_date_3' => 'nullable|date',
-            'created_by_4' => 'nullable|string|max:255',
-            'created_date_4' => 'nullable|date',
+            // Validation for creator fields - updated to match the form field names
+            'checked_by_minggu1' => 'nullable|string|max:255',
+            'tanggal_minggu1' => 'nullable|date',
+            'checked_by_minggu2' => 'nullable|string|max:255',
+            'tanggal_minggu2' => 'nullable|date',
+            'checked_by_minggu3' => 'nullable|string|max:255',
+            'tanggal_minggu3' => 'nullable|date',
+            'checked_by_minggu4' => 'nullable|string|max:255',
+            'tanggal_minggu4' => 'nullable|date',
             
             // Validation for checked items and checks
             'checked_items' => 'required|array',
@@ -91,29 +91,29 @@ class HopperController extends Controller
         if ($existingRecord) {
             // If a record with the same hopper number and month exists, return an error
             return redirect()->back()->with('error', 'A record for this hopper number and month already exists.')
-                             ->withInput();
+                            ->withInput();
         }
 
         try {
             // Start a database transaction
             DB::beginTransaction();
 
-            // Create HopperCheck record
+            // Create HopperCheck record - using the correct field names from the form
             $hopperCheck = HopperCheck::create([
                 'nomer_hopper' => $request->input('nomer_hopper'),
                 'bulan' => $request->input('bulan'),
                 
-                // Populate weekly dates
-                'tanggal_minggu1' => $request->input('created_date_1'),
-                'tanggal_minggu2' => $request->input('created_date_2'),
-                'tanggal_minggu3' => $request->input('created_date_3'),
-                'tanggal_minggu4' => $request->input('created_date_4'),
+                // Directly use the matching field names from the form
+                'tanggal_minggu1' => $request->input('tanggal_minggu1'),
+                'tanggal_minggu2' => $request->input('tanggal_minggu2'),
+                'tanggal_minggu3' => $request->input('tanggal_minggu3'),
+                'tanggal_minggu4' => $request->input('tanggal_minggu4'),
                 
-                // Populate weekly checkers
-                'checked_by_minggu1' => $request->input('created_by_1'),
-                'checked_by_minggu2' => $request->input('created_by_2'),
-                'checked_by_minggu3' => $request->input('created_by_3'),
-                'checked_by_minggu4' => $request->input('created_by_4'),
+                // Directly use the matching field names from the form
+                'checked_by_minggu1' => $request->input('checked_by_minggu1'),
+                'checked_by_minggu2' => $request->input('checked_by_minggu2'),
+                'checked_by_minggu3' => $request->input('checked_by_minggu3'),
+                'checked_by_minggu4' => $request->input('checked_by_minggu4'),
             ]);
 
             // Prepare and create HopperResult records
@@ -170,35 +170,15 @@ class HopperController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Validate the request
+        // Validasi hanya untuk field yang dibutuhkan, tidak perlu validasi semua field
         $validatedData = $request->validate([
             'nomer_hopper' => 'required|integer|min:1|max:15',
             'bulan' => 'required|date_format:Y-m',
-            
-            // Validation for creator fields
-            'created_by_1' => 'nullable|string|max:255',
-            'created_date_1' => 'nullable|date',
-            'created_by_2' => 'nullable|string|max:255',
-            'created_date_2' => 'nullable|date',
-            'created_by_3' => 'nullable|string|max:255',
-            'created_date_3' => 'nullable|date',
-            'created_by_4' => 'nullable|string|max:255',
-            'created_date_4' => 'nullable|date',
-            
-            // Validation for checked items and checks
-            'checked_items' => 'required|array',
-            'check_1' => 'required|array',
-            'keterangan_1' => 'nullable|array',
-            'check_2' => 'nullable|array',
-            'keterangan_2' => 'nullable|array',
-            'check_3' => 'nullable|array',
-            'keterangan_3' => 'nullable|array',
-            'check_4' => 'nullable|array',
-            'keterangan_4' => 'nullable|array',
         ]);
 
         // Find the existing HopperCheck record
         $hopperCheck = HopperCheck::findOrFail($id);
+        $hopperResults = $hopperCheck->results;
 
         // Check for existing record with the same nomer_hopper and bulan, excluding the current record
         $existingRecord = HopperCheck::where('nomer_hopper', $request->input('nomer_hopper'))
@@ -208,7 +188,7 @@ class HopperController extends Controller
 
         if ($existingRecord) {
             // If a record with the same hopper number and month exists, return an error
-            return redirect()->back()->with('error', 'A record for this hopper number and month already exists.')
+            return redirect()->back()->with('error', 'Data untuk nomor hopper dan bulan ini sudah ada.')
                             ->withInput();
         }
 
@@ -216,23 +196,21 @@ class HopperController extends Controller
             // Start a database transaction
             DB::beginTransaction();
 
-            // Update HopperCheck record
-            $hopperCheck->update([
+            // Update HopperCheck record - hanya perbarui nilai yang tidak disetujui
+            $updateData = [
                 'nomer_hopper' => $request->input('nomer_hopper'),
                 'bulan' => $request->input('bulan'),
-                
-                // Update weekly dates
-                'tanggal_minggu1' => $request->input('created_date_1'),
-                'tanggal_minggu2' => $request->input('created_date_2'),
-                'tanggal_minggu3' => $request->input('created_date_3'),
-                'tanggal_minggu4' => $request->input('created_date_4'),
-                
-                // Update weekly checkers
-                'checked_by_minggu1' => $request->input('created_by_1'),
-                'checked_by_minggu2' => $request->input('created_by_2'),
-                'checked_by_minggu3' => $request->input('created_by_3'),
-                'checked_by_minggu4' => $request->input('created_by_4'),
-            ]);
+            ];
+            
+            // Update data checked_by dan tanggal hanya jika minggu tersebut belum disetujui
+            for ($j = 1; $j <= 4; $j++) {
+                if (!$hopperCheck->{'approved_by_minggu'.$j} || $hopperCheck->{'approved_by_minggu'.$j} == '-') {
+                    $updateData['checked_by_minggu'.$j] = $request->input('checked_by_minggu'.$j);
+                    $updateData['tanggal_minggu'.$j] = $request->input('tanggal_minggu'.$j);
+                }
+            }
+
+            $hopperCheck->update($updateData);
 
             // Delete existing HopperResult records for this check
             HopperResult::where('check_id', $hopperCheck->id)->delete();
@@ -241,39 +219,38 @@ class HopperController extends Controller
             $checkedItems = $request->input('checked_items');
             
             foreach ($checkedItems as $index => $item) {
-                HopperResult::create([
+                $resultData = [
                     'check_id' => $hopperCheck->id,
                     'checked_items' => $item,
-                    
-                    // Week 1 data
-                    'minggu1' => $request->input("check_1.{$index}", null),
-                    'keterangan_minggu1' => $request->input("keterangan_1.{$index}", null),
-                    
-                    // Week 2 data
-                    'minggu2' => $request->input("check_2.{$index}", null),
-                    'keterangan_minggu2' => $request->input("keterangan_2.{$index}", null),
-                    
-                    // Week 3 data
-                    'minggu3' => $request->input("check_3.{$index}", null),
-                    'keterangan_minggu3' => $request->input("keterangan_3.{$index}", null),
-                    
-                    // Week 4 data
-                    'minggu4' => $request->input("check_4.{$index}", null),
-                    'keterangan_minggu4' => $request->input("keterangan_4.{$index}", null),
-                ]);
+                ];
+                
+                // Proses data untuk setiap minggu
+                for ($j = 1; $j <= 4; $j++) {
+                    if (!$hopperCheck->{'approved_by_minggu'.$j} || $hopperCheck->{'approved_by_minggu'.$j} == '-') {
+                        $resultData['minggu'.$j] = $request->input("check_{$j}.{$index}", null);
+                        $resultData['keterangan_minggu'.$j] = $request->input("keterangan_{$j}.{$index}", null);
+                    } else {
+                        // Jika sudah disetujui, gunakan data lama
+                        $oldResult = $hopperResults->firstWhere('checked_items', $item);
+                        $resultData['minggu'.$j] = $oldResult ? $oldResult->{'minggu'.$j} : null;
+                        $resultData['keterangan_minggu'.$j] = $oldResult ? $oldResult->{'keterangan_minggu'.$j} : null;
+                    }
+                }
+                
+                HopperResult::create($resultData);
             }
 
             // Commit the transaction
             DB::commit();
 
             // Redirect with success message
-            return redirect()->route('hopper.index')->with('success', 'Hopper check data successfully updated.');
+            return redirect()->route('hopper.index')->with('success', 'Data pencatatan mesin Hopper berhasil diperbarui.');
         } catch (\Exception $e) {
             // Rollback the transaction in case of error
             DB::rollBack();
 
             // Redirect back with error message
-            return redirect()->back()->with('error', 'Failed to update hopper check data: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui data pencatatan mesin Hopper: ' . $e->getMessage());
         }
     }
 
