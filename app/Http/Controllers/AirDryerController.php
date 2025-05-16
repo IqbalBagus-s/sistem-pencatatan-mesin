@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\AirDryerCheck;
 use App\Models\AirDryerResult;
+use App\Models\Form;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -179,16 +180,16 @@ class AirDryerController extends Controller
     }
 
     public function show($id)
-{
-    // Ambil data pemeriksaan air dryer berdasarkan ID
-    $airDryer = AirDryerCheck::findOrFail($id);
-    
-    // Ambil semua detail hasil pemeriksaan untuk setiap mesin
-    $details = AirDryerResult::where('check_id', $id)->get();
-    
-    // Kirim data ke view
-    return view('air_dryer.show', compact('airDryer', 'details'));
-}
+    {
+        // Ambil data pemeriksaan air dryer berdasarkan ID
+        $airDryer = AirDryerCheck::findOrFail($id);
+        
+        // Ambil semua detail hasil pemeriksaan untuk setiap mesin
+        $details = AirDryerResult::where('check_id', $id)->get();
+        
+        // Kirim data ke view
+        return view('air_dryer.show', compact('airDryer', 'details'));
+    }
 
     public function approve(Request $request, $id)
     {
@@ -205,21 +206,61 @@ class AirDryerController extends Controller
             ->with('success', 'Data pemeriksaan Air Dryer berhasil disetujui!');
     }
 
+    public function reviewPdf($id)
+    {
+        // Ambil data pemeriksaan air dryer berdasarkan ID
+        $airDryer = AirDryerCheck::findOrFail($id);
+
+        // Ambil data form terkait
+        $form = Form::findOrFail(4); // Pastikan relasi atau ID sesuai
+
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+
+        // Ambil semua detail hasil pemeriksaan untuk setiap mesin
+        $details = AirDryerResult::where('check_id', $id)->get();
+
+        // Render view sebagai HTML untuk preview PDF
+        $view = view('air_dryer.review_pdf', compact('airDryer', 'details', 'form', 'formattedTanggalEfektif'));
+
+        // Return view untuk preview
+        return $view;
+    }
+
     public function downloadPdf($id)
     {
-        // Ambil data dari database berdasarkan ID
-        $check = AirDryerCheck::findOrFail($id);
-        $results = AirDryerResult::where('check_id', $id)->get();
-        
-        // Load view untuk PDF dengan ukuran halaman yang sesuai
-        $pdf = Pdf::loadView('air_dryer.pdf', compact('check', 'results'))
-            ->setPaper('a4', 'landscape'); // Set ukuran kertas A4 landscape
-    
-        // Format tanggal untuk nama file
-        $formattedDate = date('d-m-Y', strtotime($check->tanggal));
+        // Ambil data pemeriksaan air dryer berdasarkan ID
+        $airDryer = AirDryerCheck::findOrFail($id);
 
-        // Mengembalikan file PDF untuk di-download dengan format nama yang baru
-        return $pdf->download('Air Dryer Form_' . $formattedDate . '.pdf');
+        // Ambil data form terkait
+        $form = Form::findOrFail(4); // Pastikan relasi atau ID sesuai
+
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil semua detail hasil pemeriksaan untuk setiap mesin
+        $details = AirDryerResult::where('check_id', $id)->get();
+        
+        // Generate nama file PDF
+        $filename = 'AirDryer_' . $id . '_' . date('Y-m-d') . '.pdf';
+        
+        // Render view sebagai HTML
+        $html = view('air_dryer.review_pdf', compact('airDryer', 'details', 'form', 'formattedTanggalEfektif'))->render();
+        
+        // Inisialisasi Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        
+        // Atur ukuran dan orientasi halaman (opsional)
+        $dompdf->setPaper('A4', 'landscape');
+        
+        // Render PDF (mengubah HTML menjadi PDF)
+        $dompdf->render();
+        
+        // Download file PDF
+        return $dompdf->stream($filename, [
+            'Attachment' => false, // Set true untuk download, false untuk preview di browser
+        ]);
     }
 
 
