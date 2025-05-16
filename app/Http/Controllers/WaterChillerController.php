@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\WaterChillerCheck;
 use App\Models\WaterChillerResult;
+use App\Models\Form;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -199,17 +200,18 @@ class WaterChillerController extends Controller
                 ->withInput();
         }
     }
-public function show($id)
-{
-    // Mencari data water chiller check berdasarkan ID
-    $waterChillerCheck = WaterChillerCheck::findOrFail($id);
-    
-    // Mengambil detail hasil pemeriksaan water chiller
-    $details = WaterChillerResult::where('check_id', $id)->get();
-    
-    // Menampilkan view dengan data yang sesuai
-    return view('water_chiller.show', compact('waterChillerCheck', 'details'));
-}
+
+    public function show($id)
+    {
+        // Mencari data water chiller check berdasarkan ID
+        $waterChillerCheck = WaterChillerCheck::findOrFail($id);
+        
+        // Mengambil detail hasil pemeriksaan water chiller
+        $details = WaterChillerResult::where('check_id', $id)->get();
+        
+        // Menampilkan view dengan data yang sesuai
+        return view('water_chiller.show', compact('waterChillerCheck', 'details'));
+    }
 
     public function approve(Request $request, $check_id)
     {
@@ -224,20 +226,60 @@ public function show($id)
             ->with('success', 'Data berhasil disetujui!');
     }
 
+    public function reviewPdf($id)
+    {
+        // Ambil data pemeriksaan water chiller berdasarkan ID
+        $waterChiller = WaterChillerCheck::findOrFail($id);
+
+        // Ambil data form terkait
+        $form = Form::findOrFail(5); // Pastikan ID form sesuai untuk water chiller
+
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+
+        // Ambil detail hasil pemeriksaan untuk water chiller
+        $details = WaterChillerResult::where('check_id', $id)->get();
+
+        // Render view sebagai HTML untuk preview PDF
+        $view = view('water_chiller.review_pdf', compact('waterChiller', 'details', 'form', 'formattedTanggalEfektif'));
+
+        // Return view untuk preview
+        return $view;
+    }
+
     public function downloadPdf($id)
     {
-        // Ambil data dari database berdasarkan ID
-        $check = WaterChillerCheck::findOrFail($id);
-        $results = WaterChillerResult::where('check_id', $id)->get();
-        
-        // Load view untuk PDF dengan ukuran halaman yang sesuai
-        $pdf = Pdf::loadView('water_chiller.pdf', compact('check', 'results'))
-            ->setPaper('a4', 'landscape'); // Set ukuran kertas A4 landscape
-    
-        // Format tanggal untuk nama file
-        $formattedDate = date('d-m-Y', strtotime($check->tanggal));
+        // Ambil data pemeriksaan water chiller berdasarkan ID
+        $waterChiller = WaterChillerCheck::findOrFail($id);
 
-        // Mengembalikan file PDF untuk di-download dengan format nama yang baru
-        return $pdf->download('Water Chiller Form_' . $formattedDate . '.pdf');
+        // Ambil data form terkait
+        $form = Form::findOrFail(5); // Pastikan ID form sesuai untuk water chiller
+
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil semua detail hasil pemeriksaan untuk setiap mesin
+        $details = WaterChillerResult::where('check_id', $id)->get();
+        
+        // Generate nama file PDF
+        $filename = 'WaterChiller_' . $id . '_' . date('Y-m-d') . '.pdf';
+        
+        // Render view sebagai HTML
+        $html = view('water_chiller.review_pdf', compact('waterChiller', 'details', 'form', 'formattedTanggalEfektif'))->render();
+        
+        // Inisialisasi Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        
+        // Atur ukuran dan orientasi halaman (opsional)
+        $dompdf->setPaper('A4', 'landscape');
+        
+        // Render PDF (mengubah HTML menjadi PDF)
+        $dompdf->render();
+        
+        // Download file PDF
+        return $dompdf->stream($filename, [
+            'Attachment' => false, // Set true untuk download, false untuk preview di browser
+        ]);
     }
 }

@@ -72,7 +72,7 @@
                                         <select name="evaporator[{{ $i }}]" class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
                                             <option value="V">V</option>
                                             <option value="X">X</option>
-                                            <option value="_">_</option>
+                                            <option value="-">-</option>
                                             <option value="OFF">OFF</option>
                                         </select>
                                     </td>
@@ -80,7 +80,7 @@
                                         <select name="fan_evaporator[{{ $i }}]" class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
                                             <option value="V">V</option>
                                             <option value="X">X</option>
-                                            <option value="_">_</option>
+                                            <option value="-">-</option>
                                             <option value="OFF">OFF</option>
                                         </select>
                                     </td>
@@ -88,7 +88,7 @@
                                         <select name="freon[{{ $i }}]" class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
                                             <option value="V">V</option>
                                             <option value="X">X</option>
-                                            <option value="_">_</option>
+                                            <option value="-">-</option>
                                             <option value="OFF">OFF</option>
                                         </select>
                                     </td>
@@ -96,7 +96,7 @@
                                         <select name="air[{{ $i }}]" class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
                                             <option value="V">V</option>
                                             <option value="X">X</option>
-                                            <option value="_">_</option>
+                                            <option value="-">-</option>
                                             <option value="OFF">OFF</option>
                                         </select>
                                     </td>
@@ -166,13 +166,25 @@
                                     <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span>Evaporator: V / X / _ / OFF</span>
+                                    <span>Evaporator: V / X / - / OFF</span>
                                 </li>
                                 <li class="flex items-center">
                                     <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span>Fan Evaporator: V / X / _ / OFF</span>
+                                    <span>Fan Evaporator: V / X / - / OFF</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Freon: V / X / - / OFF</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Air: V / X / - / OFF</span>
                                 </li>
                             </ul>
                         </div>
@@ -188,7 +200,7 @@
                                     <span>Tidak Baik/Abnormal</span>
                                 </div>
                                 <div class="flex items-center">
-                                    <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">_</span>
+                                    <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">-</span>
                                     <span>Tidak Diisi</span>
                                 </div>
                                 <div class="flex items-center">
