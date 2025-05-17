@@ -64,9 +64,19 @@
                     <span class="text-gray-600 font-bold">Checker: </span>
                     <span class="font-bold text-blue-700">{{ $check->checked_by }}</span>
                 </div>
+                @php
+                    // Kumpulkan nilai approver yang terisi
+                    $approvers = collect([$check->approved_by1, $check->approved_by2])
+                                    ->filter()          
+                                    ->implode(', ');    
+                @endphp
+                
                 <div class="bg-sky-50 p-4 rounded-md">
                     <span class="text-gray-600 font-bold">Approver: </span>
-                    <span class="font-bold text-blue-700">{{ $check->approved_by ?? Auth::user()->username }}</span>
+                    <span class="font-bold text-blue-700">
+                        {{-- jika ada approver terisi tampilkan, kalau tidak pakai username login --}}
+                        {{ $approvers ?: Auth::user()->username }}
+                    </span>
                 </div>
             </div>
 
@@ -88,7 +98,10 @@
             
             <!-- Tabel Pemeriksaan Mesin Giling -->
             <div class="mb-6">
-                <div class="overflow-x-auto border border-gray-300 rounded-lg">
+                    <div class="overflow-x-auto border border-gray-300 rounded-lg">
+                        <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                        ← Geser ke kanan untuk melihat semua kolom →
+                    </div>
                     <table class="w-full border-collapse">
                         <thead>
                             <tr class="bg-sky-50">
@@ -286,7 +299,7 @@
                         <!-- Simpan Persetujuan Button - Only shown when at least one approval is missing -->
                         @if (empty($check->approved_by1) || empty($check->approved_by2))
                             <button type="submit" 
-                                class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-300 ease-in-out"
+                                class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out"
                                 :class="{ 'opacity-50 cursor-not-allowed': !formChanged }"
                                 :disabled="!formChanged">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -3,7 +3,7 @@
 
 @section('title', 'Edit Pencatatan Mesin Water Chiller')
 
-@section('page-title', 'Edit Pencatatan Mesin Vacuum Cleaner')
+@section('page-title', 'Edit Pencatatan Mesin Water Chiller')
 
 @section('show-checker', true)
 

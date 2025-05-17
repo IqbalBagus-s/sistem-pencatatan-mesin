@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\GilingCheck;
 use App\Models\GilingResult;
+use App\Models\Form;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -180,17 +181,15 @@ class GilingController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id) 
     {
         // Find the GilingCheck record
         $check = GilingCheck::findOrFail($id);
         
-        // Update the GilingCheck record
+        // Update only the keterangan field, keeping bulan and minggu unchanged
         $check->update([
-            'bulan' => $request->bulan,
-            'minggu' => $request->minggu,
-            'keterangan' => $request->keterangan,
-            // No need to update checked_by since it's the same user who created it
+            'keterangan' => $request->input('catatan'),
+            // bulan and minggu are not updated to preserve the original values
         ]);
         
         // Map from field names to checked items
@@ -266,7 +265,62 @@ class GilingController extends Controller
         ]);
 
         // Redirect back with success message
-        return redirect()->route('giling.show', $id)
+        return redirect()->route('giling.index')
             ->with('success', 'Persetujuan berhasil disimpan!');
+    }
+    public function reviewPdf($id)
+    {
+        // Ambil data pemeriksaan mesin giling berdasarkan ID
+        $gilingCheck = GilingCheck::findOrFail($id);
+
+        // Ambil data form terkait
+        $form = Form::findOrFail(6); // Sesuaikan ID form untuk mesin giling
+
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+
+        // Ambil detail hasil pemeriksaan untuk mesin giling
+        $details = GilingResult::where('check_id', $id)->get();
+
+        // Render view sebagai HTML untuk preview PDF
+        $view = view('giling.review_pdf', compact('gilingCheck', 'details', 'form', 'formattedTanggalEfektif'));
+
+        // Return view untuk preview
+        return $view;
+    }
+    public function downloadPdf($id)
+    {
+        // Ambil data pemeriksaan mesin giling berdasarkan ID
+        $gilingCheck = GilingCheck::findOrFail($id);
+
+        // Ambil data form terkait
+        $form = Form::findOrFail(6); // Pastikan ID form sesuai untuk mesin giling
+
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil semua detail hasil pemeriksaan untuk mesin giling
+        $details = GilingResult::where('check_id', $id)->get();
+        
+        // Generate nama file PDF
+        $filename = 'MesinGiling_' . $id . '_' . date('Y-m-d') . '.pdf';
+        
+        // Render view sebagai HTML
+        $html = view('giling.review_pdf', compact('gilingCheck', 'details', 'form', 'formattedTanggalEfektif'))->render();
+        
+        // Inisialisasi Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        
+        // Atur ukuran dan orientasi halaman (landscape karena tabel lebar dengan 10 kolom G1-G10)
+        $dompdf->setPaper('A4', 'landscape');
+        
+        // Render PDF (mengubah HTML menjadi PDF)
+        $dompdf->render();
+        
+        // Download file PDF
+        return $dompdf->stream($filename, [
+            'Attachment' => false, // Set true untuk download, false untuk preview di browser
+        ]);
     }
 }
