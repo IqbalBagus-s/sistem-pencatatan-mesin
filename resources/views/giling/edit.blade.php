@@ -26,7 +26,7 @@
             <div>
                 <label for="bulan" class="block mb-2">Bulan:</label>
                 <div class="px-3 py-2 bg-white border border-blue-400 rounded-md">
-                    {{ \Carbon\Carbon::parse($check->bulan)->translatedFormat('F Y') }}
+                    {{ \Carbon\Carbon::parse($check->bulan)->locale('id')->isoFormat('MMMM YYYY') }}
                 </div>
                 <input type="hidden" name="bulan" value="{{ $check->bulan }}">
             </div>

@@ -29,7 +29,7 @@
                 </label>
                 <!-- Mengubah input month menjadi tampilan read-only -->
                 <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm text-left flex items-center">
-                    <span>{{ date('F Y', strtotime($hopperCheck->bulan)) }}</span>
+                    <span>{{ \Carbon\Carbon::parse($hopperCheck->bulan)->locale('id')->isoFormat('MMMM YYYY') }}</span>
                 </div>
                 <input type="hidden" name="bulan" value="{{ $hopperCheck->bulan }}">
             </div>

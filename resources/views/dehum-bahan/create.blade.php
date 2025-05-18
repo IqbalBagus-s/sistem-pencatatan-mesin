@@ -1,10 +1,10 @@
 <!-- resources/views/dehum/create.blade.php -->
 @extends('layouts.create-layout-2')
 
-@section('title', 'Form Pencatatan Mesin Dehum')
+@section('title', 'Form Pencatatan Mesin Dehum Bahan')
 
 @section('content')
-<h2 class="mb-4 text-xl font-bold">Pencatatan Mesin Dehum</h2>
+<h2 class="mb-4 text-xl font-bold">Pencatatan Mesin Dehum Bahan</h2>
 
 <div class="bg-white rounded-lg shadow-md mb-5">
     <div class="p-4">
@@ -35,15 +35,15 @@
                 }" class="relative w-full">
                     <!-- Label with Required Indicator -->
                     <label class="block mb-2 text-sm font-medium text-gray-700">
-                        Pilih No Dehum: <span class="text-red-500">*</span>
+                        Pilih No Dehum Bahan: <span class="text-red-500">*</span>
                     </label>
                     
                     <!-- Dropdown Button with Error State -->
                     <button type="button" 
                         @click="open = !open" 
-                        class="w-full h-10 px-3 py-2 bg-gray-100 border rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative"
+                        class="w-full h-10 px-3 py-2 bg-white border rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative"
                         :class="error ? 'border-red-500' : 'border-gray-300'">
-                        <span x-text="selected ? 'Dehum ' + selected : 'Pilih Dehum'"></span>
+                        <span x-text="selected ? 'Dehum ' + selected : 'Pilih dehum bahan'"></span>
                         
                         <!-- Selection Indicator -->
                         <div class="absolute right-3 top-1/2 -translate-y-1/2">
@@ -61,7 +61,7 @@
                     
                     <!-- Error Message -->
                     <div x-show="error" class="text-red-500 text-sm mt-1">
-                        Silakan pilih No Dehum
+                        Silakan pilih No Dehum Bahan
                     </div>
                     
                     <!-- Dropdown List -->
@@ -70,7 +70,7 @@
                             <template x-for="i in 9" :key="i">
                                 <div @click.stop>
                                     <button type="button" @click="selected = i; open = false; error = false;" class="w-full px-3 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white rounded-md">
-                                        <span x-text="'Dehum ' + i"></span>
+                                        <span x-text="'DB ' + i"></span>
                                     </button>
                                 </div>
                             </template>
@@ -85,7 +85,7 @@
                     <label for="bulan" class="block mb-2 text-sm font-medium text-gray-700">
                         Pilih Bulan: <span class="text-red-500">*</span>
                     </label>
-                    <input type="month" id="bulan" name="bulan" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
+                    <input type="month" id="bulan" name="bulan" class="w-full h-10 px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                 </div>
             </div>                  
             
@@ -118,6 +118,9 @@
             <!-- Tabel Inspeksi -->
             <div class="mb-6">
                 <div class="overflow-x-auto mb-6 border border-gray-300">
+                    <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                        ← Geser ke kanan untuk melihat semua kolom →
+                    </div>
                     <table class="w-full border-collapse">
                         <thead>
                             <tr>
@@ -421,6 +424,28 @@
                     Catatan Pemeriksaan
                 </h5>
                 
+                <div class="p-3 bg-blue-50 rounded-lg col-span-1 md:col-span-2 lg:col-span-3 mb-4">
+                    <p class="font-semibold text-blue-800 mb-1">Keterangan Status:</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-700">
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-green-100 text-green-700 text-center font-bold mr-2 rounded">V</span>
+                            <span>Baik/Normal</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-red-100 text-red-700 text-center font-bold mr-2 rounded">X</span>
+                            <span>Tidak Baik/Abnormal</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">-</span>
+                            <span>Tidak Diisi</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">OFF</span>
+                            <span>Mesin Mati</span>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="bg-white p-4 rounded-lg border border-blue-100">
                     <h6 class="font-medium text-blue-600 mb-2">Standar Kriteria Pemeriksaan:</h6>
                     <ul class="space-y-2 text-gray-700">
@@ -458,11 +483,12 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            <span><span class="font-medium">Dew Point:</span> Baik</span>
+                            <span><span class="font-medium">Dew Point:</span> Berfungsi</span>
                         </li>
                     </ul>
                 </div>
             </div>
+            
             <!-- Tombol Submit dan Kembali -->
             @include('components.create-form-buttons', ['backRoute' => route('dehum-bahan.index')])
         </form>

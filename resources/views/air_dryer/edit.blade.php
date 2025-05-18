@@ -31,6 +31,9 @@
         <!-- Tabel Air Dryer -->
         <div class="mb-6">
             <div class="overflow-x-auto mb-6 border border-gray-300">
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <table class="w-full border-collapse">
                     <thead class="sticky top-0 z-10 bg-sky-50">
                         <tr>

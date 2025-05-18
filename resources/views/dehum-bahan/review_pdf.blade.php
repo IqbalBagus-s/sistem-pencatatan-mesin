@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Pencatatan Mesin Hopper</title>
+    <title>Detail Pencatatan Mesin Dehum Bahan</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -75,12 +75,12 @@
 </head>
 <body>
     <div class="container">
-        <h2>Detail Pencatatan Mesin Hopper</h2>
+        <h2>Detail Pencatatan Mesin Dehum Bahan</h2>
 
         <table class="header-table">
             <tr>
-                <td width="50%"><span class="label">No Hopper:</span> {{ $hopperCheck->nomer_hopper }}</td>
-                <td width="50%" style="text-align: right;"><span class="label">Bulan:</span> {{ \Carbon\Carbon::parse($hopperCheck->bulan)->translatedFormat('F Y') }}</td>
+                <td width="50%"><span class="label">No Dehum Bahan:</span> {{ $dehumBahanCheck->nomer_dehum_bahan }}</td>
+                <td width="50%" style="text-align: right;"><span class="label">Bulan:</span> {{ \Carbon\Carbon::parse($dehumBahanCheck->bulan)->locale('id')->isoFormat('MMMM YYYY') }}</td>
             </tr>
         </table>
 
@@ -121,9 +121,9 @@
                         
                         @for($j = 1; $j <= 4; $j++)
                             @php
-                                $hasChecker = !empty($hopperCheck->{'checked_by_minggu'.$j});
-                                $resultValue = $hasChecker && isset($hopperCheck->{'check_'.$j}[$i]) ? $hopperCheck->{'check_'.$j}[$i] : '-';
-                                $keteranganValue = $hasChecker && isset($hopperCheck->{'keterangan_'.$j}[$i]) ? $hopperCheck->{'keterangan_'.$j}[$i] : '';
+                                $hasChecker = !empty($dehumBahanCheck->{'checked_by_minggu'.$j});
+                                $resultValue = $hasChecker && isset($dehumBahanCheck->{'check_'.$j}[$i]) ? $dehumBahanCheck->{'check_'.$j}[$i] : '-';
+                                $keteranganValue = $hasChecker && isset($dehumBahanCheck->{'keterangan_'.$j}[$i]) ? $dehumBahanCheck->{'keterangan_'.$j}[$i] : '';
                             @endphp
                             <td class="status-normal">{{ $resultValue }}</td>
                             <td style="text-align: left;">{{ $keteranganValue }}</td>
@@ -139,8 +139,9 @@
                 @php
                     $items = [
                         3 => 'Kontraktor',
-                        4 => 'Temperatur Kontrol',
-                        5 => 'MCB'
+                        4 => 'Temperatur Control',
+                        5 => 'MCB',
+                        6 => 'Dew Point'
                     ];
                 @endphp
                 
@@ -151,9 +152,9 @@
                         
                         @for($j = 1; $j <= 4; $j++)
                             @php
-                                $hasChecker = !empty($hopperCheck->{'checked_by_minggu'.$j});
-                                $resultValue = $hasChecker && isset($hopperCheck->{'check_'.$j}[$i]) ? $hopperCheck->{'check_'.$j}[$i] : '-';
-                                $keteranganValue = $hasChecker && isset($hopperCheck->{'keterangan_'.$j}[$i]) ? $hopperCheck->{'keterangan_'.$j}[$i] : '';
+                                $hasChecker = !empty($dehumBahanCheck->{'checked_by_minggu'.$j});
+                                $resultValue = $hasChecker && isset($dehumBahanCheck->{'check_'.$j}[$i]) ? $dehumBahanCheck->{'check_'.$j}[$i] : '-';
+                                $keteranganValue = $hasChecker && isset($dehumBahanCheck->{'keterangan_'.$j}[$i]) ? $dehumBahanCheck->{'keterangan_'.$j}[$i] : '';
                             @endphp
                             <td class="status-normal">{{ $resultValue }}</td>
                             <td style="text-align: left;">{{ $keteranganValue }}</td>
@@ -168,8 +169,8 @@
                     
                    @for($j = 1; $j <= 4; $j++)
                         @php
-                            $checkedBy = $hopperCheck->{'checked_by_minggu'.$j} ?? '';
-                            $tanggalRaw = $hopperCheck->{'tanggal_minggu'.$j};
+                            $checkedBy = $dehumBahanCheck->{'checked_by_minggu'.$j} ?? '';
+                            $tanggalRaw = $dehumBahanCheck->{'tanggal_minggu'.$j};
                             $checkedDate = $tanggalRaw
                                 ? \Carbon\Carbon::parse($tanggalRaw)
                                     ->locale('id')            // set locale ke Bahasa Indonesia
@@ -193,7 +194,7 @@
                     
                     @for($j = 1; $j <= 4; $j++)
                         @php
-                            $approvedBy = $hopperCheck->{'approved_by_minggu'.$j} ?? '-';
+                            $approvedBy = $dehumBahanCheck->{'approved_by_minggu'.$j} ?? '-';
                         @endphp
                         <td colspan="2" style="text-align: center;">{{ $approvedBy }}</td>
                     @endfor
@@ -202,15 +203,16 @@
         </table>
 
         <!-- Horizontal Note Boxes -->
-        <table style="width: 100%; table-layout: fixed; margin-bottom: 10px;">
+        <table style="width: 100%; table-layout: fixed; margin-bottom: 10px; font-size: 11px;">
             <tr>
                 <td style="vertical-align: top; border: 1px solid #000; padding: 5px; width: 50%;">
                     <div class="note-title">Standar Kriteria Pemeriksaan</div>
                     • Filter: Kebersihan<br>
                     • Selang: Tidak bocor<br>
                     • Kontraktor: Baik<br>
-                    • Temperatur Kontrol: Baik<br>
-                    • MCB: Baik
+                    • Temperatur Control: Baik<br>
+                    • MCB: Baik<br>
+                    • Dew Point: Berfungsi
                 </td>
                 <td style="vertical-align: top; border: 1px solid #000; padding: 5px; width: 50%;">
                     <div class="note-title">Keterangan Status</div>
@@ -231,10 +233,10 @@
                         @php
                             // Get unique checker names
                             $checkers = collect([
-                                $hopperCheck->checked_by_minggu1, 
-                                $hopperCheck->checked_by_minggu2, 
-                                $hopperCheck->checked_by_minggu3, 
-                                $hopperCheck->checked_by_minggu4
+                                $dehumBahanCheck->checked_by_minggu1, 
+                                $dehumBahanCheck->checked_by_minggu2, 
+                                $dehumBahanCheck->checked_by_minggu3, 
+                                $dehumBahanCheck->checked_by_minggu4
                             ])->filter()->unique()->values()->implode(', ') ?? '-';
                         @endphp
                         {{ $checkers }}
@@ -247,10 +249,10 @@
                         @php
                             // Get unique approver names
                             $approvers = collect([
-                                $hopperCheck->approved_by_minggu1, 
-                                $hopperCheck->approved_by_minggu2, 
-                                $hopperCheck->approved_by_minggu3, 
-                                $hopperCheck->approved_by_minggu4
+                                $dehumBahanCheck->approved_by_minggu1, 
+                                $dehumBahanCheck->approved_by_minggu2, 
+                                $dehumBahanCheck->approved_by_minggu3, 
+                                $dehumBahanCheck->approved_by_minggu4
                             ])->filter()->unique()->values()->implode(', ') ?? '........................';
                         @endphp
                         {{ $approvers }}

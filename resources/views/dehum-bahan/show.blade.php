@@ -31,15 +31,15 @@
                 <!-- No Dehum Bahan Display -->
                 <div class="w-full">
                     <label class="block mb-2 text-sm font-medium text-gray-700">No Dehum Bahan:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-300 rounded-md text-sm flex items-center">
                         {{ $dehumBahanRecord->nomer_dehum_bahan }}
                     </div>
                 </div>
 
                 <div>
                     <label class="block mb-2 text-sm font-medium text-gray-700">Bulan:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
-                        {{ \Carbon\Carbon::parse($dehumBahanRecord->bulan)->translatedFormat('F Y') }}
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-300 rounded-md text-sm flex items-center">
+                        {{ \Carbon\Carbon::parse($dehumBahanRecord->bulan)->locale('id')->isoFormat('MMMM YYYY') }}
                     </div>
                 </div>
             </div>
@@ -55,18 +55,21 @@
                     6 => 'Dew Point'
                 ];
 
-                // Opsi check dengan ikon (seperti di hopper)
+                // Opsi check dengan ikon dan warna seperti di halaman hopper
                 $options = [
-                    'V' => '✓',
-                    'X' => '✗',
-                    '-' => '—',
-                    'OFF' => 'OFF'
+                    'V' => '<span class="text-green-600 font-bold">V</span>',
+                    'X' => '<span class="text-red-600 font-bold">X</span>',
+                    '-' => '<span class="text-gray-600">—</span>',
+                    'OFF' => '<span class="text-gray-600">OFF</span>'
                 ];
             @endphp
             
             <!-- Tabel Inspeksi Mingguan -->
             <div class="mb-6">
                 <div class="overflow-x-auto mb-6 border border-gray-300">
+                    <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                        ← Geser ke kanan untuk melihat semua kolom →
+                    </div>
                     <table class="w-full border-collapse">
                         <thead>
                             <tr>
@@ -226,6 +229,28 @@
                     Catatan Pemeriksaan
                 </h5>
                 
+                <div class="p-3 bg-blue-50 rounded-lg col-span-1 md:col-span-2 lg:col-span-3 mb-4">
+                    <p class="font-semibold text-blue-800 mb-1">Keterangan Status:</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-700">
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-green-100 text-green-700 text-center font-bold mr-2 rounded">V</span>
+                            <span>Baik/Normal</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-red-100 text-red-700 text-center font-bold mr-2 rounded">X</span>
+                            <span>Tidak Baik/Abnormal</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">-</span>
+                            <span>Tidak Diisi</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">OFF</span>
+                            <span>Mesin Mati</span>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="bg-white p-4 rounded-lg border border-blue-100">
                     <h6 class="font-medium text-blue-600 mb-2">Standar Kriteria Pemeriksaan:</h6>
                     <ul class="space-y-2 text-gray-700">
@@ -263,62 +288,67 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            <span><span class="font-medium">Dew Point:</span> Baik</span>
+                            <span><span class="font-medium">Dew Point:</span> Berfungsi</span>
                         </li>
                     </ul>
                 </div>
             </div>
             
             <!-- Button Controls -->
-            <div class="flex justify-between mt-6">
-                <a href="{{ route('dehum-bahan.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
-                    <span class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="flex flex-row flex-wrap items-center justify-between gap-2 mt-6">
+                <!-- Tombol Kembali - Sisi Kiri -->
+                <div class="flex-shrink-0">
+                    <a href="{{ route('dehum-bahan.index') }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                         Kembali
-                    </span>
-                </a>
+                    </a>
+                </div>
                 
-                @php
-                    // Check if all 4 weeks have approved_by filled
-                    $allApproved = true;
-                    for ($j = 1; $j <= 4; $j++) {
-                        if (empty($dehumBahanRecord->{'approved_by_minggu'.$j})) {
-                            $allApproved = false;
-                            break;
+                <!-- Tombol Aksi - Sisi Kanan -->
+                <div class="flex flex-row flex-wrap gap-2 justify-end">
+                    @php
+                        // Periksa apakah semua 4 minggu memiliki approved_by terisi
+                        $allApproved = true;
+                        for ($j = 1; $j <= 4; $j++) {
+                            if (empty($dehumBahanRecord->{'approved_by_minggu'.$j})) {
+                                $allApproved = false;
+                                break;
+                            }
                         }
-                    }
-                @endphp
-                
-                @if ($allApproved)
-                    <!-- All weeks are approved, show "Sudah Disetujui" button and "Download PDF" button -->
-                    <div class="flex space-x-3">
-                        <button type="button" disabled class="bg-green-600 text-white py-2 px-4 rounded opacity-75 cursor-not-allowed">
-                            Sudah Disetujui
+                    @endphp
+                    
+                    @if (!$allApproved)
+                        <!-- Belum semua minggu disetujui, tampilkan tombol "Setujui" -->
+                        <button type="submit" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Setujui
                         </button>
-                        <!-- Tombol untuk review PDF -->
-                        <a href="{{ route('dehum-bahan.pdf', $dehumBahanRecord->id) }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    @endif
+                    
+                    @if ($allApproved)
+                        <!-- Semua minggu telah disetujui, tampilkan tombol Preview dan Download PDF -->
+                        <!-- Tombol Preview PDF -->
+                        <a href="{{ route('dehum-bahan.pdf', $dehumBahanRecord->id) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
                             Preview PDF
                         </a>
-                        <!-- Tombol untuk download PDF -->
-                        <a href="{{ route('dehum-bahan.downloadPdf', $dehumBahanRecord->id) }}" class="download-pdf-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        
+                        <!-- Tombol Download PDF -->
+                        <a href="{{ route('dehum-bahan.downloadPdf', $dehumBahanRecord->id) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             Download PDF
                         </a>
-                    </div>
-                @else
-                    <!-- Not all weeks are approved, show "Setujui" button -->
-                    <button type="submit" class="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800">
-                        Setujui
-                    </button>
-                @endif
+                    @endif
+                </div>
             </div>
         </form>
     </div>

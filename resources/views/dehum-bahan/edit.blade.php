@@ -17,7 +17,7 @@
                 <label class="block mb-2 text-sm font-medium text-gray-700">
                     No Dehum: 
                 </label>
-                <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-left flex items-center">
+                <div class="w-full h-10 px-3 py-2 bg-white border border-blue-300 rounded-md text-sm text-left flex items-center">
                     <span>Dehum {{ $dehumCheck->nomer_dehum_bahan }}</span>
                 </div>
                 <input type="hidden" name="nomer_dehum_bahan" value="{{ $dehumCheck->nomer_dehum_bahan }}">
@@ -28,8 +28,8 @@
                     Bulan:
                 </label>
                 <!-- Mengubah input month menjadi tampilan read-only -->
-                <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-left flex items-center">
-                    <span>{{ date('F Y', strtotime($dehumCheck->bulan)) }}</span>
+                <div class="w-full h-10 px-3 py-2 bg-white border border-blue-300 rounded-md text-sm text-left flex items-center">
+                    <span>{{ \Carbon\Carbon::parse($dehumCheck->bulan)->locale('id')->isoFormat('MMMM YYYY') }}</span>
                 </div>
                 <input type="hidden" name="bulan" value="{{ $dehumCheck->bulan }}">
             </div>
@@ -64,6 +64,9 @@
         <!-- Tabel Inspeksi Mingguan -->
         <div class="mb-6">
             <div class="overflow-x-auto mb-6 border border-gray-300">
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <table class="w-full border-collapse">
                     <thead>
                         <tr>
@@ -253,7 +256,6 @@
                     </tbody>
                 </table>
             </div>
-            
         </div>
         
         {{-- catatan pemeriksaan --}}
@@ -264,6 +266,28 @@
                 </svg>
                 Catatan Pemeriksaan
             </h5>
+            
+            <div class="p-3 bg-blue-50 rounded-lg col-span-1 md:col-span-2 lg:col-span-3 mb-4">
+                <p class="font-semibold text-blue-800 mb-1">Keterangan Status:</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-700">
+                    <div class="flex items-center">
+                        <span class="inline-block w-5 h-5 bg-green-100 text-green-700 text-center font-bold mr-2 rounded">V</span>
+                        <span>Baik/Normal</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="inline-block w-5 h-5 bg-red-100 text-red-700 text-center font-bold mr-2 rounded">X</span>
+                        <span>Tidak Baik/Abnormal</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">-</span>
+                        <span>Tidak Diisi</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">OFF</span>
+                        <span>Mesin Mati</span>
+                    </div>
+                </div>
+            </div>
             
             <div class="bg-white p-4 rounded-lg border border-blue-100">
                 <h6 class="font-medium text-blue-600 mb-2">Standar Kriteria Pemeriksaan:</h6>
@@ -302,11 +326,12 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        <span><span class="font-medium">Dew Point:</span> Baik</span>
+                        <span><span class="font-medium">Dew Point:</span> Berfungsi</span>
                     </li>
                 </ul>
             </div>
         </div>
+
         <!-- Tombol Submit dan Kembali -->
         @include('components.edit-form-buttons', ['backRoute' => route('dehum-bahan.index')])
     </form>

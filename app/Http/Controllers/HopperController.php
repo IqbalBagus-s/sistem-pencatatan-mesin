@@ -387,124 +387,124 @@ class HopperController extends Controller
             ->with('success', 'Persetujuan berhasil disimpan!');
     }
 
-public function reviewPdf($id) 
-{
-    // Ambil data pemeriksaan hopper berdasarkan ID
-    $hopperCheck = HopperCheck::findOrFail($id);
-    
-    // Ambil data form terkait
-    $form = Form::findOrFail(7);
-    
-    // Format tanggal efektif
-    $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
-    
-    // Ambil detail hasil pemeriksaan untuk hopper dan urutkan berdasarkan item terperiksa
-    $hopperResults = HopperResult::where('check_id', $id)->get()->keyBy('checked_items');
-    
-    // Definisikan items yang akan ditampilkan di PDF
-    $items = [
-        1 => 'Filter',
-        2 => 'Selang',
-        3 => 'Kontraktor',
-        4 => 'Temperatur Kontrol',
-        5 => 'MCB'
-    ];
-    
-    // Siapkan semua field check dan keterangan untuk empat minggu
-    for ($j = 1; $j <= 4; $j++) {
-        // Inisialisasi array untuk menyimpan hasil check dan keterangan per minggu
-        ${'check_' . $j} = [];
-        ${'keterangan_' . $j} = [];
+    public function reviewPdf($id) 
+    {
+        // Ambil data pemeriksaan hopper berdasarkan ID
+        $hopperCheck = HopperCheck::findOrFail($id);
         
-        // Isi array dengan data dari hopperResults
-        foreach ($items as $i => $item) {
-            $result = $hopperResults->get($item);
-            ${'check_' . $j}[$i] = optional($result)->{'minggu' . $j} ?? '';
-            ${'keterangan_' . $j}[$i] = optional($result)->{'keterangan_minggu' . $j} ?? '';
+        // Ambil data form terkait
+        $form = Form::findOrFail(7);
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil detail hasil pemeriksaan untuk hopper dan urutkan berdasarkan item terperiksa
+        $hopperResults = HopperResult::where('check_id', $id)->get()->keyBy('checked_items');
+        
+        // Definisikan items yang akan ditampilkan di PDF
+        $items = [
+            1 => 'Filter',
+            2 => 'Selang',
+            3 => 'Kontraktor',
+            4 => 'Temperatur Kontrol',
+            5 => 'MCB'
+        ];
+        
+        // Siapkan semua field check dan keterangan untuk empat minggu
+        for ($j = 1; $j <= 4; $j++) {
+            // Inisialisasi array untuk menyimpan hasil check dan keterangan per minggu
+            ${'check_' . $j} = [];
+            ${'keterangan_' . $j} = [];
+            
+            // Isi array dengan data dari hopperResults
+            foreach ($items as $i => $item) {
+                $result = $hopperResults->get($item);
+                ${'check_' . $j}[$i] = optional($result)->{'minggu' . $j} ?? '';
+                ${'keterangan_' . $j}[$i] = optional($result)->{'keterangan_minggu' . $j} ?? '';
+            }
+            
+            // Tambahkan array ke hopperCheck object
+            $hopperCheck->{'check_' . $j} = ${'check_' . $j};
+            $hopperCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
         }
         
-        // Tambahkan array ke hopperCheck object
-        $hopperCheck->{'check_' . $j} = ${'check_' . $j};
-        $hopperCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+        // Render view sebagai HTML untuk preview PDF
+        $view = view('hopper.review_pdf', [
+            'hopperCheck' => $hopperCheck,
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'items' => $items
+        ]);
+        
+        // Return view untuk preview
+        return $view;
     }
-    
-    // Render view sebagai HTML untuk preview PDF
-    $view = view('hopper.review_pdf', [
-        'hopperCheck' => $hopperCheck,
-        'form' => $form,
-        'formattedTanggalEfektif' => $formattedTanggalEfektif,
-        'items' => $items
-    ]);
-    
-    // Return view untuk preview
-    return $view;
-}
 
-public function downloadPdf($id)
-{
-    // Ambil data pemeriksaan hopper berdasarkan ID
-    $hopperCheck = HopperCheck::findOrFail($id);
-    
-    // Ambil data form terkait
-    $form = Form::findOrFail(7);
-    
-    // Format tanggal efektif
-    $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
-    
-    // Ambil detail hasil pemeriksaan untuk hopper dan urutkan berdasarkan item terperiksa
-    $hopperResults = HopperResult::where('check_id', $id)->get()->keyBy('checked_items');
-    
-    // Definisikan items yang akan ditampilkan di PDF
-    $items = [
-        1 => 'Filter',
-        2 => 'Selang',
-        3 => 'Kontraktor',
-        4 => 'Temperatur Kontrol',
-        5 => 'MCB'
-    ];
-    
-    // Siapkan semua field check dan keterangan untuk empat minggu
-    for ($j = 1; $j <= 4; $j++) {
-        // Inisialisasi array untuk menyimpan hasil check dan keterangan per minggu
-        ${'check_' . $j} = [];
-        ${'keterangan_' . $j} = [];
+    public function downloadPdf($id)
+    {
+        // Ambil data pemeriksaan hopper berdasarkan ID
+        $hopperCheck = HopperCheck::findOrFail($id);
         
-        // Isi array dengan data dari hopperResults
-        foreach ($items as $i => $item) {
-            $result = $hopperResults->get($item);
-            ${'check_' . $j}[$i] = optional($result)->{'minggu' . $j} ?? '';
-            ${'keterangan_' . $j}[$i] = optional($result)->{'keterangan_minggu' . $j} ?? '';
+        // Ambil data form terkait
+        $form = Form::findOrFail(7);
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil detail hasil pemeriksaan untuk hopper dan urutkan berdasarkan item terperiksa
+        $hopperResults = HopperResult::where('check_id', $id)->get()->keyBy('checked_items');
+        
+        // Definisikan items yang akan ditampilkan di PDF
+        $items = [
+            1 => 'Filter',
+            2 => 'Selang',
+            3 => 'Kontraktor',
+            4 => 'Temperatur Kontrol',
+            5 => 'MCB'
+        ];
+        
+        // Siapkan semua field check dan keterangan untuk empat minggu
+        for ($j = 1; $j <= 4; $j++) {
+            // Inisialisasi array untuk menyimpan hasil check dan keterangan per minggu
+            ${'check_' . $j} = [];
+            ${'keterangan_' . $j} = [];
+            
+            // Isi array dengan data dari hopperResults
+            foreach ($items as $i => $item) {
+                $result = $hopperResults->get($item);
+                ${'check_' . $j}[$i] = optional($result)->{'minggu' . $j} ?? '';
+                ${'keterangan_' . $j}[$i] = optional($result)->{'keterangan_minggu' . $j} ?? '';
+            }
+            
+            // Tambahkan array ke hopperCheck object
+            $hopperCheck->{'check_' . $j} = ${'check_' . $j};
+            $hopperCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
         }
         
-        // Tambahkan array ke hopperCheck object
-        $hopperCheck->{'check_' . $j} = ${'check_' . $j};
-        $hopperCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+        // Generate nama file PDF
+        $filename = 'MesinHopper_' . $hopperCheck->nomer_hopper . '_' . date('Y-m-d') . '.pdf';
+        
+        // Render view sebagai HTML
+        $html = view('hopper.review_pdf', [
+            'hopperCheck' => $hopperCheck,
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'items' => $items
+        ])->render();
+        
+        // Inisialisasi Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        
+        // Atur ukuran dan orientasi halaman
+        $dompdf->setPaper('A4', 'landscape');
+        
+        // Render PDF (mengubah HTML menjadi PDF)
+        $dompdf->render();
+        
+        // Download file PDF
+        return $dompdf->stream($filename, [
+            'Attachment' => false, // Set true untuk download otomatis
+        ]);
     }
-    
-    // Generate nama file PDF
-    $filename = 'MesinHopper_' . $hopperCheck->nomer_hopper . '_' . date('Y-m-d') . '.pdf';
-    
-    // Render view sebagai HTML
-    $html = view('hopper.review_pdf', [
-        'hopperCheck' => $hopperCheck,
-        'form' => $form,
-        'formattedTanggalEfektif' => $formattedTanggalEfektif,
-        'items' => $items
-    ])->render();
-    
-    // Inisialisasi Dompdf
-    $dompdf = new \Dompdf\Dompdf();
-    $dompdf->loadHtml($html);
-    
-    // Atur ukuran dan orientasi halaman
-    $dompdf->setPaper('A4', 'landscape');
-    
-    // Render PDF (mengubah HTML menjadi PDF)
-    $dompdf->render();
-    
-    // Download file PDF
-    return $dompdf->stream($filename, [
-        'Attachment' => false, // Set true untuk download otomatis
-    ]);
-}
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\DehumBahanCheck;
 use App\Models\DehumBahanResult;
+use App\Models\Form;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
@@ -154,7 +155,7 @@ class DehumBahanController extends Controller
             DB::commit();
 
             // Redirect with success message
-            return redirect()->route('dehum-bahan.index')->with('success', 'Dehum check data successfully saved.');
+            return redirect()->route('dehum-bahan.index')->with('success', 'Data Pencatatan sudah tersimpan!');
         } catch (\Exception $e) {
             // Rollback the transaction in case of error
             DB::rollBack();
@@ -318,7 +319,7 @@ class DehumBahanController extends Controller
             DB::commit();
 
             // Redirect dengan pesan sukses
-            return redirect()->route('dehum-bahan.index')->with('success', 'Data pengecekan dehum berhasil diperbarui.');
+            return redirect()->route('dehum-bahan.index')->with('success', 'Data pengecekan dehum bahan berhasil diperbarui.');
         } catch (\Exception $e) {
             // Rollback transaksi jika terjadi error
             DB::rollBack();
@@ -411,7 +412,7 @@ class DehumBahanController extends Controller
 
     public function approve(Request $request, $id)
     {
-        // Validate the request
+        // Validate the request - hanya validasi field yang dikirim dalam request
         $validatedData = $request->validate([
             'approved_by_minggu1' => 'nullable|string|max:255',
             'approved_by_minggu2' => 'nullable|string|max:255',
@@ -422,18 +423,180 @@ class DehumBahanController extends Controller
         // Find the existing DehumBahan record
         $dehumBahanRecord = DehumBahanCheck::findOrFail($id);
 
-        // Update the approval fields
-        // Note: We use the exact field names from the database
-        $dehumBahanRecord->approved_by_minggu1 = $validatedData['approved_by_minggu1'] ?? null;
-        $dehumBahanRecord->approved_by_minggu2 = $validatedData['approved_by_minggu2'] ?? null;
-        $dehumBahanRecord->approved_by_minggu3 = $validatedData['approved_by_minggu3'] ?? null;
-        $dehumBahanRecord->approved_by_minggu4 = $validatedData['approved_by_minggu4'] ?? null;
+        // Hanya update field yang ada dalam request
+        // Ini mencegah field yang sudah diisi sebelumnya ditimpa dengan null
+        foreach ($validatedData as $field => $value) {
+            if ($request->has($field)) {
+                $dehumBahanRecord->{$field} = $value;
+            }
+        }
 
         // Save the record
         $dehumBahanRecord->save();
 
         // Redirect back with a success message
         return redirect()->route('dehum-bahan.index')
-            ->with('success', 'Dehum Bahan record approved successfully.');
+            ->with('success', 'Persetujuan berhasil disimpan!');
+    }
+
+    public function reviewPdf($id) 
+    {
+        // Ambil data pemeriksaan dehum bahan berdasarkan ID
+        $dehumBahanCheck = DehumBahanCheck::findOrFail($id);
+        
+        // Ambil data form terkait
+        $form = Form::findOrFail(8);
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil detail hasil pemeriksaan untuk dehum bahan
+        $dehumBahanResults = DehumBahanResult::where('check_id', $id)->get();
+        
+        // Definisikan items yang akan ditampilkan di PDF
+        $items = [
+            1 => 'Filter',
+            2 => 'Selang',
+            3 => 'Kontraktor',
+            4 => 'Temperatur Control',
+            5 => 'MCB',
+            6 => 'Dew Point'  // Tambahkan item ini
+        ];
+        
+        // Definisikan mapping untuk menangani kemungkinan variasi nama
+        $itemMapping = [
+            1 => ['Filter'],
+            2 => ['Selang'],
+            3 => ['Kontraktor'],
+            4 => ['Temperatur Control', 'Temperatur Kontrol'],  // Tambahkan kedua variasi
+            5 => ['MCB'],
+            6 => ['Dew Point']
+        ];
+        
+        // Siapkan semua field check dan keterangan untuk empat minggu
+        for ($j = 1; $j <= 4; $j++) {
+            // Inisialisasi array untuk menyimpan hasil check dan keterangan per minggu
+            ${'check_' . $j} = [];
+            ${'keterangan_' . $j} = [];
+            
+            // Isi array dengan data dari dehumBahanResults menggunakan pendekatan yang lebih fleksibel
+            foreach ($items as $i => $item) {
+                $result = null;
+                // Coba semua kemungkinan nama untuk item ini
+                foreach ($itemMapping[$i] as $possibleName) {
+                    $result = $dehumBahanResults->first(function($value) use ($possibleName) {
+                        return stripos($value->checked_items, $possibleName) !== false;
+                    });
+                    
+                    if ($result) break; // Jika ditemukan, hentikan pencarian
+                }
+                
+                ${'check_' . $j}[$i] = $result ? $result->{'minggu' . $j} : '';
+                ${'keterangan_' . $j}[$i] = $result ? $result->{'keterangan_minggu' . $j} : '';
+            }
+            
+            // Tambahkan array ke dehumBahanCheck object
+            $dehumBahanCheck->{'check_' . $j} = ${'check_' . $j};
+            $dehumBahanCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+        }
+        
+        // Render view sebagai HTML untuk preview PDF
+        $view = view('dehum-bahan.review_pdf', [
+            'dehumBahanCheck' => $dehumBahanCheck,
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'items' => $items
+        ]);
+        
+        // Return view untuk preview
+        return $view;
+    }
+    
+    public function downloadPdf($id)
+    {
+        // Ambil data pemeriksaan dehum bahan berdasarkan ID
+        $dehumBahanCheck = DehumBahanCheck::findOrFail($id);
+        
+        // Ambil data form terkait
+        $form = Form::findOrFail(8);
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil detail hasil pemeriksaan untuk dehum bahan
+        $dehumBahanResults = DehumBahanResult::where('check_id', $id)->get();
+        
+        // Definisikan items yang akan ditampilkan di PDF
+        $items = [
+            1 => 'Filter',
+            2 => 'Selang',
+            3 => 'Kontraktor',
+            4 => 'Temperatur Control',
+            5 => 'MCB',
+            6 => 'Dew Point'
+        ];
+        
+        // Definisikan mapping untuk menangani kemungkinan variasi nama
+        $itemMapping = [
+            1 => ['Filter'],
+            2 => ['Selang'],
+            3 => ['Kontraktor'],
+            4 => ['Temperatur Control', 'Temperatur Kontrol'],
+            5 => ['MCB'],
+            6 => ['Dew Point']
+        ];
+        
+        // Siapkan semua field check dan keterangan untuk empat minggu
+        for ($j = 1; $j <= 4; $j++) {
+            // Inisialisasi array untuk menyimpan hasil check dan keterangan per minggu
+            ${'check_' . $j} = [];
+            ${'keterangan_' . $j} = [];
+            
+            // Isi array dengan data dari dehumBahanResults menggunakan pendekatan yang lebih fleksibel
+            foreach ($items as $i => $item) {
+                $result = null;
+                // Coba semua kemungkinan nama untuk item ini
+                foreach ($itemMapping[$i] as $possibleName) {
+                    $result = $dehumBahanResults->first(function($value) use ($possibleName) {
+                        return stripos($value->checked_items, $possibleName) !== false;
+                    });
+                    
+                    if ($result) break; // Jika ditemukan, hentikan pencarian
+                }
+                
+                ${'check_' . $j}[$i] = $result ? $result->{'minggu' . $j} : '';
+                ${'keterangan_' . $j}[$i] = $result ? $result->{'keterangan_minggu' . $j} : '';
+            }
+            
+            // Tambahkan array ke dehumBahanCheck object
+            $dehumBahanCheck->{'check_' . $j} = ${'check_' . $j};
+            $dehumBahanCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+        }
+        
+        // Generate nama file PDF
+        $filename = 'DehumBahan_' . $dehumBahanCheck->nomer_dehum_bahan . '_' . date('Y-m-d') . '.pdf';
+        
+        // Render view sebagai HTML
+        $html = view('dehum-bahan.review_pdf', [
+            'dehumBahanCheck' => $dehumBahanCheck,
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'items' => $items
+        ])->render();
+        
+        // Inisialisasi Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        
+        // Atur ukuran dan orientasi halaman
+        $dompdf->setPaper('A4', 'landscape');
+        
+        // Render PDF (mengubah HTML menjadi PDF)
+        $dompdf->render();
+        
+        // Download file PDF
+        return $dompdf->stream($filename, [
+            'Attachment' => false, // Set true untuk download otomatis
+        ]);
     }
 }

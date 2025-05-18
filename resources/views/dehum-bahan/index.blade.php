@@ -67,7 +67,7 @@
                                 : 'text-gray-700 hover:bg-blue-100 hover:text-blue-800'"
                             class="w-full px-2 py-1.5 text-xs rounded-md transition-colors duration-200 ease-in-out"
                         >
-                            <span x-text="'Dehum ' + dehum"></span>
+                            <span x-text="'DB ' + dehum"></span>
                         </button>
                     </div>
                 </template>
