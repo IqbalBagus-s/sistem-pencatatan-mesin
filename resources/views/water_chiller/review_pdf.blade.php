@@ -73,16 +73,6 @@
 
         <table class="header-table">
             <tr>
-                <!-- Checker di kiri, Approver di kanan -->
-                <td width="50%"><span class="label">Checker:</span> {{ $waterChiller->checked_by }}</td>
-                <td width="50%" style="text-align: right;"><span class="label">Approver:</span> {{ $waterChiller->approved_by ?: 'Belum disetujui' }}</td>
-            </tr>
-        </table>
-
-        <hr>
-
-        <table class="header-table">
-            <tr>
                 <!-- Hari di kiri, Tanggal di kanan -->
                 <td width="50%"><span class="label">Hari:</span> {{ $waterChiller->hari }}</td>
                 <td width="50%" style="text-align: right;"><span class="label">Tanggal:</span> {{ \Carbon\Carbon::parse($waterChiller->tanggal)->translatedFormat('d F Y') }}</td>
@@ -125,46 +115,59 @@
         </table>
 
         <!-- Horizontal Note Boxes -->
-        <table style="width: 100%; table-layout: fixed; margin-bottom: 10px;">
+        <table style="width: 100%; table-layout: fixed; margin-bottom: 10px; font-size: 12px; border-collapse: collapse;">
             <tr>
-                <td style="vertical-align: top; border: 1px solid #000; padding: 5px;">
-                    <div class="note-title">Informasi Standar Pemeriksaan</div>
-                    • Temperatur Kompresor: 30°C - 60°C<br>
-                    • Temperatur Kabel: 30°C - 60°C<br>
-                    • Temperatur MCB: 30°C - 60°C<br>
-                    • Temperatur Air: 30°C - 60°C<br>
-                    • Temperatur Pompa: 30°C - 60°C<br>
-                    • Evaporator: V / X / - / OFF<br>
-                    • Fan Evaporator: V / X / - / OFF<br>
-                    • Freon: V / X / - / OFF<br>
-                    • Air: V / X / - / OFF
+                <!-- Kolom 1: Informasi Standar (bagian kiri) -->
+                <td style="vertical-align: top; border: 1px solid #000; padding: 5px; width: 33%;">
+                <div style="font-weight: bold; margin-bottom: 5px;">Informasi Standar Pemeriksaan</div>
+                • Temperatur Kompresor: 30°C – 60°C<br>
+                • Temperatur Kabel: 30°C – 60°C<br>
+                • Temperatur MCB: 30°C – 60°C<br>
+                • Temperatur Air: 30°C – 60°C<br>
                 </td>
-                <td style="vertical-align: top; border: 1px solid #000; padding: 5px;">
-                    <div class="note-title">Detail Mesin</div>
-                    • CH1 : Water Chiller 1<br>
-                    • CH2 : Water Chiller 2<br>
-                    • CH3 : Water Chiller 3<br>
-                    • CH4 : Water Chiller 4<br>
-                    • CH5 : Water Chiller 5<br>
-                    • CH6 : Water Chiller 6<br>
-                    • CH7 : Water Chiller 7<br>
-                    • CH8 : Water Chiller 8
+
+                <!-- Kolom 2: Informasi Standar (bagian tengah) -->
+                <td style="vertical-align: top; border: 1px solid #000; padding: 5px; width: 33%;">
+                <div style="font-weight: bold; margin-bottom: 5px;">Informasi Standar Pemeriksaan</div>
+                • Temperatur Pompa: 30°C – 60°C<br>
+                • Evaporator: V / X / – / OFF<br>
+                • Fan Evaporator: V / X / – / OFF<br>
+                • Freon: V / X / – / OFF<br>
+                • Air: V / X / – / OFF<br>
                 </td>
-                <td style="vertical-align: top; border: 1px solid #000; padding: 5px;">
-                    <div class="note-title">Keterangan Status</div>
-                    • V : Baik/Normal<br>
-                    • X : Tidak Baik/Abnormal<br>
-                    • - : Tidak Diisi<br>
-                    • OFF : Mesin Mati
+
+                <!-- Kolom 3: Keterangan Status -->
+                <td style="vertical-align: top; border: 1px solid #000; padding: 5px; width: 33%;">
+                <div style="font-weight: bold; margin-bottom: 5px;">Keterangan Status</div>
+                • V : Baik/Normal<br>
+                • X : Tidak Baik/Abnormal<br>
+                • – : Tidak Diisi<br>
+                • OFF : Mesin Mati<br>
                 </td>
             </tr>
-        </table>
+            </table>
 
         <!-- Catatan Tambahan -->
         <div style="border: 1px solid #000; padding: 5px; margin-bottom: 10px;">
             <div class="note-title">Catatan Tambahan</div>
             {{ $waterChiller->keterangan ?: 'Tidak ada catatan' }}
         </div>
+
+        <!-- Tanda Tangan -->
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <tr>
+                <td style="width: 50%; text-align: center; vertical-align: top;">
+                    <div style="margin-bottom: 40px;">Diperiksa oleh:</div>
+                    <div style="font-weight: bold;">{{ $waterChiller->checked_by }}</div>
+                    <div>Checker</div>
+                </td>
+                <td style="width: 50%; text-align: center; vertical-align: top;">
+                    <div style="margin-bottom: 40px;">Disetujui oleh:</div>
+                    <div style="font-weight: bold;">{{ $waterChiller->approved_by ?: '.........................' }}</div>
+                    <div>Penanggung Jawab</div>
+                </td>
+            </tr>
+        </table>
 
         <table style="width: 100%; margin-bottom: 10px;">
             <tr>

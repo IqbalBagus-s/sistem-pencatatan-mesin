@@ -73,24 +73,6 @@
 
         <table class="header-table">
             <tr>
-                <!-- Checker di kiri, Approver di kanan -->
-                <td width="50%"><span class="label">Checker:</span> {{ $gilingCheck->checked_by }}</td>
-                <td width="50%" style="text-align: right;">
-                    <span class="label">Approver:</span> 
-                    @php
-                        $approvers = collect([$gilingCheck->approved_by1, $gilingCheck->approved_by2])
-                            ->filter()
-                            ->implode(', ');
-                    @endphp
-                    {{ $approvers ?: 'Belum disetujui' }}
-                </td>
-            </tr>
-        </table>
-
-        <hr>
-
-        <table class="header-table">
-            <tr>
                 <!-- Minggu di kiri, Bulan di kanan -->
                 <td width="50%"><span class="label">Minggu ke:</span> {{ $gilingCheck->minggu }}</td>
                 <td width="50%" style="text-align: right;"><span class="label">Bulan:</span> {{ \Carbon\Carbon::parse($gilingCheck->bulan)->translatedFormat('F Y') }}</td>
@@ -171,18 +153,18 @@
         <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
             <tr>
                 <td style="width: 33%; text-align: center; vertical-align: top;">
-                    <div style="margin-bottom: 30px;">Diperiksa oleh:</div>
+                    <div style="margin-bottom: 40px;">Diperiksa oleh:</div>
                     <div style="font-weight: bold;">{{ $gilingCheck->checked_by }}</div>
                     <div>Pelaksana Utility</div>
                 </td>
                 <td style="width: 33%; text-align: center; vertical-align: top;">
-                    <div style="margin-bottom: 30px;">Disetujui oleh:</div>
+                    <div style="margin-bottom: 40px;">Disetujui oleh:</div>
                     <div style="font-weight: bold;">{{ $gilingCheck->approved_by1 ?: '.........................' }}</div>
                     <div>Pelaksana Utility</div>
                     <div>{{ $gilingCheck->approval_date1 ? \Carbon\Carbon::parse($gilingCheck->approval_date1)->format('d/m/Y') : '' }}</div>
                 </td>
                 <td style="width: 33%; text-align: center; vertical-align: top;">
-                    <div style="margin-bottom: 30px;">Disetujui oleh:</div>
+                    <div style="margin-bottom: 40px;">Disetujui oleh:</div>
                     <div style="font-weight: bold;">{{ $gilingCheck->approved_by2 ?: '.........................' }}</div>
                     <div>Koordinator Staff Utility</div>
                 </td>

@@ -72,25 +72,12 @@
         <h2>Detail Pencatatan Mesin Air Dryer</h2>
 
         <table class="header-table">
-    <tr>
-        <!-- Checker di kiri, Approver di kanan -->
-        <td width="50%"><span class="label">Checker:</span> {{ $airDryer->checked_by }}</td>
-        <td width="50%" style="text-align: right;"><span class="label">Approver:</span> {{ $airDryer->approved_by ?: 'Belum disetujui' }}</td>
-    </tr>
-</table>
-
-<hr>
-
-<table class="header-table">
-    <tr>
-        <!-- Hari di kiri, Tanggal di kanan -->
-        <td width="50%"><span class="label">Hari:</span> {{ $airDryer->hari }}</td>
-        <td width="50%" style="text-align: right;"><span class="label">Tanggal:</span> {{ \Carbon\Carbon::parse($airDryer->tanggal)->translatedFormat('d F Y') }}</td>
-    </tr>
-</table>
-
-
-
+            <tr>
+                <!-- Hari di kiri, Tanggal di kanan -->
+                <td width="50%"><span class="label">Hari:</span> {{ $airDryer->hari }}</td>
+                <td width="50%" style="text-align: right;"><span class="label">Tanggal:</span> {{ \Carbon\Carbon::parse($airDryer->tanggal)->translatedFormat('d F Y') }}</td>
+            </tr>
+        </table>
 
         <table class="main-table">
             <thead>
@@ -126,7 +113,7 @@
         </table>
 
         <!-- Horizontal Note Boxes -->
-        <table style="width: 100%; table-layout: fixed; margin-bottom: 10px;">
+        <table style="width: 100%; table-layout: fixed; margin-bottom: 10px; font-size: 10px;">
             <tr>
                 <td style="vertical-align: top; border: 1px solid #000; padding: 5px;">
                     <div class="note-title">Informasi Standar Pemeriksaan</div>
@@ -165,6 +152,22 @@
             <div class="note-title">Catatan Tambahan</div>
             {{ $airDryer->keterangan ?: 'Tidak ada catatan' }}
         </div>
+        
+        <!-- Tanda Tangan -->
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <tr>
+                <td style="width: 50%; text-align: center; vertical-align: top;">
+                    <div style="margin-bottom: 40px;">Diperiksa oleh:</div>
+                    <div style="font-weight: bold;">{{ $airDryer->checked_by }}</div>
+                    <div>Checker</div>
+                </td>
+                <td style="width: 50%; text-align: center; vertical-align: top;">
+                    <div style="margin-bottom: 40px;">Disetujui oleh:</div>
+                    <div style="font-weight: bold;">{{ $airDryer->approved_by ?: '.........................' }}</div>
+                    <div>Penanggung Jawab</div>
+                </td>
+            </tr>
+        </table>
 
         <table style="width: 100%; margin-bottom: 10px;">
             <tr>

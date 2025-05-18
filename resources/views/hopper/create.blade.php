@@ -41,7 +41,7 @@
                     <!-- Dropdown Button with Error State -->
                     <button type="button" 
                         @click="open = !open" 
-                        class="w-full h-10 px-3 py-2 bg-gray-100 border rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative"
+                        class="w-full h-10 px-3 py-2 bg-white border rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative"
                         :class="error ? 'border-red-500' : 'border-gray-300'">
                         <span x-text="selected ? 'Hopper ' + selected : 'Pilih Hopper'"></span>
                         
@@ -85,7 +85,7 @@
                     <label for="bulan" class="block mb-2 text-sm font-medium text-gray-700">
                         Pilih Bulan: <span class="text-red-500">*</span>
                     </label>
-                    <input type="month" id="bulan" name="bulan" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
+                    <input type="month" id="bulan" name="bulan" class="w-full h-10 px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                 </div>
             </div>                  
             
@@ -116,6 +116,10 @@
             <!-- Tabel Inspeksi Mingguan -->
             <div class="mb-6">
                 <div class="overflow-x-auto mb-6 border border-gray-300">
+                    <div class="overflow-x-auto border border-gray-300 rounded-lg">
+                        <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                        ← Geser ke kanan untuk melihat semua kolom →
+                    </div>
                     <table class="w-full border-collapse">
                         <thead>
                             <tr>
@@ -431,6 +435,28 @@
                     Catatan Pemeriksaan
                 </h5>
                 
+                <div class="p-3 bg-blue-50 rounded-lg col-span-1 md:col-span-2 lg:col-span-3 mb-4">
+                    <p class="font-semibold text-blue-800 mb-1">Keterangan Status:</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-700">
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-green-100 text-green-700 text-center font-bold mr-2 rounded">V</span>
+                            <span>Baik/Normal</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-red-100 text-red-700 text-center font-bold mr-2 rounded">X</span>
+                            <span>Tidak Baik/Abnormal</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">-</span>
+                            <span>Tidak Diisi</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">OFF</span>
+                            <span>Mesin Mati</span>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="bg-white p-4 rounded-lg border border-blue-100">
                     <h6 class="font-medium text-blue-600 mb-2">Standar Kriteria Pemeriksaan:</h6>
                     <ul class="space-y-2 text-gray-700">
@@ -467,6 +493,7 @@
                     </ul>
                 </div>
             </div>
+
             <!-- Tombol Submit dan Kembali -->
             @include('components.create-form-buttons', ['backRoute' => route('hopper.index')])
         </form>

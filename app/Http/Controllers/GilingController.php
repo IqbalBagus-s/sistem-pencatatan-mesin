@@ -268,6 +268,7 @@ class GilingController extends Controller
         return redirect()->route('giling.index')
             ->with('success', 'Persetujuan berhasil disimpan!');
     }
+    
     public function reviewPdf($id)
     {
         // Ambil data pemeriksaan mesin giling berdasarkan ID
@@ -288,6 +289,7 @@ class GilingController extends Controller
         // Return view untuk preview
         return $view;
     }
+    
     public function downloadPdf($id)
     {
         // Ambil data pemeriksaan mesin giling berdasarkan ID

@@ -151,7 +151,7 @@
                                     </div>
                                 @endforeach
                             @else
-                                <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
+                                <span class="bg-gray-200 text-gray-700 px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Belum Diisi
                                 </span>
                             @endif
