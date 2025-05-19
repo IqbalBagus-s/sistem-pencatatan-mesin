@@ -393,7 +393,7 @@ class HopperController extends Controller
         $hopperCheck = HopperCheck::findOrFail($id);
         
         // Ambil data form terkait
-        $form = Form::findOrFail(7);
+        $form = Form::where('nomor_form', 'APTEK/047/REV.01')->firstOrFail();
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
@@ -446,7 +446,7 @@ class HopperController extends Controller
         $hopperCheck = HopperCheck::findOrFail($id);
         
         // Ambil data form terkait
-        $form = Form::findOrFail(7);
+        $form = Form::where('nomor_form', 'APTEK/047/REV.01')->firstOrFail();
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');

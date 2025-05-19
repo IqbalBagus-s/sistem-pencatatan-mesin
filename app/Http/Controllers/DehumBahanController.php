@@ -445,7 +445,7 @@ class DehumBahanController extends Controller
         $dehumBahanCheck = DehumBahanCheck::findOrFail($id);
         
         // Ambil data form terkait
-        $form = Form::findOrFail(8);
+        $form = Form::where('nomor_form', 'APTEK/035/REV.02')->firstOrFail();
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
@@ -518,7 +518,7 @@ class DehumBahanController extends Controller
         $dehumBahanCheck = DehumBahanCheck::findOrFail($id);
         
         // Ambil data form terkait
-        $form = Form::findOrFail(8);
+        $form = Form::where('nomor_form', 'APTEK/035/REV.02')->firstOrFail();
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');

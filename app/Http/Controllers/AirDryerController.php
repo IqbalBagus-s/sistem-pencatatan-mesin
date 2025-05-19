@@ -212,7 +212,7 @@ class AirDryerController extends Controller
         $airDryer = AirDryerCheck::findOrFail($id);
 
         // Ambil data form terkait
-        $form = Form::findOrFail(4); // Pastikan relasi atau ID sesuai
+        $form = Form::where('nomor_form', 'APTEK/019/REV.02')->firstOrFail();
 
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
@@ -233,7 +233,7 @@ class AirDryerController extends Controller
         $airDryer = AirDryerCheck::findOrFail($id);
 
         // Ambil data form terkait
-        $form = Form::findOrFail(4); // Pastikan relasi atau ID sesuai
+        $form = Form::where('nomor_form', 'APTEK/019/REV.02')->firstOrFail();
 
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');

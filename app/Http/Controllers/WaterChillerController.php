@@ -232,7 +232,7 @@ class WaterChillerController extends Controller
         $waterChiller = WaterChillerCheck::findOrFail($id);
 
         // Ambil data form terkait
-        $form = Form::findOrFail(5); // Pastikan ID form sesuai untuk water chiller
+        $form = Form::where('nomor_form', 'APTEK/023/REV.01')->firstOrFail();
 
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
@@ -253,7 +253,7 @@ class WaterChillerController extends Controller
         $waterChiller = WaterChillerCheck::findOrFail($id);
 
         // Ambil data form terkait
-        $form = Form::findOrFail(5); // Pastikan ID form sesuai untuk water chiller
+        $form = Form::where('nomor_form', 'APTEK/023/REV.01')->firstOrFail();
 
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
