@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 use App\Models\CompressorCheck;
 use App\Models\CompressorResultKh;
 use App\Models\CompressorResultKl;
+use App\Models\Form;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
 
@@ -189,8 +192,6 @@ class CompressorController extends Controller
     {
         // Validasi data yang diterima dari form
         $request->validate([
-            'tanggal' => 'required|date',
-            'hari' => 'required|string',
             'checked_by_shift1' => 'nullable|string',
             'checked_by_shift2' => 'nullable|string',
             'kompressor_on_kl' => 'nullable|string',
@@ -203,13 +204,11 @@ class CompressorController extends Controller
             'humidity_shift2' => 'nullable|string',
         ]);
         
-        // Cari record yang akan diupdate
+        // Cari data compressor check berdasarkan ID
         $compressorCheck = CompressorCheck::findOrFail($id);
         
         // Update data di tabel compressor_checks
         $compressorCheck->update([
-            'tanggal' => $request->tanggal,
-            'hari' => $request->hari,
             'checked_by_shift1' => $request->checked_by_shift1,
             'checked_by_shift2' => $request->checked_by_shift2,
             'kompressor_on_kl' => $request->kompressor_on_kl,
@@ -222,7 +221,7 @@ class CompressorController extends Controller
             'humidity_shift2' => $request->humidity_shift2,
         ]);
 
-        // Update data hasil pemeriksaan Low Kompressor
+        // Daftar item pemeriksaan untuk Low Kompressor
         $lowCheckedItems = [
             "Temperatur motor", "Temperatur screw", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
             "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
@@ -230,15 +229,14 @@ class CompressorController extends Controller
             "Ampere", "Skun", "Service hour", "Load hours", "Temperatur ADT"
         ];
 
-        // Untuk Low Kompressor
+        // Update data hasil pemeriksaan Low Kompressor
         foreach ($lowCheckedItems as $index => $item) {
-            // Cari record yang akan diupdate
-            $result = CompressorResultKl::where('check_id', $id)
-                                    ->where('checked_items', $item)
-                                    ->first();
-            
-            if ($result) {
-                $result->update([
+            $compressorResult = CompressorResultKl::where('check_id', $id)
+                ->where('checked_items', $item)
+                ->first();
+                
+            if ($compressorResult) {
+                $compressorResult->update([
                     'kl_10I' => $request->input("kl_KL_10I")[$index] ?? null,
                     'kl_10II' => $request->input("kl_KL_10II")[$index] ?? null,
                     'kl_5I' => $request->input("kl_KL_5I")[$index] ?? null,
@@ -253,7 +251,7 @@ class CompressorController extends Controller
                     'kl_9II' => $request->input("kl_KL_9II")[$index] ?? null
                 ]);
             } else {
-                // Jika tidak ada record, buat baru
+                // Jika data tidak ditemukan, buat baru
                 CompressorResultKl::create([
                     'check_id' => $id,
                     'checked_items' => $item,
@@ -273,7 +271,7 @@ class CompressorController extends Controller
             }
         }
 
-        // Update data hasil pemeriksaan High Kompressor
+        // Daftar item pemeriksaan untuk High Kompressor
         $highCheckedItems = [
             "Temperatur Motor", "Temperatur Piston", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
             "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
@@ -281,15 +279,14 @@ class CompressorController extends Controller
             "Ampere", "Skun", "Service hour", "Load hours", "Inlet Preasure", "Outlet Preasure"
         ];
 
-        // Untuk High Kompressor
+        // Update data hasil pemeriksaan High Kompressor
         foreach ($highCheckedItems as $index => $item) {
-            // Cari record yang akan diupdate
-            $result = CompressorResultKh::where('check_id', $id)
-                                    ->where('checked_items', $item)
-                                    ->first();
-            
-            if ($result) {
-                $result->update([
+            $compressorResult = CompressorResultKh::where('check_id', $id)
+                ->where('checked_items', $item)
+                ->first();
+                
+            if ($compressorResult) {
+                $compressorResult->update([
                     'kh_7I' => $request->input("kh_KH_7I")[$index] ?? null,
                     'kh_7II' => $request->input("kh_KH_7II")[$index] ?? null,
                     'kh_8I' => $request->input("kh_KH_8I")[$index] ?? null,
@@ -302,7 +299,7 @@ class CompressorController extends Controller
                     'kh_11II' => $request->input("kh_KH_11II")[$index] ?? null
                 ]);
             } else {
-                // Jika tidak ada record, buat baru
+                // Jika data tidak ditemukan, buat baru
                 CompressorResultKh::create([
                     'check_id' => $id,
                     'checked_items' => $item,
@@ -371,6 +368,107 @@ class CompressorController extends Controller
         return redirect()->route('compressor.index')->with('success', 'Persetujuan berhasil disimpan.');
     }
 
+    public function reviewPdf($id) 
+    {
+        // Ambil data pemeriksaan kompressor berdasarkan ID
+        $check = CompressorCheck::findOrFail($id);
+        
+        // Ambil data form terkait
+        $form = Form::where('nomor_form', 'APTEK/041/REV.00')->firstOrFail();
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil data low kompressor
+        $lowResults = CompressorResultkl::where('check_id', $id)
+            ->whereIn('checked_items', [
+                "Temperatur motor", "Temperatur screw", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
+                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
+                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
+                "Ampere", "Skun", "Service hour", "Load hours", "Temperatur ADT"
+            ])
+            ->get();
+        
+        // Ambil data high kompressor
+        $highResults = CompressorResultkh::where('check_id', $id)
+            ->whereIn('checked_items', [
+                "Temperatur Motor", "Temperatur Piston", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
+                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
+                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
+                "Ampere", "Skun", "Service hour", "Load hours", "Inlet Preasure", "Outlet Preasure"
+            ])
+            ->get();
+        
+        // Render view sebagai HTML untuk preview PDF
+        $view = view('compressor.review_pdf', [
+            'check' => $check,
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'lowResults' => $lowResults,
+            'highResults' => $highResults
+        ]);
+        
+        // Return view untuk preview
+        return $view;
+    }
 
+    public function downloadPdf($id)
+    {
+        // Ambil data pemeriksaan kompressor berdasarkan ID
+        $check = CompressorCheck::findOrFail($id);
+        
+        // Ambil data form terkait
+        $form = Form::where('nomor_form', 'APTEK/041/REV.00')->firstOrFail();
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil data low kompressor
+        $lowResults = CompressorResultkl::where('check_id', $id)
+            ->whereIn('checked_items', [
+                "Temperatur motor", "Temperatur screw", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
+                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
+                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
+                "Ampere", "Skun", "Service hour", "Load hours", "Temperatur ADT"
+            ])
+            ->get();
+        
+        // Ambil data high kompressor
+        $highResults = CompressorResultkh::where('check_id', $id)
+            ->whereIn('checked_items', [
+                "Temperatur Motor", "Temperatur Piston", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
+                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
+                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
+                "Ampere", "Skun", "Service hour", "Load hours", "Inlet Preasure", "Outlet Preasure"
+            ])
+            ->get();
+        
+        // Generate nama file PDF
+        $filename = 'Compressor_' . $check->nomer_compressor . '_' . date('Y-m-d') . '.pdf';
+        
+        // Render view sebagai HTML
+        $html = view('compressor.review_pdf', [
+            'check' => $check,
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'lowResults' => $lowResults,
+            'highResults' => $highResults
+        ])->render();
+        
+        // Inisialisasi Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        
+        // Atur ukuran dan orientasi halaman
+        $dompdf->setPaper('A4', 'landscape');
+        
+        // Render PDF (mengubah HTML menjadi PDF)
+        $dompdf->render();
+        
+        // Download file PDF
+        return $dompdf->stream($filename, [
+            'Attachment' => false, // Set true untuk download otomatis
+        ]);
+    }
 }
 

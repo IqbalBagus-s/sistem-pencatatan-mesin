@@ -1,8 +1,8 @@
 @extends('layouts.index-layout')
 
-@section('title', 'Pencatatan Mesin Kompresor')
+@section('title', 'Pencatatan Mesin Compressor')
 
-@section('page-title', 'Pencatatan Mesin Kompresor')
+@section('page-title', 'Pencatatan Mesin Compressor')
 
 @section('form-action')
     {{ route('compressor.index') }}
@@ -16,21 +16,6 @@
     <i class="fas fa-plus mr-2"></i>Buat Baru
 @endsection
 
-@section('additional-styles')
-    /* Tambahan style untuk kompressor */
-    .edit-icon {
-        color: #f59e0b;
-        cursor: pointer;
-    }
-    .edit-icon:hover {
-        color: #d97706;
-    }
-    .edit-icon-disabled {
-        color: #f59e0b;
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-@endsection
 
 @section('custom-filters')
     @if(auth()->user() instanceof \App\Models\Approver)
@@ -72,17 +57,20 @@
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->hari }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             @if($check->checked_by_shift1)
-                                <span class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm">
-                                    {{ $check->checked_by_shift1 }}
+                                <span class="bg-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm mb-1 inline-block">
+                                    Shift 1 :{{ $check->checked_by_shift1 }}
                                 </span>
+                                
                             @endif
                             @if($check->checked_by_shift2)
-                                <span class="bg-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm ml-1">
-                                    {{ $check->checked_by_shift2 }}
+                                <span class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm mb-1 inline-block">
+                                    Shift 2 :{{ $check->checked_by_shift2 }}
                                 </span>
                             @endif
                             @if(!$check->checked_by_shift1 && !$check->checked_by_shift2)
-                                <span class="text-gray-500">-</span>
+                                <span class="bg-gray-200 text-gray-700 px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Belum Diisi
+                                </span>
                             @endif
                         </td>
                         

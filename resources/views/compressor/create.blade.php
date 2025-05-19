@@ -142,11 +142,11 @@
             <!-- Independent menu items that don't need Alpine.js functionality -->
             <div class="grid md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-700">Jumlah Kompresor ON KL:</label>
+                    <label class="block mb-2 text-sm font-medium text-gray-700">Jumlah Compressor ON KL:</label>
                     <input type="text" name="kompressor_on_kl" class="w-full px-3 py-2 bg-white border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-700">Jumlah Kompresor ON KH:</label>
+                    <label class="block mb-2 text-sm font-medium text-gray-700">Jumlah Compressor ON KH:</label>
                     <input type="text" name="kompressor_on_kh" class="w-full px-3 py-2 bg-white border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
             </div>
@@ -183,13 +183,13 @@
                 </div>
             </div>
 
-            <!-- Low Kompressor Table -->
+            <!-- Low Compressor Table -->
             <div class="overflow-x-auto mb-4">
                 <!-- Notifikasi scroll horizontal untuk mobile -->
                 <div class="md:hidden text-sm text-gray-500 italic mb-2">
                     ← Geser ke kanan untuk melihat semua kolom →
                 </div>
-                <h3 class="text-lg font-semibold mb-2">Form Pengisian Low Kompressor</h3>
+                <h3 class="text-lg font-semibold mb-2">Form Pengisian Low Compressor</h3>
                 <div class="table-container max-h-500 overflow-y-auto">
                     <!-- Lebar minimum pada mobile agar bisa scroll horizontal -->
                     <div class="min-w-[1200px]">
@@ -262,7 +262,7 @@
                                         <td class="border border-gray-300 p-2">{{ $index + 1 }}</td>
                                         <td class="border border-gray-300 p-2 text-left">{{ $item }}</td>
 
-                                        <!-- Ganti format nama input di tabel Low Kompressor -->
+                                        <!-- Ganti format nama input di tabel Low Compressor -->
                                         @foreach ($klColumns as $kl)
                                         <td class="border border-gray-300 p-2">
                                             @if (isset($customOptions[$index]))
@@ -280,22 +280,17 @@
                                 @endforeach
                             </tbody>
                         </table>
-                        <!-- Datalist for input options -->
-                        <datalist id="input-options-kl">
-                            <option value="OFF">
-                            <option value="-">
-                        </datalist>
                     </div>
                 </div>
             </div>
 
-            <!-- High Kompressor Table -->
+            <!-- High Compressor Table -->
             <div class="overflow-x-auto mb-4">
                 <!-- Notifikasi scroll horizontal untuk mobile -->
                 <div class="md:hidden text-sm text-gray-500 italic mb-2">
                     ← Geser ke kanan untuk melihat semua kolom →
                 </div>
-                <h3 class="text-lg font-semibold mb-2">Form Pengisian High Kompressor</h3>
+                <h3 class="text-lg font-semibold mb-2">Form Pengisian High Compressor</h3>
                 <div class="table-container max-h-500 overflow-y-auto">
                     <!-- Lebar minimum pada mobile agar bisa scroll horizontal -->
                     <div class="min-w-[1200px]">
@@ -368,7 +363,7 @@
                                         <td class="border border-gray-300 p-2">{{ $index + 1 }}</td>
                                         <td class="border border-gray-300 p-2 text-left">{{ $item }}</td>
                     
-                                        <!-- Ganti format nama input di tabel High Kompressor -->
+                                        <!-- Ganti format nama input di tabel High Compressor -->
                                         @foreach ($khColumns as $kh)
                                         <td class="border border-gray-300 p-2">
                                             @if (isset($customOptions[$index]))
@@ -386,11 +381,6 @@
                                 @endforeach
                             </tbody>
                         </table>
-                        <!-- Datalist for input options -->
-                        <datalist id="input-options-kh">
-                            <option value="OFF">
-                            <option value="-">
-                        </datalist>
                     </div>
                 </div>
             </div>
@@ -405,13 +395,13 @@
                 </h5>
 
                 <div class="grid grid-cols-1 gap-4">
-                    <!-- Kompressor Low -->
+                    <!-- Compressor Low -->
                     <div class="bg-white p-4 rounded-lg border border-blue-200">
                         <h6 class="font-medium text-blue-600 mb-3 flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                             </svg>
-                            Standar Kriteria Pemeriksaan Low Kompresor:
+                            Standar Kriteria Pemeriksaan Low Compressor:
                         </h6>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -452,7 +442,7 @@
                                     <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span><strong>Oil Kompresor:</strong> Penuh/Ditambah</span>
+                                    <span><strong>Oil Compressor:</strong> Penuh/Ditambah</span>
                                 </div>
                                 <div class="flex items-center">
                                     <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -488,13 +478,13 @@
                         </div>
                     </div>
                     
-                    <!-- Kompressor High -->
+                    <!-- Compressor High -->
                     <div class="bg-white p-4 rounded-lg border border-blue-200">
                         <h6 class="font-medium text-blue-600 mb-3 flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                             </svg>
-                            Standar Kriteria Pemeriksaan High Kompresor:
+                            Standar Kriteria Pemeriksaan High Compressor:
                         </h6>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -541,7 +531,7 @@
                                     <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span><strong>Oil Kompresor:</strong> Penuh/Ditambah</span>
+                                    <span><strong>Oil Compressor:</strong> Penuh/Ditambah</span>
                                 </div>
                                 <div class="flex items-center">
                                     <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -584,19 +574,19 @@
                             <h6 class="font-medium text-blue-600 mb-3">Kode Mesin:</h6>
                             <div class="grid grid-cols-2 gap-2 text-sm text-gray-800">
                                 <div>
-                                    <p><strong>KL 5:</strong> Low Kompresor 5</p>
-                                    <p><strong>KL 6:</strong> Low Kompresor 6</p>
-                                    <p><strong>KL 7:</strong> Low Kompresor 7</p>
-                                    <p><strong>KL 8:</strong> Low Kompresor 8</p>
-                                    <p><strong>KL 9:</strong> Low Kompresor 9</p>
-                                    <p><strong>KL 10:</strong> Low Kompresor 10</p>
+                                    <p><strong>KL 5:</strong> Low Compressor 5</p>
+                                    <p><strong>KL 6:</strong> Low Compressor 6</p>
+                                    <p><strong>KL 7:</strong> Low Compressor 7</p>
+                                    <p><strong>KL 8:</strong> Low Compressor 8</p>
+                                    <p><strong>KL 9:</strong> Low Compressor 9</p>
+                                    <p><strong>KL 10:</strong> Low Compressor 10</p>
                                 </div>
                                 <div>
-                                    <p><strong>KH 7:</strong> High Kompresor 7</p>
-                                    <p><strong>KH 8:</strong> High Kompresor 8</p>
-                                    <p><strong>KH 9:</strong> High Kompresor 9</p>
-                                    <p><strong>KH 10:</strong> High Kompresor 10</p>
-                                    <p><strong>KH 11:</strong> High Kompresor 11</p>
+                                    <p><strong>KH 7:</strong> High Compressor 7</p>
+                                    <p><strong>KH 8:</strong> High Compressor 8</p>
+                                    <p><strong>KH 9:</strong> High Compressor 9</p>
+                                    <p><strong>KH 10:</strong> High Compressor 10</p>
+                                    <p><strong>KH 11:</strong> High Compressor 11</p>
                                 </div>
                             </div>
                         </div>
@@ -627,8 +617,6 @@
 
 @section('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Kode untuk tanggal dan hari sudah dihandle oleh layout, tidak perlu disini lagi
-    });
+
 </script>
 @endsection
