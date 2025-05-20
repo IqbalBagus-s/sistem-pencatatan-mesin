@@ -127,7 +127,7 @@
                 <div class="md:hidden text-sm text-gray-500 italic mb-2">
                     ← Geser ke kanan untuk melihat semua kolom →
                 </div>
-                <div class="overflow-x-auto mb-6 border border-gray-300">
+                <div class="overflow-x-auto mb-6">
                     <table class="w-full border-collapse">
                         <thead>
                             <tr>
@@ -175,20 +175,22 @@
                                     @php 
                                     $isReadOnly = isReadOnly($results, $j); 
                                     $rowClass = $isReadOnly ? 'bg-green-50' : 'bg-sky-50';
+                                    $checkerName = getCheckerName($results, $j);
+                                    $hasCheckerData = !empty($checkerName);
                                     @endphp
                                     <td class="border border-gray-300 p-1 {{ $rowClass }}">
-                                        <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ getCheckerName($results, $j) }}', isExistingData: {{ getCheckerName($results, $j) ? 'true' : 'false' }}, isReadOnly: {{ $isReadOnly ? 'true' : 'false' }} }">
+                                        <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ $checkerName }}', isExistingData: {{ $hasCheckerData ? 'true' : 'false' }}, isReadOnly: {{ $isReadOnly ? 'true' : 'false' }} }">
                                             <!-- Show just the name if data already exists -->
                                             <div x-show="isExistingData" class="w-full px-2 py-1 text-sm {{ $isReadOnly ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded text-center">
-                                                {{ getCheckerName($results, $j) }}
-                                                <input type="hidden" name="checked_by_{{ $j }}" value="{{ getCheckerName($results, $j) }}">
+                                                {{ $checkerName }}
+                                                <input type="hidden" name="checked_by_{{ $j }}" value="{{ $checkerName }}">
                                                 <input type="hidden" name="check_num_{{ $j }}" value="{{ $j }}">
                                             </div>
                                             
                                             <!-- Show the form if selected but not existing data -->
                                             <div x-show="selected && !isExistingData && !isReadOnly" class="w-full">
                                                 <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -206,29 +208,24 @@
                                                 <input type="hidden" name="approved_by_{{ $j }}" value="{{ getApprovedBy($results, $j) }}">
                                             @endif
                                             
-                                            <!-- Tombol Pilih/Batal Pilih hanya ditampilkan jika belum readonly -->
-                                            <div x-show="!isReadOnly" class="mt-1">
+                                            <!-- Tombol Pilih/Batal Pilih hanya ditampilkan jika belum readonly dan belum ada data -->
+                                            <div x-show="!isReadOnly && !isExistingData" class="mt-1">
                                                 <button type="button" 
                                                     @click="
-                                                        if(isExistingData) {
-                                                            isExistingData = false;
-                                                            selected = false;
+                                                        selected = !selected;
+                                                        if(selected) {
+                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            $refs.user{{ $j }}.value = userName;
+                                                            $refs.checkNum{{ $j }}.value = '{{ $j }}';
                                                         } else {
-                                                            selected = !selected;
-                                                            if(selected) {
-                                                                userName = '{{ Auth::user()->username }}'; 
-                                                                $refs.user{{ $j }}.value = userName;
-                                                                $refs.checkNum{{ $j }}.value = '{{ $j }}';
-                                                            } else {
-                                                                userName = '';
-                                                                $refs.user{{ $j }}.value = '';
-                                                                $refs.checkNum{{ $j }}.value = '';
-                                                            }
+                                                            userName = '';
+                                                            $refs.user{{ $j }}.value = '';
+                                                            $refs.checkNum{{ $j }}.value = '';
                                                         }
                                                     "
                                                     class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
-                                                    :class="selected || isExistingData ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                                    <span x-text="selected || isExistingData ? 'Batal Pilih' : 'Pilih'"></span>
+                                                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
                                                 </button>
                                             </div>
                                         </div>
@@ -238,12 +235,13 @@
                         </tbody>
                     </table>
                 </div>
+
                 <!-- Tabel untuk tanggal 12-22 -->
                 <!-- Notifikasi scroll horizontal untuk mobile -->
                 <div class="md:hidden text-sm text-gray-500 italic mb-2">
                     ← Geser ke kanan untuk melihat semua kolom →
                 </div>
-                <div class="overflow-x-auto mb-6 border border-gray-300">
+                <div class="overflow-x-auto mb-6">
                     <table class="w-full border-collapse">
                         <thead>
                             <tr>
@@ -291,20 +289,22 @@
                                     @php 
                                     $isReadOnly = isReadOnly($results, $j); 
                                     $rowClass = $isReadOnly ? 'bg-green-50' : 'bg-sky-50';
+                                    $checkerName = getCheckerName($results, $j);
+                                    $hasCheckerData = !empty($checkerName);
                                     @endphp
                                     <td class="border border-gray-300 p-1 {{ $rowClass }}">
-                                        <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ getCheckerName($results, $j) }}', isExistingData: {{ getCheckerName($results, $j) ? 'true' : 'false' }}, isReadOnly: {{ $isReadOnly ? 'true' : 'false' }} }">
+                                        <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ $checkerName }}', isExistingData: {{ $hasCheckerData ? 'true' : 'false' }}, isReadOnly: {{ $isReadOnly ? 'true' : 'false' }} }">
                                             <!-- Show just the name if data already exists -->
                                             <div x-show="isExistingData" class="w-full px-2 py-1 text-sm {{ $isReadOnly ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded text-center">
-                                                {{ getCheckerName($results, $j) }}
-                                                <input type="hidden" name="checked_by_{{ $j }}" value="{{ getCheckerName($results, $j) }}">
+                                                {{ $checkerName }}
+                                                <input type="hidden" name="checked_by_{{ $j }}" value="{{ $checkerName }}">
                                                 <input type="hidden" name="check_num_{{ $j }}" value="{{ $j }}">
                                             </div>
                                             
                                             <!-- Show the form if selected but not existing data -->
                                             <div x-show="selected && !isExistingData && !isReadOnly" class="w-full">
                                                 <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -322,29 +322,24 @@
                                                 <input type="hidden" name="approved_by_{{ $j }}" value="{{ getApprovedBy($results, $j) }}">
                                             @endif
                                             
-                                            <!-- Tombol Pilih/Batal Pilih hanya ditampilkan jika belum readonly -->
-                                            <div x-show="!isReadOnly" class="mt-1">
+                                            <!-- Tombol Pilih/Batal Pilih hanya ditampilkan jika belum readonly dan belum ada data -->
+                                            <div x-show="!isReadOnly && !isExistingData" class="mt-1">
                                                 <button type="button" 
                                                     @click="
-                                                        if(isExistingData) {
-                                                            isExistingData = false;
-                                                            selected = false;
+                                                        selected = !selected;
+                                                        if(selected) {
+                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            $refs.user{{ $j }}.value = userName;
+                                                            $refs.checkNum{{ $j }}.value = '{{ $j }}';
                                                         } else {
-                                                            selected = !selected;
-                                                            if(selected) {
-                                                                userName = '{{ Auth::user()->username }}'; 
-                                                                $refs.user{{ $j }}.value = userName;
-                                                                $refs.checkNum{{ $j }}.value = '{{ $j }}';
-                                                            } else {
-                                                                userName = '';
-                                                                $refs.user{{ $j }}.value = '';
-                                                                $refs.checkNum{{ $j }}.value = '';
-                                                            }
+                                                            userName = '';
+                                                            $refs.user{{ $j }}.value = '';
+                                                            $refs.checkNum{{ $j }}.value = '';
                                                         }
                                                     "
                                                     class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
-                                                    :class="selected || isExistingData ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                                    <span x-text="selected || isExistingData ? 'Batal Pilih' : 'Pilih'"></span>
+                                                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
                                                 </button>
                                             </div>
                                         </div>
@@ -407,20 +402,22 @@
                                     @php 
                                     $isReadOnly = isReadOnly($results, $j); 
                                     $rowClass = $isReadOnly ? 'bg-green-50' : 'bg-sky-50';
+                                    $checkerName = getCheckerName($results, $j);
+                                    $hasCheckerData = !empty($checkerName);
                                     @endphp
                                     <td class="border border-gray-300 p-1 {{ $rowClass }}">
-                                        <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ getCheckerName($results, $j) }}', isExistingData: {{ getCheckerName($results, $j) ? 'true' : 'false' }}, isReadOnly: {{ $isReadOnly ? 'true' : 'false' }} }">
+                                        <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ $checkerName }}', isExistingData: {{ $hasCheckerData ? 'true' : 'false' }}, isReadOnly: {{ $isReadOnly ? 'true' : 'false' }} }">
                                             <!-- Show just the name if data already exists -->
                                             <div x-show="isExistingData" class="w-full px-2 py-1 text-sm {{ $isReadOnly ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded text-center">
-                                                {{ getCheckerName($results, $j) }}
-                                                <input type="hidden" name="checked_by_{{ $j }}" value="{{ getCheckerName($results, $j) }}">
+                                                {{ $checkerName }}
+                                                <input type="hidden" name="checked_by_{{ $j }}" value="{{ $checkerName }}">
                                                 <input type="hidden" name="check_num_{{ $j }}" value="{{ $j }}">
                                             </div>
                                             
                                             <!-- Show the form if selected but not existing data -->
                                             <div x-show="selected && !isExistingData && !isReadOnly" class="w-full">
                                                 <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -438,29 +435,24 @@
                                                 <input type="hidden" name="approved_by_{{ $j }}" value="{{ getApprovedBy($results, $j) }}">
                                             @endif
                                             
-                                            <!-- Tombol Pilih/Batal Pilih hanya ditampilkan jika belum readonly -->
-                                            <div x-show="!isReadOnly" class="mt-1">
+                                            <!-- Tombol Pilih/Batal Pilih hanya ditampilkan jika belum readonly dan belum ada data -->
+                                            <div x-show="!isReadOnly && !isExistingData" class="mt-1">
                                                 <button type="button" 
                                                     @click="
-                                                        if(isExistingData) {
-                                                            isExistingData = false;
-                                                            selected = false;
+                                                        selected = !selected;
+                                                        if(selected) {
+                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            $refs.user{{ $j }}.value = userName;
+                                                            $refs.checkNum{{ $j }}.value = '{{ $j }}';
                                                         } else {
-                                                            selected = !selected;
-                                                            if(selected) {
-                                                                userName = '{{ Auth::user()->username }}'; 
-                                                                $refs.user{{ $j }}.value = userName;
-                                                                $refs.checkNum{{ $j }}.value = '{{ $j }}';
-                                                            } else {
-                                                                userName = '';
-                                                                $refs.user{{ $j }}.value = '';
-                                                                $refs.checkNum{{ $j }}.value = '';
-                                                            }
+                                                            userName = '';
+                                                            $refs.user{{ $j }}.value = '';
+                                                            $refs.checkNum{{ $j }}.value = '';
                                                         }
                                                     "
                                                     class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
-                                                    :class="selected || isExistingData ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
-                                                    <span x-text="selected || isExistingData ? 'Batal Pilih' : 'Pilih'"></span>
+                                                    :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
+                                                    <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
                                                 </button>
                                             </div>
                                         </div>
@@ -470,6 +462,7 @@
                         </tbody>
                     </table>
                 </div>
+
                 {{-- catatan pemeriksaan --}}
                 <div class="bg-gradient-to-r from-sky-50 to-blue-50 p-5 rounded-lg shadow-sm mb-6 border-l-4 border-blue-400">
                     <h5 class="text-lg font-semibold text-blue-700 mb-4 flex items-center">

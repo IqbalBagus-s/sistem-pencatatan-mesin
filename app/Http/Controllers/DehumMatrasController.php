@@ -8,6 +8,7 @@ use App\Models\DehumMatrasDetail;
 use App\Models\DehumMatrasResultsTable1;
 use App\Models\DehumMatrasResultsTable2;
 use App\Models\DehumMatrasResultsTable3;
+use App\Models\Form;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
@@ -787,5 +788,328 @@ class DehumMatrasController extends Controller
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    public function reviewPdf($id)
+    {
+        // Ambil data utama dehum matras check
+        $dehumMatras = DehumMatrasCheck::findOrFail($id);
+        
+        // Ambil data form terkait
+        $form = Form::where('nomor_form', 'APTEK/048/REV.01')->firstOrFail(); // Sesuaikan dengan nomor form yang benar
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil data hasil dari ketiga tabel
+        $resultsTable1 = DehumMatrasResultsTable1::where('check_id', $id)->get();
+        $resultsTable2 = DehumMatrasResultsTable2::where('check_id', $id)->get();
+        $resultsTable3 = DehumMatrasResultsTable3::where('check_id', $id)->get();
+        
+        // Ambil data detail (checked_by dan approved_by)
+        $detailChecks = DehumMatrasDetail::where('tanggal_check_id', $id)->get();
+        
+        // Siapkan data untuk view dalam format yang sesuai
+        $results = collect();
+        
+        // Buat array untuk menyimpan data checked_by berdasarkan tanggal
+        $checkedByData = [];
+        
+        // Buat array untuk menyimpan data approved_by berdasarkan tanggal
+        $approvedByData = [];
+        
+        // Proses data checked_by dan approved_by dulu agar tersedia untuk digunakan kemudian
+        foreach ($detailChecks as $detail) {
+            $checkedByData[$detail->tanggal] = $detail->checked_by;
+            $approvedByData[$detail->tanggal] = $detail->approved_by ?? '';
+        }
+        
+        // Define the checked items for Dehum Matras
+        $items = [
+            1 => 'Kompressor',
+            2 => 'Kabel',
+            3 => 'NFB',
+            4 => 'Motor',
+            5 => 'Water Cooler in',
+            6 => 'Water Cooler Out',
+            7 => 'Temperatur Output Udara',
+        ];
+        
+        // Proses data dari tabel 1 (tanggal 1-11)
+        foreach ($resultsTable1 as $row) {
+            $itemId = array_search($row->checked_items, $items);
+            
+            // Jika item ditemukan, proses untuk setiap tanggal (1-11)
+            if ($itemId) {
+                for ($j = 1; $j <= 11; $j++) {
+                    $tanggalField = "tanggal{$j}";
+                    $keteranganField = "keterangan_tanggal{$j}";
+                    
+                    if (isset($row->$tanggalField)) {
+                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
+                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
+                        
+                        // Periksa apakah keterangan field ada di model
+                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        
+                        $results->push([
+                            'tanggal' => $j,
+                            'item_id' => $itemId,
+                            'result' => $row->$tanggalField,
+                            'keterangan' => $keterangan,
+                            'checked_by' => $checkedBy,
+                            'approved_by' => $approvedBy
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Proses data dari tabel 2 (tanggal 12-22)
+        foreach ($resultsTable2 as $row) {
+            $itemId = array_search($row->checked_items, $items);
+            
+            if ($itemId) {
+                for ($j = 12; $j <= 22; $j++) {
+                    $tanggalField = "tanggal{$j}";
+                    $keteranganField = "keterangan_tanggal{$j}";
+                    
+                    if (isset($row->$tanggalField)) {
+                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
+                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
+                        
+                        // Periksa apakah keterangan field ada di model
+                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        
+                        $results->push([
+                            'tanggal' => $j,
+                            'item_id' => $itemId,
+                            'result' => $row->$tanggalField,
+                            'keterangan' => $keterangan,
+                            'checked_by' => $checkedBy,
+                            'approved_by' => $approvedBy
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Proses data dari tabel 3 (tanggal 23-31)
+        foreach ($resultsTable3 as $row) {
+            $itemId = array_search($row->checked_items, $items);
+            
+            if ($itemId) {
+                for ($j = 23; $j <= 31; $j++) {
+                    $tanggalField = "tanggal{$j}";
+                    $keteranganField = "keterangan_tanggal{$j}";
+                    
+                    if (isset($row->$tanggalField)) {
+                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
+                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
+                        
+                        // Periksa apakah keterangan field ada di model
+                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        
+                        $results->push([
+                            'tanggal' => $j,
+                            'item_id' => $itemId,
+                            'result' => $row->$tanggalField,
+                            'keterangan' => $keterangan,
+                            'checked_by' => $checkedBy,
+                            'approved_by' => $approvedBy
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Tambahkan data checked_by dan approved_by untuk tanggal yang mungkin belum memiliki item
+        for ($j = 1; $j <= 31; $j++) {
+            if (isset($checkedByData[$j]) && !$results->where('tanggal', $j)->where('checked_by', '!=', null)->count()) {
+                $results->push([
+                    'tanggal' => $j,
+                    'checked_by' => $checkedByData[$j],
+                    'approved_by' => $approvedByData[$j] ?? ''
+                ]);
+            }
+        }
+        
+        // Render view sebagai HTML untuk preview PDF
+        $view = view('dehum-matras.review_pdf', compact('dehumMatras', 'results', 'form', 'formattedTanggalEfektif', 'items'));
+        
+        // Return view untuk preview
+        return $view;
+    }
+
+    public function downloadPdf($id)
+    {
+        // Ambil data utama dehum matras check
+        $dehumMatras = DehumMatrasCheck::findOrFail($id);
+        
+        // Ambil data form terkait
+        $form = Form::where('nomor_form', 'APTEK/048/REV.01')->firstOrFail(); // Sesuaikan dengan nomor form yang benar
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil data hasil dari ketiga tabel
+        $resultsTable1 = DehumMatrasResultsTable1::where('check_id', $id)->get();
+        $resultsTable2 = DehumMatrasResultsTable2::where('check_id', $id)->get();
+        $resultsTable3 = DehumMatrasResultsTable3::where('check_id', $id)->get();
+        
+        // Ambil data detail (checked_by dan approved_by)
+        $detailChecks = DehumMatrasDetail::where('tanggal_check_id', $id)->get();
+        
+        // Siapkan data untuk view dalam format yang sesuai
+        $results = collect();
+        
+        // Buat array untuk menyimpan data checked_by berdasarkan tanggal
+        $checkedByData = [];
+        
+        // Buat array untuk menyimpan data approved_by berdasarkan tanggal
+        $approvedByData = [];
+        
+        // Proses data checked_by dan approved_by dulu agar tersedia untuk digunakan kemudian
+        foreach ($detailChecks as $detail) {
+            $checkedByData[$detail->tanggal] = $detail->checked_by;
+            $approvedByData[$detail->tanggal] = $detail->approved_by ?? '';
+        }
+        
+        // Define the checked items for Dehum Matras
+        $items = [
+            1 => 'Kompressor',
+            2 => 'Kabel',
+            3 => 'NFB',
+            4 => 'Motor',
+            5 => 'Water Cooler in',
+            6 => 'Water Cooler Out',
+            7 => 'Temperatur Output Udara',
+        ];
+        
+        // Proses data dari tabel 1 (tanggal 1-11)
+        foreach ($resultsTable1 as $row) {
+            $itemId = array_search($row->checked_items, $items);
+            
+            // Jika item ditemukan, proses untuk setiap tanggal (1-11)
+            if ($itemId) {
+                for ($j = 1; $j <= 11; $j++) {
+                    $tanggalField = "tanggal{$j}";
+                    $keteranganField = "keterangan_tanggal{$j}";
+                    
+                    if (isset($row->$tanggalField)) {
+                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
+                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
+                        
+                        // Periksa apakah keterangan field ada di model
+                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        
+                        $results->push([
+                            'tanggal' => $j,
+                            'item_id' => $itemId,
+                            'result' => $row->$tanggalField,
+                            'keterangan' => $keterangan,
+                            'checked_by' => $checkedBy,
+                            'approved_by' => $approvedBy
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Proses data dari tabel 2 (tanggal 12-22)
+        foreach ($resultsTable2 as $row) {
+            $itemId = array_search($row->checked_items, $items);
+            
+            if ($itemId) {
+                for ($j = 12; $j <= 22; $j++) {
+                    $tanggalField = "tanggal{$j}";
+                    $keteranganField = "keterangan_tanggal{$j}";
+                    
+                    if (isset($row->$tanggalField)) {
+                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
+                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
+                        
+                        // Periksa apakah keterangan field ada di model
+                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        
+                        $results->push([
+                            'tanggal' => $j,
+                            'item_id' => $itemId,
+                            'result' => $row->$tanggalField,
+                            'keterangan' => $keterangan,
+                            'checked_by' => $checkedBy,
+                            'approved_by' => $approvedBy
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Proses data dari tabel 3 (tanggal 23-31)
+        foreach ($resultsTable3 as $row) {
+            $itemId = array_search($row->checked_items, $items);
+            
+            if ($itemId) {
+                for ($j = 23; $j <= 31; $j++) {
+                    $tanggalField = "tanggal{$j}";
+                    $keteranganField = "keterangan_tanggal{$j}";
+                    
+                    if (isset($row->$tanggalField)) {
+                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
+                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
+                        
+                        // Periksa apakah keterangan field ada di model
+                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        
+                        $results->push([
+                            'tanggal' => $j,
+                            'item_id' => $itemId,
+                            'result' => $row->$tanggalField,
+                            'keterangan' => $keterangan,
+                            'checked_by' => $checkedBy,
+                            'approved_by' => $approvedBy
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Tambahkan data checked_by dan approved_by untuk tanggal yang mungkin belum memiliki item
+        for ($j = 1; $j <= 31; $j++) {
+            if (isset($checkedByData[$j]) && !$results->where('tanggal', $j)->where('checked_by', '!=', null)->count()) {
+                $results->push([
+                    'tanggal' => $j,
+                    'checked_by' => $checkedByData[$j],
+                    'approved_by' => $approvedByData[$j] ?? ''
+                ]);
+            }
+        }
+        
+        // Generate nama file PDF
+        $filename = 'DehumMatras_' . $id . '_' . date('Y-m-d') . '.pdf';
+        
+        // Render view sebagai HTML
+        $html = view('dehum-matras.review_pdf', compact('dehumMatras', 'results', 'form', 'formattedTanggalEfektif', 'items'))->render();
+        
+        // Inisialisasi Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        
+        // Atur ukuran dan orientasi halaman (opsional)
+        $dompdf->setPaper('A4', 'potrait');
+        
+        // Render PDF (mengubah HTML menjadi PDF)
+        $dompdf->render();
+        
+        // Download file PDF
+        return $dompdf->stream($filename, [
+            'Attachment' => false, // Set true untuk download, false untuk preview di browser
+        ]);
     }
 }

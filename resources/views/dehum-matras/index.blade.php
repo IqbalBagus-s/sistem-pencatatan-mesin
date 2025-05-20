@@ -192,7 +192,7 @@
                             class="py-3 px-4 border-b border-gray-200">
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                            <span class="bg-blue-100 text-blue-800 px-4 py-1 rounded-full text-sm inline-block">
                                 Shift {{ $check->shift }}
                             </span>
                         </td>

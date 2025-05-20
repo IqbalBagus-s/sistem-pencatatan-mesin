@@ -98,11 +98,7 @@
                             {{-- Menu lihat --}}
                             @if(auth()->user() instanceof \App\Models\Approver)
                                 <a href="{{ route('compressor.show', $check->id) }}" title="Lihat Detail">
-                                    @if($isFullyApproved)
-                                        <i class="fas fa-eye text-primary opacity-70" title="Sudah disetujui"></i>
-                                    @else
-                                        <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
-                                    @endif
+                                    <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)

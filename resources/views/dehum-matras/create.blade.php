@@ -162,7 +162,7 @@
                     <div class="md:hidden text-sm text-gray-500 italic mb-2">
                         ← Geser ke kanan untuk melihat semua kolom →
                     </div>
-                    <div class="overflow-x-auto mb-6 border border-gray-300">
+                    <div class="overflow-x-auto mb-6">
                         <table class="w-full border-collapse">
                             <thead>
                                 <tr>
@@ -201,9 +201,9 @@
                                     @for($j = 1; $j <= 11; $j++)
                                         <td class="border border-gray-300 p-1 bg-sky-50">
                                             <div x-data="{ selected: false, userName: '' }">
-                                                <div class="mt-1" x-show="selected">
+                                                <div class="mt-1 mb-1" x-show="selected">
                                                     <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
                                                     readonly>
                                                     <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
                                                 </div>
@@ -235,7 +235,7 @@
                     <div class="md:hidden text-sm text-gray-500 italic mb-2">
                         ← Geser ke kanan untuk melihat semua kolom →
                     </div>
-                    <div class="overflow-x-auto mb-6 border border-gray-300">
+                    <div class="overflow-x-auto mb-6">
                         <table class="w-full border-collapse">
                             <thead>
                                 <tr>
@@ -274,9 +274,9 @@
                                     @for($j = 12; $j <= 22; $j++)
                                         <td class="border border-gray-300 p-1 bg-sky-50">
                                             <div x-data="{ selected: false, userName: '' }">
-                                                <div class="mt-1" x-show="selected">
+                                                <div class="mt-1 mb-1" x-show="selected">
                                                     <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
                                                         readonly>
                                                     <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
                                                 </div>
@@ -308,7 +308,7 @@
                     <div class="md:hidden text-sm text-gray-500 italic mb-2">
                         ← Geser ke kanan untuk melihat semua kolom →
                     </div>
-                    <div class="overflow-x-auto mb-6 border border-gray-300">
+                    <div class="overflow-x-auto mb-6">
                         <table class="border-collapse table-fixed" style="width: max-content;">
                             <thead>
                                 <tr>
@@ -347,9 +347,9 @@
                                     @for($j = 23; $j <= 31; $j++)
                                         <td class="border border-gray-300 p-1 bg-sky-50" style="width: 90px;">
                                             <div x-data="{ selected: false, userName: '' }">
-                                                <div class="mt-1" x-show="selected">
+                                                <div class="mt-1 mb-1" x-show="selected">
                                                     <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
                                                         readonly>
                                                     <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
                                                 </div>
