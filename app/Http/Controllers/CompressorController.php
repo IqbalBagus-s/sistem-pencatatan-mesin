@@ -443,8 +443,31 @@ class CompressorController extends Controller
             ])
             ->get();
         
+        // Format tanggal dari model CompressorCheck
+        $tanggal = new \DateTime($check->tanggal);
+        $tanggalFormatted = $tanggal->format('d_F_Y');
+        // Ubah nama bulan ke Bahasa Indonesia
+        $bulanIndonesia = [
+            'January' => 'Januari',
+            'February' => 'Februari',
+            'March' => 'Maret',
+            'April' => 'April',
+            'May' => 'Mei',
+            'June' => 'Juni',
+            'July' => 'Juli',
+            'August' => 'Agustus',
+            'September' => 'September',
+            'October' => 'Oktober',
+            'November' => 'November',
+            'December' => 'Desember'
+        ];
+        // Ganti nama bulan dalam bahasa Inggris dengan nama bulan dalam Bahasa Indonesia
+        foreach ($bulanIndonesia as $english => $indonesia) {
+            $tanggalFormatted = str_replace($english, $indonesia, $tanggalFormatted);
+        }
+        
         // Generate nama file PDF
-        $filename = 'Compressor_' . $check->nomer_compressor . '_' . date('Y-m-d') . '.pdf';
+        $filename = 'Compressor_tanggal_' . $tanggalFormatted . '.pdf';
         
         // Render view sebagai HTML
         $html = view('compressor.review_pdf', [

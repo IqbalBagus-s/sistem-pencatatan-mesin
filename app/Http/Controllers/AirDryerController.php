@@ -241,8 +241,31 @@ class AirDryerController extends Controller
         // Ambil semua detail hasil pemeriksaan untuk setiap mesin
         $details = AirDryerResult::where('check_id', $id)->get();
         
+        // Format tanggal dari model AirDryerCheck
+        $tanggal = new \DateTime($airDryer->tanggal);
+        $tanggalFormatted = $tanggal->format('d_F_Y');
+        // Ubah nama bulan ke Bahasa Indonesia
+        $bulanIndonesia = [
+            'January' => 'Januari',
+            'February' => 'Februari',
+            'March' => 'Maret',
+            'April' => 'April',
+            'May' => 'Mei',
+            'June' => 'Juni',
+            'July' => 'Juli',
+            'August' => 'Agustus',
+            'September' => 'September',
+            'October' => 'Oktober',
+            'November' => 'November',
+            'December' => 'Desember'
+        ];
+        // Ganti nama bulan dalam bahasa Inggris dengan nama bulan dalam Bahasa Indonesia
+        foreach ($bulanIndonesia as $english => $indonesia) {
+            $tanggalFormatted = str_replace($english, $indonesia, $tanggalFormatted);
+        }
+        
         // Generate nama file PDF
-        $filename = 'AirDryer_' . $id . '_' . date('Y-m-d') . '.pdf';
+        $filename = 'Airdryer_tanggal_' . $tanggalFormatted . '.pdf';
         
         // Render view sebagai HTML
         $html = view('air_dryer.review_pdf', compact('airDryer', 'details', 'form', 'formattedTanggalEfektif'))->render();
@@ -262,7 +285,5 @@ class AirDryerController extends Controller
             'Attachment' => false, // Set true untuk download, false untuk preview di browser
         ]);
     }
-
-
 
 }

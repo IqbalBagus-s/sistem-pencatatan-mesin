@@ -261,8 +261,31 @@ class WaterChillerController extends Controller
         // Ambil semua detail hasil pemeriksaan untuk setiap mesin
         $details = WaterChillerResult::where('check_id', $id)->get();
         
+        // Format tanggal dari model WaterChillerCheck
+        $tanggal = new \DateTime($waterChiller->tanggal);
+        $tanggalFormatted = $tanggal->format('d_F_Y');
+        // Ubah nama bulan ke Bahasa Indonesia
+        $bulanIndonesia = [
+            'January' => 'Januari',
+            'February' => 'Februari',
+            'March' => 'Maret',
+            'April' => 'April',
+            'May' => 'Mei',
+            'June' => 'Juni',
+            'July' => 'Juli',
+            'August' => 'Agustus',
+            'September' => 'September',
+            'October' => 'Oktober',
+            'November' => 'November',
+            'December' => 'Desember'
+        ];
+        // Ganti nama bulan dalam bahasa Inggris dengan nama bulan dalam Bahasa Indonesia
+        foreach ($bulanIndonesia as $english => $indonesia) {
+            $tanggalFormatted = str_replace($english, $indonesia, $tanggalFormatted);
+        }
+        
         // Generate nama file PDF
-        $filename = 'WaterChiller_' . $id . '_' . date('Y-m-d') . '.pdf';
+        $filename = 'Waterchiller_tanggal_' . $tanggalFormatted . '.pdf';
         
         // Render view sebagai HTML
         $html = view('water_chiller.review_pdf', compact('waterChiller', 'details', 'form', 'formattedTanggalEfektif'))->render();

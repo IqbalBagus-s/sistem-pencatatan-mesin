@@ -300,29 +300,33 @@ class GilingController extends Controller
 
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
-        
+
         // Ambil semua detail hasil pemeriksaan untuk mesin giling
         $details = GilingResult::where('check_id', $id)->get();
-        
-        // Generate nama file PDF
-        $filename = 'MesinGiling_' . $id . '_' . date('Y-m-d') . '.pdf';
-        
+
+        // Format nama file
+        Carbon::setLocale('id'); // Pastikan hasil bulan dalam Bahasa Indonesia
+        $carbonBulan = Carbon::parse($gilingCheck->bulan);
+        $namaBulan = $carbonBulan->translatedFormat('F Y'); // Contoh: "Mei 2025"
+
+        $filename = 'Giling_minggu_' . $gilingCheck->minggu . '_bulan_' . $namaBulan . '.pdf';
+
         // Render view sebagai HTML
         $html = view('giling.review_pdf', compact('gilingCheck', 'details', 'form', 'formattedTanggalEfektif'))->render();
-        
+
         // Inisialisasi Dompdf
         $dompdf = new \Dompdf\Dompdf();
         $dompdf->loadHtml($html);
-        
-        // Atur ukuran dan orientasi halaman (landscape karena tabel lebar dengan 10 kolom G1-G10)
+
+        // Atur ukuran dan orientasi halaman
         $dompdf->setPaper('A4', 'landscape');
-        
-        // Render PDF (mengubah HTML menjadi PDF)
+
+        // Render PDF
         $dompdf->render();
-        
-        // Download file PDF
+
+        // Stream / preview PDF
         return $dompdf->stream($filename, [
-            'Attachment' => false, // Set true untuk download, false untuk preview di browser
+            'Attachment' => false,
         ]);
     }
 }

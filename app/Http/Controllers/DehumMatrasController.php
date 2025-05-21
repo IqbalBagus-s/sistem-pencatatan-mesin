@@ -1091,8 +1091,13 @@ class DehumMatrasController extends Controller
             }
         }
         
-        // Generate nama file PDF
-        $filename = 'DehumMatras_' . $id . '_' . date('Y-m-d') . '.pdf';
+        $nomor = $dehumMatras->nomer_dehum_matras ?? 'unknown';
+        $shift = $dehumMatras->shift ?? 'unknown';
+        
+        $carbonBulan = Carbon::parse($dehumMatras->bulan);
+        $namaBulan = $carbonBulan->translatedFormat('F_Y'); 
+
+        $filename = "Dehum_matras_nomer_{$nomor}_shift_{$shift}_bulan_{$namaBulan}.pdf";
         
         // Render view sebagai HTML
         $html = view('dehum-matras.review_pdf', compact('dehumMatras', 'results', 'form', 'formattedTanggalEfektif', 'items'))->render();

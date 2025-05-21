@@ -481,8 +481,32 @@ class HopperController extends Controller
             $hopperCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
         }
         
-        // Generate nama file PDF
-        $filename = 'MesinHopper_' . $hopperCheck->nomer_hopper . '_' . date('Y-m-d') . '.pdf';
+        // Format tanggal dari model HopperCheck untuk mendapatkan bulan dan tahun
+        $tanggal = new \DateTime($hopperCheck->tanggal);
+        $bulan = $tanggal->format('F');
+        $tahun = $tanggal->format('Y');
+        
+        // Ubah nama bulan ke Bahasa Indonesia
+        $bulanIndonesia = [
+            'January' => 'Januari',
+            'February' => 'Februari',
+            'March' => 'Maret',
+            'April' => 'April',
+            'May' => 'Mei',
+            'June' => 'Juni',
+            'July' => 'Juli',
+            'August' => 'Agustus',
+            'September' => 'September',
+            'October' => 'Oktober',
+            'November' => 'November',
+            'December' => 'Desember'
+        ];
+        
+        // Ganti nama bulan dalam bahasa Inggris dengan nama bulan dalam Bahasa Indonesia
+        $bulanFormatted = $bulanIndonesia[$bulan] ?? $bulan;
+        
+        // Generate nama file PDF dengan format Hopper_nomer_1_bulan_Mei_2025
+        $filename = 'Hopper_nomer_' . $hopperCheck->nomer_hopper . '_bulan_' . $bulanFormatted . '_' . $tahun . '.pdf';
         
         // Render view sebagai HTML
         $html = view('hopper.review_pdf', [

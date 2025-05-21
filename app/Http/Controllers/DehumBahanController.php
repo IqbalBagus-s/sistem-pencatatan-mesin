@@ -573,8 +573,10 @@ class DehumBahanController extends Controller
             $dehumBahanCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
         }
         
+        $bulan = Carbon::createFromFormat('Y-m', $dehumBahanCheck->bulan)->translatedFormat('F Y');
+
         // Generate nama file PDF
-        $filename = 'DehumBahan_' . $dehumBahanCheck->nomer_dehum_bahan . '_' . date('Y-m-d') . '.pdf';
+        $filename = 'Dehum_bahan_nomer_' . $dehumBahanCheck->nomer_dehum_bahan . '_bulan_' . $bulan . '.pdf';
         
         // Render view sebagai HTML
         $html = view('dehum-bahan.review_pdf', [
