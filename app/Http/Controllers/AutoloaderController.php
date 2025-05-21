@@ -6,6 +6,7 @@ use App\Models\AutoloaderDetail;
 use App\Models\AutoloaderResultTable1;
 use App\Models\AutoloaderResultTable2;
 use App\Models\AutoloaderResultTable3;
+use App\Models\Form;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
@@ -799,4 +800,336 @@ class AutoloaderController extends Controller
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    public function reviewPdf($id)
+    {
+        // Ambil data utama autoloader check
+        $check = AutoloaderCheck::findOrFail($id);
+        
+        // Ambil data form terkait
+        $form = Form::where('nomor_form', 'APTEK/046/REV.01')->firstOrFail(); // Sesuaikan dengan nomor form yang benar
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil data hasil dari ketiga tabel
+        $resultsTable1 = AutoloaderResultTable1::where('check_id', $id)->get();
+        $resultsTable2 = AutoloaderResultTable2::where('check_id', $id)->get();
+        $resultsTable3 = AutoloaderResultTable3::where('check_id', $id)->get();
+        
+        // Ambil data detail (checked_by dan approved_by)
+        $detailChecks = AutoloaderDetail::where('tanggal_check_id', $id)->get();
+        
+        // Siapkan data untuk view dalam format yang sesuai
+        $results = collect();
+        
+        // Buat array untuk menyimpan data checked_by dan approved_by berdasarkan tanggal
+        $checkedByData = [];
+        $approvedByData = [];
+        
+        // Proses data checked_by dan approved_by dulu agar tersedia untuk digunakan kemudian
+        foreach ($detailChecks as $detail) {
+            $checkedByData[$detail->tanggal] = $detail->checked_by;
+            $approvedByData[$detail->tanggal] = $detail->approved_by ?? '';
+        }
+        
+        // Define the checked items for Autoloader
+        $items = [
+            1 => 'Filter',
+            2 => 'Selang',
+            3 => 'Panel Kelistrikan',
+            4 => 'Kontaktor',
+            5 => 'Thermal Overload',
+            6 => 'MCB',
+        ];
+        
+        // Proses data dari tabel 1 (tanggal 1-11)
+        foreach ($resultsTable1 as $row) {
+            $itemId = array_search($row->checked_items, $items);
+            
+            // Jika item ditemukan, proses untuk setiap tanggal (1-11)
+            if ($itemId) {
+                for ($j = 1; $j <= 11; $j++) {
+                    $tanggalField = "tanggal{$j}";
+                    $keteranganField = "keterangan_tanggal{$j}";
+                    
+                    if (isset($row->$tanggalField)) {
+                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
+                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
+                        
+                        // Periksa apakah keterangan field ada di model
+                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        
+                        $results->push([
+                            'tanggal' => $j,
+                            'item_id' => $itemId,
+                            'result' => $row->$tanggalField,
+                            'keterangan' => $keterangan,
+                            'checked_by' => $checkedBy,
+                            'approved_by' => $approvedBy
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Proses data dari tabel 2 (tanggal 12-22)
+        foreach ($resultsTable2 as $row) {
+            $itemId = array_search($row->checked_items, $items);
+            
+            if ($itemId) {
+                for ($j = 12; $j <= 22; $j++) {
+                    $tanggalField = "tanggal{$j}";
+                    $keteranganField = "keterangan_tanggal{$j}";
+                    
+                    if (isset($row->$tanggalField)) {
+                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
+                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
+                        
+                        // Periksa apakah keterangan field ada di model
+                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        
+                        $results->push([
+                            'tanggal' => $j,
+                            'item_id' => $itemId,
+                            'result' => $row->$tanggalField,
+                            'keterangan' => $keterangan,
+                            'checked_by' => $checkedBy,
+                            'approved_by' => $approvedBy
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Proses data dari tabel 3 (tanggal 23-31)
+        foreach ($resultsTable3 as $row) {
+            $itemId = array_search($row->checked_items, $items);
+            
+            if ($itemId) {
+                for ($j = 23; $j <= 31; $j++) {
+                    $tanggalField = "tanggal{$j}";
+                    $keteranganField = "keterangan_tanggal{$j}";
+                    
+                    if (isset($row->$tanggalField)) {
+                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
+                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
+                        
+                        // Periksa apakah keterangan field ada di model
+                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        
+                        $results->push([
+                            'tanggal' => $j,
+                            'item_id' => $itemId,
+                            'result' => $row->$tanggalField,
+                            'keterangan' => $keterangan,
+                            'checked_by' => $checkedBy,
+                            'approved_by' => $approvedBy
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Tambahkan data checked_by dan approved_by untuk tanggal yang mungkin belum memiliki item
+        for ($j = 1; $j <= 31; $j++) {
+            if (isset($checkedByData[$j]) && !$results->where('tanggal', $j)->where('checked_by', '!=', null)->count()) {
+                $results->push([
+                    'tanggal' => $j,
+                    'checked_by' => $checkedByData[$j],
+                    'approved_by' => $approvedByData[$j] ?? ''
+                ]);
+            }
+        }
+        
+        // Render view sebagai HTML untuk preview PDF
+        return view('autoloader.review_pdf', compact('check', 'results', 'form', 'formattedTanggalEfektif', 'items'));
+    }
+
+public function downloadPdf($id)
+{
+    // Ambil data utama autoloader check
+    $check = AutoloaderCheck::findOrFail($id);
+    
+    // Ambil data form terkait
+    $form = Form::where('nomor_form', 'APTEK/046/REV.01')->firstOrFail(); // Sesuaikan dengan nomor form yang benar
+    
+    // Format tanggal efektif
+    $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+    
+    // Ambil data hasil dari ketiga tabel
+    $resultsTable1 = AutoloaderResultTable1::where('check_id', $id)->get();
+    $resultsTable2 = AutoloaderResultTable2::where('check_id', $id)->get();
+    $resultsTable3 = AutoloaderResultTable3::where('check_id', $id)->get();
+    
+    // Ambil data detail (checked_by dan approved_by)
+    $detailChecks = AutoloaderDetail::where('tanggal_check_id', $id)->get();
+    
+    // Siapkan data untuk view dalam format yang sesuai
+    $results = collect();
+    
+    // Buat array untuk menyimpan data checked_by dan approved_by berdasarkan tanggal
+    $checkedByData = [];
+    $approvedByData = [];
+    
+    // Proses data checked_by dan approved_by dulu agar tersedia untuk digunakan kemudian
+    foreach ($detailChecks as $detail) {
+        $checkedByData[$detail->tanggal] = $detail->checked_by;
+        $approvedByData[$detail->tanggal] = $detail->approved_by ?? '';
+    }
+    
+    // Define the checked items for Autoloader
+    $items = [
+        1 => 'Filter',
+        2 => 'Selang',
+        3 => 'Panel Kelistrikan',
+        4 => 'Kontaktor',
+        5 => 'Thermal Overload',
+        6 => 'MCB',
+    ];
+    
+    // Proses data dari tabel 1 (tanggal 1-11)
+    foreach ($resultsTable1 as $row) {
+        $itemId = array_search($row->checked_items, $items);
+        
+        // Jika item ditemukan, proses untuk setiap tanggal (1-11)
+        if ($itemId) {
+            for ($j = 1; $j <= 11; $j++) {
+                $tanggalField = "tanggal{$j}";
+                $keteranganField = "keterangan_tanggal{$j}";
+                
+                if (isset($row->$tanggalField)) {
+                    // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
+                    $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                    $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
+                    
+                    // Periksa apakah keterangan field ada di model
+                    $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                    
+                    $results->push([
+                        'tanggal' => $j,
+                        'item_id' => $itemId,
+                        'result' => $row->$tanggalField,
+                        'keterangan' => $keterangan,
+                        'checked_by' => $checkedBy,
+                        'approved_by' => $approvedBy
+                    ]);
+                }
+            }
+        }
+    }
+    
+    // Proses data dari tabel 2 (tanggal 12-22)
+    foreach ($resultsTable2 as $row) {
+        $itemId = array_search($row->checked_items, $items);
+        
+        if ($itemId) {
+            for ($j = 12; $j <= 22; $j++) {
+                $tanggalField = "tanggal{$j}";
+                $keteranganField = "keterangan_tanggal{$j}";
+                
+                if (isset($row->$tanggalField)) {
+                    // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
+                    $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                    $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
+                    
+                    // Periksa apakah keterangan field ada di model
+                    $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                    
+                    $results->push([
+                        'tanggal' => $j,
+                        'item_id' => $itemId,
+                        'result' => $row->$tanggalField,
+                        'keterangan' => $keterangan,
+                        'checked_by' => $checkedBy,
+                        'approved_by' => $approvedBy
+                    ]);
+                }
+            }
+        }
+    }
+    
+    // Proses data dari tabel 3 (tanggal 23-31)
+    foreach ($resultsTable3 as $row) {
+        $itemId = array_search($row->checked_items, $items);
+        
+        if ($itemId) {
+            for ($j = 23; $j <= 31; $j++) {
+                $tanggalField = "tanggal{$j}";
+                $keteranganField = "keterangan_tanggal{$j}";
+                
+                if (isset($row->$tanggalField)) {
+                    // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
+                    $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
+                    $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
+                    
+                    // Periksa apakah keterangan field ada di model
+                    $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                    
+                    $results->push([
+                        'tanggal' => $j,
+                        'item_id' => $itemId,
+                        'result' => $row->$tanggalField,
+                        'keterangan' => $keterangan,
+                        'checked_by' => $checkedBy,
+                        'approved_by' => $approvedBy
+                    ]);
+                }
+            }
+        }
+    }
+    
+    // Tambahkan data checked_by dan approved_by untuk tanggal yang mungkin belum memiliki item
+    for ($j = 1; $j <= 31; $j++) {
+        if (isset($checkedByData[$j]) && !$results->where('tanggal', $j)->where('checked_by', '!=', null)->count()) {
+            $results->push([
+                'tanggal' => $j,
+                'checked_by' => $checkedByData[$j],
+                'approved_by' => $approvedByData[$j] ?? ''
+            ]);
+        }
+    }
+    
+    // Generate nama file PDF
+    $bulanNama = [
+        '01' => 'Januari',
+        '02' => 'Februari',
+        '03' => 'Maret',
+        '04' => 'April',
+        '05' => 'Mei',
+        '06' => 'Juni',
+        '07' => 'Juli',
+        '08' => 'Agustus',
+        '09' => 'September',
+        '10' => 'Oktober',
+        '11' => 'November',
+        '12' => 'Desember'
+    ];
+    $bulanFormat = date('m', strtotime($check->bulan));
+    $tahun = date('Y', strtotime($check->bulan));
+    $bulanText = $bulanNama[$bulanFormat];
+    
+    $filename = 'Autoloader_nomer_' . $check->nomer_autoloader . '_shift_' . $check->shift . '_' . $bulanText . '_' . $tahun . '.pdf';
+    
+    // Render view sebagai HTML
+    $html = view('autoloader.review_pdf', compact('check', 'results', 'form', 'formattedTanggalEfektif', 'items'))->render();
+    
+    // Inisialisasi Dompdf
+    $dompdf = new \Dompdf\Dompdf();
+    $dompdf->loadHtml($html);
+    
+    // Atur ukuran dan orientasi halaman (opsional)
+    $dompdf->setPaper('A4', 'potrait');
+    
+    // Render PDF (mengubah HTML menjadi PDF)
+    $dompdf->render();
+    
+    // Download file PDF
+    return $dompdf->stream($filename, [
+        'Attachment' => false, // Set true untuk download, false untuk preview di browser
+    ]);
+}
 }

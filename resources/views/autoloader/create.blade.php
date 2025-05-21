@@ -138,15 +138,19 @@
 
                 // Opsi check
                 $options = [
-                    'V' => '✓',
-                    'X' => '✗',
-                    '-' => '—',
+                    'V' => 'V',
+                    'X' => 'X',
+                    '-' => '-',
                     'OFF' => 'OFF'
                 ];
             @endphp
             <!-- Tabel Inspeksi -->
             <div class="mb-6">
                 <!-- Tabel untuk tanggal 1-11 -->
+                <!-- Notifikasi scroll horizontal untuk mobile -->
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <div class="overflow-x-auto mb-6 border border-gray-300">
                     <table class="w-full border-collapse">
                         <thead>
@@ -200,9 +204,9 @@
                                 @for($j = 1; $j <= 11; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
                                         <div x-data="{ selected: false, userName: '' }">
-                                            <div class="mt-1" x-show="selected">
+                                            <div class="mt-1 mb-1" x-show="selected">
                                                 <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded"
+                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -230,6 +234,10 @@
                 </div>
                 
                 <!-- Tabel untuk tanggal 12-22 -->
+                <!-- Notifikasi scroll horizontal untuk mobile -->
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <div class="overflow-x-auto mb-6 border border-gray-300">
                     <table class="w-full border-collapse">
                         <thead>
@@ -283,9 +291,9 @@
                                 @for($j = 12; $j <= 22; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
                                         <div x-data="{ selected: false, userName: '' }">
-                                            <div class="mt-1" x-show="selected">
+                                            <div class="mt-1 mb-1" x-show="selected">
                                                 <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -313,6 +321,10 @@
                 </div>
             
                 <!-- Tabel untuk tanggal 23-31 -->
+                <!-- Notifikasi scroll horizontal untuk mobile -->
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <div class="overflow-x-auto mb-6 border border-gray-300">
                     <table class="w-full border-collapse">
                         <thead>
@@ -366,9 +378,9 @@
                                 @for($j = 23; $j <= 31; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
                                         <div x-data="{ selected: false, userName: '' }">
-                                            <div class="mt-1" x-show="selected">
+                                            <div class="mt-1 mb-1" x-show="selected">
                                                 <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -395,6 +407,59 @@
                     </table>
                 </div>
             </div>
+            
+            {{-- catatan pemeriksaan --}}
+            <div class="bg-gradient-to-r from-sky-50 to-blue-50 p-6 rounded-xl shadow-md mb-8 border-l-4 border-blue-500">
+                <h5 class="text-xl font-bold text-blue-700 mb-5 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Catatan Pemeriksaan
+                </h5>
+                
+                <div class="flex flex-col lg:flex-row lg:space-x-6 space-y-6 lg:space-y-0 items-center justify-center">
+                    <!-- Kriteria Pemeriksaan -->
+                    <div class="bg-white p-6 rounded-lg border border-blue-200 shadow-sm w-full lg:w-2/3">
+                        <h6 class="text-lg font-semibold text-blue-600 mb-4">Standar Kriteria Pemeriksaan:</h6>
+                        <ul class="space-y-4 text-gray-800 text-sm">
+                            @foreach ([
+                                ['Filter', 'Kebersihan'],
+                                ['Selang', 'Tidak bocor'],
+                                ['Panel Kelistrikan', 'Berfungsi'],
+                                ['Kontraktor', 'Baik'],
+                                ['Temperatur Kontrol', 'Baik'],
+                                ['MCB', 'Baik']
+                            ] as [$title, $desc])
+                                <li class="flex items-start">
+                                    <svg class="h-5 w-5 mr-2 text-green-500 mt-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span><strong>{{ $title }}:</strong> {{ $desc }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    
+                    <!-- Keterangan Status -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-blue-200 w-full lg:w-1/3">
+                        <p class="text-lg font-semibold text-blue-800 mb-4">Keterangan Status:</p>
+                        <div class="grid grid-cols-2 gap-3 text-sm text-gray-800">
+                            @foreach ([
+                                ['V', 'Baik/Normal', 'green'],
+                                ['X', 'Tidak Baik/Abnormal', 'red'],
+                                ['-', 'Tidak Diisi', 'gray'],
+                                ['OFF', 'Mesin Mati', 'gray']
+                            ] as [$symbol, $label, $color])
+                                <div class="flex items-center">
+                                    <span class="inline-block w-7 h-7 bg-{{ $color }}-100 text-{{ $color }}-700 text-center font-bold mr-3 rounded">{{ $symbol }}</span>
+                                    <span>{{ $label }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             @include('components.create-form-buttons', ['backRoute' => route('autoloader.index')])
         </form>
     </div>

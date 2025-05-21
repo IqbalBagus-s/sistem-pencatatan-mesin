@@ -27,7 +27,7 @@
                 <!-- No Autoloader Display -->
                 <div class="w-full">
                     <label class="block mb-2 text-sm font-medium text-gray-700">No Autoloader:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
                         Autoloader {{ $check->nomer_autoloader }}
                     </div>
                 </div>
@@ -35,7 +35,7 @@
                 <!-- Shift Display -->
                 <div class="w-full">
                     <label class="block mb-2 text-sm font-medium text-gray-700">Shift:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
                         Shift {{ $check->shift }}
                     </div>
                 </div>
@@ -43,8 +43,8 @@
                 <!-- Bulan Display -->
                 <div class="w-full">
                     <label class="block mb-2 text-sm font-medium text-gray-700">Bulan:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
-                        {{ \Carbon\Carbon::parse($check->bulan)->format('F Y') }}
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
+                        {{ \Carbon\Carbon::parse($check->bulan)->translatedFormat('F Y') }}
                     </div>
                 </div>
             </div>                 
@@ -59,12 +59,12 @@
                     6 => 'MCB',
                 ];
 
-                // Opsi check
+                // Opsi check dengan warna
                 $options = [
-                    'V' => '✓',
-                    'X' => '✗',
-                    '-' => '—',
-                    'OFF' => 'OFF'
+                    'V' => '<span class="text-green-600 font-bold">V</span>',
+                    'X' => '<span class="text-red-600 font-bold">X</span>',
+                    '-' => '<span class="text-gray-600">—</span>',
+                    'OFF' => '<span class="text-gray-600">OFF</span>'
                 ];
                 
                 // Helper function untuk mendapatkan hasil check berdasarkan tanggal dan item
@@ -94,11 +94,21 @@
                     $result = $results->where('tanggal', $date)->first();
                     return $result && isset($result['approved_by']) ? $result['approved_by'] : '';
                 }
+
+                // Helper function untuk memeriksa apakah ada data checker pada tanggal tertentu
+                function hasCheckerData($results, $date) {
+                    $result = $results->where('tanggal', $date)->first();
+                    return $result && !empty($result['checked_by']);
+                }
             @endphp
             
             <!-- Tabel Inspeksi -->
             <div class="mb-6">
                 <!-- Tabel untuk tanggal 1-11 -->
+                <!-- Notifikasi scroll horizontal untuk mobile -->
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <div class="overflow-x-auto mb-6 border border-gray-300">
                     <table class="w-full border-collapse">
                         <thead>
@@ -128,14 +138,25 @@
                                     </td>
                                     
                                     @for($j = 1; $j <= 11; $j++)
+                                        @php
+                                            $hasChecker = hasCheckerData($results, $j);
+                                        @endphp
                                         <td class="border border-gray-300 p-1 h-10 text-center">
-                                            @php
-                                                $result = getCheckResult($results, $j, $i);
-                                                echo isset($options[$result]) ? $options[$result] : '';
-                                            @endphp
+                                            @if ($hasChecker)
+                                                @php
+                                                    $result = getCheckResult($results, $j, $i);
+                                                @endphp
+                                                {!! isset($options[$result]) ? $options[$result] : '<span class="text-gray-600">—</span>' !!}
+                                            @else
+                                                <span class="text-gray-600">—</span>
+                                            @endif
                                         </td>
                                         <td class="border border-gray-300 p-1 h-10 text-sm">
-                                            {{ getKeterangan($results, $j, $i) }}
+                                            @if ($hasChecker)
+                                                {{ getKeterangan($results, $j, $i) ?: '-' }}
+                                            @else
+                                                <span class="text-gray-600 italic text-xs">Belum diisi</span>
+                                            @endif
                                         </td>
                                     @endfor
                                 </tr>
@@ -169,7 +190,7 @@
                                             <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
                                             <div class="w-full px-2 py-1 text-sm">
                                                 <input type="text" name="approved_by_{{ $j }}" value="{{ $approvedBy }}"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -188,7 +209,7 @@
                                                 </div>
                                                 <div class="mt-1" x-show="selected">
                                                     <input type="text" name="approved_by_{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
-                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1"
+                                                        class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                         readonly>
                                                     <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="{{ $j }}">
                                                     <button type="button" 
@@ -210,6 +231,10 @@
                 </div>
                 
                 <!-- Tabel untuk tanggal 12-22 -->
+                <!-- Notifikasi scroll horizontal untuk mobile -->
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <div class="overflow-x-auto mb-6 border border-gray-300">
                     <table class="w-full border-collapse">
                         <thead>
@@ -239,14 +264,25 @@
                                     </td>
                                     
                                     @for($j = 12; $j <= 22; $j++)
+                                        @php
+                                            $hasChecker = hasCheckerData($results, $j);
+                                        @endphp
                                         <td class="border border-gray-300 p-1 h-10 text-center">
-                                            @php
-                                                $result = getCheckResult($results, $j, $i);
-                                                echo isset($options[$result]) ? $options[$result] : '';
-                                            @endphp
+                                            @if ($hasChecker)
+                                                @php
+                                                    $result = getCheckResult($results, $j, $i);
+                                                @endphp
+                                                {!! isset($options[$result]) ? $options[$result] : '<span class="text-gray-600">—</span>' !!}
+                                            @else
+                                                <span class="text-gray-600">—</span>
+                                            @endif
                                         </td>
                                         <td class="border border-gray-300 p-1 h-10 text-sm">
-                                            {{ getKeterangan($results, $j, $i) }}
+                                            @if ($hasChecker)
+                                                {{ getKeterangan($results, $j, $i) ?: '-' }}
+                                            @else
+                                                <span class="text-gray-600 italic text-xs">Belum diisi</span>
+                                            @endif
                                         </td>
                                     @endfor
                                 </tr>
@@ -280,7 +316,7 @@
                                             <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
                                             <div class="w-full px-2 py-1 text-sm">
                                                 <input type="text" name="approved_by_{{ $j }}" value="{{ $approvedBy }}"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -299,7 +335,7 @@
                                                 </div>
                                                 <div class="mt-1" x-show="selected">
                                                     <input type="text" name="approved_by_{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
-                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1"
+                                                        class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                         readonly>
                                                     <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="{{ $j }}">
                                                     <button type="button" 
@@ -321,6 +357,10 @@
                 </div>
             
                 <!-- Tabel untuk tanggal 23-31 -->
+                <!-- Notifikasi scroll horizontal untuk mobile -->
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <div class="overflow-x-auto mb-6 border border-gray-300">
                     <table class="w-full border-collapse">
                         <thead>
@@ -350,14 +390,25 @@
                                     </td>
                                     
                                     @for($j = 23; $j <= 31; $j++)
+                                        @php
+                                            $hasChecker = hasCheckerData($results, $j);
+                                        @endphp
                                         <td class="border border-gray-300 p-1 h-10 text-center">
-                                            @php
-                                                $result = getCheckResult($results, $j, $i);
-                                                echo isset($options[$result]) ? $options[$result] : '';
-                                            @endphp
+                                            @if ($hasChecker)
+                                                @php
+                                                    $result = getCheckResult($results, $j, $i);
+                                                @endphp
+                                                {!! isset($options[$result]) ? $options[$result] : '<span class="text-gray-600">—</span>' !!}
+                                            @else
+                                                <span class="text-gray-600">—</span>
+                                            @endif
                                         </td>
                                         <td class="border border-gray-300 p-1 h-10 text-sm">
-                                            {{ getKeterangan($results, $j, $i) }}
+                                            @if ($hasChecker)
+                                                {{ getKeterangan($results, $j, $i) ?: '-' }}
+                                            @else
+                                                <span class="text-gray-600 italic text-xs">Belum diisi</span>
+                                            @endif
                                         </td>
                                     @endfor
                                 </tr>
@@ -391,7 +442,7 @@
                                             <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
                                             <div class="w-full px-2 py-1 text-sm">
                                                 <input type="text" name="approved_by_{{ $j }}" value="{{ $approvedBy }}"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -410,7 +461,7 @@
                                                 </div>
                                                 <div class="mt-1" x-show="selected">
                                                     <input type="text" name="approved_by_{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
-                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1"
+                                                        class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                         readonly>
                                                     <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="{{ $j }}">
                                                     <button type="button" 
@@ -431,15 +482,105 @@
                     </table>
                 </div>
             </div>
+
+            {{-- catatan pemeriksaan --}}
+            <div class="bg-gradient-to-r from-sky-50 to-blue-50 p-6 rounded-xl shadow-md mb-8 border-l-4 border-blue-500">
+                <h5 class="text-xl font-bold text-blue-700 mb-5 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Catatan Pemeriksaan
+                </h5>
+                
+                <div class="flex flex-col lg:flex-row lg:space-x-6 space-y-6 lg:space-y-0 items-center justify-center">
+                    <!-- Kriteria Pemeriksaan -->
+                    <div class="bg-white p-6 rounded-lg border border-blue-200 shadow-sm w-full lg:w-2/3">
+                        <h6 class="text-lg font-semibold text-blue-600 mb-4">Standar Kriteria Pemeriksaan:</h6>
+                        <ul class="space-y-4 text-gray-800 text-sm">
+                            @foreach ([
+                                ['Filter', 'Kebersihan'],
+                                ['Selang', 'Tidak bocor'],
+                                ['Panel Kelistrikan', 'Berfungsi'],
+                                ['Kontraktor', 'Baik'],
+                                ['Temperatur Kontrol', 'Baik'],
+                                ['MCB', 'Baik']
+                            ] as [$title, $desc])
+                                <li class="flex items-start">
+                                    <svg class="h-5 w-5 mr-2 text-green-500 mt-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span><strong>{{ $title }}:</strong> {{ $desc }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    
+                    <!-- Keterangan Status -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-blue-200 w-full lg:w-1/3">
+                        <p class="text-lg font-semibold text-blue-800 mb-4">Keterangan Status:</p>
+                        <div class="grid grid-cols-2 gap-3 text-sm text-gray-800">
+                            @foreach ([
+                                ['V', 'Baik/Normal', 'green'],
+                                ['X', 'Tidak Baik/Abnormal', 'red'],
+                                ['-', 'Tidak Diisi', 'gray'],
+                                ['OFF', 'Mesin Mati', 'gray']
+                            ] as [$symbol, $label, $color])
+                                <div class="flex items-center">
+                                    <span class="inline-block w-7 h-7 bg-{{ $color }}-100 text-{{ $color }}-700 text-center font-bold mr-3 rounded">{{ $symbol }}</span>
+                                    <span>{{ $label }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <!-- Button Controls -->
             <div class="flex justify-between mt-6">
-                <a href="{{ route('autoloader.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                <a href="{{ route('autoloader.index') }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                     Kembali
                 </a>
-                <button type="submit" class="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800">
-                    Setujui
-                </button>
+                
+                <!-- Action Buttons - Right Side -->
+                <div class="flex flex-row flex-wrap gap-2 justify-end">
+                    <!-- Hitung jumlah hari dalam bulan -->
+                    @php
+                        $year = substr($check->bulan, 0, 4);
+                        $month = substr($check->bulan, 5, 2);
+                        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, (int)$month, (int)$year);
+                        
+                        // Hitung jumlah tanggal yang sudah disetujui
+                        $approvedDatesCount = $results->where('approved_by', '!=', null)->where('approved_by', '!=', '')->unique('tanggal')->count();
+                    @endphp
+                    
+                    <!-- Conditional rendering based on approval status -->
+                    @if($approvedDatesCount < $daysInMonth)
+                        <!-- Tombol Setujui untuk yang belum disetujui atau disetujui sebagian -->
+                        <button type="submit" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Setujui
+                        </button>
+                    @else
+                        <!-- PDF Preview Button -->
+                        <a href="{{ route('autoloader.pdf', $check->id) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            Preview PDF
+                        </a>
+                        
+                        <!-- Download PDF Button -->
+                        <a href="{{ route('autoloader.downloadPdf', $check->id) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Download PDF
+                        </a>
+                    @endif
+                </div>
             </div>
         </form>
     </div>
