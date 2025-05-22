@@ -59,6 +59,10 @@ class DehumBahanController extends Controller
 
     public function store(Request $request)
     {
+        $customMessages = [
+            'nomer_dehum_bahan.required' => 'Silakan pilih nomor dehum bahan terlebih dahulu!',
+            'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
+        ];
         // Validate the request
         $validatedData = $request->validate([
             'nomer_dehum_bahan' => 'required|integer|min:1|max:15',
@@ -84,7 +88,7 @@ class DehumBahanController extends Controller
             'keterangan_3' => 'nullable|array',
             'check_4' => 'nullable|array',
             'keterangan_4' => 'nullable|array',
-        ]);
+        ], $customMessages);
 
         // Check for existing record with the same nomer_dehum and bulan
         $existingRecord = DehumBahanCheck::where('nomer_dehum_bahan', $request->input('nomer_dehum_bahan'))

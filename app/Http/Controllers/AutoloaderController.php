@@ -94,12 +94,19 @@ class AutoloaderController extends Controller
 
     public function store(Request $request)
     {
-        // Validate input
+        // Custom error messages untuk validasi
+        $customMessages = [
+            'nomer_autoloader.required' => 'Silakan pilih nomor autoloader terlebih dahulu!',
+            'shift.required' => 'Silakan pilih shift terlebih dahulu!',
+            'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
+        ];
+
+        // Validate input dengan custom messages
         $validated = $request->validate([
             'nomer_autoloader' => 'required|integer|between:1,23',
             'shift' => 'required|integer|between:1,3',
             'bulan' => 'required|date_format:Y-m',
-        ]);
+        ], $customMessages);
 
         // Check for duplicate record
         $existingRecord = AutoloaderCheck::where('nomer_autoloader', $request->nomer_autoloader)
@@ -121,7 +128,7 @@ class AutoloaderController extends Controller
 
         // Start a database transaction
         DB::beginTransaction();
-    
+
         try {
             // Create Autoloader Check record
             $autoloaderCheck = AutoloaderCheck::create([
@@ -224,7 +231,6 @@ class AutoloaderController extends Controller
             // Process checked_by information for all days (1-31)
             for ($i = 1; $i <= 31; $i++) {
                 $checkedByKey = "checked_by_{$i}";
-                $checkNumKey = "check_num_{$i}";
                 
                 if ($request->has($checkedByKey) && !empty($request->$checkedByKey)) {
                     AutoloaderDetail::create([

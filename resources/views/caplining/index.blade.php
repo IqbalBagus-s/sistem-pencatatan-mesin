@@ -113,7 +113,7 @@
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->nomer_caplining }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             @if (!$check->hasTanggal)
-                                <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">Belum Diisi</span>
+                                <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm inline-block">Belum Diisi</span>
                             @else
                                 {{ $check->tanggalFormatted }}
                             @endif
@@ -128,7 +128,7 @@
                                     @endforeach
                                 </div>
                             @else
-                                <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
+                                <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm inline-block">
                                     Belum Diisi
                                 </span>
                             @endif
@@ -136,7 +136,7 @@
                         <td class="py-3 px-4 border-b border-gray-200">
                             @if($check->approvalStatus === 'fully_approved')
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                    Disetujui
+                                    Disetujui Penuh
                                 </span>
                             @elseif($check->approvalStatus === 'partially_approved')
                                 <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">

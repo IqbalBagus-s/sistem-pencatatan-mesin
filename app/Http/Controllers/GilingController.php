@@ -67,12 +67,16 @@ class GilingController extends Controller
 
     public function store(Request $request)
     {
+        $customMessages = [
+            'minggu.required' => 'Silakan pilih minggu terlebih dahulu!',
+            'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
+        ];
         // Validate basic input
         $request->validate([
             'minggu' => 'required|in:1,2,3,4',
             'bulan' => 'required|date_format:Y-m',
             'catatan' => 'nullable|string|max:1000',
-        ]);
+        ], $customMessages);
 
         // Check if the combination of month and week already exists
         $existingCheck = GilingCheck::where('bulan', $request->bulan)

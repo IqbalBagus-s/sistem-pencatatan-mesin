@@ -58,6 +58,10 @@ class HopperController extends Controller
 
     public function store(Request $request)
     {
+        $customMessages = [
+            'nomer_hopper.required' => 'Silakan pilih nomer hopper terlebih dahulu!',
+            'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
+        ];
         // Validate the request
         $validatedData = $request->validate([
             'nomer_hopper' => 'required|integer|min:1|max:15',
@@ -83,7 +87,7 @@ class HopperController extends Controller
             'keterangan_3' => 'nullable|array',
             'check_4' => 'nullable|array',
             'keterangan_4' => 'nullable|array',
-        ]);
+        ], $customMessages);
 
         // Check for existing record with the same nomer_hopper and bulan
         $existingRecord = HopperCheck::where('nomer_hopper', $request->input('nomer_hopper'))

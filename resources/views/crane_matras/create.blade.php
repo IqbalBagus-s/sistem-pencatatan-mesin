@@ -22,27 +22,20 @@
                 <div x-data="{ 
                     open: false, 
                     selected: null,
-                    error: false,
                     reset() {
                         this.selected = null;
                         this.open = false;
-                        this.error = true;
                     },
-                    validate() {
-                        this.error = this.selected === null;
-                        return !this.error;
-                    }
                 }" class="relative w-full">
                     <!-- Label with Required Indicator -->
                     <label class="block mb-2 text-sm font-medium text-gray-700">
-                        Pilih No Crane Matras: <span class="text-red-500">*</span>
+                        Pilih No Crane Matras:
                     </label>
                     
-                    <!-- Dropdown Button with Error State -->
+                    <!-- Dropdown Button -->
                     <button type="button" 
                         @click="open = !open" 
-                        class="w-full h-10 px-3 py-2 bg-gray-100 border rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative"
-                        :class="error ? 'border-red-500' : 'border-gray-300'">
+                        class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative">
                         <span x-text="selected ? 'Crane Matras ' + selected : 'Pilih Crane Matras'"></span>
                         
                         <!-- Selection Indicator -->
@@ -59,17 +52,12 @@
                         </div>
                     </button>
                     
-                    <!-- Error Message -->
-                    <div x-show="error" class="text-red-500 text-sm mt-1">
-                        Silakan pilih No Crane Matras
-                    </div>
-                    
                     <!-- Dropdown List -->
-                    <div x-show="open" @click.away="open = false" class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md p-2 z-50 max-h-60 overflow-y-auto">
+                    <div x-show="open" @click.away="open = false" class="absolute left-0 mt-1 w-full bg-white border border-blue-400 shadow-lg rounded-md p-2 z-50 max-h-60 overflow-y-auto">
                         <div class="grid grid-cols-3 gap-2">
                             <template x-for="i in 3" :key="i">
                                 <div @click.stop>
-                                    <button type="button" @click="selected = i; open = false; error = false;" class="w-full px-3 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white rounded-md">
+                                    <button type="button" @click="selected = i; open = false;" class="w-full px-3 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white rounded-md">
                                         <span x-text="'Crane Matras ' + i"></span>
                                     </button>
                                 </div>
@@ -78,14 +66,14 @@
                     </div>
                     
                     <!-- Hidden Input untuk dikirim ke server (required) -->
-                    <input type="hidden" name="nomer_crane_matras" x-model="selected" required x-on:invalid="error = true">
+                    <input type="hidden" name="nomer_crane_matras" x-model="selected">
                 </div>
             
                 <div>
                     <label for="bulan" class="block mb-2 text-sm font-medium text-gray-700">
-                        Pilih Bulan: <span class="text-red-500">*</span>
+                        Pilih Bulan:
                     </label>
-                    <input type="month" id="bulan" name="bulan" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
+                    <input type="month" id="bulan" name="bulan" class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
                 </div>
             </div>                  
             @php

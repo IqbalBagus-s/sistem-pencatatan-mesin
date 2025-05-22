@@ -88,11 +88,15 @@ class VacumCleanerController extends Controller
 
     public function store(Request $request)
     {
+        $customMessages = [
+            'nomer_vacuum_cleaner.required' => 'Silakan pilih nomer vacuum cleaner terlebih dahulu!',
+            'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
+        ];
         // Validasi input
         $validated = $request->validate([
             'nomer_vacuum_cleaner' => 'required|integer|between:1,3',
             'bulan' => 'required|date_format:Y-m',
-        ]);
+        ], $customMessages);
     
         // Debug: Cek data yang diterima dari form
         Log::info('Data dari form vacuum cleaner:', $request->all());

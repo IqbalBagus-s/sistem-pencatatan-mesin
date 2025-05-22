@@ -90,12 +90,17 @@ class DehumMatrasController extends Controller
     
     public function store(Request $request)
     {
+        $customMessages = [
+            'nomer_dehum_matras.required' => 'Silakan pilih nomor dehum matras terlebih dahulu!',
+            'shift.required' => 'Silakan pilih shift terlebih dahulu!',
+            'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
+        ];
         // Validate input
         $validated = $request->validate([
             'nomer_dehum_matras' => 'required|integer|between:1,23',
             'shift' => 'required|integer|between:1,3',
             'bulan' => 'required|date_format:Y-m',
-        ]);
+        ], $customMessages);
     
         // Check for duplicate record
         $existingRecord = DehumMatrasCheck::where('nomer_dehum_matras', $request->nomer_dehum_matras)

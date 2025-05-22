@@ -61,6 +61,10 @@ class CraneMatrasControler extends Controller
 
     public function store(Request $request)
     {
+        // Custom error messages
+        $customMessages = [
+            'nomer_crane_matras.required' => 'Silakan pilih nomor crane matras terlebih dahulu!',
+        ];
         // Validasi input
         $validatedData = $request->validate([
             'nomer_crane_matras' => 'required|integer|min:1|max:3',
@@ -70,7 +74,7 @@ class CraneMatrasControler extends Controller
             'checked_items' => 'required|array',
             'check' => 'required|array',
             'keterangan' => 'nullable|array',
-        ]);
+        ], $customMessages);
         
         // Cek apakah ada data dengan nomer_crane_matras dan bulan yang sama
         $existingRecord = CraneMatrasCheck::where('nomer_crane_matras', $request->input('nomer_crane_matras'))

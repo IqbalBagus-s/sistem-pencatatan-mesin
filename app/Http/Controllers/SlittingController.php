@@ -59,6 +59,10 @@ class SlittingController extends Controller
 
     public function store(Request $request)
     {
+        $customMessages = [
+            'nomer_slitting.required' => 'Silakan pilih nomer slitting terlebih dahulu!',
+            'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
+        ];
         // Validate the request
         $validatedData = $request->validate([
             'nomer_slitting' => 'required|integer|min:1|max:15',
@@ -84,7 +88,7 @@ class SlittingController extends Controller
             'keterangan_3' => 'nullable|array',
             'check_4' => 'nullable|array',
             'keterangan_4' => 'nullable|array',
-        ]);
+        ], $customMessages);
     
         // Check for existing record with the same nomer_slitting and bulan
         $existingRecord = SlittingCheck::where('nomer_slitting', $request->input('nomer_slitting'))
