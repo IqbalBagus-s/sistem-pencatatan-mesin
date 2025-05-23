@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use App\Models\VacumCleanerCheck;
 use App\Models\VacumCleanerResultsTable1;
 use App\Models\VacumCleanerResultsTable2;
+use App\Models\Form;
 use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
 
 class VacumCleanerController extends Controller
@@ -16,18 +17,18 @@ class VacumCleanerController extends Controller
     public function index(Request $request)
     {
         $query = VacumCleanerCheck::query();
-    
+
         // Filter berdasarkan nama checker jika ada
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
             $query->where(function($q) use ($search) {
                 $q->where('checker_minggu1', 'LIKE', $search)
-                  ->orWhere('checker_minggu2', 'LIKE', $search)
-                  ->orWhere('approver_minggu1', 'LIKE', $search)
-                  ->orWhere('approver_minggu2', 'LIKE', $search);
+                ->orWhere('checker_minggu2', 'LIKE', $search)
+                ->orWhere('approver_minggu1', 'LIKE', $search)
+                ->orWhere('approver_minggu2', 'LIKE', $search);
             });
         }
-    
+
         // Filter berdasarkan nomor vacuum cleaner
         if ($request->filled('search_vacuum_cleaner')) {
             $query->where('nomer_vacum_cleaner', $request->search_vacuum_cleaner);
@@ -44,7 +45,7 @@ class VacumCleanerController extends Controller
         }
 
         $query->orderBy('created_at', 'desc');
-    
+
         // Ambil data dengan paginasi
         $checks = $query->paginate(10)->appends($request->query());
         
@@ -76,8 +77,28 @@ class VacumCleanerController extends Controller
             }
             
             $check->approvedDatesCount = $approvedCount;
+            
+            // ===== TAMBAHAN: Logika Status Persetujuan =====
+            // Cek apakah approver_minggu2 dan approver_minggu4 ada dan tidak kosong
+            $approver_minggu2_filled = !empty($check->approver_minggu2);
+            $approver_minggu4_filled = !empty($check->approver_minggu4);
+            
+            // Tentukan status berdasarkan kondisi
+            if ($approver_minggu2_filled && $approver_minggu4_filled) {
+                // Keduanya terisi = Disetujui
+                $check->isFullyApproved = true;
+                $check->isPartiallyApproved = false;
+            } elseif ($approver_minggu2_filled || $approver_minggu4_filled) {
+                // Salah satu terisi = Disetujui Sebagian
+                $check->isFullyApproved = false;
+                $check->isPartiallyApproved = true;
+            } else {
+                // Keduanya kosong = Belum Disetujui
+                $check->isFullyApproved = false;
+                $check->isPartiallyApproved = false;
+            }
         }
-    
+
         return view('vacuum_cleaner.index', compact('checks'));
     }
 
@@ -344,10 +365,10 @@ class VacumCleanerController extends Controller
             'nomer_vacuum_cleaner' => 'required|integer|between:1,3',
             'bulan' => 'required|date_format:Y-m',
         ]);
-    
+
         // Cari data vacuum cleaner yang akan diupdate
         $vacuumCheck = VacumCleanerCheck::findOrFail($id);
-    
+
         // Cek apakah ada perubahan pada data utama (nomer_vacuum_cleaner, bulan)
         if ($vacuumCheck->nomer_vacum_cleaner != $request->nomer_vacuum_cleaner || 
             $vacuumCheck->bulan != $request->bulan) {
@@ -364,10 +385,10 @@ class VacumCleanerController extends Controller
                     ->with('error', 'Data dengan nomor vacuum cleaner dan bulan yang sama sudah ada!');
             }
         }
-    
+
         // Mulai transaksi database
         DB::beginTransaction();
-    
+
         try {
             // Update data VacumCleanerCheck
             $vacuumCheck->update([
@@ -443,11 +464,28 @@ class VacumCleanerController extends Controller
             }
             
             // Update data checker untuk minggu ke-2
-            // PERUBAHAN: Hanya update jika checkbox dipilih, jangan reset jika tidak dipilih
             if ($request->has('check_num_1') && !empty($request->check_num_1)) {
                 $tanggal = null;
+                
+                // Perbaikan parsing tanggal
                 if (!empty($request->check_date_1)) {
-                    $tanggal = Carbon::createFromFormat('d-m-Y', $request->check_date_1)->format('Y-m-d');
+                    try {
+                        // Cek apakah format tanggal adalah d-m-Y atau sudah dalam format Y-m-d
+                        if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $request->check_date_1)) {
+                            // Format d-m-Y, perlu dikonversi
+                            $tanggal = Carbon::createFromFormat('d-m-Y', $request->check_date_1)->format('Y-m-d');
+                        } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $request->check_date_1)) {
+                            // Format Y-m-d, langsung gunakan
+                            $tanggal = $request->check_date_1;
+                        } else {
+                            // Format lain, coba parse dengan Carbon
+                            $tanggal = Carbon::parse($request->check_date_1)->format('Y-m-d');
+                        }
+                    } catch (\Exception $e) {
+                        // Jika gagal parsing, gunakan tanggal hari ini
+                        Log::warning('Gagal parsing tanggal untuk minggu 2: ' . $request->check_date_1 . '. Error: ' . $e->getMessage());
+                        $tanggal = Carbon::now()->format('Y-m-d');
+                    }
                 }
                 
                 $vacuumCheck->update([
@@ -455,14 +493,30 @@ class VacumCleanerController extends Controller
                     'tanggal_dibuat_minggu2' => $tanggal
                 ]);
             }
-            // Hapus blok elseif yang mereset nilai checker
             
             // Update data checker untuk minggu ke-4
-            // PERUBAHAN: Hanya update jika checkbox dipilih, jangan reset jika tidak dipilih
             if ($request->has('check_num_2') && !empty($request->check_num_2)) {
                 $tanggal = null;
+                
+                // Perbaikan parsing tanggal
                 if (!empty($request->check_date_2)) {
-                    $tanggal = Carbon::createFromFormat('d-m-Y', $request->check_date_2)->format('Y-m-d');
+                    try {
+                        // Cek apakah format tanggal adalah d-m-Y atau sudah dalam format Y-m-d
+                        if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $request->check_date_2)) {
+                            // Format d-m-Y, perlu dikonversi
+                            $tanggal = Carbon::createFromFormat('d-m-Y', $request->check_date_2)->format('Y-m-d');
+                        } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $request->check_date_2)) {
+                            // Format Y-m-d, langsung gunakan
+                            $tanggal = $request->check_date_2;
+                        } else {
+                            // Format lain, coba parse dengan Carbon
+                            $tanggal = Carbon::parse($request->check_date_2)->format('Y-m-d');
+                        }
+                    } catch (\Exception $e) {
+                        // Jika gagal parsing, gunakan tanggal hari ini
+                        Log::warning('Gagal parsing tanggal untuk minggu 4: ' . $request->check_date_2 . '. Error: ' . $e->getMessage());
+                        $tanggal = Carbon::now()->format('Y-m-d');
+                    }
                 }
                 
                 $vacuumCheck->update([
@@ -470,7 +524,6 @@ class VacumCleanerController extends Controller
                     'tanggal_dibuat_minggu4' => $tanggal
                 ]);
             }
-            // Hapus blok elseif yang mereset nilai checker
             
             // Commit transaksi
             DB::commit();
@@ -484,6 +537,7 @@ class VacumCleanerController extends Controller
             
             // Log error untuk debugging
             Log::error('Error saat memperbarui data vacuum cleaner: ' . $e->getMessage());
+            Log::error('Request data: ' . json_encode($request->all()));
             Log::error($e->getTraceAsString());
             
             return redirect()->back()
@@ -620,6 +674,215 @@ class VacumCleanerController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function reviewPdf($id) 
+    {
+        try {
+            // Ambil data pemeriksaan vacuum cleaner berdasarkan ID
+            $vacuumCheck = VacumCleanerCheck::findOrFail($id);
+            
+            // Ambil data form terkait (sesuaikan nomor form untuk vacuum cleaner)
+            $form = Form::where('nomor_form', 'APTEK/006/REV.01')->firstOrFail(); // Ganti dengan nomor form yang sesuai
+            
+            // Format tanggal efektif
+            $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+            
+            // Ambil data hasil dari kedua tabel
+            $resultsTable1 = VacumCleanerResultsTable1::where('check_id', $id)->get()->keyBy('checked_items');
+            $resultsTable2 = VacumCleanerResultsTable2::where('check_id', $id)->get()->keyBy('checked_items');
+            
+            // Definisikan item-item yang diperiksa untuk vacuum cleaner
+            $items = [
+                1 => 'Kebersihan Body',
+                2 => 'Motor',
+                3 => 'Selang',
+                4 => 'Aksesoris',
+                5 => 'Filter',
+                6 => 'Bostel',
+                7 => 'Kabel',
+            ];
+            
+            // Siapkan array untuk menyimpan hasil check dan keterangan
+            // Inisialisasi untuk minggu 1 dan 3 (kosong karena tidak ada data)
+            $check_1 = [];
+            $keterangan_1 = [];
+            $check_3 = [];
+            $keterangan_3 = [];
+            
+            // Isi data untuk minggu 2 dari resultsTable1
+            $check_2 = [];
+            $keterangan_2 = [];
+            foreach ($items as $i => $item) {
+                $result = $resultsTable1->get($item);
+                $check_2[$i] = optional($result)->minggu2 ?? '';
+                $keterangan_2[$i] = optional($result)->keterangan_minggu2 ?? '';
+            }
+            
+            // Isi data untuk minggu 4 dari resultsTable2
+            $check_4 = [];
+            $keterangan_4 = [];
+            foreach ($items as $i => $item) {
+                $result = $resultsTable2->get($item);
+                $check_4[$i] = optional($result)->minggu4 ?? '';
+                $keterangan_4[$i] = optional($result)->keterangan_minggu4 ?? '';
+            }
+            
+            // Isi minggu 1 dan 3 dengan nilai kosong
+            for ($i = 1; $i <= 7; $i++) {
+                $check_1[$i] = '';
+                $keterangan_1[$i] = '';
+                $check_3[$i] = '';
+                $keterangan_3[$i] = '';
+            }
+            
+            // Tambahkan array ke vacuumCheck object
+            $vacuumCheck->check_1 = $check_1;
+            $vacuumCheck->keterangan_1 = $keterangan_1;
+            $vacuumCheck->check_2 = $check_2;
+            $vacuumCheck->keterangan_2 = $keterangan_2;
+            $vacuumCheck->check_3 = $check_3;
+            $vacuumCheck->keterangan_3 = $keterangan_3;
+            $vacuumCheck->check_4 = $check_4;
+            $vacuumCheck->keterangan_4 = $keterangan_4;
+            
+            // Render view sebagai HTML untuk preview PDF
+            $view = view('vacuum_cleaner.review_pdf', [
+                'vacuumCheck' => $vacuumCheck,
+                'form' => $form,
+                'formattedTanggalEfektif' => $formattedTanggalEfektif,
+                'items' => $items
+            ]);
+            
+            // Return view untuk preview
+            return $view;
+            
+        } catch (\Exception $e) {
+            // Catat detail error untuk debugging
+            Log::error('Error saat menampilkan review PDF vacuum cleaner: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            
+            return redirect()->route('vacuum-cleaner.index')
+                ->with('error', 'Terjadi kesalahan saat menampilkan review PDF: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadPdf($id)
+    {
+        try {
+            // Ambil data pemeriksaan vacuum cleaner berdasarkan ID
+            $vacuumCheck = VacumCleanerCheck::findOrFail($id);
+            
+            // Ambil data form terkait (sesuaikan nomor form untuk vacuum cleaner)
+            $form = Form::where('nomor_form', 'APTEK/006/REV.01')->firstOrFail(); // Ganti dengan nomor form yang sesuai
+            
+            // Format tanggal efektif
+            $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+            
+            // Ambil data hasil dari kedua tabel
+            $resultsTable1 = VacumCleanerResultsTable1::where('check_id', $id)->get()->keyBy('checked_items');
+            $resultsTable2 = VacumCleanerResultsTable2::where('check_id', $id)->get()->keyBy('checked_items');
+            
+            // Definisikan item-item yang diperiksa untuk vacuum cleaner
+            $items = [
+                1 => 'Kebersihan Body',
+                2 => 'Motor',
+                3 => 'Selang',
+                4 => 'Aksesoris',
+                5 => 'Filter',
+                6 => 'Bostel',
+                7 => 'Kabel',
+            ];
+            
+            // Siapkan semua field check dan keterangan untuk empat minggu
+            for ($j = 1; $j <= 4; $j++) {
+                // Inisialisasi array untuk menyimpan hasil check dan keterangan per minggu
+                ${'check_' . $j} = [];
+                ${'keterangan_' . $j} = [];
+                
+                // Isi array berdasarkan minggu
+                foreach ($items as $i => $item) {
+                    if ($j == 1 || $j == 3) {
+                        // Minggu 1 dan 3 kosong (tidak ada data)
+                        ${'check_' . $j}[$i] = '';
+                        ${'keterangan_' . $j}[$i] = '';
+                    } elseif ($j == 2) {
+                        // Minggu 2 dari resultsTable1
+                        $result = $resultsTable1->get($item);
+                        ${'check_' . $j}[$i] = optional($result)->minggu2 ?? '';
+                        ${'keterangan_' . $j}[$i] = optional($result)->keterangan_minggu2 ?? '';
+                    } elseif ($j == 4) {
+                        // Minggu 4 dari resultsTable2
+                        $result = $resultsTable2->get($item);
+                        ${'check_' . $j}[$i] = optional($result)->minggu4 ?? '';
+                        ${'keterangan_' . $j}[$i] = optional($result)->keterangan_minggu4 ?? '';
+                    }
+                }
+                
+                // Tambahkan array ke vacuumCheck object
+                $vacuumCheck->{'check_' . $j} = ${'check_' . $j};
+                $vacuumCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+            }
+            
+            // Format tanggal dari model VacumCleanerCheck untuk mendapatkan bulan dan tahun
+            $tanggal = new \DateTime($vacuumCheck->tanggal);
+            $bulan = $tanggal->format('F');
+            $tahun = $tanggal->format('Y');
+            
+            // Ubah nama bulan ke Bahasa Indonesia
+            $bulanIndonesia = [
+                'January' => 'Januari',
+                'February' => 'Februari',
+                'March' => 'Maret',
+                'April' => 'April',
+                'May' => 'Mei',
+                'June' => 'Juni',
+                'July' => 'Juli',
+                'August' => 'Agustus',
+                'September' => 'September',
+                'October' => 'Oktober',
+                'November' => 'November',
+                'December' => 'Desember'
+            ];
+            
+            // Ganti nama bulan dalam bahasa Inggris dengan nama bulan dalam Bahasa Indonesia
+            $bulanFormatted = $bulanIndonesia[$bulan] ?? $bulan;
+            
+            // Generate nama file PDF dengan format VacuumCleaner_nomer_1_bulan_Mei_2025
+            // Sesuaikan dengan field nomor yang ada di model VacumCleanerCheck
+            $filename = 'VacuumCleaner_nomer_' . $vacuumCheck->nomer_vacum_cleaner . '_bulan_' . $bulanFormatted . '_' . $tahun . '.pdf';
+            
+            // Render view sebagai HTML
+            $html = view('vacuum_cleaner.review_pdf', [
+                'vacuumCheck' => $vacuumCheck,
+                'form' => $form,
+                'formattedTanggalEfektif' => $formattedTanggalEfektif,
+                'items' => $items
+            ])->render();
+            
+            // Inisialisasi Dompdf
+            $dompdf = new \Dompdf\Dompdf();
+            $dompdf->loadHtml($html);
+            
+            // Atur ukuran dan orientasi halaman
+            $dompdf->setPaper('A4', 'potrait');
+            
+            // Render PDF (mengubah HTML menjadi PDF)
+            $dompdf->render();
+            
+            // Download file PDF
+            return $dompdf->stream($filename, [
+                'Attachment' => false, // Set true untuk download otomatis
+            ]);
+            
+        } catch (\Exception $e) {
+            // Catat detail error untuk debugging
+            Log::error('Error saat download PDF vacuum cleaner: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            
+            return redirect()->route('vacuum-cleaner.index')
+                ->with('error', 'Terjadi kesalahan saat download PDF: ' . $e->getMessage());
         }
     }
 }
