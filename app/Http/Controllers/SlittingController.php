@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SlittingCheck;
 use App\Models\SlittingResult;
+use App\Models\Form;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -539,50 +540,220 @@ class SlittingController extends Controller
             ->with('success', 'Persetujuan berhasil disimpan');
     }
    
-    public function reviewPdf($id)
+    public function reviewPdf($id) 
     {
-        // Cari dokumen SlittingCheck berdasarkan ID dengan eager loading untuk relasi results
-        $slittingCheck = SlittingCheck::with('results')->findOrFail($id);
+        // Ambil data pemeriksaan slitting berdasarkan ID
+        $slittingCheck = SlittingCheck::findOrFail($id);
         
-        // Data yang akan dikirim ke view
-        $data = [
-            'slittingCheck' => $slittingCheck,
-            'title' => 'Review PDF ' . $slittingCheck->nomer_slitting,
-            'results' => $slittingCheck->results,
-            'bulan' => $slittingCheck->bulan
+        // Ambil data form terkait (sesuaikan nomor form untuk slitting)
+        $form = Form::where('nomor_form', 'APTEK/014/REV.00')->firstOrFail(); // Ganti XXX dengan nomor form yang sesuai
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil semua hasil pemeriksaan terkait check ini
+        $results = SlittingResult::where('check_id', $id)->get();
+        
+        // Definisikan items yang akan ditampilkan di PDF
+        $items = [
+            1 => 'Conveyor',
+            2 => 'Motor Conveyor',
+            3 => 'Kelistrikan',
+            4 => 'Kontaktor',
+            5 => 'Inverter',
+            6 => 'Vibrator',
+            7 => 'Motor Vibrator',
+            8 => 'Motor Blower',
+            9 => 'Selang angin',
+            10 => 'Flow Control',
+            11 => 'Sensor',
+            12 => 'Limit Switch',
+            13 => 'Pisau Cutting',
+            14 => 'Motor Cutting',
+            15 => 'Elemen',
+            16 => 'Regulator',
+            17 => 'Air Filter',
         ];
         
-        // Gunakan nama view secara langsung
-        return view('slitting.review_pdf', $data);
+        // Siapkan semua field check dan keterangan untuk empat minggu
+        for ($j = 1; $j <= 4; $j++) {
+            // Inisialisasi array untuk menyimpan hasil check dan keterangan per minggu
+            ${'check_' . $j} = [];
+            ${'keterangan_' . $j} = [];
+            
+            // Isi array dengan data dari results
+            foreach ($items as $i => $item) {
+                // Cari hasil berdasarkan item menggunakan logika yang sama seperti di fungsi show
+                $result = $results->where('checked_items', $item)->first();
+                
+                // Jika tidak ditemukan, coba cari dengan format lain
+                if (!$result) {
+                    $result = $results->first(function($record) use ($i) {
+                        // Coba cocokkan item_id jika ada
+                        if (isset($record->item_id) && $record->item_id == $i) {
+                            return true;
+                        }
+                        
+                        // Coba cocokkan format "1:Conveyor"
+                        if (strpos($record->checked_items, $i.':') === 0) {
+                            return true;
+                        }
+                        
+                        // Coba cocokkan hanya angka
+                        if ($record->checked_items == (string)$i) {
+                            return true;
+                        }
+                        
+                        return false;
+                    });
+                }
+                
+                ${'check_' . $j}[$i] = optional($result)->{'minggu' . $j} ?? '';
+                ${'keterangan_' . $j}[$i] = optional($result)->{'keterangan_minggu' . $j} ?? '';
+            }
+            
+            // Tambahkan array ke slittingCheck object
+            $slittingCheck->{'check_' . $j} = ${'check_' . $j};
+            $slittingCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+        }
+        
+        // Render view sebagai HTML untuk preview PDF
+        $view = view('slitting.review_pdf', [
+            'slittingCheck' => $slittingCheck,
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'items' => $items
+        ]);
+        
+        // Return view untuk preview
+        return $view;
     }
     
     public function downloadPdf($id)
     {
-        // Cari dokumen SlittingCheck berdasarkan ID
+        // Ambil data pemeriksaan slitting berdasarkan ID
         $slittingCheck = SlittingCheck::findOrFail($id);
         
-        // Ambil data hasil slitting
-        $results = $slittingCheck->results;
+        // Ambil data form terkait
+        $form = Form::where('nomor_form', 'APTEK/014/REV.00')->firstOrFail();
         
-        // Generate PDF dengan menggunakan string HTML langsung
-        $pdf = PDF::loadView('slitting.review_pdf', [
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil semua hasil pemeriksaan terkait check ini
+        $results = SlittingResult::where('check_id', $id)->get();
+        
+        // Definisikan items yang akan ditampilkan di PDF
+        $items = [
+            1 => 'Conveyor',
+            2 => 'Motor Conveyor',
+            3 => 'Kelistrikan',
+            4 => 'Kontaktor',
+            5 => 'Inverter',
+            6 => 'Vibrator',
+            7 => 'Motor Vibrator',
+            8 => 'Motor Blower',
+            9 => 'Selang angin',
+            10 => 'Flow Control',
+            11 => 'Sensor',
+            12 => 'Limit Switch',
+            13 => 'Pisau Cutting',
+            14 => 'Motor Cutting',
+            15 => 'Elemen',
+            16 => 'Regulator',
+            17 => 'Air Filter',
+        ];
+        
+        // Siapkan semua field check dan keterangan untuk empat minggu
+        for ($j = 1; $j <= 4; $j++) {
+            // Inisialisasi array untuk menyimpan hasil check dan keterangan per minggu
+            ${'check_' . $j} = [];
+            ${'keterangan_' . $j} = [];
+            
+            // Isi array dengan data dari results
+            foreach ($items as $i => $item) {
+                // Cari hasil berdasarkan item menggunakan logika yang sama seperti di fungsi show
+                $result = $results->where('checked_items', $item)->first();
+                
+                // Jika tidak ditemukan, coba cari dengan format lain
+                if (!$result) {
+                    $result = $results->first(function($record) use ($i) {
+                        // Coba cocokkan item_id jika ada
+                        if (isset($record->item_id) && $record->item_id == $i) {
+                            return true;
+                        }
+                        
+                        // Coba cocokkan format "1:Conveyor"
+                        if (strpos($record->checked_items, $i.':') === 0) {
+                            return true;
+                        }
+                        
+                        // Coba cocokkan hanya angka
+                        if ($record->checked_items == (string)$i) {
+                            return true;
+                        }
+                        
+                        return false;
+                    });
+                }
+                
+                ${'check_' . $j}[$i] = optional($result)->{'minggu' . $j} ?? '';
+                ${'keterangan_' . $j}[$i] = optional($result)->{'keterangan_minggu' . $j} ?? '';
+            }
+            
+            // Tambahkan array ke slittingCheck object
+            $slittingCheck->{'check_' . $j} = ${'check_' . $j};
+            $slittingCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+        }
+        
+        // Format tanggal dari model SlittingCheck untuk mendapatkan bulan dan tahun
+        $tanggal = new \DateTime($slittingCheck->tanggal);
+        $bulan = $tanggal->format('F');
+        $tahun = $tanggal->format('Y');
+        
+        // Ubah nama bulan ke Bahasa Indonesia
+        $bulanIndonesia = [
+            'January' => 'Januari',
+            'February' => 'Februari',
+            'March' => 'Maret',
+            'April' => 'April',
+            'May' => 'Mei',
+            'June' => 'Juni',
+            'July' => 'Juli',
+            'August' => 'Agustus',
+            'September' => 'September',
+            'October' => 'Oktober',
+            'November' => 'November',
+            'December' => 'Desember'
+        ];
+        
+        // Ganti nama bulan dalam bahasa Inggris dengan nama bulan dalam Bahasa Indonesia
+        $bulanFormatted = $bulanIndonesia[$bulan] ?? $bulan;
+        
+        // Generate nama file PDF dengan format Slitting_nomer_1_bulan_Mei_2025
+        $filename = 'Slitting_nomer_' . $slittingCheck->nomer_slitting . '_bulan_' . $bulanFormatted . '_' . $tahun . '.pdf';
+        
+        // Render view sebagai HTML
+        $html = view('slitting.review_pdf', [
             'slittingCheck' => $slittingCheck,
-            'results' => $results,
-            'bulan' => $slittingCheck->bulan,
-            'title' => 'Dokumen Check Slitting ' . $slittingCheck->nomer_slitting
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'items' => $items
+        ])->render();
+        
+        // Inisialisasi Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        
+        // Atur ukuran dan orientasi halaman
+        $dompdf->setPaper('A4', 'potrait');
+        
+        // Render PDF (mengubah HTML menjadi PDF)
+        $dompdf->render();
+        
+        // Download file PDF
+        return $dompdf->stream($filename, [
+            'Attachment' => false, // Set true untuk download otomatis
         ]);
-        
-        // Konfigurasi PDF
-        $pdf->setPaper('A4', 'portrait');
-        $pdf->setOptions([
-            'isHtml5ParserEnabled' => true,
-            'isRemoteEnabled' => true
-        ]);
-        
-        // Nama file yang akan didownload
-        $filename = 'Dokumen_Slitting_' . $slittingCheck->nomer_slitting . '_' . $slittingCheck->bulan . '.pdf';
-        
-        // Return response download
-        return $pdf->download($filename);
     }
 }

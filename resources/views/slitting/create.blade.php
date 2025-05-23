@@ -100,9 +100,9 @@
 
                 // Opsi check
                 $options = [
-                    'V' => '✓',
-                    'X' => '✗',
-                    '-' => '—',
+                    'V' => 'V',
+                    'X' => 'X',
+                    '-' => '-',
                     'OFF' => 'OFF'
                 ];
             @endphp
@@ -114,6 +114,9 @@
 
             <!-- Tabel Inspeksi Mingguan -->
             <div class="mb-6">
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <div class="overflow-x-auto mb-6 border border-gray-300">
                     <table class="w-full border-collapse">
                         <thead>
@@ -212,9 +215,9 @@
                                 <!-- Minggu 1 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
                                     <div x-data="{ selected: false, userName: '' }">
-                                        <div class="mt-1" x-show="selected">
+                                        <div class="mt-1 mb-1" x-show="selected">
                                             <input type="text" name="checked_by_1" x-ref="user1" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
                                             <input type="hidden" name="check_num_1" x-ref="checkNum1" value="1">
                                         </div>
@@ -239,9 +242,9 @@
                                 <!-- Minggu 2 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
                                     <div x-data="{ selected: false, userName: '' }">
-                                        <div class="mt-1" x-show="selected">
+                                        <div class="mt-1 mb-1" x-show="selected">
                                             <input type="text" name="checked_by_2" x-ref="user2" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded"
                                                 readonly>
                                             <input type="hidden" name="check_num_2" x-ref="checkNum2" value="2">
                                         </div>
@@ -266,9 +269,9 @@
                                 <!-- Minggu 3 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
                                     <div x-data="{ selected: false, userName: '' }">
-                                        <div class="mt-1" x-show="selected">
+                                        <div class="mt-1 mb-1" x-show="selected">
                                             <input type="text" name="checked_by_3" x-ref="user3" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
                                             <input type="hidden" name="check_num_3" x-ref="checkNum3" value="3">
                                         </div>
@@ -293,9 +296,9 @@
                                 <!-- Minggu 4 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
                                     <div x-data="{ selected: false, userName: '' }">
-                                        <div class="mt-1" x-show="selected">
+                                        <div class="mt-1 mb-1" x-show="selected">
                                             <input type="text" name="checked_by_4" x-ref="user4" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
                                             <input type="hidden" name="check_num_4" x-ref="checkNum4" value="4">
                                         </div>

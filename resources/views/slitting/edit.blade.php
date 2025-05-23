@@ -54,9 +54,9 @@
 
             // Opsi check
             $options = [
-                'V' => '✓',
-                'X' => '✗',
-                '-' => '—',
+                'V' => 'V',
+                'X' => 'X',
+                '-' => '-',
                 'OFF' => 'OFF'
             ];
         @endphp
@@ -68,6 +68,9 @@
 
         <!-- Tabel Inspeksi Mingguan -->
         <div class="mb-6">
+            <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                ← Geser ke kanan untuk melihat semua kolom →
+            </div>
             <div class="overflow-x-auto mb-6 border border-gray-300">
                 <table class="w-full border-collapse">
                     <thead>
@@ -167,9 +170,9 @@
                                         userName: '{{ $checkedBy }}',
                                         isApproved: {{ $isApproved ? 'true' : 'false' }}
                                     }">
-                                        <div class="mt-1" x-show="selected || isApproved">
+                                        <div class="mt-1 mb-1" x-show="selected || isApproved">
                                             <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" value="{{ $checkedBy }}"
-                                                class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded text-center"
+                                                class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-white' }} border border-gray-300 rounded text-center"
                                                 readonly>
                                             <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $isChecked ? $j : '' }}">
                                             

@@ -33,15 +33,15 @@
                 <!-- No Slitting Display -->
                 <div class="w-full">
                     <label class="block mb-2 text-sm font-medium text-gray-700">No Slitting:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
-                        Slitting {{ $check->nomer_slitting }}
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
+                        Slitting nomor {{ $check->nomer_slitting }}
                     </div>
                 </div>
 
                 <div>
                     <label class="block mb-2 text-sm font-medium text-gray-700">Bulan:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
-                        {{ date('F Y', strtotime($check->bulan)) }}
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
+                        {{ \Carbon\Carbon::parse($check->bulan)->translatedFormat('F Y') }}
                     </div>
                 </div>
             </div>                 
@@ -69,10 +69,10 @@
 
                 // Opsi check dengan ikon
                 $options = [
-                    'V' => '✓',
-                    'X' => '✗',
-                    '-' => '—',
-                    'OFF' => 'OFF'
+                    'V' => '<span class="text-green-600 font-bold">V</span>',
+                    'X' => '<span class="text-red-600 font-bold">X</span>',
+                    '-' => '<span class="text-gray-600">—</span>',
+                    'OFF' => '<span class="text-gray-600">OFF</span>'
                 ];
             @endphp
             
@@ -192,7 +192,7 @@
                                                 <div x-show="selected" class="w-full py-1">
                                                     <div class="flex flex-col items-center">
                                                         <input type="text" name="approved_by_minggu{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
-                                                            class="w-full max-w-xs px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1"
+                                                            class="w-full max-w-xs px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                             readonly>
                                                         <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="">
                                                         <button type="button" 
@@ -235,50 +235,63 @@
             </div>
             
             <!-- Button Controls -->
-            <div class="flex justify-between mt-6">
-                <a href="{{ route('slitting.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Kembali
-                </a>
-                
-                @php
-                    // Check if all 4 weeks have approved_by filled
-                    $allApproved = true;
-                    for ($j = 1; $j <= 4; $j++) {
-                        if (empty($check->{'approved_by_minggu'.$j})) {
-                            $allApproved = false;
-                            break;
-                        }
-                    }
-                @endphp
-                
-                @if ($allApproved)
-                    <!-- All weeks are approved, show "Sudah Disetujui" button and "Download PDF" button -->
-                    <div class="flex space-x-3">
-                        <button type="button" disabled class="bg-green-600 text-white py-2 px-4 rounded opacity-75 cursor-not-allowed">
-                            Sudah Disetujui
-                        </button>
-                        <!-- Tombol untuk review PDF -->
-                        <a href="{{ route('slitting.pdf', $check->id) }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            <!-- Button Controls -->
+            <div class="mt-8 bg-white rounded-lg p-2 sm:p-4">
+                <div class="flex flex-row flex-wrap items-center justify-between gap-2">
+                    <!-- Back Button - Left Side -->
+                    <div class="flex-shrink-0">
+                        <a href="{{ route('slitting.index') }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                             </svg>
-                            Preview PDF
-                        </a>
-                        <!-- Tombol untuk download PDF -->
-                        <a href="{{ route('slitting.downloadPdf', $check->id) }}" class="download-pdf-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Download PDF
+                            Kembali
                         </a>
                     </div>
-                @else
-                    <!-- Not all weeks are approved, show "Setujui" button -->
-                    <button type="submit" class="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800">
-                        Setujui
-                    </button>
-                @endif
+                    
+                    <!-- Action Buttons - Right Side -->
+                    <div class="flex flex-row flex-wrap gap-2 justify-end">
+                        @php
+                            // Check if all 4 weeks have approved_by filled
+                            $allApproved = true;
+                            for ($j = 1; $j <= 4; $j++) {
+                                if (empty($check->{'approved_by_minggu'.$j})) {
+                                    $allApproved = false;
+                                    break;
+                                }
+                            }
+                        @endphp
+                        
+                        @if (!$allApproved)
+                            <!-- Not all weeks are approved, show "Setujui" button -->
+                            <button type="submit" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Setujui
+                            </button>
+                        @endif
+                        
+                        @if ($allApproved)
+                            <!-- All weeks are approved, show PDF Preview and Download buttons -->
+                            <!-- PDF Preview Button -->
+                            <a href="{{ route('slitting.pdf', $check->id) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Preview PDF
+                            </a>
+                            
+                            <!-- Download PDF Button -->
+                            <a href="{{ route('slitting.downloadPdf', $check->id) }}" class="download-pdf-btn flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Download PDF
+                            </a>
+                        @endif
+                    </div>
+                </div>
             </div>
         </form>
     </div>
