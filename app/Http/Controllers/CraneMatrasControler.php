@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CraneMatrasCheck;
 use App\Models\CraneMatrasResult;
+use App\Models\Form;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -383,4 +384,150 @@ class CraneMatrasControler extends Controller
             ->route('crane-matras.index')
             ->with('success', 'Persetujuan berhasil disimpan');
     }
+
+    public function reviewPdf($id) 
+    {
+        // Ambil data pemeriksaan crane matras berdasarkan ID
+        $craneMatrasCheck = CraneMatrasCheck::findOrFail($id);
+        
+        // Ambil data form terkait (sesuaikan nomor form dengan yang digunakan untuk crane matras)
+        $form = Form::where('nomor_form', 'APTEK/005/REV.00')->firstOrFail(); // Sesuaikan nomor form
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil detail hasil pemeriksaan untuk crane matras
+        $craneMatrasResults = CraneMatrasResult::where('check_id', $id)->get();
+        
+        // Format tanggal pemeriksaan dalam bahasa Indonesia
+        $tanggalFormatted = null;
+        if ($craneMatrasCheck->tanggal) {
+            $date = new \DateTime($craneMatrasCheck->tanggal);
+            $bulanIndonesia = [
+                '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
+                '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
+                '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
+            ];
+            $month = $bulanIndonesia[$date->format('m')];
+            $tanggalFormatted = $date->format('d') . ' ' . $month . ' ' . $date->format('Y');
+        }
+        
+        // Siapkan data pemeriksaan yang sudah diformat
+        $formattedResults = [];
+        
+        // Mengumpulkan semua item dari hasil pemeriksaan
+        foreach ($craneMatrasResults as $result) {
+            $formattedResults[] = [
+                'item' => $result->checked_items,
+                'check' => $result->check,
+                'keterangan' => $result->keterangan
+            ];
+        }
+        
+        // Siapkan data checker
+        $checkerData = [
+            'checked_by' => $craneMatrasCheck->checked_by,
+            'tanggal' => $tanggalFormatted,
+            'bulan' => $craneMatrasCheck->bulan,
+            'nomer_crane_matras' => $craneMatrasCheck->nomer_crane_matras,
+        ];
+        
+        // Status approval
+        $approvalStatus = !empty($craneMatrasCheck->approved_by);
+        
+        // Render view sebagai HTML untuk preview PDF
+        $view = view('crane_matras.review_pdf', [
+            'craneMatrasCheck' => $craneMatrasCheck,
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'formattedResults' => $formattedResults,
+            'checkerData' => $checkerData,
+            'approvalStatus' => $approvalStatus
+        ]);
+        
+        // Return view untuk preview
+        return $view;
+    }
+
+    public function downloadPdf($id)
+{
+    // Ambil data pemeriksaan crane matras berdasarkan ID
+    $craneMatrasCheck = CraneMatrasCheck::findOrFail($id);
+    
+    // Ambil data form terkait (sesuaikan nomor form dengan yang digunakan untuk crane matras)
+    $form = Form::where('nomor_form', 'APTEK/005/REV.00')->firstOrFail(); // Sesuaikan nomor form
+    
+    // Format tanggal efektif
+    $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+    
+    // Ambil detail hasil pemeriksaan untuk crane matras
+    $craneMatrasResults = CraneMatrasResult::where('check_id', $id)->get();
+    
+    // Format tanggal pemeriksaan dalam bahasa Indonesia
+    $tanggalFormatted = null;
+    if ($craneMatrasCheck->tanggal) {
+        $date = new \DateTime($craneMatrasCheck->tanggal);
+        $bulanIndonesia = [
+            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
+            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
+            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
+        ];
+        $month = $bulanIndonesia[$date->format('m')];
+        $tanggalFormatted = $date->format('d') . ' ' . $month . ' ' . $date->format('Y');
+    }
+    
+    // Siapkan data pemeriksaan yang sudah diformat
+    $formattedResults = [];
+    
+    // Mengumpulkan semua item dari hasil pemeriksaan
+    foreach ($craneMatrasResults as $result) {
+        $formattedResults[] = [
+            'item' => $result->checked_items,
+            'check' => $result->check,
+            'keterangan' => $result->keterangan
+        ];
+    }
+    
+    // Siapkan data checker
+    $checkerData = [
+        'checked_by' => $craneMatrasCheck->checked_by,
+        'tanggal' => $tanggalFormatted,
+        'bulan' => $craneMatrasCheck->bulan,
+        'nomer_crane_matras' => $craneMatrasCheck->nomer_crane_matras,
+    ];
+    
+    // Status approval
+    $approvalStatus = !empty($craneMatrasCheck->approved_by);
+    
+    // Format bulan untuk nama file
+    $bulan = Carbon::createFromFormat('Y-m', $craneMatrasCheck->bulan)->translatedFormat('F Y');
+    
+    // Generate nama file PDF
+    $filename = 'Crane_matras_nomer_' . $craneMatrasCheck->nomer_crane_matras . '_bulan_' . $bulan . '.pdf';
+    
+    // Render view sebagai HTML
+    $html = view('crane_matras.review_pdf', [
+        'craneMatrasCheck' => $craneMatrasCheck,
+        'form' => $form,
+        'formattedTanggalEfektif' => $formattedTanggalEfektif,
+        'formattedResults' => $formattedResults,
+        'checkerData' => $checkerData,
+        'approvalStatus' => $approvalStatus
+    ])->render();
+    
+    // Inisialisasi Dompdf
+    $dompdf = new \Dompdf\Dompdf();
+    $dompdf->loadHtml($html);
+    
+    // Atur ukuran dan orientasi halaman
+    $dompdf->setPaper('A4', 'potrait');
+    
+    // Render PDF (mengubah HTML menjadi PDF)
+    $dompdf->render();
+    
+    // Download file PDF
+    return $dompdf->stream($filename, [
+        'Attachment' => false, // Set true untuk download otomatis
+    ]);
+}
 }
