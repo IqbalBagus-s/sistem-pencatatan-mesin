@@ -118,13 +118,13 @@
                             </span>
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if($check->approved_by1 && $check->approved_by2)
-                                <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                    Disetujui Lengkap
-                                </span>
-                            @elseif($check->approved_by1 || $check->approved_by2)
+                            @if(($check->approved_by1 && !$check->approved_by2) || (!$check->approved_by1 && $check->approved_by2))
                                 <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui Sebagian
+                                </span>
+                            @elseif($check->status === 'disetujui')
+                                <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Disetujui Lengkap
                                 </span>
                             @else
                                 <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
@@ -140,7 +140,7 @@
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @if(!$check->approved_by1 && !$check->approved_by2)
+                                @if($check->status === 'belum_disetujui')
                                     <a href="{{ route('giling.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>

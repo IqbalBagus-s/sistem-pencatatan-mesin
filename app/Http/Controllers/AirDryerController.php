@@ -71,11 +71,13 @@ class AirDryerController extends Controller
 
         try {
             // Simpan data pemeriksaan utama
+            // PERUBAHAN: Hapus manual setting 'status' - biarkan model yang mengatur otomatis
             $airDryerCheck = AirDryerCheck::create([
                 'tanggal' => $request->tanggal,
                 'hari' => $request->hari,
                 'checked_by' => Auth::user()->username,
                 'keterangan' => $request->catatan,
+                // Status akan otomatis diset menjadi 'belum_disetujui' karena approved_by kosong
             ]);
 
             // Simpan detail untuk setiap mesin
@@ -124,10 +126,9 @@ class AirDryerController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Validasi input
+        // Validasi input (tanpa tanggal dan hari)
         $request->validate([
-            'tanggal' => 'required|date',
-            'hari' => 'required|string',
+            'catatan' => 'nullable|string',
         ]);
         
         // Mulai transaksi database
@@ -136,11 +137,10 @@ class AirDryerController extends Controller
         try {
             // Update data pemeriksaan utama
             $airDryer = AirDryerCheck::findOrFail($id);
+            
+            // Hanya update keterangan/catatan
             $airDryer->update([
-                'tanggal' => $request->tanggal,
-                'hari' => $request->hari,
                 'keterangan' => $request->catatan,
-                // Tidak update checked_by karena ini adalah user yang membuat record
             ]);
             
             // Update detail untuk setiap mesin
@@ -193,17 +193,22 @@ class AirDryerController extends Controller
 
     public function approve(Request $request, $id)
     {
-        // Ambil data pemeriksaan air dryer berdasarkan ID
-        $airDryer = AirDryerCheck::findOrFail($id);
-        
-        // Update approved_by field dengan username approver yang login
-        $airDryer->update([
-            'approved_by' => Auth::user()->username
-        ]);
-        
-        // Redirect ke halaman index dengan pesan sukses
-        return redirect()->route('air-dryer.index')
-            ->with('success', 'Data pemeriksaan Air Dryer berhasil disetujui!');
+        try {
+            // Ambil data pemeriksaan air dryer berdasarkan ID
+            $airDryer = AirDryerCheck::findOrFail($id);
+            
+            // PERUBAHAN: Gunakan method helper dari model instead of manual update
+            // Method approve() di model akan otomatis set approved_by dan status
+            $airDryer->approve(Auth::user()->username);
+            
+            // Redirect ke halaman index dengan pesan sukses
+            return redirect()->route('air-dryer.index')
+                ->with('success', 'Data pemeriksaan Air Dryer berhasil disetujui!');
+                
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menyetujui data: ' . $e->getMessage());
+        }
     }
 
     public function reviewPdf($id)

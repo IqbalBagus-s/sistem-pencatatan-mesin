@@ -6,6 +6,18 @@ use Illuminate\Http\Request;
 use App\Models\Approver;
 use App\Models\Checker;
 use App\Models\Form;
+use App\Models\AirDryerCheck;
+use App\Models\WaterChillerCheck;
+use App\Models\CompressorCheck;
+use App\Models\HopperCheck;
+use App\Models\DehumBahanCheck;
+use App\Models\DehumMatrasCheck;
+use App\Models\AutoLoaderCheck;
+use App\Models\GilingCheck;
+use App\Models\CapliningCheck;
+use App\Models\VacumCleanerCheck;
+use App\Models\SlittingCheck;
+use App\Models\CraneMatrasCheck;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +26,29 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-        return view('menu.dashboard', compact('user'));
+        
+        // Hitung jumlah data yang belum disetujui untuk setiap mesin
+        // Hanya untuk approver yang perlu melihat notifikasi
+        $notificationCounts = [];
+        
+        if ($user instanceof \App\Models\Approver) {
+            $notificationCounts = [
+                'air_dryer' => AirDryerCheck::belumDisetujui()->count(),
+                'water_chiller' => WaterChillerCheck::belumDisetujui()->count(),
+                // 'compressor' => CompressorCheck::belumDisetujui()->count(),
+                // 'hopper' => HopperCheck::belumDisetujui()->count(),
+                // 'dehum_bahan' => DehumBahanCheck::belumDisetujui()->count(),
+                // 'dehum_matras' => DehumMatrasCheck::belumDisetujui()->count(),
+                // 'auto_loader' => AutoLoaderCheck::belumDisetujui()->count(),
+                'gilingan' => GilingCheck::belumDisetujui()->count(),
+                // 'caplining' => CapliningCheck::belumDisetujui()->count(),
+                // 'vacuum_cleaner' => VacumCleanerCheck::belumDisetujui()->count(),
+                // 'slitting' => SlittingCheck::belumDisetujui()->count(),
+                // 'crane_matras' => CraneMatrasCheck::belumDisetujui()->count(),
+            ];
+        }
+        
+        return view('menu.dashboard', compact('user', 'notificationCounts'));
     }
 
     public function hostDashboard()
@@ -38,4 +72,3 @@ class DashboardController extends Controller
         return view('menu.dashboard_host', compact('approverCount', 'checkerCount', 'activeFormCount'));
     }
 }
-

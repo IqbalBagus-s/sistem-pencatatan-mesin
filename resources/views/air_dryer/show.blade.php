@@ -224,7 +224,7 @@
                 <!-- Action Buttons - Right Side -->
                 <div class="flex flex-row flex-wrap gap-2 justify-end">
                     <!-- Conditional rendering based on approval status -->
-                    @if (empty($airDryer->approved_by))
+                    @if ($airDryer->status === 'belum_disetujui')
                         <!-- Approval Button -->
                         <form action="{{ route('air-dryer.approve', $airDryer->id) }}" method="POST">
                             @csrf

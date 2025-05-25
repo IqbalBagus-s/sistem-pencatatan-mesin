@@ -87,7 +87,7 @@
                 <button type="submit" onclick="this.disabled=true; this.form.submit();" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200">Sign in</button>
             </form>
 
-            <p class="text-center text-gray-500 text-xs sm:text-sm mt-5">2025 © PT Asia Pramulia</p>
+            <p class="text-center text-gray-500 text-xs sm:text-sm mt-5"> {{ date('Y') }}  © PT Asia Pramulia</p>
         </div>
     </div>
 

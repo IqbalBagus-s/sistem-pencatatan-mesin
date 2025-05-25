@@ -58,7 +58,7 @@
                             </span>
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if($check->approved_by)
+                            @if($check->status === 'disetujui')
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui
                                 </span>
@@ -76,7 +76,7 @@
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @if(!$check->approved_by)
+                                @if($check->status === 'belum_disetujui')
                                     <a href="{{ route('air-dryer.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>

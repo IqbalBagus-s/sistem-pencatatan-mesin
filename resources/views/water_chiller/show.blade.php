@@ -229,7 +229,7 @@
                 <!-- Action Buttons - Right Side -->
                 <div class="flex flex-row flex-wrap gap-2 justify-end">
                     <!-- Conditional rendering based on approval status -->
-                    @if (empty($waterChillerCheck->approved_by))
+                    @if ($waterChillerCheck->status === 'belum_disetujui')
                         <!-- Approval Button -->
                         <form action="{{ route('water-chiller.approve', $waterChillerCheck->id) }}" method="POST">
                             @csrf

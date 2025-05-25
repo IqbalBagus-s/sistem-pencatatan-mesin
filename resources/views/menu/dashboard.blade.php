@@ -180,6 +180,38 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        /* Notification badge styling */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 2px solid white;
+            z-index: 10;
+        }
+        
+        .card-header {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .notification-icon {
+            position: relative;
+            display: inline-block;
+        }
         
         /* Machine card styling */
         .machine-card {
@@ -397,6 +429,25 @@
                 min-height: calc(100vh - 130px); /* Viewport height - (header + footer) */
             }
         }
+
+        /* Responsive notification badge */
+        @media (max-width: 640px) {
+            .notification-badge {
+                width: 16px;
+                height: 16px;
+                font-size: 0.625rem;
+                top: -3px;
+                right: -3px;
+            }
+        }
+        
+        @media (max-width: 359px) {
+            .notification-badge {
+                width: 14px;
+                height: 14px;
+                font-size: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body class="bg-blue-50">
@@ -446,41 +497,56 @@
                     {{ auth()->user() instanceof \App\Models\Approver ? 'Daftar Form Pengajuan Pencatatan Mesin' : 'Daftar Form Pencatatan Mesin' }}
                 </h2>
         
-                <div class="machine-grid mt-4 sm:mt-6">
-                    @php
-                        $machines = [
-                            ['name' => 'Air Dryer', 'route' => 'air-dryer.index'],
-                            ['name' => 'Water Chiller', 'route' => 'water-chiller.index'],
-                            ['name' => 'Compressor', 'route' => 'compressor.index'],
-                            ['name' => 'Hopper', 'route' => 'hopper.index'],
-                            ['name' => 'Dehum Bahan', 'route' => 'dehum-bahan.index'],
-                            ['name' => 'Dehum Matras', 'route' => 'dehum-matras.index'],
-                            ['name' => 'Auto Loader', 'route' => 'autoloader.index'],
-                            ['name' => 'Gilingan', 'route' => 'giling.index'],
-                            ['name' => 'Caplining', 'route' => 'caplining.index'],
-                            ['name' => 'Vacuum Cleaner', 'route' => 'vacuum-cleaner.index'],
-                            ['name' => 'Slitting', 'route' => 'slitting.index'],
-                            ['name' => 'Crane Matras', 'route' => 'crane-matras.index']
-                        ];
-                    @endphp
-                    
-                    @foreach ($machines as $machine)
-                        <div>
-                            <div class="bg-white rounded-lg shadow-md overflow-hidden machine-card">
-                                <div class="p-2 sm:p-3 md:p-4 card-content">
-                                    <h5 class="font-semibold mb-2 sm:mb-3 md:mb-4 text-center text-xs sm:text-sm md:text-base">
-                                        {{ $machine['name'] }}
-                                    </h5>
-                                    @if ($machine['route'])
-                                        <a href="{{ route($machine['route']) }}" class="btn-check-machine text-white py-1.5 sm:py-2 px-2 sm:px-3 md:px-4 rounded mt-auto text-xs sm:text-sm md:text-base">Cek Disini</a>
-                                    @else
-                                        <button class="btn-check-machine text-white py-1.5 sm:py-2 px-2 sm:px-3 md:px-4 rounded mt-auto text-xs sm:text-sm md:text-base">Cek Disini</button>
-                                    @endif
-                                </div>
+
+<div class="machine-grid mt-4 sm:mt-6">
+    @php
+        $machines = [
+            ['name' => 'Air Dryer', 'route' => 'air-dryer.index', 'key' => 'air_dryer'],
+            ['name' => 'Water Chiller', 'route' => 'water-chiller.index', 'key' => 'water_chiller'],
+            // ['name' => 'Compressor', 'route' => 'compressor.index', 'key' => 'compressor'],
+            // ['name' => 'Hopper', 'route' => 'hopper.index', 'key' => 'hopper'],
+            // ['name' => 'Dehum Bahan', 'route' => 'dehum-bahan.index', 'key' => 'dehum_bahan'],
+            // ['name' => 'Dehum Matras', 'route' => 'dehum-matras.index', 'key' => 'dehum_matras'],
+            // ['name' => 'Auto Loader', 'route' => 'autoloader.index', 'key' => 'auto_loader'],
+            ['name' => 'Gilingan', 'route' => 'giling.index', 'key' => 'gilingan'],
+            // ['name' => 'Caplining', 'route' => 'caplining.index', 'key' => 'caplining'],
+            // ['name' => 'Vacuum Cleaner', 'route' => 'vacuum-cleaner.index', 'key' => 'vacuum_cleaner'],
+            // ['name' => 'Slitting', 'route' => 'slitting.index', 'key' => 'slitting'],
+            // ['name' => 'Crane Matras', 'route' => 'crane-matras.index', 'key' => 'crane_matras']
+        ];
+    @endphp
+    
+    @foreach ($machines as $index => $machine)
+        <div>
+            <div class="bg-white rounded-lg shadow-md overflow-hidden machine-card">
+                <div class="p-2 sm:p-3 md:p-4 card-content">
+                    <div class="card-header">
+                        <h5 class="font-semibold text-center text-xs sm:text-sm md:text-base">
+                            {{ $machine['name'] }}
+                        </h5>
+                        <!-- Ikon notifikasi dengan badge - hanya tampil untuk approver -->
+                        @if(auth()->user() instanceof \App\Models\Approver)
+                            <div class="notification-icon ml-2">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                                </svg>
+                                <!-- Badge notifikasi berdasarkan data real -->
+                                @if(isset($notificationCounts[$machine['key']]) && $notificationCounts[$machine['key']] > 0)
+                                    <span class="notification-badge">{{ $notificationCounts[$machine['key']] }}</span>
+                                @endif
                             </div>
-                        </div>
-                    @endforeach
+                        @endif
+                    </div>
+                    @if ($machine['route'])
+                        <a href="{{ route($machine['route']) }}" class="btn-check-machine text-white py-1.5 sm:py-2 px-2 sm:px-3 md:px-4 rounded mt-auto text-xs sm:text-sm md:text-base">Cek Disini</a>
+                    @else
+                        <button class="btn-check-machine text-white py-1.5 sm:py-2 px-2 sm:px-3 md:px-4 rounded mt-auto text-xs sm:text-sm md:text-base">Cek Disini</button>
+                    @endif
                 </div>
+            </div>
+        </div>
+    @endforeach
+</div>
             </div>
         </div>
 
