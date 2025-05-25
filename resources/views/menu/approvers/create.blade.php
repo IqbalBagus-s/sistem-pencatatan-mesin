@@ -31,8 +31,8 @@
         <div class="mb-5">
             <label for="username" class="block text-gray-700 font-medium mb-2">Username</label>
             <input type="text" id="username" name="username" 
-                class="w-full px-3 py-2 bg-white border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 @error('username') border-red-500 @enderror
-                value="{{ old('username') }}" 
+                class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 @error('username') border-red-500 @enderror
+                value="{{ old('username') }}"
                 placeholder="Masukkan username" required>
             @error('username')
                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>

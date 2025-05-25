@@ -1,3 +1,4 @@
+{{-- resources/views/layouts/index-host-layout.blade.php --}}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -253,10 +254,10 @@
             </div>
         </div>
         
-        <!-- Pagination -->
-        <div class="mt-4 flex justify-center">
-            @yield('pagination')
-        </div>
+        <!-- Pagination Section -->
+        @hasSection('pagination-data')
+            @yield('pagination-data')
+        @endif
 
         <!-- Tombol Kembali ke Dashboard -->
         <div class="mt-4">

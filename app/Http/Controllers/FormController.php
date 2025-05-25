@@ -31,8 +31,10 @@ class FormController extends Controller
             $query->where('nama_form', $request->nama_form);
         }
         
-        // Get paginated results
-        $forms = $query->orderBy('created_at', 'desc')->paginate(10);
+        // Get paginated results with filters preserved
+        $forms = $query->orderBy('created_at', 'desc')
+                    ->paginate(10)
+                    ->appends($request->query());
         
         return view('menu.forms.index', compact('forms', 'uniqueNomorForms', 'uniqueNamaForms'));
     }

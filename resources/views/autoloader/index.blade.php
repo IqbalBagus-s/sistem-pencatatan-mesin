@@ -260,27 +260,11 @@
     </table>
 @endsection
 
-@section('pagination')
-    <div class="flex justify-center mt-4">
-        <div class="flex flex-wrap gap-1 justify-center">
-            <!-- Previous button -->
-            @if (!$checks->onFirstPage())
-                <a href="{{ $checks->previousPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">&laquo; Previous</a>
-            @endif
-            
-            <!-- Page numbers -->
-            @foreach ($checks->getUrlRange(1, $checks->lastPage()) as $page => $url)
-                <a href="{{ $url }}" class="px-3 py-2 border {{ $page == $checks->currentPage() ? 'bg-primary text-white border-primary font-bold' : 'bg-white text-primary border-gray-300 hover:bg-gray-100' }} rounded-md transition duration-200">
-                    {{ $page }}
-                </a>
-            @endforeach
-            
-            <!-- Next button -->
-            @if ($checks->hasMorePages())
-                <a href="{{ $checks->nextPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">Next &raquo;</a>
-            @endif
-        </div>
-    </div>
+@section('pagination-data')
+    @if(method_exists($checks, 'links') && $checks->hasPages())
+        {{-- Menggunakan komponen pagination yang sudah dibuat --}}
+        @include('components.pagination', ['paginator' => $checks])
+    @endif
 @endsection
 
 @section('back-route')

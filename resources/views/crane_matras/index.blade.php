@@ -199,10 +199,11 @@
     </table>
 @endsection
 
-@section('pagination')
-    <div class="flex justify-center mt-4">
-        {{ $checks->links() }}
-    </div>
+@section('pagination-data')
+    @if(method_exists($checks, 'links') && $checks->hasPages())
+        {{-- Menggunakan komponen pagination yang sudah dibuat --}}
+        @include('components.pagination', ['paginator' => $checks])
+    @endif
 @endsection
 
 @section('back-route')

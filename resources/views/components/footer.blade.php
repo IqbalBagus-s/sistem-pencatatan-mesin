@@ -47,5 +47,5 @@
 
 <!-- Copyright -->
 <div class="w-full bg-blue-600 py-2 text-center" style="border-radius: 12px 12px 0 0;">
-    <p class="font-semibold text-xs sm:text-sm md:text-base text-white">2025 © PT Asia Pramulia</p>
+    <p class="font-semibold text-xs sm:text-sm md:text-base text-white"> {{ date('Y') }} © PT Asia Pramulia</p>
 </div>

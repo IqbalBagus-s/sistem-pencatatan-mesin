@@ -115,7 +115,7 @@
         <tbody>
             @forelse ($forms as $index => $form)
                 <tr class="text-center hover:bg-gray-50">
-                    <td class="py-3 px-4 border-b border-gray-200">{{ $loop->iteration }}</td>
+                    <td class="py-3 px-4 border-b border-gray-200">{{ $forms->firstItem() + $loop->index }}</td>
                     <td class="py-3 px-4 border-b border-gray-200">{{ $form->nomor_form }}</td>
                     <td class="py-3 px-4 border-b border-gray-200">{{ $form->nama_form }}</td>
                     <td class="py-3 px-4 border-b border-gray-200">
@@ -131,36 +131,18 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="text-center py-4">Tidak ada data form ditemukan.</td>
+                    <td colspan="5" class="text-center py-4">Tidak ada data form ditemukan.</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
 @endsection
 
-@section('pagination')
-    <div class="flex justify-center mt-4">
-        <div class="flex flex-wrap gap-1 justify-center">
-            <!-- Previous button -->
-            @if(method_exists($forms, 'links') && $forms->previousPageUrl())
-                <a href="{{ $forms->previousPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">&laquo; Sebelumnya</a>
-            @endif
-            
-            <!-- Page numbers -->
-            @if(method_exists($forms, 'links') && method_exists($forms, 'getUrlRange'))
-                @foreach ($forms->getUrlRange(1, $forms->lastPage()) as $page => $url)
-                    <a href="{{ $url }}" class="px-3 py-2 border {{ $page == $forms->currentPage() ? 'bg-primary text-white border-primary font-bold' : 'bg-white text-primary border-gray-300 hover:bg-gray-100' }} rounded-md transition duration-200">
-                        {{ $page }}
-                    </a>
-                @endforeach
-            @endif
-            
-            <!-- Next button -->
-            @if(method_exists($forms, 'links') && $forms->hasMorePages())
-                <a href="{{ $forms->nextPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">Selanjutnya &raquo;</a>
-            @endif
-        </div>
-    </div>
+@section('pagination-data')
+    @if(method_exists($forms, 'links') && $forms->hasPages())
+        {{-- Menggunakan komponen pagination yang sudah dibuat --}}
+        @include('components.pagination', ['paginator' => $forms])
+    @endif
 @endsection
 
 @section('back-route')

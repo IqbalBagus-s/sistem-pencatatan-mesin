@@ -119,29 +119,11 @@
     </table>
 @endsection
 
-@section('pagination')
-    <div class="flex justify-center mt-4">
-        <div class="flex flex-wrap gap-1 justify-center">
-            <!-- Previous button -->
-            @if(method_exists($approvers, 'links') && $approvers->previousPageUrl())
-                <a href="{{ $approvers->previousPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">&laquo; Sebelumnya</a>
-            @endif
-            
-            <!-- Page numbers -->
-            @if(method_exists($approvers, 'links') && method_exists($approvers, 'getUrlRange'))
-                @foreach ($approvers->getUrlRange(1, $approvers->lastPage()) as $page => $url)
-                    <a href="{{ $url }}" class="px-3 py-2 border {{ $page == $approvers->currentPage() ? 'bg-primary text-white border-primary font-bold' : 'bg-white text-primary border-gray-300 hover:bg-gray-100' }} rounded-md transition duration-200">
-                        {{ $page }}
-                    </a>
-                @endforeach
-            @endif
-            
-            <!-- Next button -->
-            @if(method_exists($approvers, 'links') && $approvers->hasMorePages())
-                <a href="{{ $approvers->nextPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">Selanjutnya &raquo;</a>
-            @endif
-        </div>
-    </div>
+@section('pagination-data')
+    @if(method_exists($approvers, 'links') && $approvers->hasPages())
+        {{-- Menggunakan komponen pagination yang sudah dibuat --}}
+        @include('components.pagination', ['paginator' => $approvers])
+    @endif
 @endsection
 
 @section('back-route')
