@@ -159,18 +159,15 @@
                         
                         <td class="py-3 px-4 border-b border-gray-200">
                             @php
-                                $approvedFields = [
+                                $approvedCount = collect([
                                     $check->approved_by_minggu1,
                                     $check->approved_by_minggu2,
                                     $check->approved_by_minggu3,
-                                    $check->approved_by_minggu4
-                                ];
-                                
-                                $approvedCount = count(array_filter($approvedFields));
-                                $totalFields = count($approvedFields);
+                                    $check->approved_by_minggu4,
+                                ])->filter()->count();
                             @endphp
 
-                            @if($approvedCount == $totalFields)
+                            @if($check->status === 'disetujui')
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui
                                 </span>
@@ -193,7 +190,7 @@
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @if(!($check->approved_by_minggu1 && $check->approved_by_minggu2 && $check->approved_by_minggu3 && $check->approved_by_minggu4))
+                                @if($check->status === 'belum_disetujui')
                                     <a href="{{ route('hopper.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>

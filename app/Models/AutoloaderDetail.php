@@ -17,7 +17,160 @@ class AutoloaderDetail extends Model
         'tanggal',  
         'checked_by',
         'approved_by',
+        'status',
     ];
+
+    protected $casts = [
+        'status' => 'string',
+    ];
+
+    // Konstanta untuk status
+    const STATUS_BELUM_DISETUJUI = 'belum_disetujui';
+    const STATUS_DISETUJUI = 'disetujui';
+
+    /**
+     * Boot method untuk event model
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Event saat model dibuat
+        static::creating(function ($model) {
+            if (empty($model->status)) {
+                $model->status = self::STATUS_BELUM_DISETUJUI;
+            }
+        });
+
+        // Event saat model diupdate
+        static::updating(function ($model) {
+            $model->updateStatusBasedOnApproval();
+        });
+
+        // Event saat model disimpan (create atau update)
+        static::saving(function ($model) {
+            $model->updateStatusBasedOnApproval();
+        });
+    }
+
+    /**
+     * Update status berdasarkan approved_by
+     */
+    public function updateStatusBasedOnApproval()
+    {
+        if (!empty($this->approved_by) && $this->approved_by !== null) {
+            $this->status = self::STATUS_DISETUJUI;
+        } else {
+            $this->status = self::STATUS_BELUM_DISETUJUI;
+        }
+    }
+
+    /**
+     * Scope untuk data yang belum disetujui
+     */
+    public function scopeBelumDisetujui($query)
+    {
+        return $query->where('status', self::STATUS_BELUM_DISETUJUI);
+    }
+
+    /**
+     * Scope untuk menghitung tanggal_check_id yang memiliki status belum disetujui
+     * Mengembalikan count berdasarkan unique tanggal_check_id, bukan jumlah record
+     */
+    public function scopeBelumDisetujuiGrouped($query)
+    {
+        return $query->where('status', self::STATUS_BELUM_DISETUJUI)
+                    ->distinct('tanggal_check_id');
+    }
+
+    /**
+     * Static method untuk mendapatkan jumlah tanggal_check_id yang belum disetujui
+     * Digunakan khusus untuk notifikasi dashboard
+     */
+    public static function countBelumDisetujuiGrouped()
+    {
+        return self::where('status', self::STATUS_BELUM_DISETUJUI)
+                   ->distinct('tanggal_check_id')
+                   ->count('tanggal_check_id');
+    }
+
+    /**
+     * Static method untuk mendapatkan daftar tanggal_check_id yang belum disetujui
+     */
+    public static function getTanggalCheckIdBelumDisetujui()
+    {
+        return self::where('status', self::STATUS_BELUM_DISETUJUI)
+                   ->distinct()
+                   ->pluck('tanggal_check_id')
+                   ->toArray();
+    }
+
+    /**
+     * Scope untuk data yang sudah disetujui
+     */
+    public function scopeDisetujui($query)
+    {
+        return $query->where('status', self::STATUS_DISETUJUI);
+    }
+
+    /**
+     * Mutator untuk approved_by - otomatis update status
+     */
+    public function setApprovedByAttribute($value)
+    {
+        $this->attributes['approved_by'] = $value;
+        
+        // Update status berdasarkan approved_by
+        if (!empty($value) && $value !== null) {
+            $this->attributes['status'] = self::STATUS_DISETUJUI;
+        } else {
+            $this->attributes['status'] = self::STATUS_BELUM_DISETUJUI;
+        }
+    }
+
+    /**
+     * Accessor untuk status dalam bahasa Indonesia
+     */
+    public function getStatusLabelAttribute()
+    {
+        return $this->status === self::STATUS_DISETUJUI ? 'Disetujui' : 'Belum Disetujui';
+    }
+
+    /**
+     * Method untuk mengubah status menjadi disetujui
+     */
+    public function approve($approvedBy = null)
+    {
+        $this->approved_by = $approvedBy;
+        $this->status = self::STATUS_DISETUJUI;
+        return $this->save();
+    }
+
+    /**
+     * Method untuk mengubah status menjadi belum disetujui
+     */
+    public function unapprove()
+    {
+        $this->approved_by = null;
+        $this->status = self::STATUS_BELUM_DISETUJUI;
+        return $this->save();
+    }
+
+    /**
+     * Check apakah data sudah disetujui
+     */
+    public function isApproved()
+    {
+        return $this->status === self::STATUS_DISETUJUI;
+    }
+
+    /**
+     * Check apakah data belum disetujui
+     */
+    public function isPending()
+    {
+        return $this->status === self::STATUS_BELUM_DISETUJUI;
+    }
 
     /**
      * Get the autoloader check that owns this checker and approver.

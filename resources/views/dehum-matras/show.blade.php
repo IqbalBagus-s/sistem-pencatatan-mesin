@@ -47,8 +47,8 @@
                         {{ \Carbon\Carbon::parse($check->bulan)->translatedFormat('F Y') }}
                     </div>
                 </div>
-            </div>                 
-            @php
+            </div>                   
+             @php
                 // Items yang perlu di-check untuk Dehum Matras
                 $items = [
                     1 => 'Kompressor',
@@ -64,21 +64,40 @@
                 function getCheckResult($results, $date, $itemId) {
                     // Filter hasil berdasarkan tanggal dan item_id
                     $result = $results->where('tanggal', $date)->where('item_id', $itemId)->first();
-                    return $result && isset($result['result']) ? $result['result'] : null;
+                    
+                    // Cek apakah ada checker untuk tanggal tersebut
+                    $checkerExists = $results->where('tanggal', $date)->where('checked_by', '!=', null)->where('checked_by', '!=', '')->first();
+                    
+                    // Jika tidak ada checker, return '-'
+                    if (!$checkerExists) {
+                        return '-';
+                    }
+                    
+                    // Jika ada checker dan ada result untuk item ini, return hasilnya
+                    return $result && isset($result['result']) ? $result['result'] : '-';
                 }
 
                 // Helper function untuk mendapatkan keterangan berdasarkan tanggal dan item
                 function getKeterangan($results, $date, $itemId) {
                     // Filter hasil berdasarkan tanggal dan item_id
                     $result = $results->where('tanggal', $date)->where('item_id', $itemId)->first();
+                    
+                    // Cek apakah ada checker untuk tanggal tersebut
+                    $checkerExists = $results->where('tanggal', $date)->where('checked_by', '!=', null)->where('checked_by', '!=', '')->first();
+                    
+                    // Jika tidak ada checker, return kosong
+                    if (!$checkerExists) {
+                        return '';
+                    }
+                    
                     return $result && isset($result['keterangan']) ? $result['keterangan'] : '';
                 }
 
                 // Helper function untuk mendapatkan nama checker berdasarkan tanggal
                 function getCheckerName($results, $date) {
                     // Filter hasil berdasarkan tanggal
-                    $result = $results->where('tanggal', $date)->first();
-                    return $result && isset($result['checked_by']) ? $result['checked_by'] : '';
+                    $result = $results->where('tanggal', $date)->where('checked_by', '!=', null)->where('checked_by', '!=', '')->first();
+                    return $result && isset($result['checked_by']) ? $result['checked_by'] : 'Belum dibuat';
                 }
                 
                 // Helper function untuk mendapatkan nama penanggung jawab berdasarkan tanggal
@@ -120,7 +139,7 @@
                                     
                                     @for($j = 1; $j <= 11; $j++)
                                         <td class="border border-gray-300 p-1 h-10 text-center">
-                                            {{ getCheckResult($results, $j, $i) ?: '-' }}
+                                            {{ getCheckResult($results, $j, $i) }}
                                         </td>
                                     @endfor
                                 </tr>
@@ -133,7 +152,7 @@
                                 
                                 @for($j = 1; $j <= 11; $j++)
                                     <td class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
-                                        {{ getCheckerName($results, $j) ?: 'Belum dibuat' }}
+                                        {{ getCheckerName($results, $j) }}
                                     </td>
                                 @endfor
                             </tr>
@@ -224,7 +243,7 @@
                                     
                                     @for($j = 12; $j <= 22; $j++)
                                         <td class="border border-gray-300 p-1 h-10 text-center">
-                                            {{ getCheckResult($results, $j, $i) ?: '-' }}
+                                            {{ getCheckResult($results, $j, $i) }}
                                         </td>
                                     @endfor
                                 </tr>
@@ -237,7 +256,7 @@
                                 
                                 @for($j = 12; $j <= 22; $j++)
                                     <td class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
-                                        {{ getCheckerName($results, $j) ?: 'Belum dibuat' }}
+                                        {{ getCheckerName($results, $j) }}
                                     </td>
                                 @endfor
                             </tr>
@@ -339,7 +358,7 @@
                                     <!-- Hasil per tanggal -->
                                     @for($j = 23; $j <= 31; $j++)
                                         <td class="border border-gray-300 p-1 h-10 text-center w-24">
-                                            {{ getCheckResult($results, $j, $i) ?: '-' }}
+                                            {{ getCheckResult($results, $j, $i) }}
                                         </td>
                                     @endfor
                                 </tr>
@@ -354,7 +373,7 @@
 
                                 @for($j = 23; $j <= 31; $j++)
                                     <td class="border border-gray-300 p-1 bg-sky-50 text-center text-sm w-24">
-                                        {{ getCheckerName($results, $j) ?: 'Belum dibuat' }}
+                                        {{ getCheckerName($results, $j) }}
                                     </td>
                                 @endfor
                             </tr>

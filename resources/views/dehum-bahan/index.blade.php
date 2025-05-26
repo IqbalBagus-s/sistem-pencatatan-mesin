@@ -157,23 +157,19 @@
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             @php
-                                $approvedWeeks = [
+                                $approvedCount = collect([
                                     $check->approved_by_minggu1,
                                     $check->approved_by_minggu2,
                                     $check->approved_by_minggu3,
-                                    $check->approved_by_minggu4
-                                ];
-                                
-                                $totalApproved = count(array_filter($approvedWeeks));
-                                $isFullyApproved = $totalApproved === 4;
-                                $isPartiallyApproved = $totalApproved > 0 && $totalApproved < 4;
+                                    $check->approved_by_minggu4,
+                                ])->filter()->count();
                             @endphp
 
-                            @if($isFullyApproved)
+                            @if($check->status === 'disetujui')
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui
                                 </span>
-                            @elseif($isPartiallyApproved)
+                            @elseif($approvedCount > 0)
                                 <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui Sebagian
                                 </span>
@@ -187,15 +183,11 @@
                             {{-- Menu lihat --}}
                             @if(auth()->user() instanceof \App\Models\Approver)
                                 <a href="{{ route('dehum-bahan.show', $check->id) }}" title="Lihat Detail">
-                                    @if($isFullyApproved)
-                                        <i class="fas fa-eye text-primary opacity-70" title="Sudah disetujui sepenuhnya"></i>
-                                    @else
-                                        <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
-                                    @endif
+                                    <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @if(!$isFullyApproved)
+                                @if($check->status === 'belum_disetujui')
                                     <a href="{{ route('dehum-bahan.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>

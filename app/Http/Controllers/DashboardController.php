@@ -11,8 +11,8 @@ use App\Models\WaterChillerCheck;
 use App\Models\CompressorCheck;
 use App\Models\HopperCheck;
 use App\Models\DehumBahanCheck;
-use App\Models\DehumMatrasCheck;
-use App\Models\AutoLoaderCheck;
+use App\Models\DehumMatrasDetail;
+use App\Models\AutoloaderDetail;
 use App\Models\GilingCheck;
 use App\Models\CapliningCheck;
 use App\Models\VacumCleanerCheck;
@@ -35,13 +35,13 @@ class DashboardController extends Controller
             $notificationCounts = [
                 'air_dryer' => AirDryerCheck::belumDisetujui()->count(),
                 'water_chiller' => WaterChillerCheck::belumDisetujui()->count(),
-                // 'compressor' => CompressorCheck::belumDisetujui()->count(),
-                // 'hopper' => HopperCheck::belumDisetujui()->count(),
-                // 'dehum_bahan' => DehumBahanCheck::belumDisetujui()->count(),
-                // 'dehum_matras' => DehumMatrasCheck::belumDisetujui()->count(),
-                // 'auto_loader' => AutoLoaderCheck::belumDisetujui()->count(),
+                'compressor' => CompressorCheck::belumDisetujui()->count(),
+                'hopper' => HopperCheck::belumDisetujui()->count(),
+                'dehum_bahan' => DehumBahanCheck::belumDisetujui()->count(),
+                'dehum_matras' => DehumMatrasDetail::countBelumDisetujuiGrouped(),
+                'auto_loader' => AutoloaderDetail::countBelumDisetujuiGrouped(),
                 'gilingan' => GilingCheck::belumDisetujui()->count(),
-                // 'caplining' => CapliningCheck::belumDisetujui()->count(),
+                'caplining' => CapliningCheck::belumDisetujui()->count(),
                 // 'vacuum_cleaner' => VacumCleanerCheck::belumDisetujui()->count(),
                 // 'slitting' => SlittingCheck::belumDisetujui()->count(),
                 // 'crane_matras' => CraneMatrasCheck::belumDisetujui()->count(),

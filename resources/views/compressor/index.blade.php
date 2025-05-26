@@ -75,18 +75,13 @@
                         </td>
                         
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @php
-                                $isFullyApproved = !is_null($check->approved_by_shift1) && !is_null($check->approved_by_shift2);
-                                $isPartiallyApproved = !is_null($check->approved_by_shift1) || !is_null($check->approved_by_shift2);
-                            @endphp
-                            
-                            @if($isFullyApproved)
-                                <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                    Disetujui
-                                </span>
-                            @elseif($isPartiallyApproved)
+                            @if(($check->approved_by_shift1 && !$check->approved_by_shift2) || (!$check->approved_by_shift1 && $check->approved_by_shift2))
                                 <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui Sebagian
+                                </span>
+                            @elseif($check->status === 'disetujui')
+                                <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Disetujui
                                 </span>
                             @else
                                 <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
@@ -102,11 +97,7 @@
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @php
-                                    $canEdit = !$isFullyApproved;
-                                @endphp
-                                
-                                @if($canEdit)
+                                @if($$check->status === 'belum_disetujui')
                                     <a href="{{ route('compressor.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
