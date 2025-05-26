@@ -510,9 +510,9 @@
             ['name' => 'Auto Loader', 'route' => 'autoloader.index', 'key' => 'auto_loader'],
             ['name' => 'Gilingan', 'route' => 'giling.index', 'key' => 'gilingan'],
             ['name' => 'Caplining', 'route' => 'caplining.index', 'key' => 'caplining'],
-            // ['name' => 'Vacuum Cleaner', 'route' => 'vacuum-cleaner.index', 'key' => 'vacuum_cleaner'],
-            // ['name' => 'Slitting', 'route' => 'slitting.index', 'key' => 'slitting'],
-            // ['name' => 'Crane Matras', 'route' => 'crane-matras.index', 'key' => 'crane_matras']
+            ['name' => 'Vacuum Cleaner', 'route' => 'vacuum-cleaner.index', 'key' => 'vacuum_cleaner'],
+            ['name' => 'Slitting', 'route' => 'slitting.index', 'key' => 'slitting'],
+            ['name' => 'Crane Matras', 'route' => 'crane-matras.index', 'key' => 'crane_matras']
         ];
     @endphp
     

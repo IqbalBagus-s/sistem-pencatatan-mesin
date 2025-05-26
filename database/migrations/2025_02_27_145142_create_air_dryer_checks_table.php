@@ -13,6 +13,7 @@ return new class extends Migration {
             $table->string('hari');
             $table->string('checked_by');
             $table->string('approved_by')->nullable(); // Dibuat nullable
+            $table->enum('status', ['disetujui', 'belum_disetujui'])->default('belum_disetujui');
             $table->text('keterangan')->nullable();
             $table->timestamps();
             $table->softDeletes();

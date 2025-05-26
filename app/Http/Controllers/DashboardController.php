@@ -42,9 +42,9 @@ class DashboardController extends Controller
                 'auto_loader' => AutoloaderDetail::countBelumDisetujuiGrouped(),
                 'gilingan' => GilingCheck::belumDisetujui()->count(),
                 'caplining' => CapliningCheck::belumDisetujui()->count(),
-                // 'vacuum_cleaner' => VacumCleanerCheck::belumDisetujui()->count(),
-                // 'slitting' => SlittingCheck::belumDisetujui()->count(),
-                // 'crane_matras' => CraneMatrasCheck::belumDisetujui()->count(),
+                'vacuum_cleaner' => VacumCleanerCheck::belumDisetujui()->count(),
+                'slitting' => SlittingCheck::belumDisetujui()->count(),
+                'crane_matras' => CraneMatrasCheck::belumDisetujui()->count(),
             ];
         }
         

@@ -152,11 +152,18 @@
                             @endif
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if($check->isFullyApproved)
+                            @php
+                                $approvedCount = collect([
+                                    $check->approver_minggu2,
+                                    $check->approver_minggu4,
+                                ])->filter()->count();
+                            @endphp
+                            
+                            @if($check->status === 'disetujui')
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui
                                 </span>
-                            @elseif($check->isPartiallyApproved)
+                            @elseif($approvedCount > 0)
                                 <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui Sebagian
                                 </span>
@@ -174,7 +181,7 @@
                                 </a>
                             {{-- Menu edit untuk Checker --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @if(!$isFullyApproved)
+                                @if($check->status === 'belum_disetujui')
                                     <a href="{{ route('vacuum-cleaner.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('hari'); // Kolom hari
             $table->string('checked_by'); // Kolom checked_by
             $table->string('approved_by')->nullable(); // Kolom approved_by (nullable)
+            $table->enum('status', ['disetujui', 'belum_disetujui'])->default('belum_disetujui');
             $table->text('keterangan')->nullable(); // Kolom keterangan (text dan nullable)
             $table->timestamps(); // Kolom created_at dan updated_at
             $table->softDeletes();

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('checked_by_shift2')->nullable(); // Kolom checked_by
             $table->string('approved_by_shift1')->nullable(); // Kolom approved_by (nullable)
             $table->string('approved_by_shift2')->nullable(); // Kolom approved_by (nullable)
+            $table->enum('status', ['disetujui', 'belum_disetujui'])->default('belum_disetujui');
             // jumlah
             $table->string('kompressor_on_kl')->nullable(); 
             $table->string('kompressor_on_kh')->nullable(); 

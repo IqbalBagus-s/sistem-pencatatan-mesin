@@ -154,27 +154,25 @@
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             @php
-                                $weekCount = 4; // Total minggu
-                                $approvedCount = 0;
-                                
-                                // Periksa jika field approved_by_minggu1-4 terisi (tidak kosong)
-                                if(!empty($check->approved_by_minggu1)) $approvedCount++;
-                                if(!empty($check->approved_by_minggu2)) $approvedCount++;
-                                if(!empty($check->approved_by_minggu3)) $approvedCount++;
-                                if(!empty($check->approved_by_minggu4)) $approvedCount++;
+                                $approvedCount = collect([
+                                    $check->approved_by_minggu1,
+                                    $check->approved_by_minggu2,
+                                    $check->approved_by_minggu3,
+                                    $check->approved_by_minggu4,
+                                ])->filter()->count();
                             @endphp
                             
-                            @if($approvedCount == 0)
-                                <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                    Belum Disetujui
+                            @if($check->status === 'disetujui')
+                                <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Disetujui
                                 </span>
-                            @elseif($approvedCount < $weekCount)
+                            @elseif($approvedCount > 0)
                                 <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui Sebagian
                                 </span>
                             @else
-                                <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                    Disetujui
+                                <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Belum Disetujui
                                 </span>
                             @endif
                         </td>
@@ -186,12 +184,7 @@
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @php
-                                    // Perbaikan: Cek apakah disetujui sepenuhnya menggunakan $approvedCount
-                                    $isFullyApproved = ($approvedCount == $weekCount);
-                                @endphp
-                                
-                                @if(!$isFullyApproved)
+                                @if($check->status === 'belum_disetujui')
                                     <a href="{{ route('slitting.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>

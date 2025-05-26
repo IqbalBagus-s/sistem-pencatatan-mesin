@@ -19,6 +19,7 @@ return new class extends Migration
                 $table->string('checked_by' . $i)->nullable();
                 $table->string('approved_by' . $i)->nullable();
             }
+            $table->enum('status', ['disetujui', 'belum_disetujui'])->default('belum_disetujui');
             
             $table->timestamps();
             $table->softDeletes(); // Soft delete untuk menyimpan data yang dihapus

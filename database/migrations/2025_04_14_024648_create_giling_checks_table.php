@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('approved_by1')->nullable(); // Kolom approved_by1 (nullable)
             $table->date('approval_date1')->nullable(); // tanggal approved_by1 (nullable)
             $table->string('approved_by2')->nullable(); // Kolom approved_by2 (nullable)
+            $table->enum('status', ['disetujui', 'belum_disetujui'])->default('belum_disetujui');
             $table->text('keterangan')->nullable(); // Kolom keterangan (text dan nullable)
             $table->timestamps(); // Kolom created_at dan updated_at
             $table->softDeletes();

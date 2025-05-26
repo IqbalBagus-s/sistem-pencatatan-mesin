@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('approved_by_minggu2')->nullable(); // Bisa bernilai null
             $table->string('approved_by_minggu3')->nullable(); // Bisa bernilai null
             $table->string('approved_by_minggu4')->nullable(); // Bisa bernilai null
+            $table->enum('status', ['disetujui', 'belum_disetujui'])->default('belum_disetujui');
             $table->softDeletes(); // Soft delete untuk menyimpan data yang dihapus
             $table->timestamps();
         });

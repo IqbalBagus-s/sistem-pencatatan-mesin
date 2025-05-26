@@ -272,8 +272,6 @@
         </div>
     </div>
 
-    <!-- Include Footer Component -->
-    @include('components.footer')
 
     @vite('resources/js/app.js')
     @yield('scripts')

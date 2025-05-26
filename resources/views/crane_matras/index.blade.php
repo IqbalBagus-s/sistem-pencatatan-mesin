@@ -161,7 +161,7 @@
                             </div>
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if($check->approved_by)
+                            @if($check->status === 'disetujui')
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui
                                 </span>
@@ -175,15 +175,11 @@
                             {{-- Menu lihat --}}
                             @if(auth()->user() instanceof \App\Models\Approver)
                                 <a href="{{ route('crane-matras.show', $check->id) }}" title="Lihat Detail">
-                                    @if($check->approved_by)
-                                        <i class="fas fa-eye text-primary opacity-70" title="Sudah disetujui"></i>
-                                    @else
-                                        <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
-                                    @endif
+                                    <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @if(!$check->approved_by)
+                                @if($check->status === 'belum_disetujui')
                                     <a href="{{ route('crane-matras.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>

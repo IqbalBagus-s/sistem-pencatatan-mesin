@@ -452,9 +452,21 @@
                 <div class="menu-grid mt-4 sm:mt-6">
                     @php
                         $menuItems = [
-                            ['name' => 'Kelola Approver', 'route' => 'host.approvers.index', 'icon' => 'fas fa-user-check'],
-                            ['name' => 'Kelola Checker', 'route' => 'host.checkers.index', 'icon' => 'fas fa-user-gear'],
-                            ['name' => 'Kelola Form', 'route' => 'host.forms.index', 'icon' => 'fas fa-file-lines']
+                            [
+                                'name' => 'Kelola Approver', 
+                                'route' => 'host.approvers.index', 
+                                'svg' => '<svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>'
+                            ],
+                            [
+                                'name' => 'Kelola Checker', 
+                                'route' => 'host.checkers.index', 
+                                'svg' => '<svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg>'
+                            ],
+                            [
+                                'name' => 'Kelola Form', 
+                                'route' => 'host.forms.index', 
+                                'svg' => '<svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>'
+                            ]
                         ];
                     @endphp
                     
@@ -463,8 +475,9 @@
                             <div class="bg-white rounded-lg shadow-md overflow-hidden menu-card admin-card relative">
                                 <div class="p-2 sm:p-3 md:p-4 card-content">
                                     <h5 class="font-semibold mb-2 sm:mb-3 md:mb-4 text-center text-xs sm:text-sm md:text-base">
-                                        <i class="fas {{ $item['icon'] }} mr-2 text-blue-700"></i>{{ $item['name'] }}
+                                        <span class="text-blue-700">{!! $item['svg'] !!}</span>{{ $item['name'] }}
                                     </h5>
+                                    
                                     @if ($item['route'])
                                         <a href="{{ route($item['route']) }}" class="btn-menu text-white py-1.5 sm:py-2 px-2 sm:px-3 md:px-4 rounded mt-auto text-xs sm:text-sm md:text-base">Kelola</a>
                                     @else

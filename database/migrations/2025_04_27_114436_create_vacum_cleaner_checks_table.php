@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('checker_minggu4')->nullable();
             $table->string('approver_minggu2')->nullable();
             $table->string('approver_minggu4')->nullable();
-            
+            $table->enum('status', ['disetujui', 'belum_disetujui'])->default('belum_disetujui');
 
             $table->timestamps();
             $table->softDeletes(); // Soft delete untuk menyimpan data yang dihapus
