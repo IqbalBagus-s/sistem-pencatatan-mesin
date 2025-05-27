@@ -7,6 +7,8 @@ use App\Models\AutoloaderResultTable1;
 use App\Models\AutoloaderResultTable2;
 use App\Models\AutoloaderResultTable3;
 use App\Models\Form;
+use App\Models\Activity;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
@@ -241,6 +243,29 @@ class AutoloaderController extends Controller
                     ]);
                 }
             }
+            
+            // LOG AKTIVITAS - Tambahkan setelah data berhasil disimpan
+            $formattedMonth = Carbon::parse($request->bulan . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            $shiftText = "Shift " . $request->shift;
+            
+            Activity::logActivity(
+                'checker',                                              // user_type
+                Auth::user()->id,                                       // user_id
+                Auth::user()->username,                                 // user_name
+                'created',                                              // action
+                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Autoloader Nomor ' . $request->nomer_autoloader . ' untuk ' . $shiftText . ' bulan ' . $formattedMonth,  // description
+                'autoloader_check',                                     // target_type
+                $autoloaderCheck->id,                                   // target_id
+                [
+                    'nomer_autoloader' => $request->nomer_autoloader,
+                    'shift' => $request->shift,
+                    'bulan' => $request->bulan,
+                    'bulan_formatted' => $formattedMonth,
+                    'total_items' => count($items),
+                    'items_checked' => array_values($items),
+                    'status' => $autoloaderCheck->status ?? 'belum_disetujui'
+                ]                                                       // details (JSON)
+            );
             
             // Commit the transaction
             DB::commit();

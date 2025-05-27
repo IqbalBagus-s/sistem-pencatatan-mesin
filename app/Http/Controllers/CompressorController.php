@@ -5,6 +5,7 @@ use App\Models\CompressorCheck;
 use App\Models\CompressorResultKh;
 use App\Models\CompressorResultKl;
 use App\Models\Form;
+use App\Models\Activity;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -92,85 +93,143 @@ class CompressorController extends Controller
                     ->with('error', "Data di tanggal $formattedDate tersebut telah dibuat.");
             }
         }
-        // Simpan data ke tabel compressor_checks
-        $compressorCheck = CompressorCheck::create([
-            'tanggal' => $request->tanggal,
-            'hari' => $request->hari,
-            'checked_by_shift1' => $request->checked_by_shift1,
-            'checked_by_shift2' => $request->checked_by_shift2,
-            'kompressor_on_kl' => $request->kompressor_on_kl,
-            'kompressor_on_kh' => $request->kompressor_on_kh,
-            'mesin_on' => $request->mesin_on,
-            'mesin_off' => $request->mesin_off,
-            'temperatur_shift1' => $request->temperatur_shift1,
-            'temperatur_shift2' => $request->temperatur_shift2,
-            'humidity_shift1' => $request->humidity_shift1,
-            'humidity_shift2' => $request->humidity_shift2,
-        ]);
 
-        // Simpan data hasil pemeriksaan Low Kompressor ke tabel compressor_results
-        $lowCheckedItems = [
-            "Temperatur motor", "Temperatur screw", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
-            "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
-            "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
-            "Ampere", "Skun", "Service hour", "Load hours", "Temperatur ADT"
-        ];
+        // Mulai transaksi database
+        DB::beginTransaction();
 
-        // Untuk Low Kompressor
-        foreach ($lowCheckedItems as $index => $item) {
-            CompressorResultKl::create([
-                'check_id' => $compressorCheck->id,
-                'checked_items' => $item,
-                'kl_10I' => $request->input("kl_KL_10I")[$index] ?? null,
-                'kl_10II' => $request->input("kl_KL_10II")[$index] ?? null,
-                'kl_5I' => $request->input("kl_KL_5I")[$index] ?? null,
-                'kl_5II' => $request->input("kl_KL_5II")[$index] ?? null,
-                'kl_6I' => $request->input("kl_KL_6I")[$index] ?? null,
-                'kl_6II' => $request->input("kl_KL_6II")[$index] ?? null,
-                'kl_7I' => $request->input("kl_KL_7I")[$index] ?? null,
-                'kl_7II' => $request->input("kl_KL_7II")[$index] ?? null,
-                'kl_8I' => $request->input("kl_KL_8I")[$index] ?? null,
-                'kl_8II' => $request->input("kl_KL_8II")[$index] ?? null,
-                'kl_9I' => $request->input("kl_KL_9I")[$index] ?? null,
-                'kl_9II' => $request->input("kl_KL_9II")[$index] ?? null
+        try {
+            // Simpan data ke tabel compressor_checks
+            $compressorCheck = CompressorCheck::create([
+                'tanggal' => $request->tanggal,
+                'hari' => $request->hari,
+                'checked_by_shift1' => $request->checked_by_shift1,
+                'checked_by_shift2' => $request->checked_by_shift2,
+                'kompressor_on_kl' => $request->kompressor_on_kl,
+                'kompressor_on_kh' => $request->kompressor_on_kh,
+                'mesin_on' => $request->mesin_on,
+                'mesin_off' => $request->mesin_off,
+                'temperatur_shift1' => $request->temperatur_shift1,
+                'temperatur_shift2' => $request->temperatur_shift2,
+                'humidity_shift1' => $request->humidity_shift1,
+                'humidity_shift2' => $request->humidity_shift2,
             ]);
+
+            // Log untuk memastikan record berhasil dibuat
+            Log::info('Record compressor check dibuat dengan ID: ' . $compressorCheck->id);
+
+            // Simpan data hasil pemeriksaan Low Kompressor ke tabel compressor_results
+            $lowCheckedItems = [
+                "Temperatur motor", "Temperatur screw", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
+                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
+                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
+                "Ampere", "Skun", "Service hour", "Load hours", "Temperatur ADT"
+            ];
+
+            // Untuk Low Kompressor
+            foreach ($lowCheckedItems as $index => $item) {
+                $result = CompressorResultKl::create([
+                    'check_id' => $compressorCheck->id,
+                    'checked_items' => $item,
+                    'kl_10I' => $request->input("kl_KL_10I")[$index] ?? null,
+                    'kl_10II' => $request->input("kl_KL_10II")[$index] ?? null,
+                    'kl_5I' => $request->input("kl_KL_5I")[$index] ?? null,
+                    'kl_5II' => $request->input("kl_KL_5II")[$index] ?? null,
+                    'kl_6I' => $request->input("kl_KL_6I")[$index] ?? null,
+                    'kl_6II' => $request->input("kl_KL_6II")[$index] ?? null,
+                    'kl_7I' => $request->input("kl_KL_7I")[$index] ?? null,
+                    'kl_7II' => $request->input("kl_KL_7II")[$index] ?? null,
+                    'kl_8I' => $request->input("kl_KL_8I")[$index] ?? null,
+                    'kl_8II' => $request->input("kl_KL_8II")[$index] ?? null,
+                    'kl_9I' => $request->input("kl_KL_9I")[$index] ?? null,
+                    'kl_9II' => $request->input("kl_KL_9II")[$index] ?? null
+                ]);
+
+                // Log untuk memastikan record hasil berhasil dibuat
+                Log::info("Low Kompressor Item: {$item} berhasil disimpan dengan ID: " . $result->id);
+            }
+
+            // Simpan data hasil pemeriksaan High Kompressor ke tabel compressor_results
+            $highCheckedItems = [
+                "Temperatur Motor", "Temperatur Piston", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
+                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
+                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
+                "Ampere", "Skun", "Service hour", "Load hours", "Inlet Preasure", "Outlet Preasure"
+            ];
+
+            // Untuk High Kompressor
+            foreach ($highCheckedItems as $index => $item) {
+                $result = CompressorResultKh::create([
+                    'check_id' => $compressorCheck->id,
+                    'checked_items' => $item,
+                    'kh_7I' => $request->input("kh_KH_7I")[$index] ?? null,
+                    'kh_7II' => $request->input("kh_KH_7II")[$index] ?? null,
+                    'kh_8I' => $request->input("kh_KH_8I")[$index] ?? null,
+                    'kh_8II' => $request->input("kh_KH_8II")[$index] ?? null,
+                    'kh_9I' => $request->input("kh_KH_9I")[$index] ?? null,
+                    'kh_9II' => $request->input("kh_KH_9II")[$index] ?? null,
+                    'kh_10I' => $request->input("kh_KH_10I")[$index] ?? null,
+                    'kh_10II' => $request->input("kh_KH_10II")[$index] ?? null,
+                    'kh_11I' => $request->input("kh_KH_11I")[$index] ?? null,
+                    'kh_11II' => $request->input("kh_KH_11II")[$index] ?? null
+                ]);
+
+                // Log untuk memastikan record hasil berhasil dibuat
+                Log::info("High Kompressor Item: {$item} berhasil disimpan dengan ID: " . $result->id);
+            }
+
+            // LOG AKTIVITAS - Tambahkan setelah data berhasil disimpan
+            $formattedTanggal = Carbon::parse($request->tanggal)->locale('id')->isoFormat('D MMMM YYYY');
+            
+            Activity::logActivity(
+                'checker',                                              // user_type
+                Auth::user()->id,                                       // user_id
+                Auth::user()->username,                                 // user_name
+                'created',                                              // action
+                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Compressor untuk tanggal: ' . $formattedTanggal . ' pada hari' . $request->hari,  // description
+                'compressor_check',                                     // target_type
+                $compressorCheck->id,                                   // target_id
+                [
+                    'tanggal' => $request->tanggal,
+                    'tanggal_formatted' => $formattedTanggal,
+                    'hari' => $request->hari,
+                    'checked_by_shift1' => $request->checked_by_shift1,
+                    'checked_by_shift2' => $request->checked_by_shift2,
+                    'kompressor_on_kl' => $request->kompressor_on_kl,
+                    'kompressor_on_kh' => $request->kompressor_on_kh,
+                    'mesin_on' => $request->mesin_on,
+                    'mesin_off' => $request->mesin_off,
+                    'temperatur_shift1' => $request->temperatur_shift1,
+                    'temperatur_shift2' => $request->temperatur_shift2,
+                    'humidity_shift1' => $request->humidity_shift1,
+                    'humidity_shift2' => $request->humidity_shift2,
+                    'total_low_kompressor_items' => count($lowCheckedItems),
+                    'total_high_kompressor_items' => count($highCheckedItems),
+                    'low_kompressor_items' => $lowCheckedItems,
+                    'high_kompressor_items' => $highCheckedItems,
+                    'status' => $compressorCheck->status ?? 'belum_disetujui'
+                ]                                                       // details (JSON)
+            );
+
+            // Commit transaksi
+            DB::commit();
+            
+            Log::info('Transaksi compressor berhasil disimpan');
+
+            // Redirect ke halaman index dengan pesan sukses
+            return redirect()->route('compressor.index')->with('success', 'Data berhasil disimpan!');
+
+        } catch (\Exception $e) {
+            // Rollback transaksi jika terjadi kesalahan
+            DB::rollBack();
+            
+            // Log error detail untuk debugging
+            Log::error('Error saat menyimpan data compressor: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
-
-        // Simpan data hasil pemeriksaan High Kompressor ke tabel compressor_results
-        $highCheckedItems = [
-            "Temperatur Motor", "Temperatur Piston", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
-            "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
-            "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
-            "Ampere", "Skun", "Service hour", "Load hours", "Inlet Preasure", "Outlet Preasure"
-        ];
-
-        // Untuk High Kompressor
-        foreach ($highCheckedItems as $index => $item) {
-            CompressorResultKh::create([
-                'check_id' => $compressorCheck->id,
-                'checked_items' => $item,
-                'kh_7I' => $request->input("kh_KH_7I")[$index] ?? null,
-                'kh_7II' => $request->input("kh_KH_7II")[$index] ?? null,
-                'kh_8I' => $request->input("kh_KH_8I")[$index] ?? null,
-                'kh_8II' => $request->input("kh_KH_8II")[$index] ?? null,
-                'kh_9I' => $request->input("kh_KH_9I")[$index] ?? null,
-                'kh_9II' => $request->input("kh_KH_9II")[$index] ?? null,
-                'kh_10I' => $request->input("kh_KH_10I")[$index] ?? null,
-                'kh_10II' => $request->input("kh_KH_10II")[$index] ?? null,
-                'kh_11I' => $request->input("kh_KH_11I")[$index] ?? null,
-                'kh_11II' => $request->input("kh_KH_11II")[$index] ?? null
-            ]);
-        }
-
-        // Uncomment kode ini untuk debugging
-        // dd([
-        //     'sample_kl' => $request->input("kl_KL_10I"),
-        //     'sample_kh' => $request->input("kh_KH_7I"),
-        //     'all_request' => $request->all()
-        // ]);
-
-        // Redirect ke halaman index dengan pesan sukses
-        return redirect()->route('compressor.index')->with('success', 'Data berhasil disimpan!');
     }
 
     public function edit($id)

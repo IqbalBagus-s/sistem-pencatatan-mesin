@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\WaterChillerCheck;
 use App\Models\WaterChillerResult;
 use App\Models\Form;
+use App\Models\Activity;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -58,7 +59,7 @@ class WaterChillerController extends Controller
         // Extract month from the date
         $bulan = date('m', strtotime($request->tanggal));
         
-       // Check if record for this date already exists
+        // Check if record for this date already exists
         $existingRecord = WaterChillerCheck::whereDate('tanggal', $request->tanggal)
             ->first();
 
@@ -102,6 +103,25 @@ class WaterChillerController extends Controller
                     'Air' => $request->input("air.$i"),
                 ]);
             }
+            
+            // Log activity menggunakan model Activity
+            Activity::logActivity(
+                userType: 'checker',
+                userId: Auth::id(),
+                userName: Auth::user()->username,
+                action: 'created',
+                description: 'Checker ' . Auth::user()->username . 'Membuat pemeriksaan Water Chiller untuk tanggal ' . Carbon::parse($request->tanggal)->locale('id')->isoFormat('D MMMM YYYY'),
+                targetType: 'water_chiller_check',
+                targetId: $waterChillerCheck->id,
+                details: [
+                    'tanggal' => $request->tanggal,
+                    'hari' => $request->hari,
+                    'total_mesin' => 32,
+                    'catatan' => $request->catatan,
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent()
+                ]
+            );
             
             // Commit the transaction if everything is successful
             DB::commit();

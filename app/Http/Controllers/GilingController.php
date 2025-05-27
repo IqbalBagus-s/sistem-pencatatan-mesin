@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\GilingCheck;
 use App\Models\GilingResult;
 use App\Models\Form;
+use App\Models\Activity;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -67,38 +68,40 @@ class GilingController extends Controller
 
     public function store(Request $request)
     {
+        // Custom error messages untuk validasi
         $customMessages = [
             'minggu.required' => 'Silakan pilih minggu terlebih dahulu!',
             'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
         ];
-        // Validate basic input
+
+        // Validate basic input dengan custom messages
         $request->validate([
             'minggu' => 'required|in:1,2,3,4',
             'bulan' => 'required|date_format:Y-m',
             'catatan' => 'nullable|string|max:1000',
         ], $customMessages);
 
-        // Check if the combination of month and week already exists
+        // Check for duplicate record
         $existingCheck = GilingCheck::where('bulan', $request->bulan)
                             ->where('minggu', $request->minggu)
                             ->first();
 
         if ($existingCheck) {
-            // Get the specific values that are duplicated
-            $minggu = $request->minggu;
-            $bulan = Carbon::parse($request->bulan . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            // Format bulan dari Y-m menjadi nama bulan dan tahun (contoh: Mei 2025)
+            $formattedMonth = Carbon::parse($request->bulan . '-01')->locale('id')->isoFormat('MMMM YYYY');
             
-            // Create a more descriptive error message
-            $pesanError = "Data pemeriksaan untuk Minggu ke-{$minggu} pada bulan {$bulan} sudah ada!";
+            // Pesan error dengan detail data duplikat
+            $errorMessage = "Data duplikat ditemukan untuk Minggu ke-{$request->minggu} pada Bulan {$formattedMonth}!";
             
             return redirect()->back()
-                ->with('error', $pesanError)
-                ->withInput();
+                ->withInput()
+                ->with('error', $errorMessage);
         }
 
-        try {
-            DB::beginTransaction();
+        // Start a database transaction
+        DB::beginTransaction();
 
+        try {
             // Create the main Giling Check record
             $gilingCheck = GilingCheck::create([
                 'bulan' => $request->bulan,
@@ -107,7 +110,7 @@ class GilingController extends Controller
                 'keterangan' => $request->catatan ?? '',
             ]);
             
-            // Mapping of form input names to database column names
+            // Define the checked items
             $checkedItems = [
                 'cek_motor_mesin_giling' => 'Cek Motor Mesin Giling',
                 'cek_vanbelt' => 'Cek Vanbelt',
@@ -141,16 +144,43 @@ class GilingController extends Controller
                 GilingResult::create($resultData);
             }
 
+            // LOG AKTIVITAS - Tambahkan setelah data berhasil disimpan
+            $formattedMonth = Carbon::parse($request->bulan . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            $mingguText = "Minggu ke-" . $request->minggu;
+            
+            Activity::logActivity(
+                'checker',                                              // user_type
+                Auth::user()->id,                                       // user_id
+                Auth::user()->username,                                 // user_name
+                'created',                                              // action
+                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Mesin Giling untuk ' . $mingguText . ' bulan ' . $formattedMonth,  // description
+                'giling_check',                                         // target_type
+                $gilingCheck->id,                                       // target_id
+                [
+                    'minggu' => $request->minggu,
+                    'bulan' => $request->bulan,
+                    'bulan_formatted' => $formattedMonth,
+                    'checked_by' => Auth::user()->username,
+                    'keterangan' => $request->catatan ?? '',
+                    'total_items' => count($checkedItems),
+                    'items_checked' => array_values($checkedItems),
+                    'status' => $gilingCheck->status ?? 'belum_disetujui'
+                ]                                                       // details (JSON)
+            );
+
+            // Commit the transaction
             DB::commit();
+            
             return redirect()->route('giling.index')
                 ->with('success', 'Data pemeriksaan mesin giling berhasil disimpan!');
 
         } catch (\Exception $e) {
+            // Rollback the transaction if something goes wrong
             DB::rollBack();
-            Log::error('Giling Check Save Error: ' . $e->getMessage());
+            
             return redirect()->back()
-                ->with('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage())
-                ->withInput();
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage());
         }
     }
 

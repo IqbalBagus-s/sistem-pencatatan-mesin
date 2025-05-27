@@ -196,10 +196,10 @@
                                     }">
                                         <div class="mt-1" x-show="selected || isApproved">
                                             <input type="text" name="checked_by_minggu{{ $j }}" x-ref="user{{ $j }}" value="{{ $checkedBy }}"
-                                                class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded mb-1 text-center"
+                                                class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-white' }} border border-gray-300 rounded mb-1 text-center"
                                                 readonly>
                                             <input type="text" x-ref="displayDate{{ $j }}" value="{{ $formattedDate }}"
-                                                class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded text-center"
+                                                class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-white' }} border border-gray-300 rounded text-center"
                                                 readonly>
                                             <input type="hidden" name="tanggal_minggu{{ $j }}" x-ref="date{{ $j }}" value="{{ $tanggal }}">
                                             
@@ -278,11 +278,11 @@
                         <span>Tidak Baik/Abnormal</span>
                     </div>
                     <div class="flex items-center">
-                        <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">-</span>
+                        <span class="inline-block w-5 h-5 bg-sky-50 text-gray-700 text-center font-bold mr-2 rounded">-</span>
                         <span>Tidak Diisi</span>
                     </div>
                     <div class="flex items-center">
-                        <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">OFF</span>
+                        <span class="inline-block w-5 h-5 bg-sky-50 text-gray-700 text-center font-bold mr-2 rounded">OFF</span>
                         <span>Mesin Mati</span>
                     </div>
                 </div>

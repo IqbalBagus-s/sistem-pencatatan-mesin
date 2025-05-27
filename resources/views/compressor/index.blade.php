@@ -97,7 +97,7 @@
                                 </a>
                             {{-- Menu edit --}}
                             @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @if($$check->status === 'belum_disetujui')
+                                @if($check->status === 'belum_disetujui')
                                     <a href="{{ route('compressor.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>

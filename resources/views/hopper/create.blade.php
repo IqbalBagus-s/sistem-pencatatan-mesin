@@ -226,10 +226,10 @@
                                     <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
                                         <div class="mt-1" x-show="selected">
                                             <input type="text" name="checked_by_minggu1" x-ref="user1" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded mb-1 text-center"
                                                 readonly>
                                             <input type="text" x-ref="displayDate1" x-bind:value="tanggal"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
                                             <input type="hidden" name="tanggal_minggu1" x-ref="date1">
                                         </div>
@@ -273,10 +273,10 @@
                                     <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
                                         <div class="mt-1" x-show="selected">
                                             <input type="text" name="checked_by_minggu2" x-ref="user2" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded mb-1 text-center"
                                                 readonly>
                                             <input type="text" x-ref="displayDate2" x-bind:value="tanggal"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
                                             <input type="hidden" name="tanggal_minggu2" x-ref="date2">
                                         </div>
@@ -320,10 +320,10 @@
                                     <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
                                         <div class="mt-1" x-show="selected">
                                             <input type="text" name="checked_by_minggu3" x-ref="user3" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded mb-1 text-center"
                                                 readonly>
                                             <input type="text" x-ref="displayDate3" x-bind:value="tanggal"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
                                             <input type="hidden" name="tanggal_minggu3" x-ref="date3">
                                         </div>
@@ -367,10 +367,10 @@
                                     <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
                                         <div class="mt-1" x-show="selected">
                                             <input type="text" name="checked_by_minggu4" x-ref="user4" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded mb-1 text-center"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded mb-1 text-center"
                                                 readonly>
                                             <input type="text" x-ref="displayDate4" x-bind:value="tanggal"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
                                             <input type="hidden" name="tanggal_minggu4" x-ref="date4">
                                         </div>
@@ -435,11 +435,11 @@
                             <span>Tidak Baik/Abnormal</span>
                         </div>
                         <div class="flex items-center">
-                            <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">-</span>
+                            <span class="inline-block w-5 h-5 bg-sky-50 text-gray-700 text-center font-bold mr-2 rounded">-</span>
                             <span>Tidak Diisi</span>
                         </div>
                         <div class="flex items-center">
-                            <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">OFF</span>
+                            <span class="inline-block w-5 h-5 bg-sky-50 text-gray-700 text-center font-bold mr-2 rounded">OFF</span>
                             <span>Mesin Mati</span>
                         </div>
                     </div>

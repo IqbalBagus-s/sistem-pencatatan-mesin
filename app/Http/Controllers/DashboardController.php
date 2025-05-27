@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Approver;
 use App\Models\Checker;
 use App\Models\Form;
+use App\Models\Activity;
 use App\Models\AirDryerCheck;
 use App\Models\WaterChillerCheck;
 use App\Models\CompressorCheck;
@@ -48,7 +49,10 @@ class DashboardController extends Controller
             ];
         }
         
-        return view('menu.dashboard', compact('user', 'notificationCounts'));
+        // Ambil aktivitas terbaru (5 terakhir)
+        $recentActivities = Activity::recent(5)->get();
+        
+        return view('menu.dashboard', compact('user', 'notificationCounts', 'recentActivities'));
     }
 
     public function hostDashboard()
@@ -68,7 +72,10 @@ class DashboardController extends Controller
         $checkerCount = Checker::where('status', 'aktif')->count();
         $activeFormCount = Form::select('nomor_form')->distinct()->count();
         
+        // Ambil aktivitas terbaru (5 terakhir)
+        $recentActivities = Activity::recent(5)->get();
+        
         // Kirim data ke view
-        return view('menu.dashboard_host', compact('approverCount', 'checkerCount', 'activeFormCount'));
+        return view('menu.dashboard_host', compact('approverCount', 'checkerCount', 'activeFormCount', 'recentActivities'));
     }
 }

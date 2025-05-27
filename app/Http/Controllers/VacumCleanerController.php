@@ -10,6 +10,8 @@ use App\Models\VacumCleanerCheck;
 use App\Models\VacumCleanerResultsTable1;
 use App\Models\VacumCleanerResultsTable2;
 use App\Models\Form;
+use App\Models\Activity;
+use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
 
 class VacumCleanerController extends Controller
@@ -118,10 +120,10 @@ class VacumCleanerController extends Controller
             'nomer_vacuum_cleaner' => 'required|integer|between:1,3',
             'bulan' => 'required|date_format:Y-m',
         ], $customMessages);
-    
+
         // Debug: Cek data yang diterima dari form
         Log::info('Data dari form vacuum cleaner:', $request->all());
-    
+
         // Periksa apakah data sudah ada
         $existingRecord = VacumCleanerCheck::where('nomer_vacum_cleaner', $request->nomer_vacuum_cleaner)
             ->where('bulan', $request->bulan)
@@ -139,10 +141,10 @@ class VacumCleanerController extends Controller
                 ->withInput()
                 ->with('error', $pesanError);
         }
-    
+
         // Mulai transaksi database
         DB::beginTransaction();
-    
+
         try {
             // Data utama untuk tabel vacuum cleaner checks
             $data = [
@@ -198,6 +200,9 @@ class VacumCleanerController extends Controller
                 7 => 'Kabel',
             ];
             
+            // Array untuk menyimpan detail items yang diproses (untuk activity log)
+            $itemsProcessed = [];
+            
             // Proses setiap item
             foreach ($items as $itemId => $itemName) {
                 // Data untuk tabel minggu 2
@@ -207,15 +212,19 @@ class VacumCleanerController extends Controller
                 ];
                 
                 // Set nilai check untuk minggu 2
+                $minggu2Value = '-';
                 if (isset($request->check_1[$itemId])) {
                     $resultData1['minggu2'] = $request->check_1[$itemId];
+                    $minggu2Value = $request->check_1[$itemId];
                 } else {
                     $resultData1['minggu2'] = '-';
                 }
                 
                 // Set keterangan untuk minggu 2
+                $keterangan2 = null;
                 if (isset($request->keterangan_1[$itemId])) {
                     $resultData1['keterangan_minggu2'] = $request->keterangan_1[$itemId];
+                    $keterangan2 = $request->keterangan_1[$itemId];
                 } else {
                     $resultData1['keterangan_minggu2'] = null;
                 }
@@ -227,15 +236,19 @@ class VacumCleanerController extends Controller
                 ];
                 
                 // Set nilai check untuk minggu 4
+                $minggu4Value = '-';
                 if (isset($request->check_2[$itemId])) {
                     $resultData2['minggu4'] = $request->check_2[$itemId];
+                    $minggu4Value = $request->check_2[$itemId];
                 } else {
                     $resultData2['minggu4'] = '-';
                 }
                 
                 // Set keterangan untuk minggu 4
+                $keterangan4 = null;
                 if (isset($request->keterangan_2[$itemId])) {
                     $resultData2['keterangan_minggu4'] = $request->keterangan_2[$itemId];
+                    $keterangan4 = $request->keterangan_2[$itemId];
                 } else {
                     $resultData2['keterangan_minggu4'] = null;
                 }
@@ -247,12 +260,81 @@ class VacumCleanerController extends Controller
                 // Log untuk memastikan record hasil berhasil dibuat
                 Log::info("Item #{$itemId} ({$itemName}) berhasil disimpan ke table1 dengan ID: " . $table1Result->id);
                 Log::info("Item #{$itemId} ({$itemName}) berhasil disimpan ke table2 dengan ID: " . $table2Result->id);
+                
+                // Simpan detail untuk activity log
+                $itemsProcessed[] = [
+                    'item' => $itemName,
+                    'minggu2' => $minggu2Value,
+                    'minggu4' => $minggu4Value,
+                    'keterangan_minggu2' => $keterangan2,
+                    'keterangan_minggu4' => $keterangan4,
+                ];
             }
+
+            // LOG AKTIVITAS - Tambahkan setelah data berhasil disimpan
+            $bulanFormatted = Carbon::parse($request->bulan . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            
+            // Kumpulkan checker dan tanggal untuk minggu 2 dan 4 (vacuum cleaner hanya ada minggu 2 dan 4)
+            $weeklyData = [];
+            
+            // Minggu 2
+            if (!empty($data['checker_minggu2']) || !empty($data['tanggal_dibuat_minggu2'])) {
+                $weeklyData['minggu_2'] = [
+                    'checker' => $data['checker_minggu2'] ?? null,
+                    'tanggal' => !empty($data['tanggal_dibuat_minggu2']) ? 
+                        Carbon::parse($data['tanggal_dibuat_minggu2'])->locale('id')->isoFormat('D MMMM YYYY') : null
+                ];
+            }
+            
+            // Minggu 4
+            if (!empty($data['checker_minggu4']) || !empty($data['tanggal_dibuat_minggu4'])) {
+                $weeklyData['minggu_4'] = [
+                    'checker' => $data['checker_minggu4'] ?? null,
+                    'tanggal' => !empty($data['tanggal_dibuat_minggu4']) ? 
+                        Carbon::parse($data['tanggal_dibuat_minggu4'])->locale('id')->isoFormat('D MMMM YYYY') : null
+                ];
+            }
+            
+            // Buat string deskripsi untuk checker dan tanggal
+            $checkerString = [];
+            foreach ($weeklyData as $minggu => $data_weekly) {
+                if ($data_weekly['checker']) {
+                    $mingguLabel = ucfirst(str_replace('_', ' ', $minggu));
+                    $checkerInfo = $mingguLabel . ': ' . $data_weekly['checker'];
+                    if ($data_weekly['tanggal']) {
+                        $checkerInfo .= ' (' . $data_weekly['tanggal'] . ')';
+                    }
+                    $checkerString[] = $checkerInfo;
+                }
+            }
+            $checkerDescription = !empty($checkerString) ? implode(', ', $checkerString) : 'Tidak ada checker yang ditetapkan';
+            
+            Activity::logActivity(
+                'checker',                                              // user_type
+                Auth::user()->id,                                       // user_id
+                Auth::user()->username,                                 // user_name
+                'created',                                              // action
+                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Vacuum Cleaner Nomor ' . $request->nomer_vacuum_cleaner . ' untuk bulan ' . $bulanFormatted,  // description
+                'vacuum_cleaner_check',                                 // target_type
+                $vacuumCleanerCheck->id,                               // target_id
+                [
+                    'nomer_vacuum_cleaner' => $request->nomer_vacuum_cleaner,
+                    'bulan' => $request->bulan,
+                    'bulan_formatted' => $bulanFormatted,
+                    'weekly_data' => $weeklyData,
+                    'total_items' => count($items),
+                    'items_processed' => $itemsProcessed,
+                    'total_weeks_filled' => count($weeklyData),
+                    'status' => $vacuumCleanerCheck->status ?? 'belum_disetujui',
+                    'note' => 'Vacuum cleaner hanya memiliki pemeriksaan pada minggu 2 dan minggu 4'
+                ]                                                       // details (JSON)
+            );
             
             // Commit transaksi
             DB::commit();
             
-            Log::info('Transaksi vacuum cleaner berhasil disimpan');
+            // Log untuk debugging
+            Log::info('Transaksi vacuum cleaner berhasil disimpan dengan ID: ' . $vacuumCleanerCheck->id);
             
             return redirect()->route('vacuum-cleaner.index')
                 ->with('success', 'Data berhasil disimpan!');
@@ -264,6 +346,7 @@ class VacumCleanerController extends Controller
             // Log error detail untuk debugging
             Log::error('Error saat menyimpan data vacuum cleaner: ' . $e->getMessage());
             Log::error($e->getTraceAsString());
+            Log::error('Request data: ' . json_encode($request->all()));
             
             return redirect()->back()
                 ->withInput()

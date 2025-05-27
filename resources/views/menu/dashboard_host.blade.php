@@ -508,7 +508,7 @@
                     </div>
                 </div>
                 
-                <!-- Recent Activities (Optional) -->
+                <!-- Recent Activities -->
                 <div class="mt-8 mb-6">
                     <h3 class="font-bold text-lg mb-4">Aktivitas Terbaru</h3>
                     <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -520,7 +520,9 @@
                                             <div class="flex items-center">
                                                 <div class="flex-shrink-0">
                                                     <span class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                                        <i class="fas fa-history text-blue-600"></i>
+                                                        <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                                        </svg>
                                                     </span>
                                                 </div>
                                                 <div class="ml-3">

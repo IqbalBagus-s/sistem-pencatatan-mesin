@@ -9,6 +9,9 @@ use App\Models\DehumMatrasResultsTable1;
 use App\Models\DehumMatrasResultsTable2;
 use App\Models\DehumMatrasResultsTable3;
 use App\Models\Form;
+use App\Models\Activity;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
@@ -90,18 +93,20 @@ class DehumMatrasController extends Controller
     
     public function store(Request $request)
     {
+        // Custom error messages untuk validasi
         $customMessages = [
             'nomer_dehum_matras.required' => 'Silakan pilih nomor dehum matras terlebih dahulu!',
             'shift.required' => 'Silakan pilih shift terlebih dahulu!',
             'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
         ];
-        // Validate input
+
+        // Validate input dengan custom messages
         $validated = $request->validate([
             'nomer_dehum_matras' => 'required|integer|between:1,23',
             'shift' => 'required|integer|between:1,3',
             'bulan' => 'required|date_format:Y-m',
         ], $customMessages);
-    
+
         // Check for duplicate record
         $existingRecord = DehumMatrasCheck::where('nomer_dehum_matras', $request->nomer_dehum_matras)
             ->where('shift', $request->shift)
@@ -109,21 +114,20 @@ class DehumMatrasController extends Controller
             ->first();
         
         if ($existingRecord) {
-            // Buat pesan error spesifik dengan Carbon
-            $nomorDehum = $request->nomer_dehum_matras;
-            $shift = $request->shift;
-            $bulan = Carbon::parse($request->bulan . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            // Format bulan dari Y-m menjadi nama bulan dan tahun (contoh: Mei 2025)
+            $formattedMonth = Carbon::parse($request->bulan . '-01')->locale('id')->isoFormat('MMMM YYYY');
             
-            $pesanError = "Data sudah ada untuk Dehum Matras nomor {$nomorDehum}, Shift {$shift}, dan pada bulan {$bulan}!";
+            // Pesan error dengan detail data duplikat
+            $errorMessage = "Data duplikat ditemukan untuk Dehum Matras Nomor {$request->nomer_dehum_matras}, Shift {$request->shift}, dan Bulan {$formattedMonth}!";
             
             return redirect()->back()
                 ->withInput()
-                ->with('error', $pesanError);
+                ->with('error', $errorMessage);
         }
-    
+
         // Start a database transaction
         DB::beginTransaction();
-    
+
         try {
             // Create Dehum Matras Check record
             $dehumMatrasCheck = DehumMatrasCheck::create([
@@ -216,6 +220,29 @@ class DehumMatrasController extends Controller
                     ]);
                 }
             }
+            
+            // LOG AKTIVITAS - Tambahkan setelah data berhasil disimpan
+            $formattedMonth = Carbon::parse($request->bulan . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            $shiftText = "Shift " . $request->shift;
+            
+            Activity::logActivity(
+                'checker',                                              // user_type
+                Auth::user()->id,                                       // user_id
+                Auth::user()->username,                                 // user_name
+                'created',                                              // action
+                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Dehum Matras Nomor ' . $request->nomer_dehum_matras . ' untuk ' . $shiftText . ' bulan ' . $formattedMonth,  // description
+                'dehum_matras_check',                                   // target_type
+                $dehumMatrasCheck->id,                                  // target_id
+                [
+                    'nomer_dehum_matras' => $request->nomer_dehum_matras,
+                    'shift' => $request->shift,
+                    'bulan' => $request->bulan,
+                    'bulan_formatted' => $formattedMonth,
+                    'total_items' => count($items),
+                    'items_checked' => array_values($items),
+                    'status' => $dehumMatrasCheck->status ?? 'belum_disetujui'
+                ]                                                       // details (JSON)
+            );
             
             // Commit the transaction
             DB::commit();

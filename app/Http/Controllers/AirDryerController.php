@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\AirDryerCheck;
 use App\Models\AirDryerResult;
 use App\Models\Form;
+use App\Models\Activity;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -71,7 +72,6 @@ class AirDryerController extends Controller
 
         try {
             // Simpan data pemeriksaan utama
-            // PERUBAHAN: Hapus manual setting 'status' - biarkan model yang mengatur otomatis
             $airDryerCheck = AirDryerCheck::create([
                 'tanggal' => $request->tanggal,
                 'hari' => $request->hari,
@@ -95,6 +95,26 @@ class AirDryerController extends Controller
                     'auto_drain' => $request->input('auto_drain.' . $i),
                 ]);
             }
+
+            // LOG AKTIVITAS - Tambahkan setelah data berhasil disimpan
+            $formattedDate = Carbon::parse($request->tanggal)->locale('id')->isoFormat('D MMMM YYYY');
+            
+            Activity::logActivity(
+                'checker',                                          // user_type
+                Auth::user()->id,                                   // user_id
+                Auth::user()->username,                             // user_name
+                'created',                                          // action
+                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Air Dryer untuk tanggal ' . $formattedDate,  // description
+                'air_dryer_check',                                  // target_type
+                $airDryerCheck->id,                                 // target_id
+                [
+                    'tanggal' => $request->tanggal,
+                    'hari' => $request->hari,
+                    'total_mesin' => 8,
+                    'keterangan' => $request->catatan ?? 'Tidak ada catatan',
+                    'status' => $airDryerCheck->status
+                ]                                                   // details (JSON)
+            );
 
             // Commit transaksi jika semua operasi berhasil
             DB::commit();

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\SlittingCheck;
 use App\Models\SlittingResult;
 use App\Models\Form;
+use App\Models\Activity;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -90,7 +92,7 @@ class SlittingController extends Controller
             'check_4' => 'nullable|array',
             'keterangan_4' => 'nullable|array',
         ], $customMessages);
-    
+
         // Check for existing record with the same nomer_slitting and bulan
         $existingRecord = SlittingCheck::where('nomer_slitting', $request->input('nomer_slitting'))
             ->where('bulan', $request->input('bulan'))
@@ -108,11 +110,11 @@ class SlittingController extends Controller
             return redirect()->back()->with('error', $pesanError)
                             ->withInput();
         }
-    
+
         try {
             // Start a database transaction
             DB::beginTransaction();
-    
+
             // Create SlittingCheck record with corrected field names
             $slittingCheck = SlittingCheck::create([
                 'nomer_slitting' => $request->input('nomer_slitting'),
@@ -131,7 +133,7 @@ class SlittingController extends Controller
                 'checked_by_minggu4' => $request->input('checked_by_4'),
                 'checked_date_minggu4' => $request->has('check_num_4') && $request->input('check_num_4') ? now() : null,
             ]);
-    
+
             // Log untuk debugging
             Log::info('Checked Items:', $request->input('checked_items'));
             Log::info('Check 1:', $request->input('check_1'));
@@ -157,6 +159,9 @@ class SlittingController extends Controller
                 17 => 'Air Filter',
             ];
             
+            // Array untuk menyimpan detail items yang diproses (untuk activity log)
+            $itemsProcessed = [];
+            
             // Proses setiap item sesuai dengan key di $items, bukan indeks dari array checked_items
             foreach ($items as $key => $item) {
                 // Mengakses nilai dari form menggunakan key yang sama dengan key di array $items
@@ -175,7 +180,7 @@ class SlittingController extends Controller
                 // Log untuk debugging
                 Log::info("Menyimpan item {$key}: {$item} dengan nilai minggu1: {$minggu1}");
                 
-                SlittingResult::create([
+                $resultData = [
                     'check_id' => $slittingCheck->id,
                     'checked_items' => $item, // Gunakan nilai item dari array $items
                     
@@ -194,26 +199,98 @@ class SlittingController extends Controller
                     // Week 4 data
                     'minggu4' => $minggu4,
                     'keterangan_minggu4' => $keterangan4,
-                ]);
+                ];
+                
+                SlittingResult::create($resultData);
+                
+                // Simpan detail untuk activity log
+                $itemsProcessed[] = [
+                    'item' => $item,
+                    'minggu1' => $minggu1,
+                    'minggu2' => $minggu2,
+                    'minggu3' => $minggu3,
+                    'minggu4' => $minggu4,
+                    'keterangan_minggu1' => $keterangan1,
+                    'keterangan_minggu2' => $keterangan2,
+                    'keterangan_minggu3' => $keterangan3,
+                    'keterangan_minggu4' => $keterangan4,
+                ];
             }
-    
+
+            // LOG AKTIVITAS - Tambahkan setelah data berhasil disimpan
+            $bulanFormatted = Carbon::parse($request->input('bulan') . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            
+            // Kumpulkan checker dan tanggal untuk setiap minggu
+            $weeklyData = [];
+            for ($i = 1; $i <= 4; $i++) {
+                $checker = $request->input("checked_by_{$i}");
+                $checkNum = $request->input("check_num_{$i}");
+                $date = $slittingCheck->{"checked_date_minggu{$i}"};
+                
+                if ($checker || $checkNum || $date) {
+                    $weeklyData["minggu_{$i}"] = [
+                        'checker' => $checker,
+                        'check_num' => $checkNum,
+                        'tanggal' => $date ? $date->locale('id')->isoFormat('D MMMM YYYY') : null
+                    ];
+                }
+            }
+            
+            // Buat string deskripsi untuk checker dan tanggal
+            $checkerString = [];
+            foreach ($weeklyData as $minggu => $data) {
+                if ($data['checker']) {
+                    $mingguLabel = ucfirst(str_replace('_', ' ', $minggu));
+                    $checkerInfo = $mingguLabel . ': ' . $data['checker'];
+                    if ($data['tanggal']) {
+                        $checkerInfo .= ' (' . $data['tanggal'] . ')';
+                    }
+                    $checkerString[] = $checkerInfo;
+                }
+            }
+            $checkerDescription = !empty($checkerString) ? implode(', ', $checkerString) : 'Tidak ada checker yang ditetapkan';
+            
+            Activity::logActivity(
+                'checker',                                              // user_type
+                Auth::user()->id,                                       // user_id
+                Auth::user()->username,                                 // user_name
+                'created',                                              // action
+                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Slitting Nomor ' . $request->input('nomer_slitting') . ' untuk bulan ' . $bulanFormatted,  // description
+                'slitting_check',                                       // target_type
+                $slittingCheck->id,                                     // target_id
+                [
+                    'nomer_slitting' => $request->input('nomer_slitting'),
+                    'bulan' => $request->input('bulan'),
+                    'bulan_formatted' => $bulanFormatted,
+                    'weekly_data' => $weeklyData,
+                    'total_items' => count($items),
+                    'items_processed' => $itemsProcessed,
+                    'total_weeks_filled' => count($weeklyData),
+                    'status' => $slittingCheck->status ?? 'belum_disetujui'
+                ]                                                       // details (JSON)
+            );
+
             // Commit the transaction
             DB::commit();
-    
+
+            // Log untuk debugging
+            Log::info('Transaksi slitting berhasil disimpan dengan ID: ' . $slittingCheck->id);
+
             // Redirect with success message
             return redirect()->route('slitting.index')->with('success', 'Data pemeriksaan Slitting berhasil disimpan.');
+            
         } catch (\Exception $e) {
             // Rollback the transaction in case of error
             DB::rollBack();
-    
+
             // Log the error for debugging
             Log::error('Slitting store error: ' . $e->getMessage());
             Log::error('Error detail: ' . $e->getTraceAsString());
             Log::error('Request data: ' . json_encode($request->all()));
-    
+
             // Redirect back with error message
             return redirect()->back()->with('error', 'Gagal menyimpan data pemeriksaan Slitting: ' . $e->getMessage())
-                             ->withInput();
+                            ->withInput();
         }
     }
 

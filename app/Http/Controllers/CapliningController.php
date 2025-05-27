@@ -10,6 +10,8 @@ use Carbon\Carbon;
 use App\Models\CapliningCheck;
 use App\Models\CapliningResult;
 use App\Models\Form;
+use App\Models\Activity;
+use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
 
 class CapliningController extends Controller
 {
@@ -290,12 +292,18 @@ class CapliningController extends Controller
                 'nomer_caplining' => $request->nomer_caplining,
             ];
             
+            // Array untuk menyimpan tanggal yang diformat untuk activity log
+            $tanggalFormatted = [];
+            
             // Set tanggal dan user data untuk masing-masing kolom check
             for ($i = 1; $i <= 5; $i++) {
                 // Simpan tanggal yang dipilih
                 if ($request->has("tanggal_$i") && !empty($request->{"tanggal_$i"})) {
                     $formattedDate = $formatTanggalForDB($request->{"tanggal_$i"});
                     $data["tanggal_check$i"] = $formattedDate;
+                    
+                    // Simpan tanggal yang diformat untuk activity log
+                    $tanggalFormatted["tanggal_check$i"] = $request->{"tanggal_$i"};
                     
                     Log::info("Tanggal $i: " . $request->{"tanggal_$i"} . " -> " . $data["tanggal_check$i"]);
                 } else {
@@ -386,6 +394,28 @@ class CapliningController extends Controller
                 // Log untuk memastikan record hasil berhasil dibuat
                 Log::info("Item #{$itemId} ({$itemName}) berhasil disimpan dengan ID: " . $result->id);
             }
+            
+            // LOG AKTIVITAS - Tambahkan setelah data berhasil disimpan
+            $tanggalList = array_filter($tanggalFormatted); // Hapus yang null
+            $tanggalString = !empty($tanggalList) ? implode(', ', $tanggalList) : 'Tidak ada tanggal';
+            
+            Activity::logActivity(
+                'checker',                                              // user_type
+                Auth::user()->id,                                       // user_id
+                Auth::user()->username,                                 // user_name
+                'created',                                              // action
+                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Caplining Nomor ' . $request->nomer_caplining . ' untuk tanggal: ' . $tanggalString,  // description
+                'caplining_check',                                      // target_type
+                $capliningCheck->id,                                    // target_id
+                [
+                    'nomer_caplining' => $request->nomer_caplining,
+                    'tanggal_checks' => $tanggalFormatted,
+                    'total_items' => count($items),
+                    'items_checked' => array_values($items),
+                    'jumlah_tanggal_diinput' => count($tanggalList),
+                    'status' => $capliningCheck->status ?? 'belum_disetujui'
+                ]                                                       // details (JSON)
+            );
             
             // Commit transaksi
             DB::commit();

@@ -9,6 +9,8 @@ use App\Models\Form;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use App\Models\Activity;
+use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
 
 class CraneMatrasControler extends Controller
@@ -66,6 +68,7 @@ class CraneMatrasControler extends Controller
         $customMessages = [
             'nomer_crane_matras.required' => 'Silakan pilih nomor crane matras terlebih dahulu!',
         ];
+        
         // Validasi input
         $validatedData = $request->validate([
             'nomer_crane_matras' => 'required|integer|min:1|max:3',
@@ -97,6 +100,8 @@ class CraneMatrasControler extends Controller
         
         // Mengubah format tanggal dari "DD Bulan YYYY" menjadi "YYYY-MM-DD"
         $tanggal = null;
+        $tanggalFormatted = null; // Untuk activity log
+        
         if ($request->filled('tanggal_1')) {
             $bulanIndonesia = [
                 'Januari' => '01', 'Februari' => '02', 'Maret' => '03', 'April' => '04',
@@ -110,6 +115,7 @@ class CraneMatrasControler extends Controller
                 $month = $bulanIndonesia[$parts[1]];
                 $year = $parts[2];
                 $tanggal = "$year-$month-$day";
+                $tanggalFormatted = $request->tanggal_1; // Simpan format asli untuk log
             }
         }
         
@@ -125,13 +131,16 @@ class CraneMatrasControler extends Controller
                 'checked_by' => $request->input('checked_by_1'),
                 'approved_by' => null, // Diisi pada tahap approval
             ]);
-    
+
             // Log untuk debugging
             Log::info('Checked Items:', $request->input('checked_items'));
             Log::info('Check Values:', $request->input('check'));
             
             // Mendefinisikan daftar item yang diperiksa
             $items = $request->input('checked_items');
+            
+            // Array untuk menyimpan detail items yang disimpan (untuk activity log)
+            $itemsProcessed = [];
             
             // Simpan hasil pemeriksaan untuk setiap item
             foreach ($items as $index => $item) {
@@ -149,11 +158,43 @@ class CraneMatrasControler extends Controller
                     'check' => $checkValue,
                     'keterangan' => $keterangan,
                 ]);
+                
+                // Simpan detail untuk activity log
+                $itemsProcessed[] = [
+                    'item' => $item,
+                    'check' => $checkValue,
+                    'keterangan' => $keterangan
+                ];
             }
-    
+
+            // LOG AKTIVITAS - Tambahkan setelah data berhasil disimpan
+            $bulanFormatted = Carbon::parse($request->input('bulan') . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            $tanggalString = $tanggalFormatted ? $tanggalFormatted : 'Tidak ada tanggal pemeriksaan';
+            
+            Activity::logActivity(
+                'checker',                                              // user_type
+                Auth::user()->id,                                       // user_id
+                Auth::user()->username,                                 // user_name
+                'created',                                              // action
+                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Crane Matras Nomor ' . $request->input('nomer_crane_matras') . ' untuk bulan ' . $bulanFormatted . ($tanggalFormatted ? ' pada tanggal: ' . $tanggalString : ''),  // description
+                'crane_matras_check',                                   // target_type
+                $craneMatrasCheck->id,                                  // target_id
+                [
+                    'nomer_crane_matras' => $request->input('nomer_crane_matras'),
+                    'bulan' => $request->input('bulan'),
+                    'bulan_formatted' => $bulanFormatted,
+                    'tanggal_check' => $tanggalFormatted,
+                    'tanggal_check_db' => $tanggal,
+                    'checked_by' => $request->input('checked_by_1'),
+                    'total_items' => count($items),
+                    'items_processed' => $itemsProcessed,
+                    'status' => $craneMatrasCheck->status ?? 'belum_disetujui'
+                ]                                                       // details (JSON)
+            );
+
             // Commit transaksi
             DB::commit();
-    
+
             // Redirect dengan pesan sukses
             return redirect()->route('crane-matras.index')
                 ->with('success', 'Data pemeriksaan Crane Matras berhasil disimpan.');
@@ -161,15 +202,15 @@ class CraneMatrasControler extends Controller
         } catch (\Exception $e) {
             // Rollback transaksi jika terjadi kesalahan
             DB::rollBack();
-    
+
             // Log kesalahan untuk debugging
             Log::error('Crane Matras store error: ' . $e->getMessage());
             Log::error('Error detail: ' . $e->getTraceAsString());
             Log::error('Request data: ' . json_encode($request->all()));
-    
+
             // Redirect kembali dengan pesan kesalahan
             return redirect()->back()->with('error', 'Gagal menyimpan data pemeriksaan Crane Matras: ' . $e->getMessage())
-                             ->withInput();
+                            ->withInput();
         }
     }
 

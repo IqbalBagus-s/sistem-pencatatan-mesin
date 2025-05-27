@@ -6,7 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\DehumBahanCheck;
 use App\Models\DehumBahanResult;
 use App\Models\Form;
+use App\Models\Activity;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
 
@@ -63,6 +66,7 @@ class DehumBahanController extends Controller
             'nomer_dehum_bahan.required' => 'Silakan pilih nomor dehum bahan terlebih dahulu!',
             'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
         ];
+        
         // Validate the request
         $validatedData = $request->validate([
             'nomer_dehum_bahan' => 'required|integer|min:1|max:15',
@@ -132,8 +136,11 @@ class DehumBahanController extends Controller
             // Prepare and create DehumBahanResult records
             $checkedItems = $request->input('checked_items');
             
+            // Array untuk menyimpan detail items yang diproses (untuk activity log)
+            $itemsProcessed = [];
+            
             foreach ($checkedItems as $index => $item) {
-                DehumBahanResult::create([
+                $resultData = [
                     'check_id' => $dehumBahanCheck->id,
                     'checked_items' => $item,
                     
@@ -152,20 +159,91 @@ class DehumBahanController extends Controller
                     // Week 4 data
                     'minggu4' => $request->input("check_4.{$index}", null),
                     'keterangan_minggu4' => $request->input("keterangan_4.{$index}", null),
-                ]);
+                ];
+                
+                DehumBahanResult::create($resultData);
+                
+                // Simpan detail untuk activity log
+                $itemsProcessed[] = [
+                    'item' => $item,
+                    'minggu1' => $resultData['minggu1'],
+                    'minggu2' => $resultData['minggu2'],
+                    'minggu3' => $resultData['minggu3'],
+                    'minggu4' => $resultData['minggu4'],
+                    'keterangan_minggu1' => $resultData['keterangan_minggu1'],
+                    'keterangan_minggu2' => $resultData['keterangan_minggu2'],
+                    'keterangan_minggu3' => $resultData['keterangan_minggu3'],
+                    'keterangan_minggu4' => $resultData['keterangan_minggu4'],
+                ];
             }
+
+            // LOG AKTIVITAS - Tambahkan setelah data berhasil disimpan
+            $bulanFormatted = Carbon::parse($request->input('bulan') . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            
+            // Kumpulkan tanggal dan checker untuk setiap minggu
+            $weeklyData = [];
+            for ($i = 1; $i <= 4; $i++) {
+                $date = $request->input("created_date_{$i}");
+                $checker = $request->input("created_by_{$i}");
+                
+                if ($date || $checker) {
+                    $weeklyData["minggu_{$i}"] = [
+                        'tanggal' => $date ? Carbon::parse($date)->locale('id')->isoFormat('D MMMM YYYY') : null,
+                        'checker' => $checker
+                    ];
+                }
+            }
+            
+            // Buat string deskripsi untuk tanggal
+            $tanggalString = [];
+            foreach ($weeklyData as $minggu => $data) {
+                if ($data['tanggal']) {
+                    $tanggalString[] = ucfirst(str_replace('_', ' ', $minggu)) . ': ' . $data['tanggal'];
+                }
+            }
+            $tanggalDescription = !empty($tanggalString) ? implode(', ', $tanggalString) : 'Tidak ada tanggal pemeriksaan';
+            
+            Activity::logActivity(
+                'checker',                                              // user_type
+                Auth::user()->id,                                       // user_id
+                Auth::user()->username,                                 // user_name
+                'created',                                              // action
+                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Dehum Bahan Nomor ' . $request->input('nomer_dehum_bahan') . ' untuk bulan ' . $bulanFormatted,  // description
+                'dehum_bahan_check',                                    // target_type
+                $dehumBahanCheck->id,                                   // target_id
+                [
+                    'nomer_dehum_bahan' => $request->input('nomer_dehum_bahan'),
+                    'bulan' => $request->input('bulan'),
+                    'bulan_formatted' => $bulanFormatted,
+                    'weekly_data' => $weeklyData,
+                    'total_items' => count($checkedItems),
+                    'items_processed' => $itemsProcessed,
+                    'total_weeks_filled' => count($weeklyData),
+                    'status' => $dehumBahanCheck->status ?? 'belum_disetujui'
+                ]                                                       // details (JSON)
+            );
 
             // Commit the transaction
             DB::commit();
 
+            // Log untuk debugging
+            Log::info('Transaksi dehum bahan berhasil disimpan dengan ID: ' . $dehumBahanCheck->id);
+
             // Redirect with success message
             return redirect()->route('dehum-bahan.index')->with('success', 'Data Pencatatan sudah tersimpan!');
+            
         } catch (\Exception $e) {
             // Rollback the transaction in case of error
             DB::rollBack();
 
+            // Log error detail untuk debugging
+            Log::error('Error saat menyimpan data dehum bahan: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            Log::error('Request data: ' . json_encode($request->all()));
+
             // Redirect back with error message
-            return redirect()->back()->with('error', 'Failed to save Dehum Bahan check data: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to save Dehum Bahan check data: ' . $e->getMessage())
+                            ->withInput();
         }
     }
 

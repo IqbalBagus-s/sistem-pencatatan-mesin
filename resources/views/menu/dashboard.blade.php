@@ -498,57 +498,91 @@
                 </h2>
         
 
-<div class="machine-grid mt-4 sm:mt-6">
-    @php
-        $machines = [
-            ['name' => 'Air Dryer', 'route' => 'air-dryer.index', 'key' => 'air_dryer'],
-            ['name' => 'Water Chiller', 'route' => 'water-chiller.index', 'key' => 'water_chiller'],
-            ['name' => 'Compressor', 'route' => 'compressor.index', 'key' => 'compressor'],
-            ['name' => 'Hopper', 'route' => 'hopper.index', 'key' => 'hopper'],
-            ['name' => 'Dehum Bahan', 'route' => 'dehum-bahan.index', 'key' => 'dehum_bahan'],
-            ['name' => 'Dehum Matras', 'route' => 'dehum-matras.index', 'key' => 'dehum_matras'],
-            ['name' => 'Auto Loader', 'route' => 'autoloader.index', 'key' => 'auto_loader'],
-            ['name' => 'Gilingan', 'route' => 'giling.index', 'key' => 'gilingan'],
-            ['name' => 'Caplining', 'route' => 'caplining.index', 'key' => 'caplining'],
-            ['name' => 'Vacuum Cleaner', 'route' => 'vacuum-cleaner.index', 'key' => 'vacuum_cleaner'],
-            ['name' => 'Slitting', 'route' => 'slitting.index', 'key' => 'slitting'],
-            ['name' => 'Crane Matras', 'route' => 'crane-matras.index', 'key' => 'crane_matras']
-        ];
-    @endphp
-    
-    @foreach ($machines as $index => $machine)
-        <div>
-            <div class="bg-white rounded-lg shadow-md overflow-hidden machine-card">
-                <div class="p-2 sm:p-3 md:p-4 card-content">
-                    <div class="card-header">
-                        <h5 class="font-semibold text-center text-xs sm:text-sm md:text-base">
-                            {{ $machine['name'] }}
-                        </h5>
-                        <!-- Ikon notifikasi dengan badge - hanya tampil untuk approver -->
-                        @if(auth()->user() instanceof \App\Models\Approver)
-                            <div class="notification-icon ml-2">
-                                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
-                                </svg>
-                                <!-- Badge notifikasi berdasarkan data real -->
-                                @if(isset($notificationCounts[$machine['key']]) && $notificationCounts[$machine['key']] > 0)
-                                    <span class="notification-badge">{{ $notificationCounts[$machine['key']] }}</span>
+                <div class="machine-grid mt-4 sm:mt-6">
+                    @php
+                        $machines = [
+                            ['name' => 'Air Dryer', 'route' => 'air-dryer.index', 'key' => 'air_dryer'],
+                            ['name' => 'Water Chiller', 'route' => 'water-chiller.index', 'key' => 'water_chiller'],
+                            ['name' => 'Compressor', 'route' => 'compressor.index', 'key' => 'compressor'],
+                            ['name' => 'Hopper', 'route' => 'hopper.index', 'key' => 'hopper'],
+                            ['name' => 'Dehum Bahan', 'route' => 'dehum-bahan.index', 'key' => 'dehum_bahan'],
+                            ['name' => 'Dehum Matras', 'route' => 'dehum-matras.index', 'key' => 'dehum_matras'],
+                            ['name' => 'Auto Loader', 'route' => 'autoloader.index', 'key' => 'auto_loader'],
+                            ['name' => 'Gilingan', 'route' => 'giling.index', 'key' => 'gilingan'],
+                            ['name' => 'Caplining', 'route' => 'caplining.index', 'key' => 'caplining'],
+                            ['name' => 'Vacuum Cleaner', 'route' => 'vacuum-cleaner.index', 'key' => 'vacuum_cleaner'],
+                            ['name' => 'Slitting', 'route' => 'slitting.index', 'key' => 'slitting'],
+                            ['name' => 'Crane Matras', 'route' => 'crane-matras.index', 'key' => 'crane_matras']
+                        ];
+                    @endphp
+                    
+                    @foreach ($machines as $index => $machine)
+                        <div>
+                            <div class="bg-white rounded-lg shadow-md overflow-hidden machine-card">
+                                <div class="p-2 sm:p-3 md:p-4 card-content">
+                                    <div class="card-header">
+                                        <h5 class="font-semibold text-center text-xs sm:text-sm md:text-base">
+                                            {{ $machine['name'] }}
+                                        </h5>
+                                        <!-- Ikon notifikasi dengan badge - hanya tampil untuk approver -->
+                                        @if(auth()->user() instanceof \App\Models\Approver)
+                                            <div class="notification-icon ml-2">
+                                                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                                                </svg>
+                                                <!-- Badge notifikasi berdasarkan data real -->
+                                                @if(isset($notificationCounts[$machine['key']]) && $notificationCounts[$machine['key']] > 0)
+                                                    <span class="notification-badge">{{ $notificationCounts[$machine['key']] }}</span>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </div>
+                                    @if ($machine['route'])
+                                        <a href="{{ route($machine['route']) }}" class="btn-check-machine text-white py-1.5 sm:py-2 px-2 sm:px-3 md:px-4 rounded mt-auto text-xs sm:text-sm md:text-base">Cek Disini</a>
+                                    @else
+                                        <button class="btn-check-machine text-white py-1.5 sm:py-2 px-2 sm:px-3 md:px-4 rounded mt-auto text-xs sm:text-sm md:text-base">Cek Disini</button>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                @if(auth()->user() instanceof \App\Models\Approver)
+                    <!-- Recent Activities -->
+                    <div class="mt-8 mb-6">
+                        <h3 class="mt-5 sm:mt-6 mb-5 sm:mb-6 text-center font-bold text-lg sm:text-xl section-title">Aktivitas Terbaru</h3>
+                        <div class="bg-white rounded-lg shadow overflow-hidden">
+                            <div class="p-4">
+                                @if(isset($recentActivities) && count($recentActivities) > 0)
+                                    <ul class="divide-y divide-gray-200">
+                                        @foreach($recentActivities as $activity)
+                                            <li class="py-3">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0">
+                                                        <span class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                                            <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                                            </svg>
+                                                        </span>
+                                                    </div>
+                                                    <div class="ml-3">
+                                                        <p class="sm:text-sm md:text-sm text-gray-900">{{ $activity->description }}</p>
+                                                        <p class="text-xs text-gray-500">{{ $activity->created_at->diffForHumans() }}</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <p class="text-gray-500 text-center py-4">Tidak ada aktivitas terbaru</p>
                                 @endif
                             </div>
-                        @endif
+                        </div>
                     </div>
-                    @if ($machine['route'])
-                        <a href="{{ route($machine['route']) }}" class="btn-check-machine text-white py-1.5 sm:py-2 px-2 sm:px-3 md:px-4 rounded mt-auto text-xs sm:text-sm md:text-base">Cek Disini</a>
-                    @else
-                        <button class="btn-check-machine text-white py-1.5 sm:py-2 px-2 sm:px-3 md:px-4 rounded mt-auto text-xs sm:text-sm md:text-base">Cek Disini</button>
-                    @endif
-                </div>
+                @endif
             </div>
         </div>
-    @endforeach
-</div>
-            </div>
-        </div>
+
 
         <!-- Include Footer Component -->
         @include('components.footer')

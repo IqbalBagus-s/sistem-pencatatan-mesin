@@ -244,7 +244,7 @@
                                     <div x-data="{ selected: false, userName: '' }">
                                         <div class="mt-1 mb-1" x-show="selected">
                                             <input type="text" name="checked_by_2" x-ref="user2" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
                                             <input type="hidden" name="check_num_2" x-ref="checkNum2" value="2">
                                         </div>
