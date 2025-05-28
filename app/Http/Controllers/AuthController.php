@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Redirect;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+    public function login(Request $request) 
     {
         // Validasi input dengan pesan error kustom
         $request->validate([
@@ -58,10 +58,20 @@ class AuthController extends Controller
         if (Auth::guard($guard)->attempt(['username' => $request->username, 'password' => $request->password])) {
             $request->session()->regenerate(); // Regenerasi session untuk keamanan
             
-            // **Set flag untuk notifikasi login berhasil**
-            $request->session()->flash('login_success', true);
+            // **Set flag untuk notifikasi login berhasil SETELAH regenerate**
+            session()->flash('login_success', true);
             
-            return redirect()->route('dashboard');
+            // **Redirect ke dashboard spesifik berdasarkan role**
+            switch($guard) {
+                case 'approver':
+                    return redirect()->route('approver.dashboard');
+                case 'checker':
+                    return redirect()->route('checker.dashboard');
+                case 'host':
+                    return redirect()->route('host.dashboard'); // Pastikan route ini ada
+                default:
+                    return redirect()->route('dashboard');
+            }
         } else {
             // **Jika password salah (user ada tapi password tidak cocok)**
             return back()->with('error', 'Password yang Anda masukkan salah')
