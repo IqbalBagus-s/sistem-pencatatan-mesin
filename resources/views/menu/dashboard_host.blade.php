@@ -442,7 +442,7 @@
         <!-- Main Content Area -->
         <div id="content-area">
             <div class="container mx-auto px-3 sm:px-4">
-                <h1 class="font-bold text-xl sm:text-2xl page-title mt-3 sm:mt-4">Halo, {{ auth()->user()->username }} 👋</h1>
+                <h1 class="font-bold text-xl sm:text-2xl page-title mt-3 sm:mt-4">Halo, {{ Auth::guard('host')->user()->username }} 👋</h1>
                 <p class="text-gray-500 text-sm sm:text-base subtitle">Anda login sebagai Administrator</p>
         
                 <h2 class="mt-5 sm:mt-6 text-center font-bold text-lg sm:text-xl section-title">

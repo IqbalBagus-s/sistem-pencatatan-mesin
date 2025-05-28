@@ -490,11 +490,11 @@
         <!-- Main Content Area -->
         <div id="content-area">
             <div class="container mx-auto px-3 sm:px-4">
-                <h1 class="font-bold text-xl sm:text-2xl page-title mt-3 sm:mt-4">Halo, {{ auth()->user()->username }} 👋</h1>
-                <p class="text-gray-500 text-sm sm:text-base subtitle">Anda login sebagai {{ auth()->user() instanceof \App\Models\Approver ? 'Approver' : 'Checker' }}</p>
+                <h1 class="font-bold text-xl sm:text-2xl page-title mt-3 sm:mt-4">Halo, {{ $user->username ?? $user->name }} 👋</h1>
+                <p class="text-gray-500 text-sm sm:text-base subtitle">Anda login sebagai {{ $currentGuard === 'approver' ? 'Approver' : 'Checker' }}</p>
         
                 <h2 class="mt-5 sm:mt-6 text-center font-bold text-lg sm:text-xl section-title">
-                    {{ auth()->user() instanceof \App\Models\Approver ? 'Daftar Form Pengajuan Pencatatan Mesin' : 'Daftar Form Pencatatan Mesin' }}
+                    {{ $currentGuard === 'approver' ? 'Daftar Form Pengajuan Pencatatan Mesin' : 'Daftar Form Pencatatan Mesin' }}
                 </h2>
         
 
@@ -525,7 +525,7 @@
                                             {{ $machine['name'] }}
                                         </h5>
                                         <!-- Ikon notifikasi dengan badge - hanya tampil untuk approver -->
-                                        @if(auth()->user() instanceof \App\Models\Approver)
+                                        @if($currentGuard === 'approver')
                                             <div class="notification-icon ml-2">
                                                 <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                                     <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
@@ -547,7 +547,7 @@
                         </div>
                     @endforeach
                 </div>
-                @if(auth()->user() instanceof \App\Models\Approver)
+                @if($currentGuard === 'approver')
                     <!-- Recent Activities -->
                     <div class="mt-8 mb-6">
                         <h3 class="mt-5 sm:mt-6 mb-5 sm:mb-6 text-center font-bold text-lg sm:text-xl section-title">Aktivitas Terbaru</h3>
