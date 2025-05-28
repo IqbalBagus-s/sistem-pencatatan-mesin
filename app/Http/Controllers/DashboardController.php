@@ -26,13 +26,28 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $user = Auth::user();
+        // Tentukan guard dan user yang sedang login
+        $user = null;
+        $currentGuard = null;
+        
+        foreach (['approver', 'checker'] as $guard) {
+            if (Auth::guard($guard)->check()) {
+                $user = Auth::guard($guard)->user();
+                $currentGuard = $guard;
+                break;
+            }
+        }
+        
+        // Jika tidak ada user yang login, redirect ke login
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Anda harus login terlebih dahulu');
+        }
         
         // Hitung jumlah data yang belum disetujui untuk setiap mesin
         // Hanya untuk approver yang perlu melihat notifikasi
         $notificationCounts = [];
         
-        if ($user instanceof \App\Models\Approver) {
+        if ($currentGuard === 'approver') {
             $notificationCounts = [
                 'air_dryer' => AirDryerCheck::belumDisetujui()->count(),
                 'water_chiller' => WaterChillerCheck::belumDisetujui()->count(),
@@ -52,7 +67,7 @@ class DashboardController extends Controller
         // Ambil aktivitas terbaru (5 terakhir)
         $recentActivities = Activity::recent(5)->get();
         
-        return view('menu.dashboard', compact('user', 'notificationCounts', 'recentActivities'));
+        return view('menu.dashboard', compact('user', 'notificationCounts', 'recentActivities', 'currentGuard'));
     }
 
     public function hostDashboard()
@@ -60,12 +75,14 @@ class DashboardController extends Controller
         // Periksa apakah pengguna terautentikasi sebagai host
         if (!Auth::guard('host')->check()) {
             Log::warning('Akses dashboard host ditolak: tidak terautentikasi');
-            return redirect()->route('host.login')
+            return redirect()->route('login')
                 ->with('error', 'Anda harus login sebagai host terlebih dahulu');
         }
         
+        $user = Auth::guard('host')->user();
+        
         // Log untuk debugging
-        Log::info('host mengakses dashboard: ' . Auth::guard('host')->user()->name);
+        Log::info('host mengakses dashboard: ' . $user->name);
         
         // Hitung jumlah approver dan checker yang aktif
         $approverCount = Approver::where('status', 'aktif')->count();
@@ -76,6 +93,6 @@ class DashboardController extends Controller
         $recentActivities = Activity::recent(5)->get();
         
         // Kirim data ke view
-        return view('menu.dashboard_host', compact('approverCount', 'checkerCount', 'activeFormCount', 'recentActivities'));
+        return view('menu.dashboard_host', compact('user', 'approverCount', 'checkerCount', 'activeFormCount', 'recentActivities'));
     }
 }
