@@ -185,7 +185,7 @@ class CompressorController extends Controller
                 Auth::user()->id,                                       // user_id
                 Auth::user()->username,                                 // user_name
                 'created',                                              // action
-                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Compressor untuk tanggal: ' . $formattedTanggal . ' pada hari' . $request->hari,  // description
+                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Compressor untuk tanggal: ' . $formattedTanggal . ' pada hari ' . $request->hari,  // description
                 'compressor_check',                                     // target_type
                 $compressorCheck->id,                                   // target_id
                 [

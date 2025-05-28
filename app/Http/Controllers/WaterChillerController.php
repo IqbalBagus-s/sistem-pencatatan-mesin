@@ -110,7 +110,7 @@ class WaterChillerController extends Controller
                 userId: Auth::id(),
                 userName: Auth::user()->username,
                 action: 'created',
-                description: 'Checker ' . Auth::user()->username . 'Membuat pemeriksaan Water Chiller untuk tanggal ' . Carbon::parse($request->tanggal)->locale('id')->isoFormat('D MMMM YYYY'),
+                description: 'Checker ' . Auth::user()->username . ' Membuat pemeriksaan Water Chiller untuk tanggal ' . Carbon::parse($request->tanggal)->locale('id')->isoFormat('D MMMM YYYY'),
                 targetType: 'water_chiller_check',
                 targetId: $waterChillerCheck->id,
                 details: [
