@@ -32,34 +32,28 @@ Route::get('/login', function () {
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Dashboard Routing (Dinamis berdasarkan guard)
-Route::middleware(['auth:approver,checker,host'])->group(function () {
-    // Dashboard Dispatcher - akan mengarahkan ke dashboard sesuai role
-    Route::get('/dashboard', function() {
-        $user = Auth::user();
-        $guard = Auth::getDefaultDriver();
-        
-        if ($guard == 'host') {
-            return redirect()->route('host.dashboard');
-        } else {
-            return app(DashboardController::class)->index();
-        }
-    })->name('dashboard');
+// Route untuk handle unauthorized access
+Route::get('/unauthorized', [AuthController::class, 'unauthorizedAccess'])->name('unauthorized');
+
+// Dashboard Routing untuk Approver dan Checker (menggunakan method index yang sama)
+Route::middleware(['check.role:approver,checker'])->group(function () {
+    // Dashboard untuk Approver dan Checker - menggunakan method index
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 // Route khusus untuk Host
-Route::middleware(['auth:host'])->prefix('host')->name('host.')->group(function () {
-    // Dashboard Host
+Route::middleware(['check.role:host'])->prefix('host')->name('host.')->group(function () {
+    // Dashboard Host - menggunakan method hostDashboard
     Route::get('/dashboard', [DashboardController::class, 'hostDashboard'])->name('dashboard');
     
-    // Perbaikan: Menghapus prefix 'menu.' pada nama route
+    // Resource routes untuk Host
     Route::resource('/approvers', ApproverController::class);
     Route::resource('/checkers', CheckerController::class);
     Route::resource('/forms', FormController::class);
 });
 
 // Route untuk User Approver dan Checker
-Route::middleware(['auth:approver,checker'])->group(function () {
+Route::middleware(['check.role:approver,checker'])->group(function () {
     // Daftar kontroler mesin dengan operasi CRUD yang sama
     $controllers = [
         'air-dryer' => AirDryerController::class,
