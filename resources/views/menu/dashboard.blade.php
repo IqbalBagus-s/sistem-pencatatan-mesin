@@ -597,13 +597,13 @@
             
             // Format tanggal: DD/MM/YYYY
             const date = now.getDate().toString().padStart(2, '0') + '/' + 
-                         (now.getMonth() + 1).toString().padStart(2, '0') + '/' + 
-                         now.getFullYear();
+                        (now.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                        now.getFullYear();
             
             // Format waktu: HH:MM:SS
             const time = now.getHours().toString().padStart(2, '0') + ':' + 
-                         now.getMinutes().toString().padStart(2, '0') + ':' + 
-                         now.getSeconds().toString().padStart(2, '0');
+                        now.getMinutes().toString().padStart(2, '0') + ':' + 
+                        now.getSeconds().toString().padStart(2, '0');
             
             // Update elemen HTML
             document.getElementById('currentDateTime').innerHTML = date + ' ' + time;
@@ -621,7 +621,7 @@
             if (width < 360) {
                 const now = new Date();
                 const time = now.getHours().toString().padStart(2, '0') + ':' + 
-                             now.getMinutes().toString().padStart(2, '0');
+                            now.getMinutes().toString().padStart(2, '0');
                 dateTimeElement.innerHTML = time;
             } else {
                 // Normal display will be handled by updateDateTime
@@ -646,6 +646,19 @@
             const contentArea = document.getElementById('content-area');
             contentArea.style.minHeight = (windowHeight - headerHeight - footerHeight) + 'px';
         }
+
+        // Fungsi untuk menampilkan notifikasi
+        function showNotification() {
+            const notification = document.getElementById('notification-popup');
+            if (notification) {
+                notification.style.display = 'block';
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 5000);
+            }
+        }
         
         // Mulai saat halaman dimuat
         document.addEventListener('DOMContentLoaded', function() {
@@ -659,20 +672,10 @@
                 adjustContentHeight();
             });
 
-            // Check if user just logged in
-            if (localStorage.getItem('just_logged_in') === 'true') {
-                // Show login success notification
-                const notification = document.getElementById('notification-popup');
-                notification.style.display = 'block';
-                
-                // Remove the flag from localStorage
-                localStorage.removeItem('just_logged_in');
-                
-                // Auto-hide after 5 seconds
-                setTimeout(() => {
-                    notification.style.display = 'none';
-                }, 5000);
-            }
+            // **Cek session flash untuk notifikasi login**
+            @if(session('login_success'))
+                showNotification();
+            @endif
             
             // Add click event to close button
             const closeButtons = document.querySelectorAll('.close-notification');
@@ -684,8 +687,9 @@
 
             // Add event listener to the logout form
             document.getElementById('logout-form').addEventListener('submit', function(e) {
-                // Store logout status in localStorage before form submission
-                localStorage.setItem('just_logged_out', 'true');
+                // Disable button to prevent multiple clicks
+                const button = this.querySelector('button');
+                button.disabled = true;
             });
         });
     </script>
