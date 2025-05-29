@@ -3,6 +3,20 @@
 
 @section('title', 'Form Pencatatan Mesin Water Chiller')
 
+@section('styles')
+<style>
+    .table-container {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    .table-container table thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+</style>
+@endsection
+
 @section('content')
 <h2 class="mb-4 text-xl font-bold">Pencatatan Mesin Water Chiller</h2>
 
@@ -11,7 +25,7 @@
         <!-- Menampilkan Nama Checker -->
         <div class="bg-sky-50 p-4 rounded-md mb-5">
             <span class="text-gray-600 font-bold">Checker: </span>
-            <span class="font-bold text-blue-700">{{ Auth::user()->username }}</span>
+            <span class="font-bold text-blue-700">{{ $user->username }}</span>
         </div>
 
         <!-- Form Input -->
@@ -31,7 +45,7 @@
             
             <!-- Tabel Water Chiller -->
             <div class="mb-6 relative">
-                <div class="overflow-x-auto mb-6 border border-gray-300">
+                <div class="table-container overflow-x-auto mb-6 border border-gray-300">
                     <div class="md:hidden text-sm text-gray-500 italic mb-2">
                         ← Geser ke kanan untuk melihat semua kolom →
                     </div>

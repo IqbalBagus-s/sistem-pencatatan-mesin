@@ -17,7 +17,7 @@
             <div class="bg-sky-50 p-4 rounded-md">
                 <span class="text-gray-600 font-bold">Approver: </span>
                 <span class="font-bold text-blue-700">
-                    {{ $airDryer->approved_by ?: Auth::user()->username }}
+                    {{ $airDryer->approved_by ?: ($user->username ?? $user->name) }}
                 </span>
             </div>
         </div>

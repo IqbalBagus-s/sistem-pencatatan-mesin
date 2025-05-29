@@ -17,7 +17,7 @@
             <div class="bg-sky-50 p-4 rounded-md">
                 <span class="text-gray-600 font-bold">Approver: </span>
                 <span class="font-bold text-blue-700">
-                    {{ $waterChillerCheck->approved_by ?: Auth::user()->username }}
+                    {{ $waterChillerCheck->approved_by ?: $user->username }}
                 </span>
             </div>
         </div>
@@ -229,7 +229,7 @@
                 <!-- Action Buttons - Right Side -->
                 <div class="flex flex-row flex-wrap gap-2 justify-end">
                     <!-- Conditional rendering based on approval status -->
-                    @if ($waterChillerCheck->status === 'belum_disetujui')
+                    @if ($waterChillerCheck->status === 'belum_disetujui' && $currentGuard === 'approver')
                         <!-- Approval Button -->
                         <form action="{{ route('water-chiller.approve', $waterChillerCheck->id) }}" method="POST">
                             @csrf

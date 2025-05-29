@@ -3,6 +3,19 @@
 @section('title', 'Edit Form Pencatatan Compressor')
 @section('page-title', 'Edit Form Pencatatan Compressor')
 
+@section('styles')
+<style>
+    .table-container {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    .table-container table thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+</style>
+@endsection
 
 @section('content')
     <!-- Form Input -->
@@ -29,7 +42,7 @@
         <div x-data="{
             shift1Selected: {{ !empty($check->checked_by_shift1) ? 'true' : 'false' }},
             shift2Selected: {{ !empty($check->checked_by_shift2) ? 'true' : 'false' }},
-            username: '{{ Auth::user()->username }}',
+            username: '{{ $user->username }}',
             
             toggleShift(shift) {
                 if (shift === 1) {

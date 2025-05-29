@@ -20,7 +20,7 @@
                 formChanged: false,
                 
                 pilihApprover(position) {
-                    const user = '{{ Auth::user()->username }}';
+                    const user = '{{ $user->username }}';
                     const currentDate = new Date().toISOString().split('T')[0];
                     
                     if (position === 1) {
@@ -75,7 +75,7 @@
                     <span class="text-gray-600 font-bold">Approver: </span>
                     <span class="font-bold text-blue-700">
                         {{-- jika ada approver terisi tampilkan, kalau tidak pakai username login --}}
-                        {{ $approvers ?: Auth::user()->username }}
+                        {{ $approvers ?: $user->username }}
                     </span>
                 </div>
             </div>
@@ -236,19 +236,21 @@
                             </div>
                             
                             <!-- Conditional buttons -->
-                            <button type="button" 
-                                x-show="!approver1" 
-                                class="w-full bg-blue-500 text-white py-2 px-3 rounded hover:bg-blue-700 cursor-pointer" 
-                                @click="pilihApprover(1)">
-                                Pilih 
-                            </button>
-                            
-                            <button type="button" 
-                                x-show="approver1" 
-                                class="w-full bg-red-500 text-white py-2 px-3 rounded hover:bg-red-600 cursor-pointer" 
-                                @click="batalPilih(1)">
-                                Batal Pilih
-                            </button>
+                            @if($currentGuard === 'approver')
+                                <button type="button" 
+                                    x-show="!approver1" 
+                                    class="w-full bg-blue-500 text-white py-2 px-3 rounded hover:bg-blue-700 cursor-pointer" 
+                                    @click="pilihApprover(1)">
+                                    Pilih 
+                                </button>
+                                
+                                <button type="button" 
+                                    x-show="approver1" 
+                                    class="w-full bg-red-500 text-white py-2 px-3 rounded hover:bg-red-600 cursor-pointer" 
+                                    @click="batalPilih(1)">
+                                    Batal Pilih
+                                </button>
+                            @endif
                         </div>
 
                         <!-- Approver 2 with full-width name field -->
@@ -263,19 +265,21 @@
                             </div>
                             
                             <!-- Conditional buttons with same height as first section -->
-                            <button type="button" 
-                                x-show="!approver2" 
-                                class="w-full bg-blue-500 text-white py-2 px-3 rounded hover:bg-blue-700 cursor-pointer" 
-                                @click="pilihApprover(2)">
-                                Pilih
-                            </button>
-                            
-                            <button type="button" 
-                                x-show="approver2" 
-                                class="w-full bg-red-500 text-white py-2 px-3 rounded hover:bg-red-600 cursor-pointer" 
-                                @click="batalPilih(2)">
-                                Batal Pilih
-                            </button>
+                            @if($currentGuard === 'approver')
+                                <button type="button" 
+                                    x-show="!approver2" 
+                                    class="w-full bg-blue-500 text-white py-2 px-3 rounded hover:bg-blue-700 cursor-pointer" 
+                                    @click="pilihApprover(2)">
+                                    Pilih
+                                </button>
+                                
+                                <button type="button" 
+                                    x-show="approver2" 
+                                    class="w-full bg-red-500 text-white py-2 px-3 rounded hover:bg-red-600 cursor-pointer" 
+                                    @click="batalPilih(2)">
+                                    Batal Pilih
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -297,7 +301,7 @@
                     <!-- Action Buttons - Right Side -->
                     <div class="flex flex-row flex-wrap gap-2 justify-end">
                         <!-- Simpan Persetujuan Button - Only shown when at least one approval is missing -->
-                        @if (empty($check->approved_by1) || empty($check->approved_by2))
+                        @if($currentGuard === 'approver' && (empty($check->approved_by1) || empty($check->approved_by2)))
                             <button type="submit" 
                                 class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out"
                                 :class="{ 'opacity-50 cursor-not-allowed': !formChanged }"

@@ -18,7 +18,7 @@
                 formChanged: false,
                 
                 pilihShift(shift) {
-                    const user = '{{ Auth::user()->username }}';
+                    const user = '{{ $user->username }}';
                     if (shift === 1) {
                         this.shift1 = user;
                     } else if (shift === 2) {

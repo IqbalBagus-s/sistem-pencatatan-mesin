@@ -249,7 +249,7 @@
                             <i class="fas fa-search mr-2"></i>Cari
                         </button>
                         
-                        @if(auth()->user() instanceof \App\Models\Checker)
+                        @if($currentGuard === 'checker')
                             <a href="@yield('create-route')" class="action-button add-button">
                                 @yield('create-button-text', 'Tambah Pencatatan')
                             </a>

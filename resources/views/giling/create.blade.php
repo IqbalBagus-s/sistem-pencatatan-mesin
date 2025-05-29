@@ -17,7 +17,7 @@
         <!-- Menampilkan Nama Checker -->
         <div class="bg-sky-50 p-4 rounded-md mb-5">
             <span class="text-gray-600 font-bold">Checker: </span>
-            <span class="font-bold text-blue-700">{{ Auth::user()->username }}</span>
+            <span class="font-bold text-blue-700">{{ $user->username }}</span>
         </div>
 
         <!-- Form Input -->
