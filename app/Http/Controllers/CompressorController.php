@@ -11,21 +11,24 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
-
+use App\Traits\WithAuthentication;
 
 use Illuminate\Http\Request;
 
 class CompressorController extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
+        // Get current guard
+        $currentGuard = $this->getCurrentGuard();
+
         $query = CompressorCheck::orderBy('created_at', 'desc');
 
-        // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
-        // if (Auth::user() instanceof \App\Models\Checker) {
-        //     $query->where('checked_by_shift1', Auth::user()->username)
-        //           ->orWhere('checked_by_shift2', Auth::user()->username);
-        // }
 
         // Filter berdasarkan bulan jika ada
         if ($request->filled('bulan')) {
@@ -46,12 +49,18 @@ class CompressorController extends Controller
         // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
         $checks = $query->paginate(10)->appends($request->query());
 
-        return view('compressor.index', compact('checks'));
+        return view('compressor.index', compact('checks', 'user', 'currentGuard'));
     }
 
     public function create()
     {
-        return view('compressor.create'); 
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
+        // Get current guard
+        $currentGuard = $this->getCurrentGuard();
+
+        return view('compressor.create', compact('user', 'currentGuard')); 
     }
 
     public function store(Request $request)
@@ -72,13 +81,15 @@ class CompressorController extends Controller
             'humidity_shift2' => 'nullable|string',
         ]);
         
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
         $tanggal = $request->tanggal;
-        $user = Auth::user();
 
         // Cek jika tanggal sudah ada
         $existing = CompressorCheck::where('tanggal', $tanggal)->first();
 
-        if ($user instanceof \App\Models\Checker) {
+        if ($this->isAuthenticatedAs('checker')) {
             if ($existing) {
                 $formattedDate = Carbon::parse($tanggal)->locale('id')->isoFormat('D MMMM YYYY');
 
@@ -182,12 +193,12 @@ class CompressorController extends Controller
             
             Activity::logActivity(
                 'checker',                                              // user_type
-                Auth::user()->id,                                       // user_id
-                Auth::user()->username,                                 // user_name
-                'created',                                              // action
-                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Compressor untuk tanggal: ' . $formattedTanggal . ' pada hari ' . $request->hari,  // description
-                'compressor_check',                                     // target_type
-                $compressorCheck->id,                                   // target_id
+                $user->id,                                             // user_id
+                $user->username,                                       // user_name
+                'created',                                             // action
+                'Checker ' . $user->username . ' membuat pemeriksaan Compressor untuk tanggal: ' . $formattedTanggal . ' pada hari ' . $request->hari,  // description
+                'compressor_check',                                    // target_type
+                $compressorCheck->id,                                 // target_id
                 [
                     'tanggal' => $request->tanggal,
                     'tanggal_formatted' => $formattedTanggal,
@@ -234,6 +245,12 @@ class CompressorController extends Controller
 
     public function edit($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
+        // Get current guard
+        $currentGuard = $this->getCurrentGuard();
+
         // Ambil data check berdasarkan ID
         $check = CompressorCheck::findOrFail($id);
         
@@ -244,7 +261,7 @@ class CompressorController extends Controller
         $highResults = CompressorResultKh::where('check_id', $id)->get();
         
         // Tampilkan view edit dengan data yang diperlukan
-        return view('compressor.edit', compact('check', 'lowResults', 'highResults'));
+        return view('compressor.edit', compact('check', 'lowResults', 'highResults', 'user', 'currentGuard'));
     }
 
     public function update(Request $request, $id)
@@ -382,6 +399,12 @@ class CompressorController extends Controller
 
     public function show($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
+        // Get current guard
+        $currentGuard = $this->getCurrentGuard();
+
         // Ambil data compressor check berdasarkan ID
         $check = CompressorCheck::findOrFail($id);
         
@@ -406,11 +429,20 @@ class CompressorController extends Controller
             ->get();
         
         // Tampilkan view dengan data yang diperlukan
-        return view('compressor.show', compact('check', 'lowResults', 'highResults'));
+        return view('compressor.show', compact('check', 'lowResults', 'highResults', 'user', 'currentGuard'));
     }
 
     public function approve(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser(['approver']);
+        if (!is_object($user)) return $user;
+
+        // Verifikasi bahwa user adalah approver
+        if (!$this->isAuthenticatedAs('approver')) {
+            return redirect()->back()
+                ->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
+        }
+
         $check = CompressorCheck::findOrFail($id);
 
         // Update field yang tersedia
@@ -429,6 +461,12 @@ class CompressorController extends Controller
 
     public function reviewPdf($id) 
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
+        // Get current guard
+        $currentGuard = $this->getCurrentGuard();
+
         // Ambil data pemeriksaan kompressor berdasarkan ID
         $check = CompressorCheck::findOrFail($id);
         
@@ -459,20 +497,25 @@ class CompressorController extends Controller
             ->get();
         
         // Render view sebagai HTML untuk preview PDF
-        $view = view('compressor.review_pdf', [
+        return view('compressor.review_pdf', [
             'check' => $check,
             'form' => $form,
             'formattedTanggalEfektif' => $formattedTanggalEfektif,
             'lowResults' => $lowResults,
-            'highResults' => $highResults
+            'highResults' => $highResults,
+            'user' => $user,
+            'currentGuard' => $currentGuard
         ]);
-        
-        // Return view untuk preview
-        return $view;
     }
 
     public function downloadPdf($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
+        // Get current guard
+        $currentGuard = $this->getCurrentGuard();
+
         // Ambil data pemeriksaan kompressor berdasarkan ID
         $check = CompressorCheck::findOrFail($id);
         
@@ -534,7 +577,9 @@ class CompressorController extends Controller
             'form' => $form,
             'formattedTanggalEfektif' => $formattedTanggalEfektif,
             'lowResults' => $lowResults,
-            'highResults' => $highResults
+            'highResults' => $highResults,
+            'user' => $user,
+            'currentGuard' => $currentGuard
         ])->render();
         
         // Inisialisasi Dompdf

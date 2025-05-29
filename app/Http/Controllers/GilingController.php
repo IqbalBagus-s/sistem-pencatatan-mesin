@@ -13,16 +13,25 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
+use App\Traits\WithAuthentication;
 
 class GilingController extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
+        // Get current guard
+        $currentGuard = $this->getCurrentGuard();
+
         $query = GilingCheck::query();
 
         // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
-        if (Auth::user() instanceof \App\Models\Checker) {
-            $query->where('checked_by', Auth::user()->username);
+        if ($this->isAuthenticatedAs('checker')) {
+            $query->where('checked_by', $user->username);
         }
 
         // Filter berdasarkan nama checker jika ada
@@ -58,12 +67,15 @@ class GilingController extends Controller
         // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
         $checks = $query->paginate(10)->appends($request->query());
 
-        return view('giling.index', compact('checks'));
+        return view('giling.index', compact('checks', 'user', 'currentGuard'));
     }
 
     public function create()
     {
-        return view('giling.create');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
+        return view('giling.create', compact('user'));
     }
 
     public function store(Request $request)
@@ -80,6 +92,9 @@ class GilingController extends Controller
             'bulan' => 'required|date_format:Y-m',
             'catatan' => 'nullable|string|max:1000',
         ], $customMessages);
+
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
 
         // Check for duplicate record
         $existingCheck = GilingCheck::where('bulan', $request->bulan)
@@ -106,7 +121,7 @@ class GilingController extends Controller
             $gilingCheck = GilingCheck::create([
                 'bulan' => $request->bulan,
                 'minggu' => $request->minggu,
-                'checked_by' => Auth::user()->username,
+                'checked_by' => $user->username,
                 'keterangan' => $request->catatan ?? '',
             ]);
             
@@ -150,17 +165,17 @@ class GilingController extends Controller
             
             Activity::logActivity(
                 'checker',                                              // user_type
-                Auth::user()->id,                                       // user_id
-                Auth::user()->username,                                 // user_name
-                'created',                                              // action
-                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Mesin Giling untuk ' . $mingguText . ' bulan ' . $formattedMonth,  // description
-                'giling_check',                                         // target_type
-                $gilingCheck->id,                                       // target_id
+                $user->id,                                             // user_id
+                $user->username,                                       // user_name
+                'created',                                             // action
+                'Checker ' . $user->username . ' membuat pemeriksaan Mesin Giling untuk ' . $mingguText . ' bulan ' . $formattedMonth,  // description
+                'giling_check',                                        // target_type
+                $gilingCheck->id,                                      // target_id
                 [
                     'minggu' => $request->minggu,
                     'bulan' => $request->bulan,
                     'bulan_formatted' => $formattedMonth,
-                    'checked_by' => Auth::user()->username,
+                    'checked_by' => $user->username,
                     'keterangan' => $request->catatan ?? '',
                     'total_items' => count($checkedItems),
                     'items_checked' => array_values($checkedItems),
@@ -186,6 +201,12 @@ class GilingController extends Controller
 
     public function edit($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
+        // Get current guard
+        $currentGuard = $this->getCurrentGuard();
+
         $check = GilingCheck::with('result')->findOrFail($id);
 
         $results = [];
@@ -209,10 +230,7 @@ class GilingController extends Controller
             }
         }
 
-        return view('giling.edit', [
-            'check' => $check,
-            'results' => $results
-        ]);
+        return view('giling.edit', compact('check', 'results', 'user', 'currentGuard'));
     }
 
     public function update(Request $request, $id) 
@@ -269,6 +287,12 @@ class GilingController extends Controller
 
     public function show($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
+        // Get current guard
+        $currentGuard = $this->getCurrentGuard();
+
         // Fetch the GilingCheck record with its results
         $check = GilingCheck::with('result')->findOrFail($id);
         
@@ -276,7 +300,7 @@ class GilingController extends Controller
         $results = $check->result->keyBy('checked_items');
         
         // Return the view with the GilingCheck data and its results
-        return view('giling.show', compact('check', 'results'));
+        return view('giling.show', compact('check', 'results', 'user', 'currentGuard'));
     }
 
     public function approve(Request $request, $id)
@@ -305,6 +329,12 @@ class GilingController extends Controller
     
     public function reviewPdf($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
+        // Get current guard
+        $currentGuard = $this->getCurrentGuard();
+
         // Ambil data pemeriksaan mesin giling berdasarkan ID
         $gilingCheck = GilingCheck::findOrFail($id);
 
@@ -318,14 +348,17 @@ class GilingController extends Controller
         $details = GilingResult::where('check_id', $id)->get();
 
         // Render view sebagai HTML untuk preview PDF
-        $view = view('giling.review_pdf', compact('gilingCheck', 'details', 'form', 'formattedTanggalEfektif'));
-
-        // Return view untuk preview
-        return $view;
+        return view('giling.review_pdf', compact('gilingCheck', 'details', 'form', 'formattedTanggalEfektif', 'user', 'currentGuard'));
     }
     
     public function downloadPdf($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
+        // Get current guard
+        $currentGuard = $this->getCurrentGuard();
+
         // Ambil data pemeriksaan mesin giling berdasarkan ID
         $gilingCheck = GilingCheck::findOrFail($id);
 
@@ -346,7 +379,7 @@ class GilingController extends Controller
         $filename = 'Giling_minggu_' . $gilingCheck->minggu . '_bulan_' . $namaBulan . '.pdf';
 
         // Render view sebagai HTML
-        $html = view('giling.review_pdf', compact('gilingCheck', 'details', 'form', 'formattedTanggalEfektif'))->render();
+        $html = view('giling.review_pdf', compact('gilingCheck', 'details', 'form', 'formattedTanggalEfektif', 'user', 'currentGuard'))->render();
 
         // Inisialisasi Dompdf
         $dompdf = new \Dompdf\Dompdf();

@@ -10,17 +10,26 @@ use App\Models\Activity;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Traits\WithAuthentication;
 
 class AirDryerController extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user; // If it's a redirect response
+
+        // Tentukan guard yang sedang aktif
+        $currentGuard = $this->getCurrentGuard();
+
         $query = AirDryerCheck::orderBy('created_at', 'desc');
 
         // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
-        if (Auth::user() instanceof \App\Models\Checker) {
-            $query->where('checked_by', Auth::user()->username);
+        if ($this->isAuthenticatedAs('checker')) {
+            $query->where('checked_by', $user->username);
         }
 
         // Filter berdasarkan bulan jika ada
@@ -39,13 +48,15 @@ class AirDryerController extends Controller
         // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
         $checks = $query->paginate(10)->appends($request->query());
 
-        return view('air_dryer.index', compact('checks'));
+        return view('air_dryer.index', compact('checks', 'user', 'currentGuard'));
     }
-
 
     public function create()
     {
-        return view('air_dryer.create');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user; // If it's a redirect response
+
+        return view('air_dryer.create', compact('user'));
     }
 
     public function store(Request $request)
@@ -55,6 +66,9 @@ class AirDryerController extends Controller
             'tanggal' => 'required|date',
             'hari' => 'required|string',
         ]);
+
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user; // If it's a redirect response
 
         // Check if record for this date already exists
         $existingRecord = AirDryerCheck::whereDate('tanggal', $request->tanggal)
@@ -75,9 +89,8 @@ class AirDryerController extends Controller
             $airDryerCheck = AirDryerCheck::create([
                 'tanggal' => $request->tanggal,
                 'hari' => $request->hari,
-                'checked_by' => Auth::user()->username,
+                'checked_by' => $user->username,
                 'keterangan' => $request->catatan,
-                // Status akan otomatis diset menjadi 'belum_disetujui' karena approved_by kosong
             ]);
 
             // Simpan detail untuk setiap mesin
@@ -96,36 +109,31 @@ class AirDryerController extends Controller
                 ]);
             }
 
-            // LOG AKTIVITAS - Tambahkan setelah data berhasil disimpan
+            // LOG AKTIVITAS
             $formattedDate = Carbon::parse($request->tanggal)->locale('id')->isoFormat('D MMMM YYYY');
-            
             Activity::logActivity(
-                'checker',                                          // user_type
-                Auth::user()->id,                                   // user_id
-                Auth::user()->username,                             // user_name
-                'created',                                          // action
-                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Air Dryer untuk tanggal ' . $formattedDate,  // description
-                'air_dryer_check',                                  // target_type
-                $airDryerCheck->id,                                 // target_id
+                'checker',
+                $user->id,
+                $user->username,
+                'created',
+                'Checker ' . $user->username . ' membuat pemeriksaan Air Dryer untuk tanggal ' . $formattedDate,
+                'air_dryer_check',
+                $airDryerCheck->id,
                 [
                     'tanggal' => $request->tanggal,
                     'hari' => $request->hari,
                     'total_mesin' => 8,
                     'keterangan' => $request->catatan ?? 'Tidak ada catatan',
                     'status' => $airDryerCheck->status
-                ]                                                   // details (JSON)
+                ]
             );
 
-            // Commit transaksi jika semua operasi berhasil
             DB::commit();
-
             return redirect()->route('air-dryer.index')
                 ->with('success', 'Data pemeriksaan Air Dryer berhasil disimpan!');
                 
         } catch (\Exception $e) {
-            // Rollback transaksi jika terjadi kesalahan
             DB::rollBack();
-            
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage())
                 ->withInput();
@@ -134,14 +142,65 @@ class AirDryerController extends Controller
 
     public function edit($id)
     {
-        // Ambil data pemeriksaan air dryer berdasarkan ID
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user; // If it's a redirect response
+
         $airDryer = AirDryerCheck::findOrFail($id);
-        
-        // Ambil semua detail hasil pemeriksaan untuk setiap mesin
         $details = AirDryerResult::where('check_id', $id)->get();
         
-        // Kirim data ke view
-        return view('air_dryer.edit', compact('airDryer', 'details'));
+        return view('air_dryer.edit', compact('airDryer', 'details', 'user'));
+    }
+
+    public function show($id)
+    {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user; // If it's a redirect response
+
+        $airDryer = AirDryerCheck::findOrFail($id);
+        $details = AirDryerResult::where('check_id', $id)->get();
+        
+        return view('air_dryer.show', compact('airDryer', 'details', 'user'));
+    }
+
+    public function approve(Request $request, $id)
+    {
+        try {
+            $user = $this->ensureAuthenticatedUser(['approver']);
+            if (!is_object($user)) return $user; // If it's a redirect response
+
+            // Verifikasi bahwa user adalah approver
+            if (!$this->isAuthenticatedAs('approver')) {
+                return redirect()->back()
+                    ->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
+            }
+
+            $airDryer = AirDryerCheck::findOrFail($id);
+            $airDryer->approve($user->username);
+            
+            // Tambahkan log aktivitas
+            Activity::logActivity(
+                'approver',
+                $user->id,
+                $user->username,
+                'approved',
+                'Approver ' . $user->username . ' menyetujui pemeriksaan Air Dryer tanggal ' . 
+                Carbon::parse($airDryer->tanggal)->translatedFormat('d F Y'),
+                'air_dryer_check',
+                $airDryer->id,
+                [
+                    'tanggal' => $airDryer->tanggal,
+                    'checker' => $airDryer->checked_by,
+                    'status' => $airDryer->status
+                ]
+            );
+            
+            return redirect()->route('air-dryer.index')
+                ->with('success', 'Data pemeriksaan Air Dryer berhasil disetujui!');
+                
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menyetujui data: ' . $e->getMessage());
+        }
     }
 
     public function update(Request $request, $id)
@@ -196,38 +255,6 @@ class AirDryerController extends Controller
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage())
                 ->withInput();
-        }
-    }
-
-    public function show($id)
-    {
-        // Ambil data pemeriksaan air dryer berdasarkan ID
-        $airDryer = AirDryerCheck::findOrFail($id);
-        
-        // Ambil semua detail hasil pemeriksaan untuk setiap mesin
-        $details = AirDryerResult::where('check_id', $id)->get();
-        
-        // Kirim data ke view
-        return view('air_dryer.show', compact('airDryer', 'details'));
-    }
-
-    public function approve(Request $request, $id)
-    {
-        try {
-            // Ambil data pemeriksaan air dryer berdasarkan ID
-            $airDryer = AirDryerCheck::findOrFail($id);
-            
-            // PERUBAHAN: Gunakan method helper dari model instead of manual update
-            // Method approve() di model akan otomatis set approved_by dan status
-            $airDryer->approve(Auth::user()->username);
-            
-            // Redirect ke halaman index dengan pesan sukses
-            return redirect()->route('air-dryer.index')
-                ->with('success', 'Data pemeriksaan Air Dryer berhasil disetujui!');
-                
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan saat menyetujui data: ' . $e->getMessage());
         }
     }
 
