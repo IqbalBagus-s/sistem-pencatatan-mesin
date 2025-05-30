@@ -187,7 +187,7 @@
                                                 <div x-show="!selected" class="w-full flex justify-center py-1">
                                                     <button type="button" 
                                                         @click="selected = true; 
-                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            userName = '{{ $user->username }}'; 
                                                             $refs.approver{{ $j }}.value = userName;
                                                             $refs.approveNum{{ $j }}.value = '{{ $j }}';"
                                                         class="w-full max-w-xs px-2 py-1 text-sm border border-gray-300 rounded text-center bg-green-100 hover:bg-green-200">

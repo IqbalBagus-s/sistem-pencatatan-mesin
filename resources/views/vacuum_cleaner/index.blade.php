@@ -9,7 +9,7 @@
 @endsection
 
 @section('custom-filters')
-    @if(auth()->user() instanceof \App\Models\Approver)
+    @if($currentGuard === 'approver')
     <div>
         <label for="search" class="block font-medium text-gray-700 mb-2">Cari berdasarkan nama Checker:</label>
         <input type="text" name="search" id="search" placeholder="Masukkan nama checker..." 
@@ -175,12 +175,12 @@
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             {{-- Menu lihat untuk Approver --}}
-                            @if(auth()->user() instanceof \App\Models\Approver)
+                            @if($currentGuard === 'approver')
                                 <a href="{{ route('vacuum-cleaner.show', $check->id) }}" title="Lihat Detail">
                                     <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit untuk Checker --}}
-                            @elseif(auth()->user() instanceof \App\Models\Checker)
+                            @elseif($currentGuard === 'checker')
                                 @if($check->status === 'belum_disetujui')
                                     <a href="{{ route('vacuum-cleaner.edit', $check->id) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>

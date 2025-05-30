@@ -181,7 +181,7 @@
                                     <td class="border border-gray-300 p-1 {{ $rowClass }}">
                                         <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ $checkerName }}', isExistingData: {{ $hasCheckerData ? 'true' : 'false' }}, isReadOnly: {{ $isReadOnly ? 'true' : 'false' }} }">
                                             <!-- Show just the name if data already exists -->
-                                            <div x-show="isExistingData" class="w-full px-2 py-1 text-sm {{ $isReadOnly ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded text-center">
+                                            <div x-show="isExistingData" class="w-full px-2 py-1 text-sm {{ $isReadOnly ? 'bg-green-100' : 'bg-white' }} border border-gray-300 rounded text-center">
                                                 {{ $checkerName }}
                                                 <input type="hidden" name="checked_by_{{ $j }}" value="{{ $checkerName }}">
                                                 <input type="hidden" name="check_num_{{ $j }}" value="{{ $j }}">
@@ -190,7 +190,7 @@
                                             <!-- Show the form if selected but not existing data -->
                                             <div x-show="selected && !isExistingData && !isReadOnly" class="w-full">
                                                 <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -214,7 +214,7 @@
                                                     @click="
                                                         selected = !selected;
                                                         if(selected) {
-                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            userName = '{{ $user->username }}'; 
                                                             $refs.user{{ $j }}.value = userName;
                                                             $refs.checkNum{{ $j }}.value = '{{ $j }}';
                                                         } else {
@@ -295,7 +295,7 @@
                                     <td class="border border-gray-300 p-1 {{ $rowClass }}">
                                         <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ $checkerName }}', isExistingData: {{ $hasCheckerData ? 'true' : 'false' }}, isReadOnly: {{ $isReadOnly ? 'true' : 'false' }} }">
                                             <!-- Show just the name if data already exists -->
-                                            <div x-show="isExistingData" class="w-full px-2 py-1 text-sm {{ $isReadOnly ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded text-center">
+                                            <div x-show="isExistingData" class="w-full px-2 py-1 text-sm {{ $isReadOnly ? 'bg-green-100' : 'bg-white' }} border border-gray-300 rounded text-center">
                                                 {{ $checkerName }}
                                                 <input type="hidden" name="checked_by_{{ $j }}" value="{{ $checkerName }}">
                                                 <input type="hidden" name="check_num_{{ $j }}" value="{{ $j }}">
@@ -304,7 +304,7 @@
                                             <!-- Show the form if selected but not existing data -->
                                             <div x-show="selected && !isExistingData && !isReadOnly" class="w-full">
                                                 <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -328,7 +328,7 @@
                                                     @click="
                                                         selected = !selected;
                                                         if(selected) {
-                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            userName = '{{ $user->username }}'; 
                                                             $refs.user{{ $j }}.value = userName;
                                                             $refs.checkNum{{ $j }}.value = '{{ $j }}';
                                                         } else {
@@ -408,7 +408,7 @@
                                     <td class="border border-gray-300 p-1 {{ $rowClass }}">
                                         <div x-data="{ selected: {{ wasCheckedByUser($results, $j) ? 'true' : 'false' }}, userName: '{{ $checkerName }}', isExistingData: {{ $hasCheckerData ? 'true' : 'false' }}, isReadOnly: {{ $isReadOnly ? 'true' : 'false' }} }">
                                             <!-- Show just the name if data already exists -->
-                                            <div x-show="isExistingData" class="w-full px-2 py-1 text-sm {{ $isReadOnly ? 'bg-green-100' : 'bg-gray-100' }} border border-gray-300 rounded text-center">
+                                            <div x-show="isExistingData" class="w-full px-2 py-1 text-sm {{ $isReadOnly ? 'bg-green-100' : 'bg-white' }} border border-gray-300 rounded text-center">
                                                 {{ $checkerName }}
                                                 <input type="hidden" name="checked_by_{{ $j }}" value="{{ $checkerName }}">
                                                 <input type="hidden" name="check_num_{{ $j }}" value="{{ $j }}">
@@ -417,7 +417,7 @@
                                             <!-- Show the form if selected but not existing data -->
                                             <div x-show="selected && !isExistingData && !isReadOnly" class="w-full">
                                                 <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -441,7 +441,7 @@
                                                     @click="
                                                         selected = !selected;
                                                         if(selected) {
-                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            userName = '{{ $user->username }}'; 
                                                             $refs.user{{ $j }}.value = userName;
                                                             $refs.checkNum{{ $j }}.value = '{{ $j }}';
                                                         } else {

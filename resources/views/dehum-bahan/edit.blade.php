@@ -219,7 +219,7 @@
                                             x-show="!hasExistingData || !selected"
                                             @click="selected = !selected; 
                                                 if(selected) {
-                                                    userName = '{{ Auth::user()->username }}'; 
+                                                    userName = '{{ $user->username }}'; 
                                                     $refs.user{{ $j }}.value = userName;
                                                     
                                                     // Format tanggal untuk tampilan: DD Bulan YYYY

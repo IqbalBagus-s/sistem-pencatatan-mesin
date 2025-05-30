@@ -10,7 +10,7 @@
     <!-- Menampilkan Nama Checker -->
     <div class="bg-sky-50 p-4 rounded-md mb-5">
             <span class="text-gray-600 font-bold">Checker: </span>
-            <span class="font-bold text-blue-700">{{ Auth::user()->username }}</span>
+            <span class="font-bold text-blue-700">{{ $user->username }}</span>
     </div>
 
     <!-- Form Input -->
@@ -120,7 +120,7 @@
                             
                             if(week === 'week1') {
                                 if(this.selectedWeeks.week1) {
-                                    $refs.user1.value = '{{ Auth::user()->username }}';
+                                    $refs.user1.value = '{{ $user->username }}';
                                     $refs.checkNum1.value = '1';
                                     $refs.date1.value = this.getFormattedDate();
                                 } else {
@@ -130,7 +130,7 @@
                                 }
                             } else if(week === 'week2') {
                                 if(this.selectedWeeks.week2) {
-                                    $refs.user2.value = '{{ Auth::user()->username }}';
+                                    $refs.user2.value = '{{ $user->username }}';
                                     $refs.checkNum2.value = '2';
                                     $refs.date2.value = this.getFormattedDate();
                                 } else {
@@ -240,7 +240,7 @@
                                                     <button type="button" 
                                                         @click="selected = !selected; 
                                                             if(selected) {
-                                                                $refs.user1.value = '{{ Auth::user()->username }}';
+                                                                $refs.user1.value = '{{ $user->username }}';
                                                                 $refs.checkNum1.value = '1';
                                                                 $refs.date1.value = getFormattedDate();
                                                             } else {
@@ -361,7 +361,7 @@
                                                     <button type="button" 
                                                         @click="selected = !selected; 
                                                             if(selected) {
-                                                                $refs.user2.value = '{{ Auth::user()->username }}';
+                                                                $refs.user2.value = '{{ $user->username }}';
                                                                 $refs.checkNum2.value = '2';
                                                                 $refs.date2.value = getFormattedDate();
                                                             } else {

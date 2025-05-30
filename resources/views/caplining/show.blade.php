@@ -178,7 +178,7 @@
                                             <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
                                             <div class="w-full px-2 py-1 text-sm">
                                                 <input type="text" name="approved_by_{{ $j }}" value="{{ $approvedBy }}"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -188,7 +188,7 @@
                                                 <div x-show="!selected">
                                                     <button type="button" 
                                                         @click="selected = true; 
-                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            userName = '{{ $user->username }}'; 
                                                             $refs.approver{{ $j }}.value = userName;
                                                             $refs.approveNum{{ $j }}.value = '{{ $j }}';"
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center bg-green-100 hover:bg-green-200">
@@ -197,7 +197,7 @@
                                                 </div>
                                                 <div class="mt-1" x-show="selected">
                                                     <input type="text" name="approved_by_{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
-                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1"
+                                                        class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                         readonly>
                                                     <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="{{ $j }}">
                                                     <button type="button" 
@@ -249,11 +249,11 @@
                             <span>Tidak Baik/Abnormal</span>
                         </div>
                         <div class="flex items-center">
-                            <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">-</span>
+                            <span class="inline-block w-5 h-5 bg-white text-gray-700 text-center font-bold mr-2 rounded">-</span>
                             <span>Tidak Diisi</span>
                         </div>
                         <div class="flex items-center">
-                            <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">OFF</span>
+                            <span class="inline-block w-5 h-5 bg-white text-gray-700 text-center font-bold mr-2 rounded">OFF</span>
                             <span>Mesin Mati</span>
                         </div>
                     </div>

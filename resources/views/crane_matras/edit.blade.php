@@ -127,7 +127,7 @@
                                         <button type="button" 
                                             @click="selected = !selected; 
                                                 if(selected) {
-                                                    userName = '{{ Auth::user()->username }}'; 
+                                                    userName = '{{ $user->username }}'; 
                                                     $refs.user1.value = userName;
                                                     
                                                     // Format tanggal: DD Bulan YYYY

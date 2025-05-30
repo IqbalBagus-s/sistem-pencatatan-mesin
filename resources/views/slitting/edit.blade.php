@@ -189,7 +189,7 @@
                                         <button type="button" 
                                             @click="selected = !selected; 
                                                 if(selected) {
-                                                    userName = '{{ Auth::user()->username }}'; 
+                                                    userName = '{{ $user->username }}'; 
                                                     $refs.user{{ $j }}.value = userName;
                                                     $refs.checkNum{{ $j }}.value = '{{ $j }}';
                                                 } else {

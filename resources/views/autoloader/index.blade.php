@@ -9,7 +9,7 @@
 @endsection
 
 @section('custom-filters')
-    @if(auth()->user() instanceof \App\Models\Approver)
+    @if($currentGuard === 'approver')
     <div>
         <label for="search" class="block font-medium text-gray-700 mb-2">Cari berdasarkan nama Checker:</label>
         <input type="text" name="search" id="search" placeholder="Masukkan nama checker..." 
@@ -233,12 +233,12 @@
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             {{-- Menu lihat --}}
-                            @if(auth()->user() instanceof \App\Models\Approver)
+                            @if($currentGuard === 'approver')
                                 <a href="{{ route('autoloader.show', $check->id) }}" title="Lihat Detail">
                                     <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit --}}
-                            @elseif(auth()->user() instanceof \App\Models\Checker)
+                            @elseif($currentGuard === 'checker')
                                 @php
                                     // Cek apakah disetujui sepenuhnya
                                     $isFullyApproved = $check->approvedDatesCount >= $check->daysInMonth;

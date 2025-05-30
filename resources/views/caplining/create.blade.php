@@ -11,7 +11,7 @@
         <!-- Menampilkan Nama Checker -->
         <div class="bg-sky-50 p-4 rounded-md mb-5">
             <span class="text-gray-600 font-bold">Checker: </span>
-            <span class="font-bold text-blue-700">{{ Auth::user()->username }}</span>
+            <span class="font-bold text-blue-700">{{ $user->username }}</span>
         </div>
 
         <!-- Form Input -->
@@ -225,13 +225,13 @@
                                         <div x-data="{ selected: false }">
                                             <div class="mt-1 mb-1" x-show="selected">
                                                 <span class="block w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center">
-                                                    {{ Auth::user()->username }}
+                                                    {{ $user->username }}
                                                 </span>
                                             </div>
                                             <button type="button" 
                                                 @click="selected = !selected;
                                                     if(selected) {
-                                                        document.querySelector('input[name=\'checked_by{{ $j }}\']').value = '{{ Auth::user()->username }}';
+                                                        document.querySelector('input[name=\'checked_by{{ $j }}\']').value = '{{ $user->username }}';
                                                         document.querySelector('input[name=\'tanggal_check{{ $j }}\']').value = 
                                                         document.querySelector('input[name=\'tanggal_{{ $j }}\']').value;
                                                     } else {

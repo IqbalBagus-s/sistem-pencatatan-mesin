@@ -237,7 +237,7 @@
                                             
                                             <!-- Form fields ketika dipilih -->
                                             <div class="mt-1" x-show="minggu2Selected === true">
-                                                <input type="text" name="approved_by_minggu2" value="{{ Auth::user()->username }}"
+                                                <input type="text" name="approved_by_minggu2" value="{{ $user->username }}"
                                                     class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                     x-bind:disabled="!minggu2Selected"
                                                     readonly>
@@ -344,7 +344,7 @@
                                             
                                             <!-- Form fields ketika dipilih -->
                                             <div class="mt-1" x-show="minggu4Selected === true">
-                                                <input type="text" name="approved_by_minggu4" value="{{ Auth::user()->username }}"
+                                                <input type="text" name="approved_by_minggu4" value="{{ $user->username }}"
                                                     class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                     x-bind:disabled="!minggu4Selected"
                                                     readonly>

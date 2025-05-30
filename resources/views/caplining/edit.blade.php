@@ -251,9 +251,9 @@
                                 <td colspan="2" class="border border-gray-300 p-1 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }}">
                                     <div x-data="{ 
                                         selected: {{ $isChecked ? 'true' : 'false' }},
-                                        username: '{{ $isChecked ? $checkedBy : Auth::user()->username }}',
+                                        username: '{{ $isChecked ? $checkedBy : $user->username }}',
                                         originalUsername: '{{ $checkedBy }}',
-                                        currentUsername: '{{ Auth::user()->username }}',
+                                        currentUsername: '{{ $user->username }}',
                                         isPreexisting: {{ $isChecked ? 'true' : 'false' }},
                                         isApproved: {{ $isApproved ? 'true' : 'false' }}
                                     }">

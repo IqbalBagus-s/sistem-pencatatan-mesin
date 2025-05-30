@@ -224,7 +224,7 @@
                                                 @click="
                                                     selected = !selected;
                                                     if(selected) {
-                                                        userName = '{{ Auth::user()->username }}'; 
+                                                        userName = '{{ $user->username }}'; 
                                                     } else {
                                                         userName = '';
                                                     }
@@ -356,7 +356,7 @@
                                                 @click="
                                                     selected = !selected;
                                                     if(selected) {
-                                                        userName = '{{ Auth::user()->username }}'; 
+                                                        userName = '{{ $user->username }}'; 
                                                     } else {
                                                         userName = '';
                                                     }
@@ -488,7 +488,7 @@
                                                 @click="
                                                     selected = !selected;
                                                     if(selected) {
-                                                        userName = '{{ Auth::user()->username }}'; 
+                                                        userName = '{{ $user->username }}'; 
                                                     } else {
                                                         userName = '';
                                                     }
