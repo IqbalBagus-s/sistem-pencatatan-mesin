@@ -74,9 +74,11 @@ Route::middleware(['check.role:approver,checker'])->group(function () {
     foreach ($controllers as $route => $controller) {
         Route::resource($route, $controller);
         
-        // Tambahkan route khusus untuk approve dan download PDF
-        Route::post("/$route/{id}/approve", [$controller, 'approve'])->name("$route.approve");
-        Route::get("/$route/{id}/review-pdf", [$controller, 'reviewPdf'])->name("$route.pdf");
-        Route::get("/$route/{id}/download-pdf", [$controller, 'downloadPdf'])->name("$route.downloadPdf");
+        // Bungkus route khusus approve dan PDF dengan middleware approver
+        Route::middleware(['check.role:approver'])->group(function () use ($route, $controller) {
+            Route::post("/$route/{id}/approve", [$controller, 'approve'])->name("$route.approve");
+            Route::get("/$route/{id}/review-pdf", [$controller, 'reviewPdf'])->name("$route.pdf");
+            Route::get("/$route/{id}/download-pdf", [$controller, 'downloadPdf'])->name("$route.downloadPdf");
+        });
     }
 });
