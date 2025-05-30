@@ -12,11 +12,17 @@ use App\Models\CapliningResult;
 use App\Models\Form;
 use App\Models\Activity;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
+use App\Traits\WithAuthentication;
 
 class CapliningController extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         $query = CapliningCheck::query();
 
         // Filter berdasarkan nama checker atau approver
@@ -120,7 +126,7 @@ class CapliningController extends Controller
             $check->tanggalFormatted = $tanggalFormatted;
         }
 
-        return view('caplining.index', compact('checks'));
+        return view('caplining.index', compact('checks', 'user', 'currentGuard'));
     }
 
     private function getFormattedTanggalRange($check)
@@ -177,11 +183,17 @@ class CapliningController extends Controller
 
     public function create()
     {
-        return view('caplining.create');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        return view('caplining.create', compact('user', 'currentGuard'));
     }
 
     public function store(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Custom error messages
         $customMessages = [
             'nomer_caplining.required' => 'Silakan pilih nomor caplining terlebih dahulu!',
@@ -401,10 +413,10 @@ class CapliningController extends Controller
             
             Activity::logActivity(
                 'checker',                                              // user_type
-                Auth::user()->id,                                       // user_id
-                Auth::user()->username,                                 // user_name
+                $user->id,                                       // user_id
+                $user->username,                                 // user_name
                 'created',                                              // action
-                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Caplining Nomor ' . $request->nomer_caplining . ' untuk tanggal: ' . $tanggalString,  // description
+                'Checker ' . $user->username . ' membuat pemeriksaan Caplining Nomor ' . $request->nomer_caplining . ' untuk tanggal: ' . $tanggalString,  // description
                 'caplining_check',                                      // target_type
                 $capliningCheck->id,                                    // target_id
                 [
@@ -441,6 +453,9 @@ class CapliningController extends Controller
 
     public function edit($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data utama caplining check
         $check = CapliningCheck::findOrFail($id);
         
@@ -547,11 +562,14 @@ class CapliningController extends Controller
             'total_items' => $formattedData->count()
         ]);
         
-        return view('caplining.edit', compact('check', 'groupedData', 'items'));
+        return view('caplining.edit', compact('check', 'groupedData', 'items', 'user', 'currentGuard'));
     }
 
     public function update(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Validasi input
         $validated = $request->validate([
             'nomer_caplining' => 'required|integer|between:1,20',
@@ -792,6 +810,9 @@ class CapliningController extends Controller
 
     public function show($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data utama caplining check
         $check = CapliningCheck::findOrFail($id);
         
@@ -890,11 +911,16 @@ class CapliningController extends Controller
             'total_items' => $results->count()
         ]);
         
-        return view('caplining.show', compact('check', 'results', 'items'));
+        return view('caplining.show', compact('check', 'results', 'items', 'user', 'currentGuard'));
     }
 
     public function approve(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser(['approver']);
+        if (!is_object($user)) return $user;
+        if (!$this->isAuthenticatedAs('approver')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
+        }
         // Find the caplining check record
         $check = CapliningCheck::findOrFail($id);
         
@@ -927,6 +953,9 @@ class CapliningController extends Controller
 
     public function reviewPdf($id) 
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data pemeriksaan caplining berdasarkan ID
         $capliningCheck = CapliningCheck::findOrFail($id);
         
@@ -1026,7 +1055,9 @@ class CapliningController extends Controller
             'capliningCheck' => $capliningCheck,
             'form' => $form,
             'formattedTanggalEfektif' => $formattedTanggalEfektif,
-            'items' => $items
+            'items' => $items,
+            'user' => $user,
+            'currentGuard' => $currentGuard
         ]);
         
         // Return view untuk preview
@@ -1035,6 +1066,9 @@ class CapliningController extends Controller
 
     public function downloadPdf($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data pemeriksaan caplining berdasarkan ID
         $capliningCheck = CapliningCheck::findOrFail($id);
         
@@ -1142,7 +1176,9 @@ class CapliningController extends Controller
             'capliningCheck' => $capliningCheck,
             'form' => $form,
             'formattedTanggalEfektif' => $formattedTanggalEfektif,
-            'items' => $items
+            'items' => $items,
+            'user' => $user,
+            'currentGuard' => $currentGuard
         ])->render();
         
         // Inisialisasi Dompdf

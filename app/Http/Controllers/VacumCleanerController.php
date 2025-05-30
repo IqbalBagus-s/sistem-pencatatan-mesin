@@ -13,11 +13,17 @@ use App\Models\Form;
 use App\Models\Activity;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
+use App\Traits\WithAuthentication;
 
 class VacumCleanerController extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         $query = VacumCleanerCheck::query();
 
         // Filter berdasarkan nama checker jika ada
@@ -101,16 +107,22 @@ class VacumCleanerController extends Controller
             }
         }
 
-        return view('vacuum_cleaner.index', compact('checks'));
+        return view('vacuum_cleaner.index', compact('checks', 'user', 'currentGuard'));
     }
 
     public function create()
     {
-        return view('vacuum_cleaner.create');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        return view('vacuum_cleaner.create', compact('user', 'currentGuard'));
     }
 
     public function store(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         $customMessages = [
             'nomer_vacuum_cleaner.required' => 'Silakan pilih nomer vacuum cleaner terlebih dahulu!',
             'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
@@ -311,10 +323,10 @@ class VacumCleanerController extends Controller
             
             Activity::logActivity(
                 'checker',                                              // user_type
-                Auth::user()->id,                                       // user_id
-                Auth::user()->username,                                 // user_name
+                $user->id,                                       // user_id
+                $user->username,                                 // user_name
                 'created',                                              // action
-                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Vacuum Cleaner Nomor ' . $request->nomer_vacuum_cleaner . ' untuk bulan ' . $bulanFormatted,  // description
+                'Checker ' . $user->username . ' membuat pemeriksaan Vacuum Cleaner Nomor ' . $request->nomer_vacuum_cleaner . ' untuk bulan ' . $bulanFormatted,  // description
                 'vacuum_cleaner_check',                                 // target_type
                 $vacuumCleanerCheck->id,                               // target_id
                 [
@@ -356,6 +368,9 @@ class VacumCleanerController extends Controller
 
     public function edit($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         try {
             // Retrieve the vacuum cleaner check record with the given ID
             $check = VacumCleanerCheck::findOrFail($id);
@@ -427,6 +442,8 @@ class VacumCleanerController extends Controller
                 'itemsMap' => $itemsMap,
                 'check_num_1' => $check_num_1,
                 'check_num_2' => $check_num_2,
+                'user' => $user,
+                'currentGuard' => $currentGuard
             ];
             
             return view('vacuum_cleaner.edit', $data);
@@ -443,6 +460,9 @@ class VacumCleanerController extends Controller
 
     public function update(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Validasi input
         $validated = $request->validate([
             'nomer_vacuum_cleaner' => 'required|integer|between:1,3',
@@ -631,6 +651,9 @@ class VacumCleanerController extends Controller
 
     public function show($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         try {
             // Ambil data utama vacuum cleaner check
             $check = VacumCleanerCheck::findOrFail($id);
@@ -702,6 +725,8 @@ class VacumCleanerController extends Controller
                 'itemsMap' => $itemsMap,
                 'check_num_1' => $check_num_1,
                 'check_num_2' => $check_num_2,
+                'user' => $user,
+                'currentGuard' => $currentGuard
             ];
             
             return view('vacuum_cleaner.show', $data);
@@ -718,6 +743,11 @@ class VacumCleanerController extends Controller
 
     public function approve(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser(['approver']);
+        if (!is_object($user)) return $user;
+        if (!$this->isAuthenticatedAs('approver')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
+        }
         // Validasi input data
         $request->validate([
             'approved_by_minggu2' => 'sometimes|string',
@@ -762,6 +792,9 @@ class VacumCleanerController extends Controller
 
     public function reviewPdf($id) 
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         try {
             // Ambil data pemeriksaan vacuum cleaner berdasarkan ID
             $vacuumCheck = VacumCleanerCheck::findOrFail($id);
@@ -835,7 +868,9 @@ class VacumCleanerController extends Controller
                 'vacuumCheck' => $vacuumCheck,
                 'form' => $form,
                 'formattedTanggalEfektif' => $formattedTanggalEfektif,
-                'items' => $items
+                'items' => $items,
+                'user' => $user,
+                'currentGuard' => $currentGuard
             ]);
             
             // Return view untuk preview
@@ -853,6 +888,9 @@ class VacumCleanerController extends Controller
 
     public function downloadPdf($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         try {
             // Ambil data pemeriksaan vacuum cleaner berdasarkan ID
             $vacuumCheck = VacumCleanerCheck::findOrFail($id);
@@ -941,7 +979,9 @@ class VacumCleanerController extends Controller
                 'vacuumCheck' => $vacuumCheck,
                 'form' => $form,
                 'formattedTanggalEfektif' => $formattedTanggalEfektif,
-                'items' => $items
+                'items' => $items,
+                'user' => $user,
+                'currentGuard' => $currentGuard
             ])->render();
             
             // Inisialisasi Dompdf

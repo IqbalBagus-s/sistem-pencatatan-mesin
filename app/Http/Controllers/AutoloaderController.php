@@ -12,13 +12,19 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
+use App\Traits\WithAuthentication;
 
 use Illuminate\Http\Request;
 
 class AutoloaderController extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         $query = AutoloaderCheck::query();
     
         // Filter berdasarkan checked_by atau approved_by jika ada
@@ -86,16 +92,22 @@ class AutoloaderController extends Controller
             // \Log::debug("Check ID: {$check->id}, Days in month: {$check->daysInMonth}, Approved count: {$check->approvedDatesCount}");
         }
     
-        return view('autoloader.index', compact('checks'));
+        return view('autoloader.index', compact('checks', 'user', 'currentGuard'));
     }
     
     public function create()
     {
-        return view('autoloader.create');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        return view('autoloader.create', compact('user', 'currentGuard'));
     }
 
     public function store(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Custom error messages untuk validasi
         $customMessages = [
             'nomer_autoloader.required' => 'Silakan pilih nomor autoloader terlebih dahulu!',
@@ -250,10 +262,10 @@ class AutoloaderController extends Controller
             
             Activity::logActivity(
                 'checker',                                              // user_type
-                Auth::user()->id,                                       // user_id
-                Auth::user()->username,                                 // user_name
+                $user->id,                                       // user_id
+                $user->username,                                 // user_name
                 'created',                                              // action
-                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Autoloader Nomor ' . $request->nomer_autoloader . ' untuk ' . $shiftText . ' bulan ' . $formattedMonth,  // description
+                'Checker ' . $user->username . ' membuat pemeriksaan Autoloader Nomor ' . $request->nomer_autoloader . ' untuk ' . $shiftText . ' bulan ' . $formattedMonth,  // description
                 'autoloader_check',                                     // target_type
                 $autoloaderCheck->id,                                   // target_id
                 [
@@ -285,6 +297,9 @@ class AutoloaderController extends Controller
 
     public function edit($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data utama autoloader check
         $check = AutoloaderCheck::findOrFail($id);
         
@@ -425,11 +440,14 @@ class AutoloaderController extends Controller
             }
         }
         
-        return view('autoloader.edit', compact('check', 'results'));
+        return view('autoloader.edit', compact('check', 'results', 'user', 'currentGuard'));
     }
 
     public function update(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Validasi input
         $validated = $request->validate([
             'nomer_autoloader' => 'required|integer|between:1,23',
@@ -631,6 +649,9 @@ class AutoloaderController extends Controller
 
     public function show($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data utama autoloader check
         $check = AutoloaderCheck::findOrFail($id);
         
@@ -771,11 +792,16 @@ class AutoloaderController extends Controller
         }
         
         // Kembalikan view dengan data yang diperlukan
-        return view('autoloader.show', compact('check', 'results'));
+        return view('autoloader.show', compact('check', 'results', 'user', 'currentGuard'));
     }
 
     public function approve(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser(['approver']);
+        if (!is_object($user)) return $user;
+        if (!$this->isAuthenticatedAs('approver')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
+        }
         // Validasi input
         $request->validate([
             'approved_by_*' => 'sometimes|string',
@@ -834,6 +860,9 @@ class AutoloaderController extends Controller
 
     public function reviewPdf($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data utama autoloader check
         $check = AutoloaderCheck::findOrFail($id);
         
@@ -977,11 +1006,14 @@ class AutoloaderController extends Controller
         }
         
         // Render view sebagai HTML untuk preview PDF
-        return view('autoloader.review_pdf', compact('check', 'results', 'form', 'formattedTanggalEfektif', 'items'));
+        return view('autoloader.review_pdf', compact('check', 'results', 'form', 'formattedTanggalEfektif', 'items', 'user', 'currentGuard'));
     }
 
     public function downloadPdf($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data utama autoloader check
         $check = AutoloaderCheck::findOrFail($id);
         
@@ -1146,7 +1178,7 @@ class AutoloaderController extends Controller
         $filename = 'Autoloader_nomer_' . $check->nomer_autoloader . '_shift_' . $check->shift . '_' . $bulanText . '_' . $tahun . '.pdf';
         
         // Render view sebagai HTML
-        $html = view('autoloader.review_pdf', compact('check', 'results', 'form', 'formattedTanggalEfektif', 'items'))->render();
+        $html = view('autoloader.review_pdf', compact('check', 'results', 'form', 'formattedTanggalEfektif', 'items', 'user', 'currentGuard'))->render();
         
         // Inisialisasi Dompdf
         $dompdf = new \Dompdf\Dompdf();

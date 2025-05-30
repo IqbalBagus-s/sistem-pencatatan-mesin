@@ -12,11 +12,17 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Activity;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
+use App\Traits\WithAuthentication;
 
 class CraneMatrasControler extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         $query = CraneMatrasCheck::query();
     
         // Filter berdasarkan nama checker
@@ -54,16 +60,22 @@ class CraneMatrasControler extends Controller
         // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
         $checks = $query->paginate(10)->appends($request->query());
     
-        return view('crane_matras.index', compact('checks'));
+        return view('crane_matras.index', compact('checks', 'user', 'currentGuard'));
     }
 
     public function create()
     {
-        return view('crane_matras.create');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        return view('crane_matras.create', compact('user', 'currentGuard'));
     }
 
     public function store(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Custom error messages
         $customMessages = [
             'nomer_crane_matras.required' => 'Silakan pilih nomor crane matras terlebih dahulu!',
@@ -173,10 +185,10 @@ class CraneMatrasControler extends Controller
             
             Activity::logActivity(
                 'checker',                                              // user_type
-                Auth::user()->id,                                       // user_id
-                Auth::user()->username,                                 // user_name
+                $user->id,                                       // user_id
+                $user->username,                                 // user_name
                 'created',                                              // action
-                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Crane Matras Nomor ' . $request->input('nomer_crane_matras') . ' untuk bulan ' . $bulanFormatted . ($tanggalFormatted ? ' pada tanggal: ' . $tanggalString : ''),  // description
+                'Checker ' . $user->username . ' membuat pemeriksaan Crane Matras Nomor ' . $request->input('nomer_crane_matras') . ' untuk bulan ' . $bulanFormatted . ($tanggalFormatted ? ' pada tanggal: ' . $tanggalString : ''),  // description
                 'crane_matras_check',                                   // target_type
                 $craneMatrasCheck->id,                                  // target_id
                 [
@@ -216,6 +228,9 @@ class CraneMatrasControler extends Controller
 
     public function edit($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data utama crane matras check
         $check = CraneMatrasCheck::findOrFail($id);
         
@@ -263,11 +278,14 @@ class CraneMatrasControler extends Controller
         // Status approval
         $approvalStatus = !empty($check->approved_by);
         
-        return view('crane_matras.edit', compact('check', 'formattedResults', 'items', 'checkerData', 'approvalStatus'));
+        return view('crane_matras.edit', compact('check', 'formattedResults', 'items', 'checkerData', 'approvalStatus', 'user', 'currentGuard'));
     }
 
     public function update(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Validasi input - hanya validasi data yang penting
         $validated = $request->validate([
             'nomer_crane_matras' => 'required|integer|between:1,10',
@@ -364,6 +382,9 @@ class CraneMatrasControler extends Controller
 
     public function show($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data utama crane matras check
         $check = CraneMatrasCheck::findOrFail($id);
         
@@ -406,11 +427,16 @@ class CraneMatrasControler extends Controller
         // Status approval
         $approvalStatus = !empty($check->approved_by);
         
-        return view('crane_matras.show', compact('check', 'formattedResults', 'checkerData', 'approvalStatus'));
+        return view('crane_matras.show', compact('check', 'formattedResults', 'checkerData', 'approvalStatus', 'user', 'currentGuard'));
     }
 
     public function approve(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser(['approver']);
+        if (!is_object($user)) return $user;
+        if (!$this->isAuthenticatedAs('approver')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
+        }
         // Ambil data crane matras check
         $check = CraneMatrasCheck::findOrFail($id);
         
@@ -428,6 +454,9 @@ class CraneMatrasControler extends Controller
 
     public function reviewPdf($id) 
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data pemeriksaan crane matras berdasarkan ID
         $craneMatrasCheck = CraneMatrasCheck::findOrFail($id);
         
@@ -483,7 +512,9 @@ class CraneMatrasControler extends Controller
             'formattedTanggalEfektif' => $formattedTanggalEfektif,
             'formattedResults' => $formattedResults,
             'checkerData' => $checkerData,
-            'approvalStatus' => $approvalStatus
+            'approvalStatus' => $approvalStatus,
+            'user' => $user,
+            'currentGuard' => $currentGuard
         ]);
         
         // Return view untuk preview
@@ -491,84 +522,89 @@ class CraneMatrasControler extends Controller
     }
 
     public function downloadPdf($id)
-{
-    // Ambil data pemeriksaan crane matras berdasarkan ID
-    $craneMatrasCheck = CraneMatrasCheck::findOrFail($id);
-    
-    // Ambil data form terkait (sesuaikan nomor form dengan yang digunakan untuk crane matras)
-    $form = Form::where('nomor_form', 'APTEK/005/REV.00')->firstOrFail(); // Sesuaikan nomor form
-    
-    // Format tanggal efektif
-    $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
-    
-    // Ambil detail hasil pemeriksaan untuk crane matras
-    $craneMatrasResults = CraneMatrasResult::where('check_id', $id)->get();
-    
-    // Format tanggal pemeriksaan dalam bahasa Indonesia
-    $tanggalFormatted = null;
-    if ($craneMatrasCheck->tanggal) {
-        $date = new \DateTime($craneMatrasCheck->tanggal);
-        $bulanIndonesia = [
-            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
-            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
-            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
+    {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        // Ambil data pemeriksaan crane matras berdasarkan ID
+        $craneMatrasCheck = CraneMatrasCheck::findOrFail($id);
+        
+        // Ambil data form terkait (sesuaikan nomor form dengan yang digunakan untuk crane matras)
+        $form = Form::where('nomor_form', 'APTEK/005/REV.00')->firstOrFail(); // Sesuaikan nomor form
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil detail hasil pemeriksaan untuk crane matras
+        $craneMatrasResults = CraneMatrasResult::where('check_id', $id)->get();
+        
+        // Format tanggal pemeriksaan dalam bahasa Indonesia
+        $tanggalFormatted = null;
+        if ($craneMatrasCheck->tanggal) {
+            $date = new \DateTime($craneMatrasCheck->tanggal);
+            $bulanIndonesia = [
+                '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
+                '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
+                '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
+            ];
+            $month = $bulanIndonesia[$date->format('m')];
+            $tanggalFormatted = $date->format('d') . ' ' . $month . ' ' . $date->format('Y');
+        }
+        
+        // Siapkan data pemeriksaan yang sudah diformat
+        $formattedResults = [];
+        
+        // Mengumpulkan semua item dari hasil pemeriksaan
+        foreach ($craneMatrasResults as $result) {
+            $formattedResults[] = [
+                'item' => $result->checked_items,
+                'check' => $result->check,
+                'keterangan' => $result->keterangan
+            ];
+        }
+        
+        // Siapkan data checker
+        $checkerData = [
+            'checked_by' => $craneMatrasCheck->checked_by,
+            'tanggal' => $tanggalFormatted,
+            'bulan' => $craneMatrasCheck->bulan,
+            'nomer_crane_matras' => $craneMatrasCheck->nomer_crane_matras,
         ];
-        $month = $bulanIndonesia[$date->format('m')];
-        $tanggalFormatted = $date->format('d') . ' ' . $month . ' ' . $date->format('Y');
+        
+        // Status approval
+        $approvalStatus = !empty($craneMatrasCheck->approved_by);
+        
+        // Format bulan untuk nama file
+        $bulan = Carbon::createFromFormat('Y-m', $craneMatrasCheck->bulan)->translatedFormat('F Y');
+        
+        // Generate nama file PDF
+        $filename = 'Crane_matras_nomer_' . $craneMatrasCheck->nomer_crane_matras . '_bulan_' . $bulan . '.pdf';
+        
+        // Render view sebagai HTML
+        $html = view('crane_matras.review_pdf', [
+            'craneMatrasCheck' => $craneMatrasCheck,
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'formattedResults' => $formattedResults,
+            'checkerData' => $checkerData,
+            'approvalStatus' => $approvalStatus,
+            'user' => $user,
+            'currentGuard' => $currentGuard
+        ])->render();
+        
+        // Inisialisasi Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        
+        // Atur ukuran dan orientasi halaman
+        $dompdf->setPaper('A4', 'potrait');
+        
+        // Render PDF (mengubah HTML menjadi PDF)
+        $dompdf->render();
+        
+        // Download file PDF
+        return $dompdf->stream($filename, [
+            'Attachment' => false, // Set true untuk download otomatis
+        ]);
     }
-    
-    // Siapkan data pemeriksaan yang sudah diformat
-    $formattedResults = [];
-    
-    // Mengumpulkan semua item dari hasil pemeriksaan
-    foreach ($craneMatrasResults as $result) {
-        $formattedResults[] = [
-            'item' => $result->checked_items,
-            'check' => $result->check,
-            'keterangan' => $result->keterangan
-        ];
-    }
-    
-    // Siapkan data checker
-    $checkerData = [
-        'checked_by' => $craneMatrasCheck->checked_by,
-        'tanggal' => $tanggalFormatted,
-        'bulan' => $craneMatrasCheck->bulan,
-        'nomer_crane_matras' => $craneMatrasCheck->nomer_crane_matras,
-    ];
-    
-    // Status approval
-    $approvalStatus = !empty($craneMatrasCheck->approved_by);
-    
-    // Format bulan untuk nama file
-    $bulan = Carbon::createFromFormat('Y-m', $craneMatrasCheck->bulan)->translatedFormat('F Y');
-    
-    // Generate nama file PDF
-    $filename = 'Crane_matras_nomer_' . $craneMatrasCheck->nomer_crane_matras . '_bulan_' . $bulan . '.pdf';
-    
-    // Render view sebagai HTML
-    $html = view('crane_matras.review_pdf', [
-        'craneMatrasCheck' => $craneMatrasCheck,
-        'form' => $form,
-        'formattedTanggalEfektif' => $formattedTanggalEfektif,
-        'formattedResults' => $formattedResults,
-        'checkerData' => $checkerData,
-        'approvalStatus' => $approvalStatus
-    ])->render();
-    
-    // Inisialisasi Dompdf
-    $dompdf = new \Dompdf\Dompdf();
-    $dompdf->loadHtml($html);
-    
-    // Atur ukuran dan orientasi halaman
-    $dompdf->setPaper('A4', 'potrait');
-    
-    // Render PDF (mengubah HTML menjadi PDF)
-    $dompdf->render();
-    
-    // Download file PDF
-    return $dompdf->stream($filename, [
-        'Attachment' => false, // Set true untuk download otomatis
-    ]);
-}
 }

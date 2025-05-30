@@ -15,11 +15,17 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
+use App\Traits\WithAuthentication;
 
 class DehumMatrasController extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         $query = DehumMatrasCheck::query();
 
         // Filter berdasarkan checked_by atau approved_by jika ada
@@ -83,16 +89,22 @@ class DehumMatrasController extends Controller
                 ->count();
         }
 
-        return view('dehum-matras.index', compact('checks'));
+        return view('dehum-matras.index', compact('checks', 'user', 'currentGuard'));
     }
 
     public function create()
     {
-        return view('dehum-matras.create');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        return view('dehum-matras.create', compact('user', 'currentGuard'));
     }
     
     public function store(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Custom error messages untuk validasi
         $customMessages = [
             'nomer_dehum_matras.required' => 'Silakan pilih nomor dehum matras terlebih dahulu!',
@@ -227,10 +239,10 @@ class DehumMatrasController extends Controller
             
             Activity::logActivity(
                 'checker',                                              // user_type
-                Auth::user()->id,                                       // user_id
-                Auth::user()->username,                                 // user_name
+                $user->id,                                       // user_id
+                $user->username,                                 // user_name
                 'created',                                              // action
-                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Dehum Matras Nomor ' . $request->nomer_dehum_matras . ' untuk ' . $shiftText . ' bulan ' . $formattedMonth,  // description
+                'Checker ' . $user->username . ' membuat pemeriksaan Dehum Matras Nomor ' . $request->nomer_dehum_matras . ' untuk ' . $shiftText . ' bulan ' . $formattedMonth,  // description
                 'dehum_matras_check',                                   // target_type
                 $dehumMatrasCheck->id,                                  // target_id
                 [
@@ -262,6 +274,9 @@ class DehumMatrasController extends Controller
 
     public function edit($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data utama dehum matras check
         $check = DehumMatrasCheck::findOrFail($id);
         
@@ -401,11 +416,14 @@ class DehumMatrasController extends Controller
             }
         }
         
-        return view('dehum-matras.edit', compact('check', 'results'));
+        return view('dehum-matras.edit', compact('check', 'results', 'user', 'currentGuard'));
     }
 
     public function update(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Validasi input
         $validated = $request->validate([
             'nomer_dehum_matras' => 'required|integer|between:1,23',
@@ -622,6 +640,9 @@ class DehumMatrasController extends Controller
 
     public function show($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data utama dehum matras check
         $check = DehumMatrasCheck::findOrFail($id);
         
@@ -761,11 +782,16 @@ class DehumMatrasController extends Controller
             }
         }
         
-        return view('dehum-matras.show', compact('check', 'results'));
+        return view('dehum-matras.show', compact('check', 'results', 'user', 'currentGuard'));
     }
 
     public function approve(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser(['approver']);
+        if (!is_object($user)) return $user;
+        if (!$this->isAuthenticatedAs('approver')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
+        }
         // Validasi input
         $request->validate([
             'approved_by_*' => 'sometimes|string',
@@ -824,6 +850,9 @@ class DehumMatrasController extends Controller
 
     public function reviewPdf($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data utama dehum matras check
         $dehumMatras = DehumMatrasCheck::findOrFail($id);
         
@@ -970,7 +999,7 @@ class DehumMatrasController extends Controller
         }
         
         // Render view sebagai HTML untuk preview PDF
-        $view = view('dehum-matras.review_pdf', compact('dehumMatras', 'results', 'form', 'formattedTanggalEfektif', 'items'));
+        $view = view('dehum-matras.review_pdf', compact('dehumMatras', 'results', 'form', 'formattedTanggalEfektif', 'items', 'user', 'currentGuard'));
         
         // Return view untuk preview
         return $view;
@@ -978,6 +1007,9 @@ class DehumMatrasController extends Controller
 
     public function downloadPdf($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data utama dehum matras check
         $dehumMatras = DehumMatrasCheck::findOrFail($id);
         
@@ -1132,7 +1164,7 @@ class DehumMatrasController extends Controller
         $filename = "Dehum_matras_nomer_{$nomor}_shift_{$shift}_bulan_{$namaBulan}.pdf";
         
         // Render view sebagai HTML
-        $html = view('dehum-matras.review_pdf', compact('dehumMatras', 'results', 'form', 'formattedTanggalEfektif', 'items'))->render();
+        $html = view('dehum-matras.review_pdf', compact('dehumMatras', 'results', 'form', 'formattedTanggalEfektif', 'items', 'user', 'currentGuard'))->render();
         
         // Inisialisasi Dompdf
         $dompdf = new \Dompdf\Dompdf();

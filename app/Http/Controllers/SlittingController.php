@@ -12,12 +12,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
+use App\Traits\WithAuthentication;
 
 
 class SlittingController extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         $query = SlittingCheck::query();
 
         // Filter berdasarkan nama checker jika ada
@@ -52,16 +58,22 @@ class SlittingController extends Controller
         // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
         $checks = $query->paginate(10)->appends($request->query());
 
-        return view('slitting.index', compact('checks'));
+        return view('slitting.index', compact('checks', 'user', 'currentGuard'));
     }
 
     public function create()
     {
-        return view('slitting.create');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        return view('slitting.create', compact('user', 'currentGuard'));
     }
 
     public function store(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         $customMessages = [
             'nomer_slitting.required' => 'Silakan pilih nomer slitting terlebih dahulu!',
             'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
@@ -252,10 +264,10 @@ class SlittingController extends Controller
             
             Activity::logActivity(
                 'checker',                                              // user_type
-                Auth::user()->id,                                       // user_id
-                Auth::user()->username,                                 // user_name
+                $user->id,                                       // user_id
+                $user->username,                                 // user_name
                 'created',                                              // action
-                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Slitting Nomor ' . $request->input('nomer_slitting') . ' untuk bulan ' . $bulanFormatted,  // description
+                'Checker ' . $user->username . ' membuat pemeriksaan Slitting Nomor ' . $request->input('nomer_slitting') . ' untuk bulan ' . $bulanFormatted,  // description
                 'slitting_check',                                       // target_type
                 $slittingCheck->id,                                     // target_id
                 [
@@ -296,6 +308,9 @@ class SlittingController extends Controller
 
     public function edit($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data utama slitting check
         $check = SlittingCheck::findOrFail($id);
         
@@ -382,11 +397,14 @@ class SlittingController extends Controller
             'minggu4' => !empty($check->approved_by_minggu4)
         ];
         
-        return view('slitting.edit', compact('check', 'formattedResults', 'items', 'checkerData', 'approvalStatus'));
+        return view('slitting.edit', compact('check', 'formattedResults', 'items', 'checkerData', 'approvalStatus', 'user', 'currentGuard'));
     }
 
     public function update(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Validasi input
         $validated = $request->validate([
             'nomer_slitting' => 'required|integer|between:1,10',
@@ -501,6 +519,9 @@ class SlittingController extends Controller
 
     public function show($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Fetch the slitting check with its results
         $check = SlittingCheck::findOrFail($id);
         
@@ -591,11 +612,16 @@ class SlittingController extends Controller
             $hasApprovedBy[$i] = !empty($approvedBy);
         }
         
-        return view('slitting.show', compact('check', 'formattedResults', 'hasApprovedBy'));
+        return view('slitting.show', compact('check', 'formattedResults', 'hasApprovedBy', 'user', 'currentGuard'));
     }
 
     public function approve(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser(['approver']);
+        if (!is_object($user)) return $user;
+        if (!$this->isAuthenticatedAs('approver')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
+        }
         $check = SlittingCheck::findOrFail($id);
         
         // Process approvals for each week
@@ -619,6 +645,9 @@ class SlittingController extends Controller
    
     public function reviewPdf($id) 
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data pemeriksaan slitting berdasarkan ID
         $slittingCheck = SlittingCheck::findOrFail($id);
         
@@ -699,7 +728,9 @@ class SlittingController extends Controller
             'slittingCheck' => $slittingCheck,
             'form' => $form,
             'formattedTanggalEfektif' => $formattedTanggalEfektif,
-            'items' => $items
+            'items' => $items,
+            'user' => $user,
+            'currentGuard' => $currentGuard
         ]);
         
         // Return view untuk preview
@@ -708,6 +739,9 @@ class SlittingController extends Controller
     
     public function downloadPdf($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data pemeriksaan slitting berdasarkan ID
         $slittingCheck = SlittingCheck::findOrFail($id);
         
@@ -815,7 +849,9 @@ class SlittingController extends Controller
             'slittingCheck' => $slittingCheck,
             'form' => $form,
             'formattedTanggalEfektif' => $formattedTanggalEfektif,
-            'items' => $items
+            'items' => $items,
+            'user' => $user,
+            'currentGuard' => $currentGuard
         ])->render();
         
         // Inisialisasi Dompdf

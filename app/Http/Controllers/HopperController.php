@@ -12,11 +12,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
+use App\Traits\WithAuthentication;
 
 class HopperController extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         $query = HopperCheck::query();
 
         // Filter berdasarkan nama checker jika ada
@@ -51,16 +57,22 @@ class HopperController extends Controller
         // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
         $checks = $query->paginate(10)->appends($request->query());
 
-        return view('hopper.index', compact('checks'));
+        return view('hopper.index', compact('checks', 'user', 'currentGuard'));
     }
 
     public function create()
     {
-        return view('hopper.create');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        return view('hopper.create', compact('user', 'currentGuard'));
     }
 
     public function store(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         $customMessages = [
             'nomer_hopper.required' => 'Silakan pilih nomer hopper terlebih dahulu!',
             'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
@@ -205,10 +217,10 @@ class HopperController extends Controller
             
             Activity::logActivity(
                 'checker',                                              // user_type
-                Auth::user()->id,                                       // user_id
-                Auth::user()->username,                                 // user_name
+                $user->id,                                       // user_id
+                $user->username,                                 // user_name
                 'created',                                              // action
-                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Hopper Nomor ' . $request->input('nomer_hopper') . ' untuk bulan ' . $bulanFormatted,  // description
+                'Checker ' . $user->username . ' membuat pemeriksaan Hopper Nomor ' . $request->input('nomer_hopper') . ' untuk bulan ' . $bulanFormatted,  // description
                 'hopper_check',                                         // target_type
                 $hopperCheck->id,                                       // target_id
                 [
@@ -249,6 +261,9 @@ class HopperController extends Controller
 
     public function edit($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Fetch the HopperCheck record with its results
         $hopperCheck = HopperCheck::with('results')->findOrFail($id);
         
@@ -256,11 +271,14 @@ class HopperController extends Controller
         $hopperResults = $hopperCheck->results;
 
         // Return the view and pass both $hopperCheck and $hopperResults
-        return view('hopper.edit', compact('hopperCheck', 'hopperResults'));
+        return view('hopper.edit', compact('hopperCheck', 'hopperResults', 'user', 'currentGuard'));
     }
 
     public function update(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Validasi hanya untuk field yang dibutuhkan, tidak perlu validasi semua field
         $validatedData = $request->validate([
             'nomer_hopper' => 'required|integer|min:1|max:15',
@@ -361,7 +379,7 @@ class HopperController extends Controller
             DB::commit();
 
             // Redirect with success message
-            return redirect()->route('hopper.index')->with('success', 'Data pencatatan mesin Hopper berhasil diperbarui.');
+            return redirect()->route('hopper.index')->with('success', 'Data pencatatan mesin Hopper berhasil diperbarui!');
         } catch (\Exception $e) {
             // Rollback the transaction in case of error
             DB::rollBack();
@@ -373,6 +391,9 @@ class HopperController extends Controller
 
     public function show($check_id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Find the main hopper record
         $hopperRecord = HopperCheck::findOrFail($check_id);
 
@@ -436,12 +457,19 @@ class HopperController extends Controller
 
         return view('hopper.show', [
             'hopperRecord' => $viewData,
-            'items' => $items
+            'items' => $items,
+            'user' => $user,
+            'currentGuard' => $currentGuard
         ]);
     }
 
     public function approve(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser(['approver']);
+        if (!is_object($user)) return $user;
+        if (!$this->isAuthenticatedAs('approver')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
+        }
         // Validate the request - hanya validasi field yang dikirim dalam request
         $validatedData = $request->validate([
             'approved_by_minggu1' => 'nullable|string|max:255',
@@ -471,6 +499,9 @@ class HopperController extends Controller
 
     public function reviewPdf($id) 
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data pemeriksaan hopper berdasarkan ID
         $hopperCheck = HopperCheck::findOrFail($id);
         
@@ -515,7 +546,9 @@ class HopperController extends Controller
             'hopperCheck' => $hopperCheck,
             'form' => $form,
             'formattedTanggalEfektif' => $formattedTanggalEfektif,
-            'items' => $items
+            'items' => $items,
+            'user' => $user,
+            'currentGuard' => $currentGuard
         ]);
         
         // Return view untuk preview
@@ -524,6 +557,9 @@ class HopperController extends Controller
 
     public function downloadPdf($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data pemeriksaan hopper berdasarkan ID
         $hopperCheck = HopperCheck::findOrFail($id);
         
@@ -595,7 +631,9 @@ class HopperController extends Controller
             'hopperCheck' => $hopperCheck,
             'form' => $form,
             'formattedTanggalEfektif' => $formattedTanggalEfektif,
-            'items' => $items
+            'items' => $items,
+            'user' => $user,
+            'currentGuard' => $currentGuard
         ])->render();
         
         // Inisialisasi Dompdf

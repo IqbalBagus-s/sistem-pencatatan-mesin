@@ -12,11 +12,17 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
+use App\Traits\WithAuthentication;
 
 class DehumBahanController extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         $query = DehumBahanCheck::query();
 
         // Filter berdasarkan nama checker jika ada
@@ -52,16 +58,22 @@ class DehumBahanController extends Controller
         // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
         $checks = $query->paginate(10)->appends($request->query());
 
-        return view('dehum-bahan.index', compact('checks'));
+        return view('dehum-bahan.index', compact('checks', 'user', 'currentGuard'));
     }
 
     public function create()
     {
-        return view('dehum-bahan.create');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        return view('dehum-bahan.create', compact('user', 'currentGuard'));
     }
 
     public function store(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         $customMessages = [
             'nomer_dehum_bahan.required' => 'Silakan pilih nomor dehum bahan terlebih dahulu!',
             'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
@@ -205,10 +217,10 @@ class DehumBahanController extends Controller
             
             Activity::logActivity(
                 'checker',                                              // user_type
-                Auth::user()->id,                                       // user_id
-                Auth::user()->username,                                 // user_name
+                $user->id,                                       // user_id
+                $user->username,                                 // user_name
                 'created',                                              // action
-                'Checker ' . Auth::user()->username . ' membuat pemeriksaan Dehum Bahan Nomor ' . $request->input('nomer_dehum_bahan') . ' untuk bulan ' . $bulanFormatted,  // description
+                'Checker ' . $user->username . ' membuat pemeriksaan Dehum Bahan Nomor ' . $request->input('nomer_dehum_bahan') . ' untuk bulan ' . $bulanFormatted,  // description
                 'dehum_bahan_check',                                    // target_type
                 $dehumBahanCheck->id,                                   // target_id
                 [
@@ -249,13 +261,19 @@ class DehumBahanController extends Controller
 
     public function edit($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         $dehumCheck = DehumBahanCheck::findOrFail($id);
         $dehumResults = $dehumCheck->results;
-        return view('dehum-bahan.edit', compact('dehumCheck', 'dehumResults'));
+        return view('dehum-bahan.edit', compact('dehumCheck', 'dehumResults', 'user', 'currentGuard'));
     }
 
     public function update(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Validasi data request
         $validatedData = $request->validate([
             'nomer_dehum_bahan' => 'required|integer|min:1',
@@ -413,6 +431,9 @@ class DehumBahanController extends Controller
 
     public function show($check_id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Find the main dehum bahan record
         $dehumBahanRecord = DehumBahanCheck::findOrFail($check_id);
         
@@ -488,12 +509,19 @@ class DehumBahanController extends Controller
 
         return view('dehum-bahan.show', [
             'dehumBahanRecord' => $dehumBahanRecordObj,
-            'items' => $items
+            'items' => $items,
+            'user' => $user,
+            'currentGuard' => $currentGuard
         ]);
     }
 
     public function approve(Request $request, $id)
     {
+        $user = $this->ensureAuthenticatedUser(['approver']);
+        if (!is_object($user)) return $user;
+        if (!$this->isAuthenticatedAs('approver')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
+        }
         // Validate the request - hanya validasi field yang dikirim dalam request
         $validatedData = $request->validate([
             'approved_by_minggu1' => 'nullable|string|max:255',
@@ -523,6 +551,9 @@ class DehumBahanController extends Controller
 
     public function reviewPdf($id) 
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data pemeriksaan dehum bahan berdasarkan ID
         $dehumBahanCheck = DehumBahanCheck::findOrFail($id);
         
@@ -587,7 +618,9 @@ class DehumBahanController extends Controller
             'dehumBahanCheck' => $dehumBahanCheck,
             'form' => $form,
             'formattedTanggalEfektif' => $formattedTanggalEfektif,
-            'items' => $items
+            'items' => $items,
+            'user' => $user,
+            'currentGuard' => $currentGuard
         ]);
         
         // Return view untuk preview
@@ -596,6 +629,9 @@ class DehumBahanController extends Controller
     
     public function downloadPdf($id)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         // Ambil data pemeriksaan dehum bahan berdasarkan ID
         $dehumBahanCheck = DehumBahanCheck::findOrFail($id);
         
@@ -665,7 +701,9 @@ class DehumBahanController extends Controller
             'dehumBahanCheck' => $dehumBahanCheck,
             'form' => $form,
             'formattedTanggalEfektif' => $formattedTanggalEfektif,
-            'items' => $items
+            'items' => $items,
+            'user' => $user,
+            'currentGuard' => $currentGuard
         ])->render();
         
         // Inisialisasi Dompdf
