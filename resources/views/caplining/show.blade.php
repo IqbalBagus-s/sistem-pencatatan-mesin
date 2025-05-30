@@ -137,15 +137,21 @@
                                     </td>
                                     
                                     @for($j = 1; $j <= 5; $j++)
-                                        <td class="border border-gray-300 p-1 h-10 text-center">
-                                            @php
-                                                $result = getCheckResult($results, $j, $i);
-                                                echo isset($options[$result]) ? $options[$result] : '';
-                                            @endphp
-                                        </td>
-                                        <td class="border border-gray-300 p-1 h-10 text-sm">
-                                            {{ getKeterangan($results, $j, $i) }}
-                                        </td>
+                                        @php $checkedBy = $check->{"checked_by$j"}; @endphp
+                                        @if(empty($checkedBy))
+                                            <td class="border border-gray-300 p-1 h-10 text-center">—</td>
+                                            <td class="border border-gray-300 p-1 h-10 text-sm text-gray-400 italic">Belum diisi</td>
+                                        @else
+                                            <td class="border border-gray-300 p-1 h-10 text-center">
+                                                @php
+                                                    $result = getCheckResult($results, $j, $i);
+                                                    echo isset($options[$result]) ? $options[$result] : '';
+                                                @endphp
+                                            </td>
+                                            <td class="border border-gray-300 p-1 h-10 text-sm">
+                                                {{ getKeterangan($results, $j, $i) }}
+                                            </td>
+                                        @endif
                                     @endfor
                                 </tr>
                             @endforeach
