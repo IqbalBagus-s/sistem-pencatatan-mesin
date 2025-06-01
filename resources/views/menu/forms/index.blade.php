@@ -146,7 +146,7 @@
 @endsection
 
 @section('back-route')
-    {{ route('dashboard') }}
+    {{ route('host.dashboard') }}
 @endsection
 
 @section('scripts')

@@ -15,6 +15,12 @@
         </div>
     @endif
 
+    @if ($errors->has('duplicate'))
+        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+            {{ $errors->first('duplicate') }}
+        </div>
+    @endif
+
     @if ($errors->any())
         <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
             <ul class="list-disc ml-5">
