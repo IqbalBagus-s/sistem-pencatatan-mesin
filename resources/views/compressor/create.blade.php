@@ -46,6 +46,7 @@
             <div x-data="{
                     shiftSelected: null,
                     username: '{{ $user->username }}',
+                    userId: '{{ $user->id }}',
                     
                     selectShift(shift) {
                         if (this.shiftSelected === shift) {
@@ -56,7 +57,8 @@
                             this.shiftSelected = shift;
                             
                             if (shift === 1) {
-                                this.$refs.shift1.value = this.username;
+                                this.$refs.shift1.value = this.userId;
+                                this.$refs.shift1Display.value = this.username;
                                 this.$refs.shift2.value = '';
                                 
                                 this.$refs.tempShift1.disabled = false;
@@ -73,7 +75,8 @@
                                 this.$refs.humidityShift2.classList.remove('bg-white');
                                 this.$refs.humidityShift2.classList.add('bg-blue-300');
                             } else if (shift === 2) {
-                                this.$refs.shift2.value = this.username;
+                                this.$refs.shift2.value = this.userId;
+                                this.$refs.shift2Display.value = this.username;
                                 this.$refs.shift1.value = '';
                                 
                                 this.$refs.tempShift2.disabled = false;
@@ -100,6 +103,8 @@
                         // Clear the input fields
                         this.$refs.shift1.value = '';
                         this.$refs.shift2.value = '';
+                        this.$refs.shift1Display.value = '';
+                        this.$refs.shift2Display.value = '';
                         
                         // Disable all input fields
                         this.$refs.tempShift1.disabled = true;
@@ -121,7 +126,10 @@
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block mb-2 text-sm font-medium text-gray-700">Shift 1:</label>
-                    <input type="text" id="shift1" name="checked_by_shift1" x-ref="shift1" class="w-full px-3 py-2 bg-white border border-blue-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
+                    <!-- Hidden input untuk ID -->
+                    <input type="hidden" id="shift1" name="checker_shift1_id" x-ref="shift1">
+                    <!-- Visible input untuk display username -->
+                    <input type="text" x-ref="shift1Display" class="w-full px-3 py-2 bg-white border border-blue-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" readonly placeholder="Pilih checker untuk shift 1">
                     <button type="button" @click="selectShift(1)" class="mt-2 w-full text-white py-2 rounded cursor-pointer" 
                         :class="shiftSelected === 1 ? 'bg-red-600' : 'bg-blue-600'"
                         x-text="shiftSelected === 1 ? 'Batal' : 'Pilih'">
@@ -130,7 +138,10 @@
                 </div>
                 <div>
                     <label class="block mb-2 text-sm font-medium text-gray-700">Shift 2:</label>
-                    <input type="text" id="shift2" name="checked_by_shift2" x-ref="shift2" class="w-full px-3 py-2 bg-white border border-blue-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
+                    <!-- Hidden input untuk ID -->
+                    <input type="hidden" id="shift2" name="checker_shift2_id" x-ref="shift2">
+                    <!-- Visible input untuk display username -->
+                    <input type="text" x-ref="shift2Display" class="w-full px-3 py-2 bg-white border border-blue-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" readonly placeholder="Pilih checker untuk shift 2">
                     <button type="button" @click="selectShift(2)" class="mt-2 w-full text-white py-2 rounded cursor-pointer"
                         :class="shiftSelected === 2 ? 'bg-red-600' : 'bg-blue-600'"
                         x-text="shiftSelected === 2 ? 'Batal' : 'Pilih'">

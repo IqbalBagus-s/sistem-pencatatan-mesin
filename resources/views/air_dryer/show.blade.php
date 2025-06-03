@@ -12,12 +12,12 @@
         <div class="grid md:grid-cols-2 gap-4 mb-4">
             <div class="bg-sky-50 p-4 rounded-md">
                 <span class="text-gray-600 font-bold">Checker: </span>
-                <span class="font-bold text-blue-700">{{ $airDryer->checked_by }}</span>
+                <span class="font-bold text-blue-700">{{ $airDryer->checker?->username }}</span>
             </div>
             <div class="bg-sky-50 p-4 rounded-md">
                 <span class="text-gray-600 font-bold">Approver: </span>
                 <span class="font-bold text-blue-700">
-                    {{ $airDryer->approved_by ?: ($user->username ?? $user->name) }}
+                    {{ $airDryer->approver?->username ?: ($user->username ?? $user->name) }}
                 </span>
             </div>
         </div>

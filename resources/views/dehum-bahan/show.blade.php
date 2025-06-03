@@ -133,7 +133,7 @@
                                 </tr>
                                 @if($i == 2)
                                     <tr>
-                                        <td colspan="10" class="border border-gray-300 text-center p-2 h-12 bg-gray-100 font-medium">
+                                        <td colspan="10" class="border border-gray-300 text-center p-2 h-12 bg-white font-medium">
                                             Panel Kelistrikan
                                         </td>
                                     </tr>
@@ -197,7 +197,7 @@
                                                 <div x-show="selected" class="w-full py-1">
                                                     <div class="flex flex-col items-center">
                                                         <input type="text" name="approved_by_minggu{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
-                                                            class="w-full max-w-xs px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1"
+                                                            class="w-full max-w-xs px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                             readonly>
                                                         <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="">
                                                         <button type="button" 
@@ -241,11 +241,11 @@
                             <span>Tidak Baik/Abnormal</span>
                         </div>
                         <div class="flex items-center">
-                            <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">-</span>
+                            <span class="inline-block w-5 h-5 bg-white text-gray-700 text-center font-bold mr-2 rounded">-</span>
                             <span>Tidak Diisi</span>
                         </div>
                         <div class="flex items-center">
-                            <span class="inline-block w-5 h-5 bg-gray-100 text-gray-700 text-center font-bold mr-2 rounded">OFF</span>
+                            <span class="inline-block w-5 h-5 bg-white text-gray-700 text-center font-bold mr-2 rounded">OFF</span>
                             <span>Mesin Mati</span>
                         </div>
                     </div>

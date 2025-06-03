@@ -158,12 +158,12 @@
             <tr>
                 <td style="width: 50%; text-align: center; vertical-align: top;">
                     <div style="margin-bottom: 40px;">Diperiksa oleh:</div>
-                    <div style="font-weight: bold;">{{ $waterChiller->checked_by }}</div>
+                    <div style="font-weight: bold;">{{ $waterChiller->checker?->username }}</div>
                     <div>Checker</div>
                 </td>
                 <td style="width: 50%; text-align: center; vertical-align: top;">
                     <div style="margin-bottom: 40px;">Disetujui oleh:</div>
-                    <div style="font-weight: bold;">{{ $waterChiller->approved_by ?: '.........................' }}</div>
+                    <div style="font-weight: bold;">{{ $waterChiller->approver?->username ?: '.........................' }}</div>
                     <div>Penanggung Jawab</div>
                 </td>
             </tr>

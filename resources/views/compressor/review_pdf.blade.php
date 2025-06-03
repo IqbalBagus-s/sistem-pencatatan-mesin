@@ -380,28 +380,28 @@
                 <td class="signature-cell">
                     <div class="signature-title">Dibuat oleh:</div>
                     <div class="signature-name">
-                        {{ $check->checked_by_shift1 ?: '.............' }}
+                        {{ $check->checkerShift1 ? $check->checkerShift1->username : '.............' }}
                     </div>
                     <div class="signature-role">Checker Shift 1</div>
                 </td>
                 <td class="signature-cell">
                     <div class="signature-title">Dibuat oleh:</div>
                     <div class="signature-name">
-                        {{ $check->checked_by_shift2 ?: '.............' }}
+                        {{ $check->checkerShift2 ? $check->checkerShift2->username : '.............' }}
                     </div>
                     <div class="signature-role">Checker Shift 2</div>
                 </td>
                 <td class="signature-cell">
                     <div class="signature-title">Disetujui oleh:</div>
                     <div class="signature-name">
-                        {{ $check->approved_by_shift1 ?: '.............' }}
+                        {{ $check->approverShift1 ? $check->approverShift1->username : '.............' }}
                     </div>
                     <div class="signature-role">Penanggung Jawab Shift 1</div>
                 </td>
                 <td class="signature-cell">
                     <div class="signature-title">Disetujui oleh:</div>
                     <div class="signature-name">
-                        {{ $check->approved_by_shift2 ?: '.............' }}
+                        {{ $check->approverShift2 ? $check->approverShift2->username : '.............' }}
                     </div>
                     <div class="signature-role">Penanggung Jawab Shift 2</div>
                 </td>

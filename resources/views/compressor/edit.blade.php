@@ -40,16 +40,18 @@
 
         <!-- Form tambahan -->
         <div x-data="{
-            shift1Selected: {{ !empty($check->checked_by_shift1) ? 'true' : 'false' }},
-            shift2Selected: {{ !empty($check->checked_by_shift2) ? 'true' : 'false' }},
+            shift1Selected: {{ !empty($check->checker_shift1_id) ? 'true' : 'false' }},
+            shift2Selected: {{ !empty($check->checker_shift2_id) ? 'true' : 'false' }},
             username: '{{ $user->username }}',
+            userId: '{{ $user->id }}',
             
             toggleShift(shift) {
                 if (shift === 1) {
                     this.shift1Selected = !this.shift1Selected;
                     
                     if (this.shift1Selected) {
-                        this.$refs.shift1.value = this.username;
+                        this.$refs.shift1.value = this.userId;
+                        this.$refs.shift1Display.value = this.username;
                         
                         // Enable Shift 1 input fields
                         this.$refs.tempShift1.disabled = false;
@@ -60,6 +62,7 @@
                         this.$refs.humidityShift1.classList.add('bg-white');
                     } else {
                         this.$refs.shift1.value = '';
+                        this.$refs.shift1Display.value = '';
                         
                         // Disable Shift 1 input fields
                         this.$refs.tempShift1.disabled = true;
@@ -73,7 +76,8 @@
                     this.shift2Selected = !this.shift2Selected;
                     
                     if (this.shift2Selected) {
-                        this.$refs.shift2.value = this.username;
+                        this.$refs.shift2.value = this.userId;
+                        this.$refs.shift2Display.value = this.username;
                         
                         // Enable Shift 2 input fields
                         this.$refs.tempShift2.disabled = false;
@@ -84,6 +88,7 @@
                         this.$refs.humidityShift2.classList.add('bg-white');
                     } else {
                         this.$refs.shift2.value = '';
+                        this.$refs.shift2Display.value = '';
                         
                         // Disable Shift 2 input fields
                         this.$refs.tempShift2.disabled = true;
@@ -98,36 +103,44 @@
             
             // Initialize the form with existing data
             initForm() {
-                // If data exists for shift 1
-                if ('{{ $check->checked_by_shift1 }}') {
-                    this.shift1Selected = true;
-                    this.$refs.shift1.value = '{{ $check->checked_by_shift1 }}';
-                    this.$refs.tempShift1.disabled = false;
-                    this.$refs.tempShift1.classList.remove('bg-blue-300');
-                    this.$refs.tempShift1.classList.add('bg-white');
-                    this.$refs.humidityShift1.disabled = false;
-                    this.$refs.humidityShift1.classList.remove('bg-blue-300');
-                    this.$refs.humidityShift1.classList.add('bg-white');
-                }
-                
-                // If data exists for shift 2
-                if ('{{ $check->checked_by_shift2 }}') {
-                    this.shift2Selected = true;
-                    this.$refs.shift2.value = '{{ $check->checked_by_shift2 }}';
-                    this.$refs.tempShift2.disabled = false;
-                    this.$refs.tempShift2.classList.remove('bg-blue-300');
-                    this.$refs.tempShift2.classList.add('bg-white');
-                    this.$refs.humidityShift2.disabled = false;
-                    this.$refs.humidityShift2.classList.remove('bg-blue-300');
-                    this.$refs.humidityShift2.classList.add('bg-white');
-                }
+                // Wait for DOM to be ready
+                this.$nextTick(() => {
+                    // If data exists for shift 1
+                    if ('{{ $check->checker_shift1_id }}') {
+                        this.shift1Selected = true;
+                        this.$refs.shift1.value = '{{ $check->checker_shift1_id }}';
+                        this.$refs.shift1Display.value = '{{ $check->checkerShift1->username ?? '' }}';  // Tampilkan username
+                        this.$refs.tempShift1.disabled = false;
+                        this.$refs.tempShift1.classList.remove('bg-blue-300');
+                        this.$refs.tempShift1.classList.add('bg-white');
+                        this.$refs.humidityShift1.disabled = false;
+                        this.$refs.humidityShift1.classList.remove('bg-blue-300');
+                        this.$refs.humidityShift1.classList.add('bg-white');
+                    }
+                    
+                    // If data exists for shift 2
+                    if ('{{ $check->checker_shift2_id }}') {
+                        this.shift2Selected = true;
+                        this.$refs.shift2.value = '{{ $check->checker_shift2_id }}';
+                        this.$refs.shift2Display.value = '{{ $check->checkerShift2->username ?? '' }}';  // Tampilkan username
+                        this.$refs.tempShift2.disabled = false;
+                        this.$refs.tempShift2.classList.remove('bg-blue-300');
+                        this.$refs.tempShift2.classList.add('bg-white');
+                        this.$refs.humidityShift2.disabled = false;
+                        this.$refs.humidityShift2.classList.remove('bg-blue-300');
+                        this.$refs.humidityShift2.classList.add('bg-white');
+                    }
+                });
             }
             }" x-init="initForm()">
         <!-- Pilih Shift Checker -->
         <div class="grid grid-cols-2 gap-4 mb-4">
             <div>
                 <label class="block mb-2">Shift 1:</label>
-                <input type="text" id="shift1" name="checked_by_shift1" x-ref="shift1" value="{{ $check->checked_by_shift1 }}" class="w-full px-3 py-2 bg-white border-blue-400 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
+                <!-- Hidden input untuk ID -->
+                <input type="hidden" id="shift1" name="checker_shift1_id" x-ref="shift1" value="{{ $check->checker_shift1_id }}">
+                <!-- Visible input untuk display username -->
+                <input type="text" x-ref="shift1Display" value="{{ $check->checkerShift1->username ?? '' }}" class="w-full px-3 py-2 bg-white border-blue-400 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" readonly placeholder="Pilih checker untuk shift 1">
                 <button type="button" @click="toggleShift(1)" class="mt-2 w-full text-white py-2 rounded cursor-pointer" 
                     :class="shift1Selected ? 'bg-red-600' : 'bg-blue-600'"
                     x-text="shift1Selected ? 'Batal' : 'Pilih'">
@@ -136,7 +149,10 @@
             </div>
             <div>
                 <label class="block mb-2">Shift 2:</label>
-                <input type="text" id="shift2" name="checked_by_shift2" x-ref="shift2" value="{{ $check->checked_by_shift2 }}" class="w-full px-3 py-2 bg-white border-blue-400 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
+                <!-- Hidden input untuk ID -->
+                <input type="hidden" id="shift2" name="checker_shift2_id" x-ref="shift2" value="{{ $check->checker_shift2_id }}">
+                <!-- Visible input untuk display username -->
+                <input type="text" x-ref="shift2Display" value="{{ $check->checkerShift2->username ?? '' }}" class="w-full px-3 py-2 bg-white border-blue-400 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" readonly placeholder="Pilih checker untuk shift 2">
                 <button type="button" @click="toggleShift(2)" class="mt-2 w-full text-white py-2 rounded cursor-pointer"
                     :class="shift2Selected ? 'bg-red-600' : 'bg-blue-600'"
                     x-text="shift2Selected ? 'Batal' : 'Pilih'">
@@ -174,26 +190,26 @@
             <div>
                 <label class="block mb-2">Temperatur Shift 1:</label>
                 <input type="text" id="temp-shift-1" x-ref="tempShift1" name="temperatur_shift1" value="{{ $check->temperatur_shift1 }}" 
-                    class="w-full px-3 py-2 {{ !empty($check->checked_by_shift1) ? 'bg-white' : 'bg-blue-300' }} border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" 
-                    placeholder="Masukkan suhu..." {{ !empty($check->checked_by_shift1) ? '' : 'disabled' }}>
+                    class="w-full px-3 py-2 {{ !empty($check->checker_shift1_id) ? 'bg-white' : 'bg-blue-300' }} border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" 
+                    placeholder="Masukkan suhu..." {{ !empty($check->checker_shift1_id) ? '' : 'disabled' }}>
             </div>
             <div>
                 <label class="block mb-2">Temperatur Shift 2:</label>
                 <input type="text" id="temp-shift-2" x-ref="tempShift2" name="temperatur_shift2" value="{{ $check->temperatur_shift2 }}" 
-                    class="w-full px-3 py-2 {{ !empty($check->checked_by_shift2) ? 'bg-white' : 'bg-blue-300' }} border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" 
-                    placeholder="Masukkan suhu..." {{ !empty($check->checked_by_shift2) ? '' : 'disabled' }}>
+                    class="w-full px-3 py-2 {{ !empty($check->checker_shift2_id) ? 'bg-white' : 'bg-blue-300' }} border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" 
+                    placeholder="Masukkan suhu..." {{ !empty($check->checker_shift2_id) ? '' : 'disabled' }}>
             </div>
             <div>
                 <label class="block mb-2">Humidity Shift 1:</label>
                 <input type="text" id="humidity-shift-1" x-ref="humidityShift1" name="humidity_shift1" value="{{ $check->humidity_shift1 }}" 
-                    class="w-full px-3 py-2 {{ !empty($check->checked_by_shift1) ? 'bg-white' : 'bg-blue-300' }} border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" 
-                    placeholder="Masukkan kelembapan..." {{ !empty($check->checked_by_shift1) ? '' : 'disabled' }}>
+                    class="w-full px-3 py-2 {{ !empty($check->checker_shift1_id) ? 'bg-white' : 'bg-blue-300' }} border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" 
+                    placeholder="Masukkan kelembapan..." {{ !empty($check->checker_shift1_id) ? '' : 'disabled' }}>
             </div>
             <div>
                 <label class="block mb-2">Humidity Shift 2:</label>
                 <input type="text" id="humidity-shift-2" x-ref="humidityShift2" name="humidity_shift2" value="{{ $check->humidity_shift2 }}" 
-                    class="w-full px-3 py-2 {{ !empty($check->checked_by_shift2) ? 'bg-white' : 'bg-blue-300' }} border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" 
-                    placeholder="Masukkan kelembapan..." {{ !empty($check->checked_by_shift2) ? '' : 'disabled' }}>
+                    class="w-full px-3 py-2 {{ !empty($check->checker_shift2_id) ? 'bg-white' : 'bg-blue-300' }} border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" 
+                    placeholder="Masukkan kelembapan..." {{ !empty($check->checker_shift2_id) ? '' : 'disabled' }}>
             </div>
         </div>
 

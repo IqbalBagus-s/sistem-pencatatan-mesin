@@ -56,18 +56,17 @@
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->hari }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if($check->checked_by_shift1)
+                            @if($check->checkerShift1)
                                 <span class="bg-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm mb-1 inline-block">
-                                    Shift 1 :{{ $check->checked_by_shift1 }}
+                                    Shift 1 :{{ $check->checkerShift1->username }}
                                 </span>
-                                
                             @endif
-                            @if($check->checked_by_shift2)
+                            @if($check->checkerShift2)
                                 <span class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm mb-1 inline-block">
-                                    Shift 2 :{{ $check->checked_by_shift2 }}
+                                    Shift 2 :{{ $check->checkerShift2->username }}
                                 </span>
                             @endif
-                            @if(!$check->checked_by_shift1 && !$check->checked_by_shift2)
+                            @if(!$check->checkerShift1 && !$check->checkerShift2)
                                 <span class="bg-gray-200 text-gray-700 px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Belum Diisi
                                 </span>
@@ -75,7 +74,7 @@
                         </td>
                         
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if(($check->approved_by_shift1 && !$check->approved_by_shift2) || (!$check->approved_by_shift1 && $check->approved_by_shift2))
+                            @if(($check->approver_shift1_id && !$check->approver_shift2_id) || (!$check->approver_shift1_id && $check->approver_shift2_id))
                                 <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui Sebagian
                                 </span>

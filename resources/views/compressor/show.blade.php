@@ -11,18 +11,23 @@
         <!-- Form wrapper dengan Alpine.js untuk persetujuan -->
         <form action="{{ route('compressor.approve', $check->id) }}" method="POST" id="approvalForm"
             x-data="{
-                dbShift1: '{{ $check->approved_by_shift1 }}',
-                dbShift2: '{{ $check->approved_by_shift2 }}',
-                shift1: '{{ $check->approved_by_shift1 }}',
-                shift2: '{{ $check->approved_by_shift2 }}',
+                dbShift1: '{{ $check->approver_shift1_id }}',
+                dbShift2: '{{ $check->approver_shift2_id }}',
+                shift1: '{{ $check->approver_shift1_id }}',
+                shift2: '{{ $check->approver_shift2_id }}',
+                shift1Name: '{{ $check->approverShift1 ? $check->approverShift1->username : '' }}',
+                shift2Name: '{{ $check->approverShift2 ? $check->approverShift2->username : '' }}',
+                approverId: '{{ $approverId }}',
+                approverName: '{{ $user->username }}',
                 formChanged: false,
                 
                 pilihShift(shift) {
-                    const user = '{{ $user->username }}';
                     if (shift === 1) {
-                        this.shift1 = user;
+                        this.shift1 = this.approverId;
+                        this.shift1Name = this.approverName;
                     } else if (shift === 2) {
-                        this.shift2 = user;
+                        this.shift2 = this.approverId;
+                        this.shift2Name = this.approverName;
                     }
                     this.updateFormChanged();
                 },
@@ -30,8 +35,10 @@
                 batalPilih(shift) {
                     if (shift === 1) {
                         this.shift1 = '';
+                        this.shift1Name = '';
                     } else if (shift === 2) {
                         this.shift2 = '';
+                        this.shift2Name = '';
                     }
                     this.updateFormChanged();
                 },
@@ -46,18 +53,22 @@
             }">
             @csrf
             <!-- Hidden fields for form submission -->
-            <input type="hidden" name="shift1" x-model="shift1">
-            <input type="hidden" name="shift2" x-model="shift2">
+            <input type="hidden" name="shift1" :value="shift1">
+            <input type="hidden" name="shift2" :value="shift2">
 
             <!-- Header dengan Info Petugas -->
             <div class="grid md:grid-cols-2 gap-4 mb-4">
                 <div class="bg-sky-50 p-4 rounded-md">
                     <span class="text-gray-600 font-bold">Checker Shift 1: </span>
-                    <span class="font-bold text-blue-700">{{ $check->checked_by_shift1 ?: 'Belum diisi' }}</span>
+                    <span class="font-bold text-blue-700">
+                        {{ $check->checkerShift1 ? $check->checkerShift1->username : 'Belum diisi' }}
+                    </span>
                 </div>
                 <div class="bg-sky-50 p-4 rounded-md">
                     <span class="text-gray-600 font-bold">Checker Shift 2: </span>
-                    <span class="font-bold text-blue-700">{{ $check->checked_by_shift2 ?: 'Belum diisi' }}</span>
+                    <span class="font-bold text-blue-700">
+                        {{ $check->checkerShift2 ? $check->checkerShift2->username : 'Belum diisi' }}
+                    </span>
                 </div>
             </div>
 
@@ -487,9 +498,10 @@
                             <label class="block text-gray-700 font-semibold mb-3">Shift 1</label>
                             
                             <div class="mb-3">
-                                <input type="text" 
-                                    class="w-full p-2 border rounded border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                                    x-model="shift1" readonly placeholder="Nama">
+                                <input type="text"
+                                    class="w-full p-2 border rounded border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    :value="shift1Name"
+                                    readonly placeholder="Nama">
                             </div>
                             
                             <button type="button" 
@@ -512,9 +524,10 @@
                             <label class="block text-gray-700 font-semibold mb-3">Shift 2</label>
                             
                             <div class="mb-3">
-                                <input type="text" 
-                                    class="w-full p-2 border rounded border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                                    x-model="shift2" readonly placeholder="Nama">
+                                <input type="text"
+                                    class="w-full p-2 border rounded border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    :value="shift2Name"
+                                    readonly placeholder="Nama">
                             </div>
                             
                             <button type="button" 
@@ -551,7 +564,7 @@
                     <!-- Action Buttons - Right Side -->
                     <div class="flex flex-row flex-wrap gap-2 justify-end">
                         <!-- Simpan Persetujuan Button - Only shown when at least one approval is missing -->
-                        @if (empty($check->approved_by_shift1) || empty($check->approved_by_shift2))
+                        @if (empty($check->approver_shift1_id) || empty($check->approver_shift2_id))
                             <button type="submit" 
                                 class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out"
                                 :class="{ 'opacity-50 cursor-not-allowed': !formChanged }"
@@ -564,7 +577,7 @@
                         @endif
                         
                         <!-- PDF Preview and Download Buttons - Only shown when both approvals are present -->
-                        @if (!empty($check->approved_by_shift1) && !empty($check->approved_by_shift2))
+                        @if (!empty($check->approver_shift1_id) && !empty($check->approver_shift2_id))
                             <!-- PDF Preview Button -->
                             <a href="{{ route('compressor.pdf', $check->id) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

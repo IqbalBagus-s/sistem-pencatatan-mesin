@@ -113,11 +113,11 @@
                         <td class="py-3 px-4 border-b border-gray-200">{{ $check->minggu }}</td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             <span class="bg-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm">
-                                {{ $check->checked_by }}
+                                {{ $check->checker?->username }}
                             </span>
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if(($check->approved_by1 && !$check->approved_by2) || (!$check->approved_by1 && $check->approved_by2))
+                            @if(($check->approver1?->username && !$check->approver2?->username) || (!$check->approver1?->username && $check->approver2?->username))
                                 <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui Sebagian
                                 </span>

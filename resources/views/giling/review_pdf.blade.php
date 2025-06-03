@@ -154,18 +154,18 @@
             <tr>
                 <td style="width: 33%; text-align: center; vertical-align: top;">
                     <div style="margin-bottom: 40px;">Diperiksa oleh:</div>
-                    <div style="font-weight: bold;">{{ $gilingCheck->checked_by }}</div>
-                    <div>Pelaksana Utility</div>
+                    <div style="font-weight: bold;">{{ $gilingCheck->checker?->username }}</div>
+                    <div>Checker</div>
                 </td>
                 <td style="width: 33%; text-align: center; vertical-align: top;">
                     <div style="margin-bottom: 40px;">Disetujui oleh:</div>
-                    <div style="font-weight: bold;">{{ $gilingCheck->approved_by1 ?: '.........................' }}</div>
+                    <div style="font-weight: bold;">{{ $gilingCheck->approver1?->username ?: '.........................' }}</div>
                     <div>Pelaksana Utility</div>
                     <div>{{ $gilingCheck->approval_date1 ? \Carbon\Carbon::parse($gilingCheck->approval_date1)->format('d/m/Y') : '' }}</div>
                 </td>
                 <td style="width: 33%; text-align: center; vertical-align: top;">
                     <div style="margin-bottom: 40px;">Disetujui oleh:</div>
-                    <div style="font-weight: bold;">{{ $gilingCheck->approved_by2 ?: '.........................' }}</div>
+                    <div style="font-weight: bold;">{{ $gilingCheck->approver2?->username ?: '.........................' }}</div>
                     <div>Koordinator Staff Utility</div>
                 </td>
             </tr>

@@ -11,23 +11,28 @@
         <!-- Form wrapper with Alpine.js untuk persetujuan -->
         <form action="{{ route('giling.approve', $check->id) }}" method="POST" id="approvalForm"
               x-data="{
-                dbApprover1: '{{ $check->approved_by1 }}',
-                dbApprover2: '{{ $check->approved_by2 }}',
+                dbApprover1: '{{ $check->approver_id1 }}',
+                dbApprover2: '{{ $check->approver_id2 }}',
                 dbApprovalDate1: '{{ $check->approval_date1 }}',
-                approver1: '{{ $check->approved_by1 }}',
-                approver2: '{{ $check->approved_by2 }}',
+                approver1: '{{ $check->approver_id1 }}',
+                approver2: '{{ $check->approver_id2 }}',
                 approvalDate1: '{{ $check->approval_date1 }}',
+                approver1Name: '{{ $check->approver1?->username ?? '' }}',
+                approver2Name: '{{ $check->approver2?->username ?? '' }}',
                 formChanged: false,
                 
                 pilihApprover(position) {
-                    const user = '{{ $user->username }}';
+                    const userId = '{{ $user->id }}';
+                    const userName = '{{ $user->username }}';
                     const currentDate = new Date().toISOString().split('T')[0];
                     
                     if (position === 1) {
-                        this.approver1 = user;
+                        this.approver1 = userId;
+                        this.approver1Name = userName;
                         this.approvalDate1 = currentDate;
                     } else if (position === 2) {
-                        this.approver2 = user;
+                        this.approver2 = userId;
+                        this.approver2Name = userName;
                     }
                     this.updateFormChanged();
                 },
@@ -35,9 +40,11 @@
                 batalPilih(position) {
                     if (position === 1) {
                         this.approver1 = '';
+                        this.approver1Name = '';
                         this.approvalDate1 = '';
                     } else if (position === 2) {
                         this.approver2 = '';
+                        this.approver2Name = '';
                     }
                     this.updateFormChanged();
                 },
@@ -54,19 +61,19 @@
               }">
             @csrf
             <!-- Hidden fields for form submission -->
-            <input type="hidden" name="approved_by1" x-model="approver1">
-            <input type="hidden" name="approved_by2" x-model="approver2">
+            <input type="hidden" name="approver_id1" x-model="approver1">
+            <input type="hidden" name="approver_id2" x-model="approver2">
             <input type="hidden" name="approval_date1" x-model="approvalDate1">
         
             <!-- Header dengan Info Petugas -->
             <div class="grid md:grid-cols-2 gap-4 mb-4">
                 <div class="bg-sky-50 p-4 rounded-md">
                     <span class="text-gray-600 font-bold">Checker: </span>
-                    <span class="font-bold text-blue-700">{{ $check->checked_by }}</span>
+                    <span class="font-bold text-blue-700">{{ $check->checker?->username }}</span>
                 </div>
                 @php
                     // Kumpulkan nilai approver yang terisi
-                    $approvers = collect([$check->approved_by1, $check->approved_by2])
+                    $approvers = collect([$check->approver1?->username, $check->approver2?->username])
                                     ->filter()          
                                     ->implode(', ');    
                 @endphp
@@ -224,7 +231,8 @@
                                 <div>
                                     <input type="text" 
                                         class="w-full p-2 border rounded border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                                        x-model="approver1" readonly placeholder="Nama">
+                                        :value="approver1Name"
+                                        readonly placeholder="Nama">
                                 </div>
                                 
                                 <!-- Date field -->
@@ -261,7 +269,8 @@
                             <div class="mb-3">
                                 <input type="text" 
                                     class="w-full p-2 border rounded border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                                    x-model="approver2" readonly placeholder="Nama">
+                                    :value="approver2Name"
+                                    readonly placeholder="Nama">
                             </div>
                             
                             <!-- Conditional buttons with same height as first section -->
@@ -301,7 +310,7 @@
                     <!-- Action Buttons - Right Side -->
                     <div class="flex flex-row flex-wrap gap-2 justify-end">
                         <!-- Simpan Persetujuan Button - Only shown when at least one approval is missing -->
-                        @if($currentGuard === 'approver' && (empty($check->approved_by1) || empty($check->approved_by2)))
+                        @if($currentGuard === 'approver' && (empty($check->approver_id1) || empty($check->approver_id2)))
                             <button type="submit" 
                                 class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out"
                                 :class="{ 'opacity-50 cursor-not-allowed': !formChanged }"
@@ -314,7 +323,7 @@
                         @endif
                         
                         <!-- PDF Preview and Download Buttons - Only shown when both approvals are present -->
-                        @if (!empty($check->approved_by1) && !empty($check->approved_by2))
+                        @if (!empty($check->approver_id1) && !empty($check->approver_id2))
                             <!-- PDF Preview Button -->
                             <a href="{{ route('giling.pdf', $check->id) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
