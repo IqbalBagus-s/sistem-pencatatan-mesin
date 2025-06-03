@@ -6,27 +6,31 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-class CheckerSeeder extends Seeder
+class ApproverSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        DB::table('checkers')->insert([
+        DB::table('approvers')->insert([
             [
-                'username' => 'jaki',
+                'username' => 'jeri',
                 'password' => Hash::make('123456'), // bcrypt password
+                'role' => 'Penanggung Jawab',
                 'status' => 'aktif',
                 'created_at' => now(),
                 'updated_at' => now(),
+                'deleted_at' => null,
             ],
             [
-                'username' => 'eka',
+                'username' => 'samul',
                 'password' => Hash::make('123456'), // bcrypt password
+                'role' => 'Penanggung Jawab',
                 'status' => 'aktif',
                 'created_at' => now(),
                 'updated_at' => now(),
+                'deleted_at' => null,
             ]
         ]);
     }
