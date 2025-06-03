@@ -15,10 +15,10 @@ class CompressorCheck extends Model
     protected $fillable = [
         'tanggal',
         'hari',
-        'checked_by_shift1',
-        'checked_by_shift2',
-        'approved_by_shift1',
-        'approved_by_shift2',
+        'checker_shift1_id',
+        'checker_shift2_id',
+        'approver_shift1_id',
+        'approver_shift2_id',
         'kompressor_on_kl',
         'kompressor_on_kh',
         'mesin_on',
@@ -49,12 +49,12 @@ class CompressorCheck extends Model
     }
 
     /**
-     * Method untuk update status berdasarkan approved_by_shift1 dan approved_by_shift2
+     * Method untuk update status berdasarkan approver_shift1_id dan approver_shift2_id
      */
     private function updateStatus()
     {
-        if (!empty($this->approved_by_shift1) && $this->approved_by_shift1 !== null && 
-            !empty($this->approved_by_shift2) && $this->approved_by_shift2 !== null) {
+        if (!empty($this->approver_shift1_id) && $this->approver_shift1_id !== null && 
+            !empty($this->approver_shift2_id) && $this->approver_shift2_id !== null) {
             $this->status = 'disetujui';
         } else {
             $this->status = 'belum_disetujui';
@@ -74,20 +74,20 @@ class CompressorCheck extends Model
     }
 
     /**
-     * Mutator untuk approved_by_shift1 yang otomatis update status
+     * Mutator untuk approver_shift1_id yang otomatis update status
      */
-    public function setApprovedByShift1Attribute($value)
+    public function setApproverShift1IdAttribute($value)
     {
-        $this->attributes['approved_by_shift1'] = $value;
+        $this->attributes['approver_shift1_id'] = $value;
         $this->updateStatusFromMutator();
     }
 
     /**
-     * Mutator untuk approved_by_shift2 yang otomatis update status
+     * Mutator untuk approver_shift2_id yang otomatis update status
      */
-    public function setApprovedByShift2Attribute($value)
+    public function setApproverShift2IdAttribute($value)
     {
-        $this->attributes['approved_by_shift2'] = $value;
+        $this->attributes['approver_shift2_id'] = $value;
         $this->updateStatusFromMutator();
     }
 
@@ -96,8 +96,8 @@ class CompressorCheck extends Model
      */
     private function updateStatusFromMutator()
     {
-        if (!empty($this->attributes['approved_by_shift1']) && $this->attributes['approved_by_shift1'] !== null && 
-            !empty($this->attributes['approved_by_shift2']) && $this->attributes['approved_by_shift2'] !== null) {
+        if (!empty($this->attributes['approver_shift1_id']) && $this->attributes['approver_shift1_id'] !== null && 
+            !empty($this->attributes['approver_shift2_id']) && $this->attributes['approver_shift2_id'] !== null) {
             $this->attributes['status'] = 'disetujui';
         } else {
             $this->attributes['status'] = 'belum_disetujui';
@@ -120,10 +120,10 @@ class CompressorCheck extends Model
     /**
      * Method helper untuk approval lengkap (kedua shift)
      */
-    public function approve($approvedByShift1, $approvedByShift2)
+    public function approve($approverShift1Id, $approverShift2Id)
     {
-        $this->approved_by_shift1 = $approvedByShift1;
-        $this->approved_by_shift2 = $approvedByShift2;
+        $this->approver_shift1_id = $approverShift1Id;
+        $this->approver_shift2_id = $approverShift2Id;
         $this->status = 'disetujui';
         $this->save();
         
@@ -133,9 +133,9 @@ class CompressorCheck extends Model
     /**
      * Method helper untuk approval shift pertama
      */
-    public function approveShift1($approvedByShift1)
+    public function approveShift1($approverShift1Id)
     {
-        $this->approved_by_shift1 = $approvedByShift1;
+        $this->approver_shift1_id = $approverShift1Id;
         $this->save();
         
         return $this;
@@ -144,9 +144,9 @@ class CompressorCheck extends Model
     /**
      * Method helper untuk approval shift kedua
      */
-    public function approveShift2($approvedByShift2)
+    public function approveShift2($approverShift2Id)
     {
-        $this->approved_by_shift2 = $approvedByShift2;
+        $this->approver_shift2_id = $approverShift2Id;
         $this->save();
         
         return $this;
@@ -157,8 +157,8 @@ class CompressorCheck extends Model
      */
     public function unapprove()
     {
-        $this->approved_by_shift1 = null;
-        $this->approved_by_shift2 = null;
+        $this->approver_shift1_id = null;
+        $this->approver_shift2_id = null;
         $this->status = 'belum_disetujui';
         $this->save();
         
@@ -178,7 +178,7 @@ class CompressorCheck extends Model
      */
     public function isShift1Approved()
     {
-        return !empty($this->approved_by_shift1) && $this->approved_by_shift1 !== null;
+        return !empty($this->approver_shift1_id) && $this->approver_shift1_id !== null;
     }
 
     /**
@@ -186,7 +186,7 @@ class CompressorCheck extends Model
      */
     public function isShift2Approved()
     {
-        return !empty($this->approved_by_shift2) && $this->approved_by_shift2 !== null;
+        return !empty($this->approver_shift2_id) && $this->approver_shift2_id !== null;
     }
 
     /**
@@ -200,5 +200,29 @@ class CompressorCheck extends Model
     public function resultsKl()
     {
         return $this->hasMany(CompressorResultKl::class, 'check_id');
+    }
+
+    // Relasi ke Checker Shift 1
+    public function checkerShift1()
+    {
+        return $this->belongsTo(Checker::class, 'checker_shift1_id');
+    }
+
+    // Relasi ke Checker Shift 2
+    public function checkerShift2()
+    {
+        return $this->belongsTo(Checker::class, 'checker_shift2_id');
+    }
+
+    // Relasi ke Approver Shift 1
+    public function approverShift1()
+    {
+        return $this->belongsTo(Approver::class, 'approver_shift1_id');
+    }
+
+    // Relasi ke Approver Shift 2
+    public function approverShift2()
+    {
+        return $this->belongsTo(Approver::class, 'approver_shift2_id');
     }
 }

@@ -15,8 +15,8 @@ class WaterChillerCheck extends Model
     protected $fillable = [
         'tanggal',
         'hari',
-        'checked_by',
-        'approved_by',
+        'checker_id',
+        'approver_id',
         'keterangan',
         'status'
     ];
@@ -38,11 +38,11 @@ class WaterChillerCheck extends Model
     }
 
     /**
-     * Method untuk update status berdasarkan approved_by
+     * Method untuk update status berdasarkan approver_id
      */
     private function updateStatus()
     {
-        if (!empty($this->approved_by) && $this->approved_by !== null) {
+        if (!empty($this->approver_id) && $this->approver_id !== null) {
             $this->status = 'disetujui';
         } else {
             $this->status = 'belum_disetujui';
@@ -62,13 +62,12 @@ class WaterChillerCheck extends Model
     }
 
     /**
-     * Mutator untuk approved_by yang otomatis update status
+     * Mutator untuk approver_id yang otomatis update status
      */
-    public function setApprovedByAttribute($value)
+    public function setApproverIdAttribute($value)
     {
-        $this->attributes['approved_by'] = $value;
-        
-        // Update status berdasarkan approved_by
+        $this->attributes['approver_id'] = $value;
+        // Update status berdasarkan approver_id
         if (!empty($value) && $value !== null) {
             $this->attributes['status'] = 'disetujui';
         } else {
@@ -92,9 +91,9 @@ class WaterChillerCheck extends Model
     /**
      * Method helper untuk approval
      */
-    public function approve($approvedBy)
+    public function approve($approverId)
     {
-        $this->approved_by = $approvedBy;
+        $this->approver_id = $approverId;
         $this->status = 'disetujui';
         $this->save();
         
@@ -106,7 +105,7 @@ class WaterChillerCheck extends Model
      */
     public function unapprove()
     {
-        $this->approved_by = null;
+        $this->approver_id = null;
         $this->status = 'belum_disetujui';
         $this->save();
         
@@ -125,5 +124,17 @@ class WaterChillerCheck extends Model
     public function results()
     {
         return $this->hasOne(WaterChillerResult::class, 'check_id');
+    }
+
+    // Relasi ke Checker
+    public function checker()
+    {
+        return $this->belongsTo(Checker::class, 'checker_id');
+    }
+
+    // Relasi ke Approver
+    public function approver()
+    {
+        return $this->belongsTo(Approver::class, 'approver_id');
     }
 }

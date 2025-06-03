@@ -15,10 +15,10 @@ class GilingCheck extends Model
     protected $fillable = [
         'bulan',
         'minggu',
-        'checked_by',
-        'approved_by1',
+        'checker_id',
+        'approver_id1',
         'approval_date1',
-        'approved_by2',
+        'approver_id2',
         'keterangan',
         'status'
     ];
@@ -42,12 +42,12 @@ class GilingCheck extends Model
     }
 
     /**
-     * Method untuk update status berdasarkan approved_by1 dan approved_by2
+     * Method untuk update status berdasarkan approver_id1 dan approver_id2
      */
     private function updateStatus()
     {
-        if (!empty($this->approved_by1) && $this->approved_by1 !== null && 
-            !empty($this->approved_by2) && $this->approved_by2 !== null) {
+        if (!empty($this->approver_id1) && $this->approver_id1 !== null && 
+            !empty($this->approver_id2) && $this->approver_id2 !== null) {
             $this->status = 'disetujui';
         } else {
             $this->status = 'belum_disetujui';
@@ -67,20 +67,20 @@ class GilingCheck extends Model
     }
 
     /**
-     * Mutator untuk approved_by1 yang otomatis update status
+     * Mutator untuk approver_id1 yang otomatis update status
      */
-    public function setApprovedBy1Attribute($value)
+    public function setApproverId1Attribute($value)
     {
-        $this->attributes['approved_by1'] = $value;
+        $this->attributes['approver_id1'] = $value;
         $this->updateStatusFromMutator();
     }
 
     /**
-     * Mutator untuk approved_by2 yang otomatis update status
+     * Mutator untuk approver_id2 yang otomatis update status
      */
-    public function setApprovedBy2Attribute($value)
+    public function setApproverId2Attribute($value)
     {
-        $this->attributes['approved_by2'] = $value;
+        $this->attributes['approver_id2'] = $value;
         $this->updateStatusFromMutator();
     }
 
@@ -89,8 +89,8 @@ class GilingCheck extends Model
      */
     private function updateStatusFromMutator()
     {
-        if (!empty($this->attributes['approved_by1']) && $this->attributes['approved_by1'] !== null && 
-            !empty($this->attributes['approved_by2']) && $this->attributes['approved_by2'] !== null) {
+        if (!empty($this->attributes['approver_id1']) && $this->attributes['approver_id1'] !== null && 
+            !empty($this->attributes['approver_id2']) && $this->attributes['approver_id2'] !== null) {
             $this->attributes['status'] = 'disetujui';
         } else {
             $this->attributes['status'] = 'belum_disetujui';
@@ -113,10 +113,10 @@ class GilingCheck extends Model
     /**
      * Method helper untuk approval lengkap (kedua approver)
      */
-    public function approve($approvedBy1, $approvedBy2, $approvalDate1 = null)
+    public function approve($approverId1, $approverId2, $approvalDate1 = null)
     {
-        $this->approved_by1 = $approvedBy1;
-        $this->approved_by2 = $approvedBy2;
+        $this->approver_id1 = $approverId1;
+        $this->approver_id2 = $approverId2;
         $this->approval_date1 = $approvalDate1 ?: now();
         $this->status = 'disetujui';
         $this->save();
@@ -127,9 +127,9 @@ class GilingCheck extends Model
     /**
      * Method helper untuk approval pertama
      */
-    public function approveFirst($approvedBy1, $approvalDate1 = null)
+    public function approveFirst($approverId1, $approvalDate1 = null)
     {
-        $this->approved_by1 = $approvedBy1;
+        $this->approver_id1 = $approverId1;
         $this->approval_date1 = $approvalDate1 ?: now();
         $this->save();
         
@@ -139,9 +139,9 @@ class GilingCheck extends Model
     /**
      * Method helper untuk approval kedua
      */
-    public function approveSecond($approvedBy2)
+    public function approveSecond($approverId2)
     {
-        $this->approved_by2 = $approvedBy2;
+        $this->approver_id2 = $approverId2;
         $this->save();
         
         return $this;
@@ -152,8 +152,8 @@ class GilingCheck extends Model
      */
     public function unapprove()
     {
-        $this->approved_by1 = null;
-        $this->approved_by2 = null;
+        $this->approver_id1 = null;
+        $this->approver_id2 = null;
         $this->approval_date1 = null;
         $this->status = 'belum_disetujui';
         $this->save();
@@ -174,7 +174,7 @@ class GilingCheck extends Model
      */
     public function isFirstApproved()
     {
-        return !empty($this->approved_by1) && $this->approved_by1 !== null;
+        return !empty($this->approver_id1) && $this->approver_id1 !== null;
     }
 
     /**
@@ -182,7 +182,7 @@ class GilingCheck extends Model
      */
     public function isSecondApproved()
     {
-        return !empty($this->approved_by2) && $this->approved_by2 !== null;
+        return !empty($this->approver_id2) && $this->approver_id2 !== null;
     }
 
     /**
@@ -191,5 +191,23 @@ class GilingCheck extends Model
     public function result()
     {
         return $this->hasMany(GilingResult::class, 'check_id');
+    }
+
+    // Relasi ke Checker
+    public function checker()
+    {
+        return $this->belongsTo(Checker::class, 'checker_id');
+    }
+
+    // Relasi ke Approver 1
+    public function approver1()
+    {
+        return $this->belongsTo(Approver::class, 'approver_id1');
+    }
+
+    // Relasi ke Approver 2
+    public function approver2()
+    {
+        return $this->belongsTo(Approver::class, 'approver_id2');
     }
 }
