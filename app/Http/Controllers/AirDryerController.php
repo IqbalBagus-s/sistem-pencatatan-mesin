@@ -25,11 +25,11 @@ class AirDryerController extends Controller
         // Tentukan guard yang sedang aktif
         $currentGuard = $this->getCurrentGuard();
 
-        $query = AirDryerCheck::orderBy('created_at', 'desc');
+        $query = AirDryerCheck::with(['checker', 'approver'])->orderBy('created_at', 'desc');
 
         // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
         if ($this->isAuthenticatedAs('checker')) {
-            $query->where('checked_by', $user->username);
+            $query->where('checker_id', $user->id);
         }
 
         // Filter berdasarkan bulan jika ada
@@ -42,7 +42,9 @@ class AirDryerController extends Controller
 
         // Filter berdasarkan nama checker jika ada
         if ($request->filled('search')) {
-            $query->where('checked_by', 'LIKE', '%' . $request->search . '%');
+            $query->whereHas('checker', function ($q) use ($request) {
+                $q->where('username', 'LIKE', '%' . $request->search . '%');
+            });
         }
 
         // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
@@ -89,7 +91,7 @@ class AirDryerController extends Controller
             $airDryerCheck = AirDryerCheck::create([
                 'tanggal' => $request->tanggal,
                 'hari' => $request->hari,
-                'checked_by' => $user->username,
+                'checker_id' => $user->id, // gunakan ID checker
                 'keterangan' => $request->catatan,
             ]);
 
@@ -175,7 +177,7 @@ class AirDryerController extends Controller
             }
 
             $airDryer = AirDryerCheck::findOrFail($id);
-            $airDryer->approve($user->username);
+            $airDryer->approve($user->id);
             
             // Tambahkan log aktivitas
             Activity::logActivity(
@@ -189,7 +191,7 @@ class AirDryerController extends Controller
                 $airDryer->id,
                 [
                     'tanggal' => $airDryer->tanggal,
-                    'checker' => $airDryer->checked_by,
+                    'checker' => $airDryer->checker?->username,
                     'status' => $airDryer->status
                 ]
             );

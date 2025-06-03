@@ -31,16 +31,22 @@ class GilingController extends Controller
 
         // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
         if ($this->isAuthenticatedAs('checker')) {
-            $query->where('checked_by', $user->username);
+            $query->where('checker_id', $user->id);
         }
 
         // Filter berdasarkan nama checker jika ada
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
             $query->where(function ($q) use ($search) {
-                $q->where('checked_by', 'LIKE', $search)
-                ->orWhere('approved_by1', 'LIKE', $search)
-                ->orWhere('approved_by2', 'LIKE', $search);
+                $q->whereHas('checker', function ($qc) use ($search) {
+                    $qc->where('username', 'LIKE', $search);
+                })
+                ->orWhereHas('approver1', function ($qa1) use ($search) {
+                    $qa1->where('username', 'LIKE', $search);
+                })
+                ->orWhereHas('approver2', function ($qa2) use ($search) {
+                    $qa2->where('username', 'LIKE', $search);
+                });
             });
         }
 
@@ -121,7 +127,7 @@ class GilingController extends Controller
             $gilingCheck = GilingCheck::create([
                 'bulan' => $request->bulan,
                 'minggu' => $request->minggu,
-                'checked_by' => $user->username,
+                'checker_id' => $user->id,
                 'keterangan' => $request->catatan ?? '',
             ]);
             
@@ -175,7 +181,7 @@ class GilingController extends Controller
                     'minggu' => $request->minggu,
                     'bulan' => $request->bulan,
                     'bulan_formatted' => $formattedMonth,
-                    'checked_by' => $user->username,
+                    'checker_id' => $user->id,
                     'keterangan' => $request->catatan ?? '',
                     'total_items' => count($checkedItems),
                     'items_checked' => array_values($checkedItems),
@@ -307,8 +313,8 @@ class GilingController extends Controller
     {
         // Validate the incoming request
         $request->validate([
-            'approved_by1' => 'nullable|string|max:255',
-            'approved_by2' => 'nullable|string|max:255',
+            'approver_id1' => 'nullable|integer|exists:approvers,id',
+            'approver_id2' => 'nullable|integer|exists:approvers,id',
             'approval_date1' => 'nullable|date',
         ]);
 
@@ -317,9 +323,9 @@ class GilingController extends Controller
 
         // Update the approval information
         $gilingCheck->update([
-            'approved_by1' => $request->input('approved_by1'),
+            'approver_id1' => $request->input('approver_id1'),
             'approval_date1' => $request->input('approval_date1'),
-            'approved_by2' => $request->input('approved_by2'),
+            'approver_id2' => $request->input('approver_id2'),
         ]);
 
         // Redirect back with success message

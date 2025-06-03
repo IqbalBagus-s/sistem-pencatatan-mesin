@@ -29,7 +29,7 @@ class WaterChillerController extends Controller
 
         // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
         if ($this->isAuthenticatedAs('checker')) {
-            $query->where('checked_by', $user->username);
+            $query->where('checker_id', $user->id);
         }
 
         // Filter berdasarkan bulan jika ada
@@ -42,7 +42,9 @@ class WaterChillerController extends Controller
 
         // Filter berdasarkan nama checker jika ada
         if ($request->filled('search')) {
-            $query->where('checked_by', 'LIKE', '%' . $request->search . '%');
+            $query->whereHas('checker', function ($q) use ($request) {
+                $q->where('username', 'LIKE', '%' . $request->search . '%');
+            });
         }
 
         // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
@@ -89,7 +91,7 @@ class WaterChillerController extends Controller
             $waterChillerCheck = WaterChillerCheck::create([
                 'tanggal' => $request->tanggal,
                 'hari' => $request->hari,
-                'checked_by' => $user->username,
+                'checker_id' => $user->id,
                 'keterangan' => $request->catatan,
             ]);
             
@@ -185,7 +187,6 @@ class WaterChillerController extends Controller
                 'tanggal' => $request->tanggal,
                 'hari' => $request->hari,
                 'keterangan' => $request->catatan,
-                // Not updating checked_by to preserve the original checker's identity
             ]);
             
             // Process each water chiller machine data (32 machines)
@@ -253,9 +254,8 @@ class WaterChillerController extends Controller
             }
 
             $check = WaterChillerCheck::findOrFail($check_id);
-            $check->update([
-                'approved_by' => $user->username
-            ]);
+            $check->approver_id = $user->id;
+            $check->save();
 
             // Tambahkan log aktivitas
             Activity::logActivity(
@@ -269,7 +269,7 @@ class WaterChillerController extends Controller
                 $check->id,
                 [
                     'tanggal' => $check->tanggal,
-                    'checker' => $check->checked_by,
+                    'checker' => $check->checker?->username,
                     'status' => 'disetujui'
                 ]
             );

@@ -27,7 +27,7 @@ class CompressorController extends Controller
         // Get current guard
         $currentGuard = $this->getCurrentGuard();
 
-        $query = CompressorCheck::orderBy('created_at', 'desc');
+        $query = CompressorCheck::with(['checkerShift1', 'checkerShift2'])->orderBy('created_at', 'desc');
 
 
         // Filter berdasarkan bulan jika ada
@@ -41,8 +41,8 @@ class CompressorController extends Controller
         // Filter berdasarkan nama checker jika ada
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('checked_by_shift1', 'LIKE', '%' . $request->search . '%')
-                  ->orWhere('checked_by_shift2', 'LIKE', '%' . $request->search . '%');
+                $q->where('checker_shift1_id', 'LIKE', '%' . $request->search . '%')
+                  ->orWhere('checker_shift2_id', 'LIKE', '%' . $request->search . '%');
             });
         }
 
@@ -69,8 +69,8 @@ class CompressorController extends Controller
         $request->validate([
             'tanggal' => 'required|date',
             'hari' => 'required|string',
-            'checked_by_shift1' => 'nullable|string',
-            'checked_by_shift2' => 'nullable|string',
+            'checker_shift1_id' => 'nullable|string',
+            'checker_shift2_id' => 'nullable|string',
             'kompressor_on_kl' => 'nullable|string',
             'kompressor_on_kh' => 'nullable|string',
             'mesin_on' => 'nullable|string',
@@ -113,8 +113,8 @@ class CompressorController extends Controller
             $compressorCheck = CompressorCheck::create([
                 'tanggal' => $request->tanggal,
                 'hari' => $request->hari,
-                'checked_by_shift1' => $request->checked_by_shift1,
-                'checked_by_shift2' => $request->checked_by_shift2,
+                'checker_shift1_id' => $request->checker_shift1_id,
+                'checker_shift2_id' => $request->checker_shift2_id,
                 'kompressor_on_kl' => $request->kompressor_on_kl,
                 'kompressor_on_kh' => $request->kompressor_on_kh,
                 'mesin_on' => $request->mesin_on,
@@ -203,8 +203,8 @@ class CompressorController extends Controller
                     'tanggal' => $request->tanggal,
                     'tanggal_formatted' => $formattedTanggal,
                     'hari' => $request->hari,
-                    'checked_by_shift1' => $request->checked_by_shift1,
-                    'checked_by_shift2' => $request->checked_by_shift2,
+                    'checker_shift1_id' => $request->checker_shift1_id,
+                    'checker_shift2_id' => $request->checker_shift2_id,
                     'kompressor_on_kl' => $request->kompressor_on_kl,
                     'kompressor_on_kh' => $request->kompressor_on_kh,
                     'mesin_on' => $request->mesin_on,
@@ -268,8 +268,8 @@ class CompressorController extends Controller
     {
         // Validasi data yang diterima dari form
         $request->validate([
-            'checked_by_shift1' => 'nullable|string',
-            'checked_by_shift2' => 'nullable|string',
+            'checker_shift1_id' => 'nullable|string',
+            'checker_shift2_id' => 'nullable|string',
             'kompressor_on_kl' => 'nullable|string',
             'kompressor_on_kh' => 'nullable|string',
             'mesin_on' => 'nullable|string',
@@ -285,8 +285,8 @@ class CompressorController extends Controller
         
         // Update data di tabel compressor_checks
         $compressorCheck->update([
-            'checked_by_shift1' => $request->checked_by_shift1,
-            'checked_by_shift2' => $request->checked_by_shift2,
+            'checker_shift1_id' => $request->checker_shift1_id,
+            'checker_shift2_id' => $request->checker_shift2_id,
             'kompressor_on_kl' => $request->kompressor_on_kl,
             'kompressor_on_kh' => $request->kompressor_on_kh,
             'mesin_on' => $request->mesin_on,
@@ -406,7 +406,7 @@ class CompressorController extends Controller
         $currentGuard = $this->getCurrentGuard();
 
         // Ambil data compressor check berdasarkan ID
-        $check = CompressorCheck::findOrFail($id);
+        $check = CompressorCheck::with(['checkerShift1', 'checkerShift2', 'approverShift1', 'approverShift2'])->findOrFail($id);
         
         // Ambil data low kompressor
         $lowResults = CompressorResultkl::where('check_id', $id)
@@ -428,8 +428,13 @@ class CompressorController extends Controller
             ])
             ->get();
         
+        // Kirim ID approver yang sedang login (jika guard approver)
+        $approverId = null;
+        if ($currentGuard === 'approver') {
+            $approverId = $user->id;
+        }
         // Tampilkan view dengan data yang diperlukan
-        return view('compressor.show', compact('check', 'lowResults', 'highResults', 'user', 'currentGuard'));
+        return view('compressor.show', compact('check', 'lowResults', 'highResults', 'user', 'currentGuard', 'approverId'));
     }
 
     public function approve(Request $request, $id)
@@ -447,11 +452,11 @@ class CompressorController extends Controller
 
         // Update field yang tersedia
         if ($request->shift1) {
-            $check->approved_by_shift1 = $request->shift1;
+            $check->approver_shift1_id = $request->shift1;
         }
 
         if ($request->shift2) {
-            $check->approved_by_shift2 = $request->shift2;
+            $check->approver_shift2_id = $request->shift2;
         }
 
         $check->save(); // Simpan perubahan ke database
@@ -468,7 +473,7 @@ class CompressorController extends Controller
         $currentGuard = $this->getCurrentGuard();
 
         // Ambil data pemeriksaan kompressor berdasarkan ID
-        $check = CompressorCheck::findOrFail($id);
+        $check = CompressorCheck::with(['checkerShift1', 'checkerShift2', 'approverShift1', 'approverShift2'])->findOrFail($id);
         
         // Ambil data form terkait
         $form = Form::where('nomor_form', 'APTEK/041/REV.00')->firstOrFail();
@@ -517,7 +522,7 @@ class CompressorController extends Controller
         $currentGuard = $this->getCurrentGuard();
 
         // Ambil data pemeriksaan kompressor berdasarkan ID
-        $check = CompressorCheck::findOrFail($id);
+        $check = CompressorCheck::with(['checkerShift1', 'checkerShift2', 'approverShift1', 'approverShift2'])->findOrFail($id);
         
         // Ambil data form terkait
         $form = Form::where('nomor_form', 'APTEK/041/REV.00')->firstOrFail();
