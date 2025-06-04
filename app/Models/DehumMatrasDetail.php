@@ -15,8 +15,8 @@ class DehumMatrasDetail extends Model
     protected $fillable = [
         'tanggal_check_id',
         'tanggal',
-        'checked_by',
-        'approved_by',
+        'checker_id',
+        'approver_id',
         'status',
     ];
 
@@ -54,11 +54,11 @@ class DehumMatrasDetail extends Model
     }
 
     /**
-     * Update status berdasarkan approved_by
+     * Update status berdasarkan approver_id
      */
     public function updateStatusBasedOnApproval()
     {
-        if (!empty($this->approved_by) && $this->approved_by !== null) {
+        if (!empty($this->approver_id) && $this->approver_id !== null) {
             $this->status = self::STATUS_DISETUJUI;
         } else {
             $this->status = self::STATUS_BELUM_DISETUJUI;
@@ -114,13 +114,13 @@ class DehumMatrasDetail extends Model
     }
 
     /**
-     * Mutator untuk approved_by - otomatis update status
+     * Mutator untuk approver_id - otomatis update status
      */
-    public function setApprovedByAttribute($value)
+    public function setApproverIdAttribute($value)
     {
-        $this->attributes['approved_by'] = $value;
+        $this->attributes['approver_id'] = $value;
         
-        // Update status berdasarkan approved_by
+        // Update status berdasarkan approver_id
         if (!empty($value) && $value !== null) {
             $this->attributes['status'] = self::STATUS_DISETUJUI;
         } else {
@@ -141,7 +141,7 @@ class DehumMatrasDetail extends Model
      */
     public function approve($approvedBy = null)
     {
-        $this->approved_by = $approvedBy;
+        $this->approver_id = $approvedBy;
         $this->status = self::STATUS_DISETUJUI;
         return $this->save();
     }
@@ -151,7 +151,7 @@ class DehumMatrasDetail extends Model
      */
     public function unapprove()
     {
-        $this->approved_by = null;
+        $this->approver_id = null;
         $this->status = self::STATUS_BELUM_DISETUJUI;
         return $this->save();
     }
@@ -186,5 +186,21 @@ class DehumMatrasDetail extends Model
     public function dehumMatrasCheck()
     {
         return $this->belongsTo(DehumMatrasCheck::class, 'tanggal_check_id');
+    }
+
+    /**
+     * Relasi ke Checker
+     */
+    public function checker()
+    {
+        return $this->belongsTo(Checker::class, 'checker_id');
+    }
+
+    /**
+     * Relasi ke Approver
+     */
+    public function approver()
+    {
+        return $this->belongsTo(Approver::class, 'approver_id');
     }
 }

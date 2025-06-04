@@ -21,15 +21,15 @@ class HopperCheck extends Model
         'tanggal_minggu3',
         'tanggal_minggu4',
         // Data checker tiap minggu
-        'checked_by_minggu1',
-        'checked_by_minggu2',
-        'checked_by_minggu3',
-        'checked_by_minggu4',
+        'checker_id_minggu1',
+        'checker_id_minggu2',
+        'checker_id_minggu3',
+        'checker_id_minggu4',
         // Data approver tiap minggu
-        'approved_by_minggu1',
-        'approved_by_minggu2',
-        'approved_by_minggu3',
-        'approved_by_minggu4',
+        'approver_id_minggu1',
+        'approver_id_minggu2',
+        'approver_id_minggu3',
+        'approver_id_minggu4',
         'status'
     ];
 
@@ -55,7 +55,7 @@ class HopperCheck extends Model
     }
 
     /**
-     * Method untuk update status berdasarkan semua approved_by_minggu1-4
+     * Method untuk update status berdasarkan semua approver_id_minggu1-4
      * Status disetujui hanya jika SEMUA minggu sudah disetujui
      */
     private function updateStatus()
@@ -72,10 +72,10 @@ class HopperCheck extends Model
      */
     private function isAllWeeksApproved()
     {
-        return !empty($this->approved_by_minggu1) && $this->approved_by_minggu1 !== null &&
-               !empty($this->approved_by_minggu2) && $this->approved_by_minggu2 !== null &&
-               !empty($this->approved_by_minggu3) && $this->approved_by_minggu3 !== null &&
-               !empty($this->approved_by_minggu4) && $this->approved_by_minggu4 !== null;
+        return !empty($this->approver_id_minggu1) && $this->approver_id_minggu1 !== null &&
+               !empty($this->approver_id_minggu2) && $this->approver_id_minggu2 !== null &&
+               !empty($this->approver_id_minggu3) && $this->approver_id_minggu3 !== null &&
+               !empty($this->approver_id_minggu4) && $this->approver_id_minggu4 !== null;
     }
 
     /**
@@ -91,38 +91,38 @@ class HopperCheck extends Model
     }
 
     /**
-     * Mutator untuk approved_by_minggu1 yang otomatis update status
+     * Mutator untuk approver_id_minggu1 yang otomatis update status
      */
-    public function setApprovedByMinggu1Attribute($value)
+    public function setApproverIdMinggu1Attribute($value)
     {
-        $this->attributes['approved_by_minggu1'] = $value;
+        $this->attributes['approver_id_minggu1'] = $value;
         $this->updateStatusFromMutator();
     }
 
     /**
-     * Mutator untuk approved_by_minggu2 yang otomatis update status
+     * Mutator untuk approver_id_minggu2 yang otomatis update status
      */
-    public function setApprovedByMinggu2Attribute($value)
+    public function setApproverIdMinggu2Attribute($value)
     {
-        $this->attributes['approved_by_minggu2'] = $value;
+        $this->attributes['approver_id_minggu2'] = $value;
         $this->updateStatusFromMutator();
     }
 
     /**
-     * Mutator untuk approved_by_minggu3 yang otomatis update status
+     * Mutator untuk approver_id_minggu3 yang otomatis update status
      */
-    public function setApprovedByMinggu3Attribute($value)
+    public function setApproverIdMinggu3Attribute($value)
     {
-        $this->attributes['approved_by_minggu3'] = $value;
+        $this->attributes['approver_id_minggu3'] = $value;
         $this->updateStatusFromMutator();
     }
 
     /**
-     * Mutator untuk approved_by_minggu4 yang otomatis update status
+     * Mutator untuk approver_id_minggu4 yang otomatis update status
      */
-    public function setApprovedByMinggu4Attribute($value)
+    public function setApproverIdMinggu4Attribute($value)
     {
-        $this->attributes['approved_by_minggu4'] = $value;
+        $this->attributes['approver_id_minggu4'] = $value;
         $this->updateStatusFromMutator();
     }
 
@@ -143,10 +143,10 @@ class HopperCheck extends Model
      */
     private function isAllWeeksApprovedFromAttributes()
     {
-        return !empty($this->attributes['approved_by_minggu1']) && $this->attributes['approved_by_minggu1'] !== null &&
-               !empty($this->attributes['approved_by_minggu2']) && $this->attributes['approved_by_minggu2'] !== null &&
-               !empty($this->attributes['approved_by_minggu3']) && $this->attributes['approved_by_minggu3'] !== null &&
-               !empty($this->attributes['approved_by_minggu4']) && $this->attributes['approved_by_minggu4'] !== null;
+        return !empty($this->attributes['approver_id_minggu1']) && $this->attributes['approver_id_minggu1'] !== null &&
+               !empty($this->attributes['approver_id_minggu2']) && $this->attributes['approver_id_minggu2'] !== null &&
+               !empty($this->attributes['approver_id_minggu3']) && $this->attributes['approver_id_minggu3'] !== null &&
+               !empty($this->attributes['approver_id_minggu4']) && $this->attributes['approver_id_minggu4'] !== null;
     }
 
     /**
@@ -167,10 +167,10 @@ class HopperCheck extends Model
      */
     public function approveAll($approvedBy1, $approvedBy2, $approvedBy3, $approvedBy4)
     {
-        $this->approved_by_minggu1 = $approvedBy1;
-        $this->approved_by_minggu2 = $approvedBy2;
-        $this->approved_by_minggu3 = $approvedBy3;
-        $this->approved_by_minggu4 = $approvedBy4;
+        $this->approver_id_minggu1 = $approvedBy1;
+        $this->approver_id_minggu2 = $approvedBy2;
+        $this->approver_id_minggu3 = $approvedBy3;
+        $this->approver_id_minggu4 = $approvedBy4;
         $this->status = 'disetujui';
         $this->save();
         
@@ -183,7 +183,7 @@ class HopperCheck extends Model
     public function approveWeek($week, $approvedBy)
     {
         if ($week >= 1 && $week <= 4) {
-            $this->{"approved_by_minggu{$week}"} = $approvedBy;
+            $this->{"approver_id_minggu{$week}"} = $approvedBy;
             $this->save();
         }
         
@@ -195,10 +195,10 @@ class HopperCheck extends Model
      */
     public function unapproveAll()
     {
-        $this->approved_by_minggu1 = null;
-        $this->approved_by_minggu2 = null;
-        $this->approved_by_minggu3 = null;
-        $this->approved_by_minggu4 = null;
+        $this->approver_id_minggu1 = null;
+        $this->approver_id_minggu2 = null;
+        $this->approver_id_minggu3 = null;
+        $this->approver_id_minggu4 = null;
         $this->status = 'belum_disetujui';
         $this->save();
         
@@ -211,7 +211,7 @@ class HopperCheck extends Model
     public function unapproveWeek($week)
     {
         if ($week >= 1 && $week <= 4) {
-            $this->{"approved_by_minggu{$week}"} = null;
+            $this->{"approver_id_minggu{$week}"} = null;
             $this->save();
         }
         
@@ -232,7 +232,7 @@ class HopperCheck extends Model
     public function isWeekApproved($week)
     {
         if ($week >= 1 && $week <= 4) {
-            $fieldName = "approved_by_minggu{$week}";
+            $fieldName = "approver_id_minggu{$week}";
             return !empty($this->$fieldName) && $this->$fieldName !== null;
         }
         return false;
@@ -280,5 +280,45 @@ class HopperCheck extends Model
     public function results()
     {
         return $this->hasMany(HopperResult::class, 'check_id');
+    }
+
+    /**
+     * Relasi ke model Checker untuk tiap minggu
+     */
+    public function checkerMinggu1()
+    {
+        return $this->belongsTo(Checker::class, 'checker_id_minggu1');
+    }
+    public function checkerMinggu2()
+    {
+        return $this->belongsTo(Checker::class, 'checker_id_minggu2');
+    }
+    public function checkerMinggu3()
+    {
+        return $this->belongsTo(Checker::class, 'checker_id_minggu3');
+    }
+    public function checkerMinggu4()
+    {
+        return $this->belongsTo(Checker::class, 'checker_id_minggu4');
+    }
+
+    /**
+     * Relasi ke model Approver untuk tiap minggu
+     */
+    public function approverMinggu1()
+    {
+        return $this->belongsTo(Approver::class, 'approver_id_minggu1');
+    }
+    public function approverMinggu2()
+    {
+        return $this->belongsTo(Approver::class, 'approver_id_minggu2');
+    }
+    public function approverMinggu3()
+    {
+        return $this->belongsTo(Approver::class, 'approver_id_minggu3');
+    }
+    public function approverMinggu4()
+    {
+        return $this->belongsTo(Approver::class, 'approver_id_minggu4');
     }
 }
