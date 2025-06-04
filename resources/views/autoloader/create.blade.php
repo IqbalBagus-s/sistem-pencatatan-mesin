@@ -205,7 +205,7 @@
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
                                         <div x-data="{ selected: false, userName: '' }">
                                             <div class="mt-1 mb-1" x-show="selected">
-                                                <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
+                                                <input type="text" name="checker_id_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
                                                     class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
@@ -292,7 +292,7 @@
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
                                         <div x-data="{ selected: false, userName: '' }">
                                             <div class="mt-1 mb-1" x-show="selected">
-                                                <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
+                                                <input type="text" name="checker_id_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
                                                     class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
@@ -379,7 +379,7 @@
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
                                         <div x-data="{ selected: false, userName: '' }">
                                             <div class="mt-1 mb-1" x-show="selected">
-                                                <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
+                                                <input type="text" name="checker_id_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
                                                     class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                     readonly>
                                                 <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">

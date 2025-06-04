@@ -200,23 +200,23 @@
                                     
                                     @for($j = 1; $j <= 11; $j++)
                                         <td class="border border-gray-300 p-1 bg-sky-50">
-                                            <div x-data="{ selected: false, userName: '' }">
+                                        <div x-data="{ selected: false, userName: '', userId: '' }">
                                                 <div class="mt-1 mb-1" x-show="selected">
-                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
-                                                    readonly>
-                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                                    <input type="text" x-bind:value="userName"
+                                                        class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
+                                                        readonly>
+                                                    <input type="hidden" name="checker_id_{{ $j }}" x-ref="checker{{ $j }}" x-bind:value="userId">
                                                 </div>
                                                 <button type="button" 
                                                     @click="selected = !selected; 
                                                         if(selected) {
                                                             userName = '{{ $user->username }}'; 
-                                                            $refs.user{{ $j }}.value = userName;
-                                                            $refs.checkNum{{ $j }}.value = '{{ $j }}';
+                                                            userId = '{{ $user->id }}';
+                                                            $refs.checker{{ $j }}.value = userId;
                                                         } else {
                                                             userName = '';
-                                                            $refs.user{{ $j }}.value = '';
-                                                            $refs.checkNum{{ $j }}.value = '';
+                                                            userId = '';
+                                                            $refs.checker{{ $j }}.value = '';
                                                         }"
                                                     class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                                     :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
@@ -273,23 +273,23 @@
                                     
                                     @for($j = 12; $j <= 22; $j++)
                                         <td class="border border-gray-300 p-1 bg-sky-50">
-                                            <div x-data="{ selected: false, userName: '' }">
+                                            <div x-data="{ selected: false, userName: '', userId: '' }">
                                                 <div class="mt-1 mb-1" x-show="selected">
-                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
+                                                    <input type="text" x-bind:value="userName"
                                                         class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                         readonly>
-                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                                    <input type="hidden" name="checker_id_{{ $j }}" x-ref="checker{{ $j }}" x-bind:value="userId">
                                                 </div>
                                                 <button type="button" 
                                                     @click="selected = !selected; 
                                                         if(selected) {
                                                             userName = '{{ $user->username }}'; 
-                                                            $refs.user{{ $j }}.value = userName;
-                                                            $refs.checkNum{{ $j }}.value = '{{ $j }}';
+                                                            userId = '{{ $user->id }}';
+                                                            $refs.checker{{ $j }}.value = userId;
                                                         } else {
                                                             userName = '';
-                                                            $refs.user{{ $j }}.value = '';
-                                                            $refs.checkNum{{ $j }}.value = '';
+                                                            userId = '';
+                                                            $refs.checker{{ $j }}.value = '';
                                                         }"
                                                     class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                                     :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
@@ -346,23 +346,23 @@
                                     
                                     @for($j = 23; $j <= 31; $j++)
                                         <td class="border border-gray-300 p-1 bg-sky-50" style="width: 90px;">
-                                            <div x-data="{ selected: false, userName: '' }">
+                                            <div x-data="{ selected: false, userName: '', userId: '' }">
                                                 <div class="mt-1 mb-1" x-show="selected">
-                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
+                                                    <input type="text" x-bind:value="userName"
                                                         class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                         readonly>
-                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                                    <input type="hidden" name="checker_id_{{ $j }}" x-ref="checker{{ $j }}" x-bind:value="userId">
                                                 </div>
                                                 <button type="button" 
                                                     @click="selected = !selected; 
                                                         if(selected) {
                                                             userName = '{{ $user->username }}'; 
-                                                            $refs.user{{ $j }}.value = userName;
-                                                            $refs.checkNum{{ $j }}.value = '{{ $j }}';
+                                                            userId = '{{ $user->id }}';
+                                                            $refs.checker{{ $j }}.value = userId;
                                                         } else {
                                                             userName = '';
-                                                            $refs.user{{ $j }}.value = '';
-                                                            $refs.checkNum{{ $j }}.value = '';
+                                                            userId = '';
+                                                            $refs.checker{{ $j }}.value = '';
                                                         }"
                                                     class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                                     :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">

@@ -121,7 +121,8 @@
                         
                         @for($j = 1; $j <= 4; $j++)
                             @php
-                                $hasChecker = !empty($dehumBahanCheck->{'checked_by_minggu'.$j});
+                                $hasChecker = !empty($dehumBahanCheck->{'checker_id_minggu'.$j});
+                                $checkerName = $dehumBahanCheck->{'checker_'.$j} ?? '';
                                 $resultValue = $hasChecker && isset($dehumBahanCheck->{'check_'.$j}[$i]) ? $dehumBahanCheck->{'check_'.$j}[$i] : '-';
                                 $keteranganValue = $hasChecker && isset($dehumBahanCheck->{'keterangan_'.$j}[$i]) ? $dehumBahanCheck->{'keterangan_'.$j}[$i] : '';
                             @endphp
@@ -152,7 +153,8 @@
                         
                         @for($j = 1; $j <= 4; $j++)
                             @php
-                                $hasChecker = !empty($dehumBahanCheck->{'checked_by_minggu'.$j});
+                                $hasChecker = !empty($dehumBahanCheck->{'checker_id_minggu'.$j});
+                                $checkerName = $dehumBahanCheck->{'checker_'.$j} ?? '';
                                 $resultValue = $hasChecker && isset($dehumBahanCheck->{'check_'.$j}[$i]) ? $dehumBahanCheck->{'check_'.$j}[$i] : '-';
                                 $keteranganValue = $hasChecker && isset($dehumBahanCheck->{'keterangan_'.$j}[$i]) ? $dehumBahanCheck->{'keterangan_'.$j}[$i] : '';
                             @endphp
@@ -169,7 +171,8 @@
                     
                    @for($j = 1; $j <= 4; $j++)
                         @php
-                            $checkedBy = $dehumBahanCheck->{'checked_by_minggu'.$j} ?? '';
+                            $hasChecker = !empty($dehumBahanCheck->{'checker_id_minggu'.$j});
+                            $checkerName = $dehumBahanCheck->{'checker_'.$j} ?? '';
                             $tanggalRaw = $dehumBahanCheck->{'tanggal_minggu'.$j};
                             $checkedDate = $tanggalRaw
                                 ? \Carbon\Carbon::parse($tanggalRaw)
@@ -178,8 +181,8 @@
                                 : '-';
                         @endphp
                         <td colspan="2" style="text-align: center;">
-                            {{ $checkedBy ?: '-' }}
-                            @if($checkedBy)
+                            {{ $checkerName ?: '-' }}
+                            @if($checkerName)
                                 <br>
                                 <span style="font-size: 9px;">{{ $checkedDate }}</span>
                             @endif
@@ -194,9 +197,9 @@
                     
                     @for($j = 1; $j <= 4; $j++)
                         @php
-                            $approvedBy = $dehumBahanCheck->{'approved_by_minggu'.$j} ?? '-';
+                            $approverName = $dehumBahanCheck->{'approver_'.$j} ?? '-';
                         @endphp
-                        <td colspan="2" style="text-align: center;">{{ $approvedBy }}</td>
+                        <td colspan="2" style="text-align: center;">{{ $approverName }}</td>
                     @endfor
                 </tr>
             </tbody>
@@ -233,10 +236,10 @@
                         @php
                             // Get unique checker names
                             $checkers = collect([
-                                $dehumBahanCheck->checked_by_minggu1, 
-                                $dehumBahanCheck->checked_by_minggu2, 
-                                $dehumBahanCheck->checked_by_minggu3, 
-                                $dehumBahanCheck->checked_by_minggu4
+                                $dehumBahanCheck->checker_1,
+                                $dehumBahanCheck->checker_2,
+                                $dehumBahanCheck->checker_3,
+                                $dehumBahanCheck->checker_4
                             ])->filter()->unique()->values()->implode(', ') ?? '-';
                         @endphp
                         {{ $checkers }}
@@ -249,10 +252,10 @@
                         @php
                             // Get unique approver names
                             $approvers = collect([
-                                $dehumBahanCheck->approved_by_minggu1, 
-                                $dehumBahanCheck->approved_by_minggu2, 
-                                $dehumBahanCheck->approved_by_minggu3, 
-                                $dehumBahanCheck->approved_by_minggu4
+                                $dehumBahanCheck->approver_1,
+                                $dehumBahanCheck->approver_2,
+                                $dehumBahanCheck->approver_3,
+                                $dehumBahanCheck->approver_4
                             ])->filter()->unique()->values()->implode(', ') ?? '........................';
                         @endphp
                         {{ $approvers }}

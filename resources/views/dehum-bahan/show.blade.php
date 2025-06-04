@@ -16,10 +16,10 @@
                     @php
                         // Extract all unique checker names
                         $checkers = collect([
-                            $dehumBahanRecord->created_by_1, 
-                            $dehumBahanRecord->created_by_2, 
-                            $dehumBahanRecord->created_by_3, 
-                            $dehumBahanRecord->created_by_4
+                            $dehumBahanRecord->checker_1,
+                            $dehumBahanRecord->checker_2,
+                            $dehumBahanRecord->checker_3,
+                            $dehumBahanRecord->checker_4
                         ])->filter()->unique()->values()->implode(', ') ?? 'Belum ada checker';
                     @endphp
                     {{ $checkers }}
@@ -99,7 +99,7 @@
                                     @for($j = 1; $j <= 4; $j++)
                                         @php
                                             // Periksa apakah ada checker untuk minggu ini
-                                            $hasChecker = !empty($dehumBahanRecord->{'created_by_'.$j});
+                                            $hasChecker = !empty($dehumBahanRecord->{'checker_'.$j});
                                             
                                             if (!$hasChecker) {
                                                 // Jika tidak ada checker, tampilkan tanda "-" dan "Belum ada data"
@@ -147,7 +147,7 @@
                                 
                                 @for($j = 1; $j <= 4; $j++)
                                     @php
-                                        $checkedBy = $dehumBahanRecord->{'created_by_'.$j} ?? '';
+                                        $checkedBy = $dehumBahanRecord->{'checker_'.$j} ?? '';
                                         $checkedDate = $dehumBahanRecord->{'created_date_'.$j} ? 
                                             \Carbon\Carbon::parse($dehumBahanRecord->{'created_date_'.$j})->locale('id')->format('d').' '.
                                             \Carbon\Carbon::parse($dehumBahanRecord->{'created_date_'.$j})->locale('id')->isoFormat('MMMM').' '.
@@ -173,7 +173,7 @@
                                 @for($j = 1; $j <= 4; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
                                         @php
-                                            $approvedBy = $dehumBahanRecord->{'approved_by_minggu'.$j} ?? '';
+                                            $approvedBy = $dehumBahanRecord->{'approver_'.$j} ?? '';
                                         @endphp
                                         
                                         @if($approvedBy)
@@ -183,28 +183,28 @@
                                             </div>
                                         @else
                                             <!-- Jika belum ada penanggung jawab, tampilkan tombol pilih -->
-                                            <div x-data="{ selected: false, userName: '' }" class="w-full">
-                                                <div x-show="!selected" class="w-full flex justify-center py-1">
+                                            <div x-data="{ selected{{ $j }}: false, userName{{ $j }}: '' }" class="w-full">
+                                                <div x-show="!selected{{ $j }}" class="w-full flex justify-center py-1">
                                                     <button type="button" 
-                                                        @click="selected = true; 
-                                                            userName = '{{ $user->username }}'; 
-                                                            $refs.approver{{ $j }}.value = userName;
-                                                            $refs.approveNum{{ $j }}.value = '{{ $j }}';"
+                                                        @click="selected{{ $j }} = true; 
+                                                            userName{{ $j }} = '{{ $user->username }}'; 
+                                                            $refs.approver{{ $j }}.value = userName{{ $j }};
+                                                            $refs.approverID{{ $j }}.value = '{{ $user->id }}';"
                                                         class="w-full max-w-xs px-2 py-1 text-sm border border-gray-300 rounded text-center bg-green-100 hover:bg-green-200">
                                                         Pilih
                                                     </button>
                                                 </div>
-                                                <div x-show="selected" class="w-full py-1">
+                                                <div x-show="selected{{ $j }}" class="w-full py-1">
                                                     <div class="flex flex-col items-center">
-                                                        <input type="text" name="approved_by_minggu{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
+                                                        <input type="text" name="approved_by_minggu{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName{{ $j }}"
                                                             class="w-full max-w-xs px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                             readonly>
-                                                        <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="">
+                                                        <input type="hidden" name="approver_id_minggu{{ $j }}" x-ref="approverID{{ $j }}" value="">
                                                         <button type="button" 
-                                                            @click="selected = false; 
-                                                                userName = ''; 
+                                                            @click="selected{{ $j }} = false; 
+                                                                userName{{ $j }} = ''; 
                                                                 $refs.approver{{ $j }}.value = '';
-                                                                $refs.approveNum{{ $j }}.value = '';"
+                                                                $refs.approverID{{ $j }}.value = '';"
                                                             class="w-full max-w-xs px-2 py-1 text-xs border border-gray-300 rounded text-center bg-red-100 hover:bg-red-200">
                                                             Batal Pilih
                                                         </button>
@@ -309,10 +309,9 @@
                 <!-- Tombol Aksi - Sisi Kanan -->
                 <div class="flex flex-row flex-wrap gap-2 justify-end">
                     @php
-                        // Periksa apakah semua 4 minggu memiliki approved_by terisi
                         $allApproved = true;
                         for ($j = 1; $j <= 4; $j++) {
-                            if (empty($dehumBahanRecord->{'approved_by_minggu'.$j})) {
+                            if (empty($dehumBahanRecord->{'approver_'.$j})) {
                                 $allApproved = false;
                                 break;
                             }

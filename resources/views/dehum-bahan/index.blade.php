@@ -131,22 +131,19 @@
                             class="py-3 px-4 border-b border-gray-200">
                         </td>
                         @php
-                            $checkedByFields = [
-                                $check->checked_by_minggu1,
-                                $check->checked_by_minggu2,
-                                $check->checked_by_minggu3,
-                                $check->checked_by_minggu4
-                            ];
-
-                            // Remove duplicates and filter out null/empty values
-                            $uniqueCheckedBy = array_unique(array_filter($checkedByFields));
+                            $checkerNames = array_filter([
+                                $check->checkerMinggu1?->username,
+                                $check->checkerMinggu2?->username,
+                                $check->checkerMinggu3?->username,
+                                $check->checkerMinggu4?->username,
+                            ]);
+                            $uniqueCheckerNames = array_unique($checkerNames);
                         @endphp
-
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if(!empty($uniqueCheckedBy))
-                                @foreach($uniqueCheckedBy as $checkedBy)
+                            @if(!empty($uniqueCheckerNames))
+                                @foreach($uniqueCheckerNames as $checkerName)
                                     <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm mb-1 inline-block">
-                                        {{ $checkedBy }}
+                                        {{ $checkerName }}
                                     </div>
                                 @endforeach
                             @else
@@ -158,13 +155,12 @@
                         <td class="py-3 px-4 border-b border-gray-200">
                             @php
                                 $approvedCount = collect([
-                                    $check->approved_by_minggu1,
-                                    $check->approved_by_minggu2,
-                                    $check->approved_by_minggu3,
-                                    $check->approved_by_minggu4,
+                                    $check->approverMinggu1?->username,
+                                    $check->approverMinggu2?->username,
+                                    $check->approverMinggu3?->username,
+                                    $check->approverMinggu4?->username,
                                 ])->filter()->count();
                             @endphp
-
                             @if($check->status === 'disetujui')
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui

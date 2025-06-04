@@ -75,7 +75,7 @@
                             
                             @for ($i = 1; $i <= 4; $i++)
                                 @php
-                                    $isApproved = !empty($dehumCheck->{'approved_by_minggu'.$i}) && $dehumCheck->{'approved_by_minggu'.$i} != '-';
+                                    $isApproved = !empty($dehumCheck->{'approver_id_minggu'.$i}) && $dehumCheck->{'approver_id_minggu'.$i} != '-';
                                 @endphp
                                 <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 text-sm" colspan="1">0{{ $i }}</th>
                                 <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 w-32 text-sm" rowspan="2">Keterangan</th>
@@ -85,7 +85,7 @@
                             <th class="border border-gray-300 bg-sky-50 p-2 min-w-28 text-sm sticky left-10 z-10">Item Terperiksa</th>
                             @for ($i = 1; $i <= 4; $i++)
                                 @php
-                                    $isApproved = !empty($dehumCheck->{'approved_by_minggu'.$i}) && $dehumCheck->{'approved_by_minggu'.$i} != '-';
+                                    $isApproved = !empty($dehumCheck->{'approver_id_minggu'.$i}) && $dehumCheck->{'approver_id_minggu'.$i} != '-';
                                 @endphp
                                 <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 text-sm">Check</th>
                             @endfor
@@ -95,7 +95,7 @@
                         @foreach($items as $i => $item)
                             @if($i == 3)
                                 <tr>
-                                    <td colspan="10" class="border border-gray-300 text-center p-2 h-8 bg-gray-100 font-medium text-sm">
+                                    <td colspan="10" class="border border-gray-300 text-center p-2 h-8 bg-white font-medium text-sm">
                                         Panel Kelistrikan
                                     </td>
                                 </tr>
@@ -108,22 +108,27 @@
                                 
                                 @for($j = 1; $j <= 4; $j++)
                                     @php
-                                        $isApproved = !empty($dehumCheck->{'approved_by_minggu'.$j}) && $dehumCheck->{'approved_by_minggu'.$j} != '-';
-                                        
+                                        $checkerId = $dehumCheck->{'checker_id_minggu'.$j} ?? '';
+                                        $checkerName = $dehumCheck->{'checkerMinggu'.$j}?->username ?? '';
+                                        $isChecked = !empty($checkerId);
+                                        $isApproved = !empty($dehumCheck->{'approver_id_minggu'.$j});
+                                        $approverName = $dehumCheck->{'approverMinggu'.$j}?->username ?? '';
+                                        $tanggal = $dehumCheck->{'tanggal_minggu'.$j} ?? '';
+                                        $formattedDate = '';
+                                        if (!empty($tanggal)) {
+                                            $date = \Carbon\Carbon::parse($tanggal);
+                                            $formattedDate = $date->format('d').' '.$date->locale('id')->monthName.' '.$date->format('Y');
+                                        }
                                         // Get result value from dehumResults
                                         $result = $dehumResults->firstWhere('checked_items', $item);
                                         $resultValue = '';
                                         $keteranganValue = '';
-                                        
                                         if ($result) {
                                             $mingguField = 'minggu'.$j;
                                             $keteranganField = 'keterangan_minggu'.$j;
-                                            
-                                            // Get the value directly
                                             $resultValue = $result->$mingguField ?? 'V';
                                             $keteranganValue = $result->$keteranganField ?? '';
                                         } else {
-                                            // Default to V if no value exists
                                             $resultValue = 'V';
                                         }
                                     @endphp
@@ -131,13 +136,11 @@
                                     <!-- Minggu {{ $j }} Check -->
                                     <td class="border border-gray-300 p-1 h-10 {{ $isApproved ? 'bg-green-50' : '' }}">
                                         @if($isApproved)
-                                            <!-- Read-only display if approved -->
                                             <div class="w-full h-8 px-2 py-0 text-sm bg-green-100 border border-gray-300 rounded flex items-center justify-center">
                                                 {{ $resultValue }}
                                             </div>
                                             <input type="hidden" name="check_{{ $j }}[{{ $i }}]" value="{{ $resultValue }}">
                                         @else
-                                            <!-- Editable dropdown if not approved -->
                                             <select name="check_{{ $j }}[{{ $i }}]" class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white">
                                                 @foreach($options[$i] as $option)
                                                     <option value="{{ $option }}" {{ $resultValue == $option ? 'selected' : '' }}>
@@ -151,13 +154,11 @@
                                     <!-- Minggu {{ $j }} Keterangan -->
                                     <td class="border border-gray-300 p-1 h-10 {{ $isApproved ? 'bg-green-50' : '' }}">
                                         @if($isApproved)
-                                            <!-- Read-only display if approved -->
                                             <div class="w-full h-8 px-2 py-0 text-sm bg-green-100 border border-gray-300 rounded flex items-center">
                                                 {{ $keteranganValue }}
                                             </div>
                                             <input type="hidden" name="keterangan_{{ $j }}[{{ $i }}]" value="{{ $keteranganValue }}">
                                         @else
-                                            <!-- Editable input if not approved -->
                                             <input type="text" name="keterangan_{{ $j }}[{{ $i }}]" 
                                                 value="{{ $keteranganValue }}"
                                                 class="w-full h-8 px-2 py-0 text-sm bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
@@ -175,12 +176,12 @@
                             
                             @for($j = 1; $j <= 4; $j++)
                                 @php
-                                    $checkedBy = $dehumCheck->{'checked_by_minggu'.$j} ?? '';
-                                    $isChecked = !empty($checkedBy);
-                                    $isApproved = !empty($dehumCheck->{'approved_by_minggu'.$j}) && $dehumCheck->{'approved_by_minggu'.$j} != '-';
+                                    $checkerId = $dehumCheck->{'checker_id_minggu'.$j} ?? '';
+                                    $checkerName = $dehumCheck->{'checkerMinggu'.$j}?->username ?? '';
+                                    $isChecked = !empty($checkerId);
+                                    $isApproved = !empty($dehumCheck->{'approver_id_minggu'.$j});
+                                    $approverName = $dehumCheck->{'approverMinggu'.$j}?->username ?? '';
                                     $tanggal = $dehumCheck->{'tanggal_minggu'.$j} ?? '';
-                                    
-                                    // Format tanggal untuk tampilan jika ada
                                     $formattedDate = '';
                                     if (!empty($tanggal)) {
                                         $date = \Carbon\Carbon::parse($tanggal);
@@ -190,26 +191,26 @@
                                 <td colspan="2" class="border border-gray-300 p-1 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} w-32">
                                     <div x-data="{ 
                                         selected: {{ $isChecked ? 'true' : 'false' }}, 
-                                        userName: '{{ $checkedBy }}',
+                                        userName: '{{ $checkerName }}',
                                         tanggal: '{{ $formattedDate }}',
                                         dbTanggal: '{{ $tanggal }}',
                                         isApproved: {{ $isApproved ? 'true' : 'false' }},
-                                        hasExistingData: {{ (!empty($checkedBy) && !empty($tanggal)) ? 'true' : 'false' }}
+                                        hasExistingData: {{ (!empty($checkerName) && !empty($tanggal)) ? 'true' : 'false' }}
                                     }">
                                         <div class="mt-1" x-show="selected || isApproved">
-                                            <input type="text" name="checked_by_minggu{{ $j }}" x-ref="user{{ $j }}" value="{{ $checkedBy }}"
+                                            <input type="text" x-ref="user{{ $j }}" value="{{ $checkerName }}"
                                                 class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-white' }} border border-gray-300 rounded mb-1 text-center"
                                                 readonly>
                                             <input type="text" x-ref="displayDate{{ $j }}" value="{{ $formattedDate }}"
                                                 class="w-full px-2 py-1 text-sm {{ $isApproved ? 'bg-green-100' : 'bg-white' }} border border-gray-300 rounded text-center"
                                                 readonly>
+                                            <input type="hidden" name="checker_id_minggu{{ $j }}" x-ref="checkerId{{ $j }}" value="{{ $checkerId }}">
                                             <input type="hidden" name="tanggal_minggu{{ $j }}" x-ref="date{{ $j }}" value="{{ $tanggal }}">
-                                            
                                             @if($isApproved)
                                                 <div class="mt-1 text-xs text-green-600 text-center">
-                                                    Disetujui oleh: {{ $dehumCheck->{'approved_by_minggu'.$j} }}
+                                                    Disetujui oleh: {{ $approverName }}
                                                 </div>
-                                                <input type="hidden" name="approved_by_minggu{{ $j }}" value="{{ $dehumCheck->{'approved_by_minggu'.$j} }}">
+                                                <input type="hidden" name="approver_id_minggu{{ $j }}" value="{{ $dehumCheck->{'approver_id_minggu'.$j} }}">
                                             @endif
                                         </div>
                                         
@@ -221,7 +222,7 @@
                                                 if(selected) {
                                                     userName = '{{ $user->username }}'; 
                                                     $refs.user{{ $j }}.value = userName;
-                                                    
+                                                    $refs.checkerId{{ $j }}.value = {{ $user->id }};
                                                     // Format tanggal untuk tampilan: DD Bulan YYYY
                                                     const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
                                                     const today = new Date();
@@ -229,18 +230,17 @@
                                                     const month = monthNames[today.getMonth()];
                                                     const year = today.getFullYear();
                                                     tanggal = day + ' ' + month + ' ' + year;
-                                                    
                                                     // Format tanggal untuk database: YYYY-MM-DD
                                                     const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
                                                     const dbDay = String(today.getDate()).padStart(2, '0');
                                                     const dbDate = `${year}-${dbMonth}-${dbDay}`;
-                                                    
                                                     $refs.displayDate{{ $j }}.value = tanggal;
                                                     $refs.date{{ $j }}.value = dbDate;
                                                 } else {
                                                     userName = '';
-                                                    tanggal = '';
                                                     $refs.user{{ $j }}.value = '';
+                                                    $refs.checkerId{{ $j }}.value = '';
+                                                    tanggal = '';
                                                     $refs.displayDate{{ $j }}.value = '';
                                                     $refs.date{{ $j }}.value = '';
                                                 }"

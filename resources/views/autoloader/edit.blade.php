@@ -81,8 +81,8 @@
             // Filter hasil berdasarkan tanggal
             $result = $results->where('tanggal', $date)->first();
             
-            // Return true jika result ditemukan dan memiliki checked_by yang tidak kosong
-            return $result && !empty($result['checked_by']);
+            // Return true jika result ditemukan dan memiliki checker_id yang tidak kosong
+            return $result && !empty($result['checker_id']);
         }
     
         // Helper function untuk mendapatkan nama checker berdasarkan tanggal
@@ -91,7 +91,7 @@
             $result = $results->where('tanggal', $date)->first();
             
             // Jika nama checker ditemukan, kembalikan nilainya, jika tidak kembalikan string kosong
-            return $result && isset($result['checked_by']) ? $result['checked_by'] : '';
+            return $result && isset($result['checker_id']) ? $result['checker_id'] : '';
         }
     
         // Helper function untuk mendapatkan nama penanggung jawab berdasarkan tanggal
@@ -100,7 +100,7 @@
             $result = $results->where('tanggal', $date)->first();
             
             // Jika nama penanggung jawab ditemukan, kembalikan nilainya, jika tidak kembalikan "-"
-            return $result && isset($result['approved_by']) && !empty($result['approved_by']) ? $result['approved_by'] : '-';
+            return $result && isset($result['approver_id']) && !empty($result['approver_id']) ? $result['approver_id'] : '-';
         }
     
         // Helper function untuk memeriksa apakah kolom harus readonly berdasarkan penanggung jawab

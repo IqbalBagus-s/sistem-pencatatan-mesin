@@ -133,9 +133,10 @@
                 <td style="text-align:right;"><strong>Checker:</strong> 
                     @php
                         $checkers = collect($results)
-                            ->pluck('checked_by')
-                            ->filter()
+                            ->whereNotNull('checker_name')
+                            ->pluck('checker_name')
                             ->unique()
+                            ->filter()
                             ->implode(', ');
                     @endphp
                     {{ $checkers }}
@@ -196,8 +197,8 @@
                             @php
                                 $checker = collect($results)
                                     ->where('tanggal', $j)
-                                    ->pluck('checked_by')
-                                    ->filter()
+                                    ->whereNotNull('checker_name')
+                                    ->pluck('checker_name')
                                     ->first();
                                 echo $checker ?: '-';
                             @endphp
@@ -212,8 +213,8 @@
                             @php
                                 $approver = collect($results)
                                     ->where('tanggal', $j)
-                                    ->pluck('approved_by')
-                                    ->filter()
+                                    ->whereNotNull('approver_name')
+                                    ->pluck('approver_name')
                                     ->first();
                                 echo $approver ?: '-';
                             @endphp
@@ -264,8 +265,8 @@
                             @php
                                 $checker = collect($results)
                                     ->where('tanggal', $j)
-                                    ->pluck('checked_by')
-                                    ->filter()
+                                    ->whereNotNull('checker_name')
+                                    ->pluck('checker_name')
                                     ->first();
                                 echo $checker ?: '-';
                             @endphp
@@ -280,8 +281,8 @@
                             @php
                                 $approver = collect($results)
                                     ->where('tanggal', $j)
-                                    ->pluck('approved_by')
-                                    ->filter()
+                                    ->whereNotNull('approver_name')
+                                    ->pluck('approver_name')
                                     ->first();
                                 echo $approver ?: '-';
                             @endphp
@@ -315,8 +316,8 @@
 
         <!-- Tanda Tangan -->
         @php
-            $checkedNames = collect($results)->pluck('checked_by')->unique()->filter()->values();
-            $approvedNames = collect($results)->pluck('approved_by')->unique()->filter()->values();
+            $checkedNames = collect($results)->whereNotNull('checker_name')->pluck('checker_name')->unique()->filter()->values();
+            $approvedNames = collect($results)->whereNotNull('approver_name')->pluck('approver_name')->unique()->filter()->values();
         @endphp
 
         <table class="signature-table">

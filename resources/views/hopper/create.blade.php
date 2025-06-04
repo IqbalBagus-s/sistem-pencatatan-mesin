@@ -223,11 +223,12 @@
                                 
                                 <!-- Minggu 1 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
-                                    <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
+                                    <div x-data="{ selected: false, userName: '', tanggal: '', checkerId: '' }" class="w-full">
                                         <div class="mt-1" x-show="selected">
                                             <input type="text" name="checked_by_minggu1" x-ref="user1" x-bind:value="userName"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded mb-1 text-center"
                                                 readonly>
+                                            <input type="hidden" name="checker_id_minggu1" x-ref="checkerId1" :value="checkerId">
                                             <input type="text" x-ref="displayDate1" x-bind:value="tanggal"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
@@ -237,8 +238,9 @@
                                             @click="selected = !selected; 
                                                 if(selected) {
                                                     userName = '{{ $user->username }}'; 
+                                                    checkerId = '{{ $user->id }}';
                                                     $refs.user1.value = userName;
-                                                    
+                                                    $refs.checkerId1.value = checkerId;
                                                     // Format tanggal untuk tampilan: DD Bulan YYYY
                                                     const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
                                                     const today = new Date();
@@ -246,18 +248,17 @@
                                                     const month = monthNames[today.getMonth()];
                                                     const year = today.getFullYear();
                                                     tanggal = day + ' ' + month + ' ' + year;
-                                                    
                                                     // Format tanggal untuk database: YYYY-MM-DD
                                                     const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
                                                     const dbDay = String(today.getDate()).padStart(2, '0');
                                                     const dbDate = `${year}-${dbMonth}-${dbDay}`;
-                                                    
                                                     $refs.displayDate1.value = tanggal;
                                                     $refs.date1.value = dbDate;
                                                 } else {
                                                     userName = '';
-                                                    tanggal = '';
+                                                    checkerId = '';
                                                     $refs.user1.value = '';
+                                                    $refs.checkerId1.value = '';
                                                     $refs.displayDate1.value = '';
                                                     $refs.date1.value = '';
                                                 }"
@@ -270,11 +271,12 @@
                                 
                                 <!-- Minggu 2 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
-                                    <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
+                                    <div x-data="{ selected: false, userName: '', tanggal: '', checkerId: '' }" class="w-full">
                                         <div class="mt-1" x-show="selected">
                                             <input type="text" name="checked_by_minggu2" x-ref="user2" x-bind:value="userName"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded mb-1 text-center"
                                                 readonly>
+                                            <input type="hidden" name="checker_id_minggu2" x-ref="checkerId2" :value="checkerId">
                                             <input type="text" x-ref="displayDate2" x-bind:value="tanggal"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
@@ -284,8 +286,9 @@
                                             @click="selected = !selected; 
                                                 if(selected) {
                                                     userName = '{{ $user->username }}'; 
+                                                    checkerId = '{{ $user->id }}';
                                                     $refs.user2.value = userName;
-                                                    
+                                                    $refs.checkerId2.value = checkerId;
                                                     // Format tanggal untuk tampilan: DD Bulan YYYY
                                                     const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
                                                     const today = new Date();
@@ -293,18 +296,17 @@
                                                     const month = monthNames[today.getMonth()];
                                                     const year = today.getFullYear();
                                                     tanggal = day + ' ' + month + ' ' + year;
-                                                    
                                                     // Format tanggal untuk database: YYYY-MM-DD
                                                     const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
                                                     const dbDay = String(today.getDate()).padStart(2, '0');
                                                     const dbDate = `${year}-${dbMonth}-${dbDay}`;
-                                                    
                                                     $refs.displayDate2.value = tanggal;
                                                     $refs.date2.value = dbDate;
                                                 } else {
                                                     userName = '';
-                                                    tanggal = '';
+                                                    checkerId = '';
                                                     $refs.user2.value = '';
+                                                    $refs.checkerId2.value = '';
                                                     $refs.displayDate2.value = '';
                                                     $refs.date2.value = '';
                                                 }"
@@ -317,11 +319,12 @@
                                 
                                 <!-- Minggu 3 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
-                                    <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
+                                    <div x-data="{ selected: false, userName: '', tanggal: '', checkerId: '' }" class="w-full">
                                         <div class="mt-1" x-show="selected">
                                             <input type="text" name="checked_by_minggu3" x-ref="user3" x-bind:value="userName"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded mb-1 text-center"
                                                 readonly>
+                                            <input type="hidden" name="checker_id_minggu3" x-ref="checkerId3" :value="checkerId">
                                             <input type="text" x-ref="displayDate3" x-bind:value="tanggal"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
@@ -331,8 +334,9 @@
                                             @click="selected = !selected; 
                                                 if(selected) {
                                                     userName = '{{ $user->username }}'; 
+                                                    checkerId = '{{ $user->id }}';
                                                     $refs.user3.value = userName;
-                                                    
+                                                    $refs.checkerId3.value = checkerId;
                                                     // Format tanggal untuk tampilan: DD Bulan YYYY
                                                     const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
                                                     const today = new Date();
@@ -340,18 +344,17 @@
                                                     const month = monthNames[today.getMonth()];
                                                     const year = today.getFullYear();
                                                     tanggal = day + ' ' + month + ' ' + year;
-                                                    
                                                     // Format tanggal untuk database: YYYY-MM-DD
                                                     const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
                                                     const dbDay = String(today.getDate()).padStart(2, '0');
                                                     const dbDate = `${year}-${dbMonth}-${dbDay}`;
-                                                    
                                                     $refs.displayDate3.value = tanggal;
                                                     $refs.date3.value = dbDate;
                                                 } else {
                                                     userName = '';
-                                                    tanggal = '';
+                                                    checkerId = '';
                                                     $refs.user3.value = '';
+                                                    $refs.checkerId3.value = '';
                                                     $refs.displayDate3.value = '';
                                                     $refs.date3.value = '';
                                                 }"
@@ -364,11 +367,12 @@
                                 
                                 <!-- Minggu 4 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 w-32">
-                                    <div x-data="{ selected: false, userName: '', tanggal: '' }" class="w-full">
+                                    <div x-data="{ selected: false, userName: '', tanggal: '', checkerId: '' }" class="w-full">
                                         <div class="mt-1" x-show="selected">
                                             <input type="text" name="checked_by_minggu4" x-ref="user4" x-bind:value="userName"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded mb-1 text-center"
                                                 readonly>
+                                            <input type="hidden" name="checker_id_minggu4" x-ref="checkerId4" :value="checkerId">
                                             <input type="text" x-ref="displayDate4" x-bind:value="tanggal"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
@@ -378,8 +382,9 @@
                                             @click="selected = !selected; 
                                                 if(selected) {
                                                     userName = '{{ $user->username }}'; 
+                                                    checkerId = '{{ $user->id }}';
                                                     $refs.user4.value = userName;
-                                                    
+                                                    $refs.checkerId4.value = checkerId;
                                                     // Format tanggal untuk tampilan: DD Bulan YYYY
                                                     const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
                                                     const today = new Date();
@@ -387,18 +392,17 @@
                                                     const month = monthNames[today.getMonth()];
                                                     const year = today.getFullYear();
                                                     tanggal = day + ' ' + month + ' ' + year;
-                                                    
                                                     // Format tanggal untuk database: YYYY-MM-DD
                                                     const dbMonth = String(today.getMonth() + 1).padStart(2, '0');
                                                     const dbDay = String(today.getDate()).padStart(2, '0');
                                                     const dbDate = `${year}-${dbMonth}-${dbDay}`;
-                                                    
                                                     $refs.displayDate4.value = tanggal;
                                                     $refs.date4.value = dbDate;
                                                 } else {
                                                     userName = '';
-                                                    tanggal = '';
+                                                    checkerId = '';
                                                     $refs.user4.value = '';
+                                                    $refs.checkerId4.value = '';
                                                     $refs.displayDate4.value = '';
                                                     $refs.date4.value = '';
                                                 }"

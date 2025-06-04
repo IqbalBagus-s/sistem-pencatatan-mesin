@@ -168,7 +168,7 @@
                     
                    @for($j = 1; $j <= 4; $j++)
                         @php
-                            $checkedBy = $hopperCheck->{'checked_by_minggu'.$j} ?? '';
+                            $checkedBy = optional($hopperCheck->{'checkerMinggu'.$j})->username ?? '-';
                             $tanggalRaw = $hopperCheck->{'tanggal_minggu'.$j};
                             $checkedDate = $tanggalRaw
                                 ? \Carbon\Carbon::parse($tanggalRaw)
@@ -178,7 +178,7 @@
                         @endphp
                         <td colspan="2" style="text-align: center;">
                             {{ $checkedBy ?: '-' }}
-                            @if($checkedBy)
+                            @if($checkedBy && $checkedBy !== '-')
                                 <br>
                                 <span style="font-size: 9px;">{{ $checkedDate }}</span>
                             @endif
@@ -193,7 +193,7 @@
                     
                     @for($j = 1; $j <= 4; $j++)
                         @php
-                            $approvedBy = $hopperCheck->{'approved_by_minggu'.$j} ?? '-';
+                            $approvedBy = optional($hopperCheck->{'approverMinggu'.$j})->username ?? '-';
                         @endphp
                         <td colspan="2" style="text-align: center;">{{ $approvedBy }}</td>
                     @endfor
@@ -231,10 +231,10 @@
                         @php
                             // Get unique checker names
                             $checkers = collect([
-                                $hopperCheck->checked_by_minggu1, 
-                                $hopperCheck->checked_by_minggu2, 
-                                $hopperCheck->checked_by_minggu3, 
-                                $hopperCheck->checked_by_minggu4
+                                optional($hopperCheck->checkerMinggu1)->username, 
+                                optional($hopperCheck->checkerMinggu2)->username, 
+                                optional($hopperCheck->checkerMinggu3)->username, 
+                                optional($hopperCheck->checkerMinggu4)->username
                             ])->filter()->unique()->values()->implode(', ') ?? '-';
                         @endphp
                         {{ $checkers }}
@@ -247,10 +247,10 @@
                         @php
                             // Get unique approver names
                             $approvers = collect([
-                                $hopperCheck->approved_by_minggu1, 
-                                $hopperCheck->approved_by_minggu2, 
-                                $hopperCheck->approved_by_minggu3, 
-                                $hopperCheck->approved_by_minggu4
+                                optional($hopperCheck->approverMinggu1)->username, 
+                                optional($hopperCheck->approverMinggu2)->username, 
+                                optional($hopperCheck->approverMinggu3)->username, 
+                                optional($hopperCheck->approverMinggu4)->username
                             ])->filter()->unique()->values()->implode(', ') ?? '........................';
                         @endphp
                         {{ $approvers }}

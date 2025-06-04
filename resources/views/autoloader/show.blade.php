@@ -69,36 +69,44 @@
                 
                 // Helper function untuk mendapatkan hasil check berdasarkan tanggal dan item
                 function getCheckResult($results, $date, $itemId) {
-                    // Filter hasil berdasarkan tanggal dan item_id
                     $result = $results->where('tanggal', $date)->where('item_id', $itemId)->first();
                     return $result && isset($result['result']) ? $result['result'] : null;
                 }
 
                 // Helper function untuk mendapatkan keterangan berdasarkan tanggal dan item
                 function getKeterangan($results, $date, $itemId) {
-                    // Filter hasil berdasarkan tanggal dan item_id
                     $result = $results->where('tanggal', $date)->where('item_id', $itemId)->first();
                     return $result && isset($result['keterangan']) ? $result['keterangan'] : '';
                 }
 
-                // Helper function untuk mendapatkan nama checker berdasarkan tanggal
-                function getCheckerName($results, $date) {
-                    // Filter hasil berdasarkan tanggal
+                // Helper function untuk mendapatkan checker username berdasarkan tanggal
+                function getCheckerUsername($results, $date) {
                     $result = $results->where('tanggal', $date)->first();
-                    return $result && isset($result['checked_by']) ? $result['checked_by'] : '';
+                    return $result && isset($result['checker_username']) ? $result['checker_username'] : '';
                 }
                 
-                // Helper function untuk mendapatkan nama penanggung jawab berdasarkan tanggal
-                function getApprovedBy($results, $date) {
-                    // Filter hasil berdasarkan tanggal
+                // Helper function untuk mendapatkan approver username berdasarkan tanggal
+                function getApproverUsername($results, $date) {
                     $result = $results->where('tanggal', $date)->first();
-                    return $result && isset($result['approved_by']) ? $result['approved_by'] : '';
+                    return $result && isset($result['approver_username']) ? $result['approver_username'] : '';
+                }
+
+                // Helper function untuk mendapatkan checker_id berdasarkan tanggal (untuk input hidden)
+                function getCheckerId($results, $date) {
+                    $result = $results->where('tanggal', $date)->first();
+                    return $result && isset($result['checker_id']) ? $result['checker_id'] : '';
+                }
+                
+                // Helper function untuk mendapatkan approver_id berdasarkan tanggal (untuk input hidden)
+                function getApproverId($results, $date) {
+                    $result = $results->where('tanggal', $date)->first();
+                    return $result && isset($result['approver_id']) ? $result['approver_id'] : '';
                 }
 
                 // Helper function untuk memeriksa apakah ada data checker pada tanggal tertentu
                 function hasCheckerData($results, $date) {
                     $result = $results->where('tanggal', $date)->first();
-                    return $result && !empty($result['checked_by']);
+                    return $result && !empty($result['checker_id']);
                 }
             @endphp
             
@@ -169,7 +177,10 @@
                                 
                                 @for($j = 1; $j <= 11; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
-                                        {{ getCheckerName($results, $j) ?: '-' }}
+                                        @php
+                                            $checkerUsername = getCheckerUsername($results, $j);
+                                        @endphp
+                                        {{ $checkerUsername ?: '-' }}
                                     </td>
                                 @endfor
                             </tr>
@@ -181,40 +192,40 @@
                                 <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10">Penanggung Jawab</td>
                                 
                                 @for($j = 1; $j <= 11; $j++)
-                                    <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
-                                        @php
-                                            $approvedBy = getApprovedBy($results, $j);
-                                        @endphp
-                                        
-                                        @if($approvedBy)
-                                            <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
-                                            <div class="w-full px-2 py-1 text-sm">
-                                                <input type="text" name="approved_by_{{ $j }}" value="{{ $approvedBy }}"
-                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
-                                                    readonly>
-                                                <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
+                                    @php
+                                        $approverUsername = getApproverUsername($results, $j);
+                                        $approverId = getApproverId($results, $j);
+                                    @endphp
+                                    <td colspan="2" class="border border-gray-300 p-1 bg-green-50 text-center text-sm">
+                                        @if($approverId)
+                                            <div class="w-full px-2 py-1 text-sm text-center">
+                                                {{ $approverUsername }}
                                             </div>
                                         @else
-                                            <!-- Jika belum ada penanggung jawab, tampilkan tombol pilih -->
-                                            <div x-data="{ selected: false, userName: '' }">
+                                            <div x-data="{ selected: false, userId: '', userUsername: '' }">
                                                 <div x-show="!selected">
                                                     <button type="button" 
                                                         @click="selected = true; 
-                                                            userName = '{{ $user->username }}'; 
-                                                            $refs.approver{{ $j }}.value = userName;
+                                                            userId = '{{ $user->id }}'; 
+                                                            userUsername = '{{ $user->username }}';
+                                                            $refs.approverDisplay{{ $j }}.value = userUsername;
+                                                            $refs.approver{{ $j }}.value = userId;
                                                             $refs.approveNum{{ $j }}.value = '{{ $j }}';"
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center bg-green-100 hover:bg-green-200">
                                                         Pilih
                                                     </button>
                                                 </div>
                                                 <div class="mt-1" x-show="selected">
-                                                    <input type="text" name="approved_by_{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
+                                                    <input type="text" name="approver_display_{{ $j }}" x-ref="approverDisplay{{ $j }}" x-bind:value="userUsername"
                                                         class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                         readonly>
+                                                    <input type="hidden" name="approver_id_{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userId">
                                                     <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="{{ $j }}">
                                                     <button type="button" 
                                                         @click="selected = false; 
-                                                            userName = ''; 
+                                                            userId = ''; 
+                                                            userUsername = '';
+                                                            $refs.approverDisplay{{ $j }}.value = '';
                                                             $refs.approver{{ $j }}.value = '';
                                                             $refs.approveNum{{ $j }}.value = '';"
                                                         class="w-full px-2 py-1 text-xs border border-gray-300 rounded text-center bg-red-100 hover:bg-red-200">
@@ -295,7 +306,10 @@
                                 
                                 @for($j = 12; $j <= 22; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
-                                        {{ getCheckerName($results, $j) ?: '-' }}
+                                        @php
+                                            $checkerUsername = getCheckerUsername($results, $j);
+                                        @endphp
+                                        {{ $checkerUsername ?: '-' }}
                                     </td>
                                 @endfor
                             </tr>
@@ -307,40 +321,40 @@
                                 <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10">Penanggung Jawab</td>
                                 
                                 @for($j = 12; $j <= 22; $j++)
-                                    <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
-                                        @php
-                                            $approvedBy = getApprovedBy($results, $j);
-                                        @endphp
-                                        
-                                        @if($approvedBy)
-                                            <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
-                                            <div class="w-full px-2 py-1 text-sm">
-                                                <input type="text" name="approved_by_{{ $j }}" value="{{ $approvedBy }}"
-                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
-                                                    readonly>
-                                                <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
+                                    @php
+                                        $approverUsername = getApproverUsername($results, $j);
+                                        $approverId = getApproverId($results, $j);
+                                    @endphp
+                                    <td colspan="2" class="border border-gray-300 p-1 bg-green-50 text-center text-sm">
+                                        @if($approverId)
+                                            <div class="w-full px-2 py-1 text-sm text-center">
+                                                {{ $approverUsername }}
                                             </div>
                                         @else
-                                            <!-- Jika belum ada penanggung jawab, tampilkan tombol pilih -->
-                                            <div x-data="{ selected: false, userName: '' }">
+                                            <div x-data="{ selected: false, userId: '', userUsername: '' }">
                                                 <div x-show="!selected">
                                                     <button type="button" 
                                                         @click="selected = true; 
-                                                            userName = '{{ $user->username }}'; 
-                                                            $refs.approver{{ $j }}.value = userName;
+                                                            userId = '{{ $user->id }}'; 
+                                                            userUsername = '{{ $user->username }}';
+                                                            $refs.approverDisplay{{ $j }}.value = userUsername;
+                                                            $refs.approver{{ $j }}.value = userId;
                                                             $refs.approveNum{{ $j }}.value = '{{ $j }}';"
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center bg-green-100 hover:bg-green-200">
                                                         Pilih
                                                     </button>
                                                 </div>
                                                 <div class="mt-1" x-show="selected">
-                                                    <input type="text" name="approved_by_{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
+                                                    <input type="text" name="approver_display_{{ $j }}" x-ref="approverDisplay{{ $j }}" x-bind:value="userUsername"
                                                         class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                         readonly>
+                                                    <input type="hidden" name="approver_id_{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userId">
                                                     <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="{{ $j }}">
                                                     <button type="button" 
                                                         @click="selected = false; 
-                                                            userName = ''; 
+                                                            userId = ''; 
+                                                            userUsername = '';
+                                                            $refs.approverDisplay{{ $j }}.value = '';
                                                             $refs.approver{{ $j }}.value = '';
                                                             $refs.approveNum{{ $j }}.value = '';"
                                                         class="w-full px-2 py-1 text-xs border border-gray-300 rounded text-center bg-red-100 hover:bg-red-200">
@@ -421,7 +435,10 @@
                                 
                                 @for($j = 23; $j <= 31; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
-                                        {{ getCheckerName($results, $j) ?: '-' }}
+                                        @php
+                                            $checkerUsername = getCheckerUsername($results, $j);
+                                        @endphp
+                                        {{ $checkerUsername ?: '-' }}
                                     </td>
                                 @endfor
                             </tr>
@@ -433,40 +450,40 @@
                                 <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10">Penanggung Jawab</td>
                                 
                                 @for($j = 23; $j <= 31; $j++)
-                                    <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
-                                        @php
-                                            $approvedBy = getApprovedBy($results, $j);
-                                        @endphp
-                                        
-                                        @if($approvedBy)
-                                            <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
-                                            <div class="w-full px-2 py-1 text-sm">
-                                                <input type="text" name="approved_by_{{ $j }}" value="{{ $approvedBy }}"
-                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
-                                                    readonly>
-                                                <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
+                                    @php
+                                        $approverUsername = getApproverUsername($results, $j);
+                                        $approverId = getApproverId($results, $j);
+                                    @endphp
+                                    <td colspan="2" class="border border-gray-300 p-1 bg-green-50 text-center text-sm">
+                                        @if($approverId)
+                                            <div class="w-full px-2 py-1 text-sm text-center">
+                                                {{ $approverUsername }}
                                             </div>
                                         @else
-                                            <!-- Jika belum ada penanggung jawab, tampilkan tombol pilih -->
-                                            <div x-data="{ selected: false, userName: '' }">
+                                            <div x-data="{ selected: false, userId: '', userUsername: '' }">
                                                 <div x-show="!selected">
                                                     <button type="button" 
                                                         @click="selected = true; 
-                                                            userName = '{{ $user->username }}'; 
-                                                            $refs.approver{{ $j }}.value = userName;
+                                                            userId = '{{ $user->id }}'; 
+                                                            userUsername = '{{ $user->username }}';
+                                                            $refs.approverDisplay{{ $j }}.value = userUsername;
+                                                            $refs.approver{{ $j }}.value = userId;
                                                             $refs.approveNum{{ $j }}.value = '{{ $j }}';"
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center bg-green-100 hover:bg-green-200">
                                                         Pilih
                                                     </button>
                                                 </div>
                                                 <div class="mt-1" x-show="selected">
-                                                    <input type="text" name="approved_by_{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
+                                                    <input type="text" name="approver_display_{{ $j }}" x-ref="approverDisplay{{ $j }}" x-bind:value="userUsername"
                                                         class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                         readonly>
+                                                    <input type="hidden" name="approver_id_{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userId">
                                                     <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="{{ $j }}">
                                                     <button type="button" 
                                                         @click="selected = false; 
-                                                            userName = ''; 
+                                                            userId = ''; 
+                                                            userUsername = '';
+                                                            $refs.approverDisplay{{ $j }}.value = '';
                                                             $refs.approver{{ $j }}.value = '';
                                                             $refs.approveNum{{ $j }}.value = '';"
                                                         class="w-full px-2 py-1 text-xs border border-gray-300 rounded text-center bg-red-100 hover:bg-red-200">
@@ -551,9 +568,11 @@
                         $year = substr($check->bulan, 0, 4);
                         $month = substr($check->bulan, 5, 2);
                         $daysInMonth = cal_days_in_month(CAL_GREGORIAN, (int)$month, (int)$year);
-                        
-                        // Hitung jumlah tanggal yang sudah disetujui
-                        $approvedDatesCount = $results->where('approved_by', '!=', null)->where('approved_by', '!=', '')->unique('tanggal')->count();
+                        // Hitung jumlah tanggal yang sudah di-approve berdasarkan approver_id
+                        $approvedDatesCount = $results->where('approver_id', '!=', null)
+                                                     ->where('approver_id', '!=', '')
+                                                     ->unique('tanggal')
+                                                     ->count();
                     @endphp
                     
                     <!-- Conditional rendering based on approval status -->

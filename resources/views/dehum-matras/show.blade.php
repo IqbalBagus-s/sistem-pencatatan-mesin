@@ -173,7 +173,7 @@
                                             <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
                                             <div class="w-full px-2 py-1 text-sm">
                                                 <input type="text" name="approved_by_{{ $j }}" value="{{ $approvedBy }}"
-                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
+                                                    class="w-full px-2 py-1 text-sm text-center"
                                                     readonly>
                                                 <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -277,7 +277,7 @@
                                             <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
                                             <div class="w-full px-2 py-1 text-sm">
                                                 <input type="text" name="approved_by_{{ $j }}" value="{{ $approvedBy }}"
-                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
+                                                    class="w-full px-2 py-1 text-sm text-center"
                                                     readonly>
                                                 <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -394,7 +394,7 @@
                                         @if($approvedBy)
                                             <div class="w-full px-2 py-1 text-sm">
                                                 <input type="text" name="approved_by_{{ $j }}" value="{{ $approvedBy }}"
-                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
+                                                    class="w-full px-2 py-1 text-sm text-center"
                                                     readonly>
                                                 <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -433,6 +433,7 @@
                     </table>
                 </div>
             </div>
+            
             {{-- catatan pemeriksaan --}}
             <div class="bg-gradient-to-r from-sky-50 to-blue-50 p-5 rounded-lg shadow-sm mb-6 border-l-4 border-blue-400">
                 <h5 class="text-lg font-semibold text-blue-700 mb-4 flex items-center">
@@ -492,60 +493,60 @@
             </div>
 
             <!-- Button Controls -->
-        <div class="mt-8 bg-white rounded-lg p-2 sm:p-4">
-            <div class="flex flex-row flex-wrap items-center justify-between gap-2">
-                <!-- Back Button - Left Side -->
-                <div class="flex-shrink-0">
-                    <a href="{{ route('dehum-matras.index') }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Kembali
-                    </a>
-                </div>
-                
-                <!-- Action Buttons - Right Side -->
-                <div class="flex flex-row flex-wrap gap-2 justify-end">
-                    <!-- Hitung jumlah hari dalam bulan -->
-                    @php
-                        $year = substr($check->bulan, 0, 4);
-                        $month = substr($check->bulan, 5, 2);
-                        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, (int)$month, (int)$year);
-                        
-                        // Hitung jumlah tanggal yang sudah disetujui
-                        $approvedDatesCount = $results->where('approved_by', '!=', null)->where('approved_by', '!=', '')->unique('tanggal')->count();
-                    @endphp
+            <div class="mt-8 bg-white rounded-lg p-2 sm:p-4">
+                <div class="flex flex-row flex-wrap items-center justify-between gap-2">
+                    <!-- Back Button - Left Side -->
+                    <div class="flex-shrink-0">
+                        <a href="{{ route('dehum-matras.index') }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            Kembali
+                        </a>
+                    </div>
                     
-                    <!-- Conditional rendering based on approval status -->
-                    @if($approvedDatesCount < $daysInMonth)
-                        <!-- Tombol Setujui untuk yang belum disetujui atau disetujui sebagian -->
-                        <button type="submit" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            Setujui
-                        </button>
-                    @else
-                        <!-- PDF Preview Button -->
-                        <a href="{{ route('dehum-matras.pdf', $check->id) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            Preview PDF
-                        </a>
+                    <!-- Action Buttons - Right Side -->
+                    <div class="flex flex-row flex-wrap gap-2 justify-end">
+                        <!-- Hitung jumlah hari dalam bulan -->
+                        @php
+                            $year = substr($check->bulan, 0, 4);
+                            $month = substr($check->bulan, 5, 2);
+                            $daysInMonth = cal_days_in_month(CAL_GREGORIAN, (int)$month, (int)$year);
+                            
+                            // Hitung jumlah tanggal yang sudah disetujui
+                            $approvedDatesCount = $results->where('approved_by', '!=', null)->where('approved_by', '!=', '')->unique('tanggal')->count();
+                        @endphp
                         
-                        <!-- Download PDF Button -->
-                        <a href="{{ route('dehum-matras.downloadPdf', $check->id) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Download PDF
-                        </a>
-                    @endif
+                        <!-- Conditional rendering based on approval status -->
+                        @if($approvedDatesCount < $daysInMonth)
+                            <!-- Tombol Setujui untuk yang belum disetujui atau disetujui sebagian -->
+                            <button type="submit" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Setujui
+                            </button>
+                        @else
+                            <!-- PDF Preview Button -->
+                            <a href="{{ route('dehum-matras.pdf', $check->id) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Preview PDF
+                            </a>
+                            
+                            <!-- Download PDF Button -->
+                            <a href="{{ route('dehum-matras.downloadPdf', $check->id) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Download PDF
+                            </a>
+                        @endif
+                    </div>
                 </div>
             </div>
-        </div>
         </form>
     </div>
 </div>

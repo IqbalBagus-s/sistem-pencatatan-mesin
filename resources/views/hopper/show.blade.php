@@ -13,16 +13,7 @@
             <div class="bg-sky-50 p-4 rounded-md mb-5">
                 <span class="text-gray-600 font-bold">Checker: </span>
                 <span class="font-bold text-blue-700">
-                    @php
-                        // Extract all unique checker names
-                        $checkers = collect([
-                            $hopperRecord->checked_by_minggu1, 
-                            $hopperRecord->checked_by_minggu2, 
-                            $hopperRecord->checked_by_minggu3, 
-                            $hopperRecord->checked_by_minggu4
-                        ])->filter()->unique()->values()->implode(', ') ?? 'Belum ada checker';
-                    @endphp
-                    {{ $checkers }}
+                    {{ $hopperRecord->unique_checkers ?: 'Belum ada checker' }}
                 </span>
             </div>
 
@@ -98,35 +89,30 @@
                                     
                                     @for($j = 1; $j <= 4; $j++)
                                         @php
-                                            // Periksa apakah ada checker untuk minggu ini
-                                            $hasChecker = !empty($hopperRecord->{'checked_by_minggu'.$j});
-                                            
-                                            if (!$hasChecker) {
-                                                // Jika tidak ada checker, tampilkan tanda "-" dan "Belum ada data"
-                                                $resultValue = '-';
-                                                $keteranganValue = '';
-                                            } else {
-                                                // Jika ada checker, tampilkan data yang ada
-                                                $resultValue = isset($hopperRecord->{'check_'.$j}[$i]) ? $hopperRecord->{'check_'.$j}[$i] : '-';
-                                                $keteranganValue = isset($hopperRecord->{'keterangan_'.$j}[$i]) ? $hopperRecord->{'keterangan_'.$j}[$i] : '';
-                                            }
+                                            $checkerId = $hopperRecord->{'checker_id_minggu'.$j} ?? null;
+                                            $checkValue = $hopperRecord->{'check_'.$j}[$i] ?? '';
+                                            $keteranganValue = $hopperRecord->{'keterangan_'.$j}[$i] ?? '';
+                                            $checkedDate = $hopperRecord->{'tanggal_minggu'.$j} ? 
+                                                \Carbon\Carbon::parse($hopperRecord->{'tanggal_minggu'.$j})->locale('id')->format('d').' '.
+                                                \Carbon\Carbon::parse($hopperRecord->{'tanggal_minggu'.$j})->locale('id')->isoFormat('MMMM').' '.
+                                                \Carbon\Carbon::parse($hopperRecord->{'tanggal_minggu'.$j})->format('Y') : '-';
                                         @endphp
-                                    
+
                                         <!-- Minggu {{ $j }} Check -->
                                         <td class="border border-gray-300 p-1 h-10 text-center">
-                                            @if ($hasChecker)
-                                                {!! isset($options[$resultValue]) ? $options[$resultValue] : $resultValue !!}
+                                            @if (!$checkerId)
+                                                <span class="text-gray-600">-</span>
                                             @else
-                                                <span class="text-gray-600">—</span>
+                                                {!! isset($options[$checkValue]) ? $options[$checkValue] : $checkValue !!}
                                             @endif
                                         </td>
                                         
                                         <!-- Minggu {{ $j }} Keterangan -->
                                         <td class="border border-gray-300 p-1 h-10 text-sm">
-                                            @if ($hasChecker)
-                                                {{ $keteranganValue }}
-                                            @else
+                                            @if (!$checkerId)
                                                 <span class="text-gray-600 italic text-xs">Belum ada data</span>
+                                            @else
+                                                {{ $keteranganValue }}
                                             @endif
                                         </td>
                                     @endfor
@@ -147,7 +133,7 @@
                                 
                                 @for($j = 1; $j <= 4; $j++)
                                     @php
-                                        $checkedBy = $hopperRecord->{'checked_by_minggu'.$j} ?? '';
+                                        $checkerUsername = $hopperRecord->{'checker_username_minggu'.$j} ?? '';
                                         $checkedDate = $hopperRecord->{'tanggal_minggu'.$j} ? 
                                             \Carbon\Carbon::parse($hopperRecord->{'tanggal_minggu'.$j})->locale('id')->format('d').' '.
                                             \Carbon\Carbon::parse($hopperRecord->{'tanggal_minggu'.$j})->locale('id')->isoFormat('MMMM').' '.
@@ -155,8 +141,8 @@
                                     @endphp
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm h-10">
                                         <div class="w-full h-full flex flex-col items-center justify-center">
-                                            <div>{{ $checkedBy ?: '-' }}</div>
-                                            @if($checkedBy)
+                                            <div>{{ $checkerUsername ?: '-' }}</div>
+                                            @if($checkerUsername)
                                                 <div class="text-xs text-gray-600">{{ $checkedDate }}</div>
                                             @endif
                                         </div>
@@ -173,38 +159,37 @@
                                 @for($j = 1; $j <= 4; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
                                         @php
-                                            $approvedBy = $hopperRecord->{'approved_by_minggu'.$j} ?? '';
+                                            $approverUsername = $hopperRecord->{'approver_username_minggu'.$j} ?? '';
                                         @endphp
                                         
-                                        @if($approvedBy)
-                                            <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
+                                        @if($approverUsername)
                                             <div class="w-full h-10 flex items-center justify-center text-sm">
-                                                {{ $approvedBy }}
+                                                {{ $approverUsername }}
                                             </div>
                                         @else
-                                            <!-- Jika belum ada penanggung jawab, tampilkan tombol pilih -->
+                                            <!-- Form untuk memilih approver tetap sama seperti sebelumnya -->
                                             <div x-data="{ selected: false, userName: '' }" class="w-full">
                                                 <div x-show="!selected" class="w-full flex justify-center py-1">
                                                     <button type="button" 
                                                         @click="selected = true; 
                                                             userName = '{{ $user->username }}'; 
                                                             $refs.approver{{ $j }}.value = userName;
-                                                            $refs.approveNum{{ $j }}.value = '{{ $j }}';"
+                                                            $refs.approverId{{ $j }}.value = '{{ $user->id }}';"
                                                         class="w-full max-w-xs px-2 py-1 text-sm border border-gray-300 rounded text-center bg-green-100 hover:bg-green-200">
                                                         Pilih
                                                     </button>
                                                 </div>
                                                 <div x-show="selected" class="w-full py-1">
                                                     <div class="flex flex-col items-center">
-                                                        <input type="text" name="approved_by_minggu{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
+                                                        <input type="text" name="approver_username_minggu{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
                                                             class="w-full max-w-xs px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                             readonly>
-                                                        <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="">
+                                                        <input type="hidden" name="approver_id_minggu{{ $j }}" x-ref="approverId{{ $j }}" value="">
                                                         <button type="button" 
                                                             @click="selected = false; 
                                                                 userName = ''; 
                                                                 $refs.approver{{ $j }}.value = '';
-                                                                $refs.approveNum{{ $j }}.value = '';"
+                                                                $refs.approverId{{ $j }}.value = '';"
                                                             class="w-full max-w-xs px-2 py-1 text-xs border border-gray-300 rounded text-center bg-red-100 hover:bg-red-200">
                                                             Batal Pilih
                                                         </button>
@@ -287,10 +272,11 @@
                     <!-- Action Buttons - Right Side -->
                     <div class="flex flex-row flex-wrap gap-2 justify-end">
                         @php
-                            // Check if all 4 weeks have approved_by filled
+                            // Check if all 4 weeks have approver_id_minggu filled
                             $allApproved = true;
-                            for ($j = 1; $j <= 4; $j++) {
-                                if (empty($hopperRecord->{'approved_by_minggu'.$j})) {
+                            for (
+                                $j = 1; $j <= 4; $j++) {
+                                if (empty($hopperRecord->{'approver_id_minggu'.$j})) {
                                     $allApproved = false;
                                     break;
                                 }
