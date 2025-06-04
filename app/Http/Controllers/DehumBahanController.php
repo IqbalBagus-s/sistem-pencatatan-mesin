@@ -29,10 +29,18 @@ class DehumBahanController extends Controller
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
             $query->where(function ($q) use ($search) {
-                $q->where('checked_by_minggu1', 'LIKE', $search)
-                ->orWhere('checked_by_minggu2', 'LIKE', $search)
-                ->orWhere('checked_by_minggu3', 'LIKE', $search)
-                ->orWhere('checked_by_minggu4', 'LIKE', $search);
+                $q->whereHas('checkerMinggu1', function($qc) use ($search) {
+                    $qc->where('username', 'LIKE', $search);
+                })
+                ->orWhereHas('checkerMinggu2', function($qc) use ($search) {
+                    $qc->where('username', 'LIKE', $search);
+                })
+                ->orWhereHas('checkerMinggu3', function($qc) use ($search) {
+                    $qc->where('username', 'LIKE', $search);
+                })
+                ->orWhereHas('checkerMinggu4', function($qc) use ($search) {
+                    $qc->where('username', 'LIKE', $search);
+                });
             });
         }
 
@@ -84,15 +92,15 @@ class DehumBahanController extends Controller
             'nomer_dehum_bahan' => 'required|integer|min:1|max:15',
             'bulan' => 'required|date_format:Y-m',
             
-            // Validation for creator fields
-            'created_by_1' => 'nullable|string|max:255',
-            'created_date_1' => 'nullable|date',
-            'created_by_2' => 'nullable|string|max:255',
-            'created_date_2' => 'nullable|date',
-            'created_by_3' => 'nullable|string|max:255',
-            'created_date_3' => 'nullable|date',
-            'created_by_4' => 'nullable|string|max:255',
-            'created_date_4' => 'nullable|date',
+            // Validation for checker fields (ID)
+            'checker_id_minggu1' => 'nullable|integer|exists:checkers,id',
+            'tanggal_minggu1' => 'nullable|date',
+            'checker_id_minggu2' => 'nullable|integer|exists:checkers,id',
+            'tanggal_minggu2' => 'nullable|date',
+            'checker_id_minggu3' => 'nullable|integer|exists:checkers,id',
+            'tanggal_minggu3' => 'nullable|date',
+            'checker_id_minggu4' => 'nullable|integer|exists:checkers,id',
+            'tanggal_minggu4' => 'nullable|date',
             
             // Validation for checked items and checks
             'checked_items' => 'required|array',
@@ -131,18 +139,14 @@ class DehumBahanController extends Controller
             $dehumBahanCheck = DehumBahanCheck::create([
                 'nomer_dehum_bahan' => $request->input('nomer_dehum_bahan'),
                 'bulan' => $request->input('bulan'),
-                
-                // Populate weekly dates
-                'tanggal_minggu1' => $request->input('created_date_1'),
-                'tanggal_minggu2' => $request->input('created_date_2'),
-                'tanggal_minggu3' => $request->input('created_date_3'),
-                'tanggal_minggu4' => $request->input('created_date_4'),
-                
-                // Populate weekly checkers
-                'checked_by_minggu1' => $request->input('created_by_1'),
-                'checked_by_minggu2' => $request->input('created_by_2'),
-                'checked_by_minggu3' => $request->input('created_by_3'),
-                'checked_by_minggu4' => $request->input('created_by_4'),
+                'tanggal_minggu1' => $request->input('tanggal_minggu1'),
+                'tanggal_minggu2' => $request->input('tanggal_minggu2'),
+                'tanggal_minggu3' => $request->input('tanggal_minggu3'),
+                'tanggal_minggu4' => $request->input('tanggal_minggu4'),
+                'checker_id_minggu1' => $request->input('checker_id_minggu1'),
+                'checker_id_minggu2' => $request->input('checker_id_minggu2'),
+                'checker_id_minggu3' => $request->input('checker_id_minggu3'),
+                'checker_id_minggu4' => $request->input('checker_id_minggu4'),
             ]);
 
             // Prepare and create DehumBahanResult records
@@ -195,8 +199,8 @@ class DehumBahanController extends Controller
             // Kumpulkan tanggal dan checker untuk setiap minggu
             $weeklyData = [];
             for ($i = 1; $i <= 4; $i++) {
-                $date = $request->input("created_date_{$i}");
-                $checker = $request->input("created_by_{$i}");
+                $date = $request->input("tanggal_minggu_{$i}");
+                $checker = $request->input("checker_id_minggu_{$i}");
                 
                 if ($date || $checker) {
                     $weeklyData["minggu_{$i}"] = [
@@ -278,24 +282,18 @@ class DehumBahanController extends Controller
         $validatedData = $request->validate([
             'nomer_dehum_bahan' => 'required|integer|min:1',
             'bulan' => 'required|date_format:Y-m',
-            
-            // Validasi untuk checked_by fields
-            'checked_by_minggu1' => 'nullable|string|max:255',
+            'checker_id_minggu1' => 'nullable|integer|exists:checkers,id',
             'tanggal_minggu1' => 'nullable|date',
-            'checked_by_minggu2' => 'nullable|string|max:255',
+            'checker_id_minggu2' => 'nullable|integer|exists:checkers,id',
             'tanggal_minggu2' => 'nullable|date',
-            'checked_by_minggu3' => 'nullable|string|max:255',
+            'checker_id_minggu3' => 'nullable|integer|exists:checkers,id',
             'tanggal_minggu3' => 'nullable|date',
-            'checked_by_minggu4' => 'nullable|string|max:255',
+            'checker_id_minggu4' => 'nullable|integer|exists:checkers,id',
             'tanggal_minggu4' => 'nullable|date',
-            
-            // Validasi untuk approved_by fields
-            'approved_by_minggu1' => 'nullable|string|max:255',
-            'approved_by_minggu2' => 'nullable|string|max:255',
-            'approved_by_minggu3' => 'nullable|string|max:255',
-            'approved_by_minggu4' => 'nullable|string|max:255',
-            
-            // Validasi untuk checked items dan checks
+            'approver_id_minggu1' => 'nullable|integer|exists:approvers,id',
+            'approver_id_minggu2' => 'nullable|integer|exists:approvers,id',
+            'approver_id_minggu3' => 'nullable|integer|exists:approvers,id',
+            'approver_id_minggu4' => 'nullable|integer|exists:approvers,id',
             'checked_items' => 'required|array',
             'check_1' => 'required|array',
             'keterangan_1' => 'nullable|array',
@@ -330,24 +328,18 @@ class DehumBahanController extends Controller
             $dehumCheck->update([
                 'nomer_dehum_bahan' => $request->input('nomer_dehum_bahan'),
                 'bulan' => $request->input('bulan'),
-                
-                // Update tanggal mingguan
                 'tanggal_minggu1' => $request->input('tanggal_minggu1'),
                 'tanggal_minggu2' => $request->input('tanggal_minggu2'),
                 'tanggal_minggu3' => $request->input('tanggal_minggu3'),
                 'tanggal_minggu4' => $request->input('tanggal_minggu4'),
-                
-                // Update pemeriksa mingguan
-                'checked_by_minggu1' => $request->input('checked_by_minggu1'),
-                'checked_by_minggu2' => $request->input('checked_by_minggu2'),
-                'checked_by_minggu3' => $request->input('checked_by_minggu3'),
-                'checked_by_minggu4' => $request->input('checked_by_minggu4'),
-                
-                // Update status persetujuan
-                'approved_by_minggu1' => $request->input('approved_by_minggu1'),
-                'approved_by_minggu2' => $request->input('approved_by_minggu2'),
-                'approved_by_minggu3' => $request->input('approved_by_minggu3'),
-                'approved_by_minggu4' => $request->input('approved_by_minggu4'),
+                'checker_id_minggu1' => $request->input('checker_id_minggu1'),
+                'checker_id_minggu2' => $request->input('checker_id_minggu2'),
+                'checker_id_minggu3' => $request->input('checker_id_minggu3'),
+                'checker_id_minggu4' => $request->input('checker_id_minggu4'),
+                'approver_id_minggu1' => $request->input('approver_id_minggu1'),
+                'approver_id_minggu2' => $request->input('approver_id_minggu2'),
+                'approver_id_minggu3' => $request->input('approver_id_minggu3'),
+                'approver_id_minggu4' => $request->input('approver_id_minggu4'),
             ]);
 
             // Ambil existing DehumBahanResult records untuk check ini
@@ -442,18 +434,18 @@ class DehumBahanController extends Controller
             'id' => $dehumBahanRecord->id,
             'nomer_dehum_bahan' => $dehumBahanRecord->nomer_dehum_bahan,
             'bulan' => $dehumBahanRecord->bulan,
-            'created_by_1' => $dehumBahanRecord->checked_by_minggu1,
-            'created_by_2' => $dehumBahanRecord->checked_by_minggu2,
-            'created_by_3' => $dehumBahanRecord->checked_by_minggu3,
-            'created_by_4' => $dehumBahanRecord->checked_by_minggu4,
+            'checker_1' => $dehumBahanRecord->checkerMinggu1?->username,
+            'checker_2' => $dehumBahanRecord->checkerMinggu2?->username,
+            'checker_3' => $dehumBahanRecord->checkerMinggu3?->username,
+            'checker_4' => $dehumBahanRecord->checkerMinggu4?->username,
             'created_date_1' => $dehumBahanRecord->tanggal_minggu1,
             'created_date_2' => $dehumBahanRecord->tanggal_minggu2,
             'created_date_3' => $dehumBahanRecord->tanggal_minggu3,
             'created_date_4' => $dehumBahanRecord->tanggal_minggu4,
-            'approved_by_minggu1' => $dehumBahanRecord->approved_by_minggu1,
-            'approved_by_minggu2' => $dehumBahanRecord->approved_by_minggu2,
-            'approved_by_minggu3' => $dehumBahanRecord->approved_by_minggu3,
-            'approved_by_minggu4' => $dehumBahanRecord->approved_by_minggu4
+            'approver_1' => $dehumBahanRecord->approverMinggu1?->username,
+            'approver_2' => $dehumBahanRecord->approverMinggu2?->username,
+            'approver_3' => $dehumBahanRecord->approverMinggu3?->username,
+            'approver_4' => $dehumBahanRecord->approverMinggu4?->username,
         ];
 
         // Prepare the checked items
@@ -522,29 +514,35 @@ class DehumBahanController extends Controller
         if (!$this->isAuthenticatedAs('approver')) {
             return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
         }
-        // Validate the request - hanya validasi field yang dikirim dalam request
+        
+        // Validate the request
         $validatedData = $request->validate([
-            'approved_by_minggu1' => 'nullable|string|max:255',
-            'approved_by_minggu2' => 'nullable|string|max:255',
-            'approved_by_minggu3' => 'nullable|string|max:255',
-            'approved_by_minggu4' => 'nullable|string|max:255'
+            'approver_id_minggu1' => 'nullable|integer|exists:approvers,id',
+            'approver_id_minggu2' => 'nullable|integer|exists:approvers,id', 
+            'approver_id_minggu3' => 'nullable|integer|exists:approvers,id',
+            'approver_id_minggu4' => 'nullable|integer|exists:approvers,id',
+            // Tambahkan field nama approver juga jika diperlukan
+            'approved_by_minggu1' => 'nullable|string',
+            'approved_by_minggu2' => 'nullable|string',
+            'approved_by_minggu3' => 'nullable|string', 
+            'approved_by_minggu4' => 'nullable|string',
         ]);
 
         // Find the existing DehumBahan record
         $dehumBahanRecord = DehumBahanCheck::findOrFail($id);
 
-        // Hanya update field yang ada dalam request
-        // Ini mencegah field yang sudah diisi sebelumnya ditimpa dengan null
-        foreach ($validatedData as $field => $value) {
-            if ($request->has($field)) {
-                $dehumBahanRecord->{$field} = $value;
+        // Update hanya field yang ada dalam request dan tidak null
+        for ($i = 1; $i <= 4; $i++) {
+            $approverIdField = "approver_id_minggu{$i}";
+            if ($request->filled($approverIdField)) {
+                $dehumBahanRecord->{$approverIdField} = $request->{$approverIdField};
             }
         }
 
         // Save the record
         $dehumBahanRecord->save();
 
-        // Redirect back with a success message
+        // Redirect back with success message
         return redirect()->route('dehum-bahan.index')
             ->with('success', 'Persetujuan berhasil disimpan!');
     }
@@ -611,6 +609,12 @@ class DehumBahanController extends Controller
             // Tambahkan array ke dehumBahanCheck object
             $dehumBahanCheck->{'check_' . $j} = ${'check_' . $j};
             $dehumBahanCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+        }
+        
+        // Setelah $dehumBahanCheck didefinisikan di reviewPdf, tambahkan:
+        for ($i = 1; $i <= 4; $i++) {
+            $dehumBahanCheck->{'checker_' . $i} = $dehumBahanCheck->{'checkerMinggu' . $i}?->username;
+            $dehumBahanCheck->{'approver_' . $i} = $dehumBahanCheck->{'approverMinggu' . $i}?->username;
         }
         
         // Render view sebagai HTML untuk preview PDF
@@ -689,6 +693,12 @@ class DehumBahanController extends Controller
             // Tambahkan array ke dehumBahanCheck object
             $dehumBahanCheck->{'check_' . $j} = ${'check_' . $j};
             $dehumBahanCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+        }
+        
+        // Setelah $dehumBahanCheck didefinisikan di downloadPdf, tambahkan:
+        for ($i = 1; $i <= 4; $i++) {
+            $dehumBahanCheck->{'checker_' . $i} = $dehumBahanCheck->{'checkerMinggu' . $i}?->username;
+            $dehumBahanCheck->{'approver_' . $i} = $dehumBahanCheck->{'approverMinggu' . $i}?->username;
         }
         
         $bulan = Carbon::createFromFormat('Y-m', $dehumBahanCheck->bulan)->translatedFormat('F Y');

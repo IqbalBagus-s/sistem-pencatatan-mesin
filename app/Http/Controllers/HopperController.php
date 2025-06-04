@@ -28,11 +28,17 @@ class HopperController extends Controller
         // Filter berdasarkan nama checker jika ada
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
-            $query->where(function ($q) use ($search) {
-                $q->where('checked_by_minggu1', 'LIKE', $search)
-                ->orWhere('checked_by_minggu2', 'LIKE', $search)
-                ->orWhere('checked_by_minggu3', 'LIKE', $search)
-                ->orWhere('checked_by_minggu4', 'LIKE', $search);
+            $query->whereHas('checkerMinggu1', function($q) use ($search) {
+                $q->where('username', 'LIKE', $search);
+            })
+            ->orWhereHas('checkerMinggu2', function($q) use ($search) {
+                $q->where('username', 'LIKE', $search);
+            })
+            ->orWhereHas('checkerMinggu3', function($q) use ($search) {
+                $q->where('username', 'LIKE', $search);
+            })
+            ->orWhereHas('checkerMinggu4', function($q) use ($search) {
+                $q->where('username', 'LIKE', $search);
             });
         }
 
@@ -65,7 +71,8 @@ class HopperController extends Controller
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
-        return view('hopper.create', compact('user', 'currentGuard'));
+        $checkers = \App\Models\Checker::all();
+        return view('hopper.create', compact('user', 'currentGuard', 'checkers'));
     }
 
     public function store(Request $request)
@@ -83,14 +90,14 @@ class HopperController extends Controller
             'nomer_hopper' => 'required|integer|min:1|max:15',
             'bulan' => 'required|date_format:Y-m',
             
-            // Validation for creator fields - updated to match the form field names
-            'checked_by_minggu1' => 'nullable|string|max:255',
+            // Validation for creator fields - now using checker_id_mingguX
+            'checker_id_minggu1' => 'nullable|exists:checkers,id',
             'tanggal_minggu1' => 'nullable|date',
-            'checked_by_minggu2' => 'nullable|string|max:255',
+            'checker_id_minggu2' => 'nullable|exists:checkers,id',
             'tanggal_minggu2' => 'nullable|date',
-            'checked_by_minggu3' => 'nullable|string|max:255',
+            'checker_id_minggu3' => 'nullable|exists:checkers,id',
             'tanggal_minggu3' => 'nullable|date',
-            'checked_by_minggu4' => 'nullable|string|max:255',
+            'checker_id_minggu4' => 'nullable|exists:checkers,id',
             'tanggal_minggu4' => 'nullable|date',
             
             // Validation for checked items and checks
@@ -139,10 +146,10 @@ class HopperController extends Controller
                 'tanggal_minggu4' => $request->input('tanggal_minggu4'),
                 
                 // Directly use the matching field names from the form
-                'checked_by_minggu1' => $request->input('checked_by_minggu1'),
-                'checked_by_minggu2' => $request->input('checked_by_minggu2'),
-                'checked_by_minggu3' => $request->input('checked_by_minggu3'),
-                'checked_by_minggu4' => $request->input('checked_by_minggu4'),
+                'checker_id_minggu1' => $request->input('checker_id_minggu1'),
+                'checker_id_minggu2' => $request->input('checker_id_minggu2'),
+                'checker_id_minggu3' => $request->input('checker_id_minggu3'),
+                'checker_id_minggu4' => $request->input('checker_id_minggu4'),
             ]);
 
             // Prepare and create HopperResult records
@@ -196,12 +203,13 @@ class HopperController extends Controller
             $weeklyData = [];
             for ($i = 1; $i <= 4; $i++) {
                 $date = $request->input("tanggal_minggu{$i}");
-                $checker = $request->input("checked_by_minggu{$i}");
-                
-                if ($date || $checker) {
+                $checkerId = $request->input("checker_id_minggu{$i}");
+                $checker = $checkerId ? \App\Models\Checker::find($checkerId) : null;
+                $checkerName = $checker ? $checker->username : null;
+                if ($date || $checkerName) {
                     $weeklyData["minggu_{$i}"] = [
                         'tanggal' => $date ? Carbon::parse($date)->locale('id')->isoFormat('D MMMM YYYY') : null,
-                        'checker' => $checker
+                        'checker' => $checkerName
                     ];
                 }
             }
@@ -264,12 +272,24 @@ class HopperController extends Controller
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
-        // Fetch the HopperCheck record with its results
-        $hopperCheck = HopperCheck::with('results')->findOrFail($id);
+        
+        // PERBAIKAN: Tambahkan eager loading untuk User relations
+        $hopperCheck = HopperCheck::with([
+            'results',
+            // Tambahkan relasi untuk checker dan approver setiap minggu
+            'checkerMinggu1',
+            'checkerMinggu2', 
+            'checkerMinggu3',
+            'checkerMinggu4',
+            'approverMinggu1',
+            'approverMinggu2',
+            'approverMinggu3', 
+            'approverMinggu4'
+        ])->findOrFail($id);
         
         // Get the associated results
         $hopperResults = $hopperCheck->results;
-
+    
         // Return the view and pass both $hopperCheck and $hopperResults
         return view('hopper.edit', compact('hopperCheck', 'hopperResults', 'user', 'currentGuard'));
     }
@@ -312,8 +332,8 @@ class HopperController extends Controller
             
             // Update data checked_by dan tanggal hanya jika minggu tersebut belum disetujui
             for ($j = 1; $j <= 4; $j++) {
-                if (!$hopperCheck->{'approved_by_minggu'.$j} || $hopperCheck->{'approved_by_minggu'.$j} == '-') {
-                    $updateData['checked_by_minggu'.$j] = $request->input('checked_by_minggu'.$j);
+                if (!$hopperCheck->{'approver_id_minggu'.$j} || $hopperCheck->{'approver_id_minggu'.$j} == '-') {
+                    $updateData['checker_id_minggu'.$j] = $request->input('checker_id_minggu'.$j);
                     $updateData['tanggal_minggu'.$j] = $request->input('tanggal_minggu'.$j);
                 }
             }
@@ -338,7 +358,7 @@ class HopperController extends Controller
                     
                     // Proses data untuk setiap minggu
                     for ($j = 1; $j <= 4; $j++) {
-                        if (!$hopperCheck->{'approved_by_minggu'.$j} || $hopperCheck->{'approved_by_minggu'.$j} == '-') {
+                        if (!$hopperCheck->{'approver_id_minggu'.$j} || $hopperCheck->{'approver_id_minggu'.$j} == '-') {
                             $resultData['minggu'.$j] = $request->input("check_{$j}.{$index}", null);
                             $resultData['keterangan_minggu'.$j] = $request->input("keterangan_{$j}.{$index}", null);
                         }
@@ -394,28 +414,29 @@ class HopperController extends Controller
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
-        // Find the main hopper record
-        $hopperRecord = HopperCheck::findOrFail($check_id);
+        // Find the main hopper record with relationships
+        $hopperRecord = HopperCheck::with([
+            'checkerMinggu1', 'checkerMinggu2', 'checkerMinggu3', 'checkerMinggu4',
+            'approverMinggu1', 'approverMinggu2', 'approverMinggu3', 'approverMinggu4',
+        ])->findOrFail($check_id);
 
-        // Modify the checker fields to ensure unique values
-        $checkerFields = [
-            'checked_by_minggu1',
-            'checked_by_minggu2',
-            'checked_by_minggu3',
-            'checked_by_minggu4'
-        ];
+        // Collect unique checker usernames
+        $checkerUsernames = collect([
+            optional($hopperRecord->checkerMinggu1)->username,
+            optional($hopperRecord->checkerMinggu2)->username,
+            optional($hopperRecord->checkerMinggu3)->username,
+            optional($hopperRecord->checkerMinggu4)->username,
+        ])->filter()->unique()->values();
+        $hopperRecord->unique_checkers = $checkerUsernames->implode(', ');
 
-        // Collect unique checkers
-        $uniqueCheckers = collect($checkerFields)
-            ->map(function ($field) use ($hopperRecord) {
-                return $hopperRecord->$field;
-            })
-            ->filter()
-            ->unique()
-            ->values();
-
-        // Add unique checkers to the record
-        $hopperRecord->unique_checkers = $uniqueCheckers->implode(', ');
+        // Collect unique approver usernames
+        $approverUsernames = collect([
+            optional($hopperRecord->approverMinggu1)->username,
+            optional($hopperRecord->approverMinggu2)->username,
+            optional($hopperRecord->approverMinggu3)->username,
+            optional($hopperRecord->approverMinggu4)->username,
+        ])->filter()->unique()->values();
+        $hopperRecord->unique_approvers = $approverUsernames->implode(', ');
 
         // Prepare the checked items
         $items = [
@@ -452,6 +473,12 @@ class HopperController extends Controller
             }
         }
 
+        // Add checker and approver usernames for each week
+        for ($i = 1; $i <= 4; $i++) {
+            $viewData['checker_username_minggu'.$i] = optional($hopperRecord->{'checkerMinggu'.$i})->username;
+            $viewData['approver_username_minggu'.$i] = optional($hopperRecord->{'approverMinggu'.$i})->username;
+        }
+
         // Convert back to an object for view compatibility
         $viewData = (object) $viewData;
 
@@ -472,17 +499,16 @@ class HopperController extends Controller
         }
         // Validate the request - hanya validasi field yang dikirim dalam request
         $validatedData = $request->validate([
-            'approved_by_minggu1' => 'nullable|string|max:255',
-            'approved_by_minggu2' => 'nullable|string|max:255',
-            'approved_by_minggu3' => 'nullable|string|max:255',
-            'approved_by_minggu4' => 'nullable|string|max:255'
+            'approver_id_minggu1' => 'nullable|exists:approvers,id',
+            'approver_id_minggu2' => 'nullable|exists:approvers,id',
+            'approver_id_minggu3' => 'nullable|exists:approvers,id',
+            'approver_id_minggu4' => 'nullable|exists:approvers,id'
         ]);
 
         // Find the existing Hopper record
         $hopperRecord = HopperCheck::findOrFail($id);
 
         // Hanya update field yang ada dalam request
-        // Ini mencegah field yang sudah diisi sebelumnya ditimpa dengan null
         foreach ($validatedData as $field => $value) {
             if ($request->has($field)) {
                 $hopperRecord->{$field} = $value;

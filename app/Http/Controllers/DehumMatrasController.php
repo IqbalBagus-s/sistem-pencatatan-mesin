@@ -28,12 +28,12 @@ class DehumMatrasController extends Controller
         $currentGuard = $this->getCurrentGuard();
         $query = DehumMatrasCheck::query();
 
-        // Filter berdasarkan checked_by atau approved_by jika ada
+        // Filter berdasarkan checker_id atau approver_id jika ada
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
             $query->whereHas('detail', function ($q) use ($search) {
-                $q->where('checked_by', 'LIKE', $search)
-                ->orWhere('approved_by', 'LIKE', $search);
+                $q->where('checker_id', 'LIKE', $search)
+                ->orWhere('approver_id', 'LIKE', $search);
             });
         }
 
@@ -65,11 +65,16 @@ class DehumMatrasController extends Controller
         // Load informasi tambahan untuk setiap check
         foreach ($checks as $check) {
             // Get all unique checkers
-            $check->allCheckers = DehumMatrasDetail::where('tanggal_check_id', $check->id)
-                ->whereNotNull('checked_by')
-                ->pluck('checked_by')
+            $checkerIds = DehumMatrasDetail::where('tanggal_check_id', $check->id)
+                ->whereNotNull('checker_id')
+                ->pluck('checker_id')
                 ->unique()
                 ->toArray();
+            // Ambil username dari id checker
+            $check->allCheckers = [];
+            if (!empty($checkerIds)) {
+                $check->allCheckers = \App\Models\Checker::whereIn('id', $checkerIds)->pluck('username')->toArray();
+            }
                 
             // Get year and month from bulan field
             $year = substr($check->bulan, 0, 4);
@@ -80,12 +85,12 @@ class DehumMatrasController extends Controller
             
             // Count checked dates
             $check->filledDatesCount = DehumMatrasDetail::where('tanggal_check_id', $check->id)
-                ->whereNotNull('checked_by')
+                ->whereNotNull('checker_id')
                 ->count();
             
             // Count approved dates
             $check->approvedDatesCount = DehumMatrasDetail::where('tanggal_check_id', $check->id)
-                ->whereNotNull('approved_by')
+                ->whereNotNull('approver_id')
                 ->count();
         }
 
@@ -219,16 +224,16 @@ class DehumMatrasController extends Controller
                 DehumMatrasResultsTable3::create($resultData3);
             }
             
-            // Process checked_by information for all days (1-31)
+            // Process checker_id information for all days (1-31)
             for ($i = 1; $i <= 31; $i++) {
-                $checkedByKey = "checked_by_{$i}";
+                $checkerIdKey = "checker_id_{$i}";
                 
-                if ($request->has($checkedByKey) && !empty($request->$checkedByKey)) {
+                if ($request->has($checkerIdKey) && !empty($request->$checkerIdKey)) {
                     DehumMatrasDetail::create([
                         'tanggal_check_id' => $checkId,
                         'tanggal' => $i, // Using the column number as the day
-                        'checked_by' => $request->$checkedByKey,
-                        'approved_by' => null, // Approval would be handled separately
+                        'checker_id' => $request->$checkerIdKey,
+                        'approver_id' => null, // Approval would be handled separately
                     ]);
                 }
             }
@@ -277,6 +282,7 @@ class DehumMatrasController extends Controller
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
+        
         // Ambil data utama dehum matras check
         $check = DehumMatrasCheck::findOrFail($id);
         
@@ -285,25 +291,21 @@ class DehumMatrasController extends Controller
         $resultsTable2 = DehumMatrasResultsTable2::where('check_id', $id)->get();
         $resultsTable3 = DehumMatrasResultsTable3::where('check_id', $id)->get();
         
-        // Ambil data detail (checked_by dan approved_by)
-        $detailChecks = DehumMatrasDetail::where('tanggal_check_id', $id)->get();
+        // Ambil data detail dengan join untuk mendapatkan username dari model Checker dan Approver
+        $detailChecks = DehumMatrasDetail::where('tanggal_check_id', $id)
+            ->leftJoin('checkers', 'dehum_matras_details.checker_id', '=', 'checkers.id')
+            ->leftJoin('approvers', 'dehum_matras_details.approver_id', '=', 'approvers.id')
+            ->select(
+                'dehum_matras_details.*',
+                'checkers.username as checker_username',
+                'approvers.username as approver_username'
+            )
+            ->get();
         
         // Siapkan data untuk view dalam format yang sesuai dengan helper function
         $results = collect();
         
-        // Buat array untuk menyimpan data checked_by berdasarkan tanggal
-        $checkedByData = [];
-        
-        // Buat array untuk menyimpan data approved_by berdasarkan tanggal
-        $approvedByData = [];
-        
-        // Proses data checked_by dan approved_by dulu agar tersedia untuk digunakan kemudian
-        foreach ($detailChecks as $detail) {
-            $checkedByData[$detail->tanggal] = $detail->checked_by;
-            $approvedByData[$detail->tanggal] = $detail->approved_by ?? '';
-        }
-        
-        // Define the checked items for Dehum Matras berdasarkan fungsi store
+        // Define the checked items for Dehum Matras
         $items = [
             1 => 'Kompressor',
             2 => 'Kabel',
@@ -318,27 +320,15 @@ class DehumMatrasController extends Controller
         foreach ($resultsTable1 as $row) {
             $itemId = array_search($row->checked_items, $items);
             
-            // Jika item ditemukan, proses untuk setiap tanggal (1-11)
             if ($itemId) {
                 for ($j = 1; $j <= 11; $j++) {
                     $tanggalField = "tanggal{$j}";
-                    $keteranganField = "keterangan_tanggal{$j}";
                     
                     if (isset($row->$tanggalField)) {
-                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
-                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
-                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
-                        
-                        // Periksa apakah keterangan field ada di model
-                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
-                        
                         $results->push([
                             'tanggal' => $j,
                             'item_id' => $itemId,
                             'result' => $row->$tanggalField,
-                            'keterangan' => $keterangan,
-                            'checked_by' => $checkedBy,
-                            'approved_by' => $approvedBy
                         ]);
                     }
                 }
@@ -352,23 +342,12 @@ class DehumMatrasController extends Controller
             if ($itemId) {
                 for ($j = 12; $j <= 22; $j++) {
                     $tanggalField = "tanggal{$j}";
-                    $keteranganField = "keterangan_tanggal{$j}";
                     
                     if (isset($row->$tanggalField)) {
-                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
-                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
-                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
-                        
-                        // Periksa apakah keterangan field ada di model
-                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
-                        
                         $results->push([
                             'tanggal' => $j,
                             'item_id' => $itemId,
                             'result' => $row->$tanggalField,
-                            'keterangan' => $keterangan,
-                            'checked_by' => $checkedBy,
-                            'approved_by' => $approvedBy
                         ]);
                     }
                 }
@@ -382,58 +361,65 @@ class DehumMatrasController extends Controller
             if ($itemId) {
                 for ($j = 23; $j <= 31; $j++) {
                     $tanggalField = "tanggal{$j}";
-                    $keteranganField = "keterangan_tanggal{$j}";
                     
                     if (isset($row->$tanggalField)) {
-                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
-                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
-                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
-                        
-                        // Periksa apakah keterangan field ada di model
-                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
-                        
                         $results->push([
                             'tanggal' => $j,
                             'item_id' => $itemId,
                             'result' => $row->$tanggalField,
-                            'keterangan' => $keterangan,
-                            'checked_by' => $checkedBy,
-                            'approved_by' => $approvedBy
                         ]);
                     }
                 }
             }
         }
         
-        // Tambahkan data checked_by dan approved_by untuk tanggal yang mungkin belum memiliki item
-        for ($j = 1; $j <= 31; $j++) {
-            if (isset($checkedByData[$j]) && !$results->where('tanggal', $j)->where('checked_by', '!=', null)->count()) {
+        // Tambahkan data checker dan approver untuk setiap tanggal
+        foreach ($detailChecks as $detail) {
+            // Cari apakah sudah ada data untuk tanggal ini
+            $existingData = $results->where('tanggal', $detail->tanggal)->first();
+            
+            if ($existingData) {
+                // Update data yang sudah ada dengan informasi checker dan approver
+                $results = $results->map(function ($item) use ($detail) {
+                    if ($item['tanggal'] == $detail->tanggal) {
+                        $item['checked_by'] = $detail->checker_username; // Gunakan username untuk tampilan
+                        $item['checker_id'] = $detail->checker_id; // Tambahkan checker_id untuk form
+                        $item['approved_by'] = $detail->approver_username; // Gunakan username untuk tampilan
+                        $item['approver_id'] = $detail->approver_id; // Tambahkan approver_id untuk form
+                    }
+                    return $item;
+                });
+            } else {
+                // Tambahkan data baru jika belum ada
                 $results->push([
-                    'tanggal' => $j,
-                    'checked_by' => $checkedByData[$j],
-                    'approved_by' => $approvedByData[$j] ?? ''
+                    'tanggal' => $detail->tanggal,
+                    'checked_by' => $detail->checker_username,
+                    'checker_id' => $detail->checker_id,
+                    'approved_by' => $detail->approver_username,
+                    'approver_id' => $detail->approver_id
                 ]);
             }
         }
         
         return view('dehum-matras.edit', compact('check', 'results', 'user', 'currentGuard'));
     }
-
+    
     public function update(Request $request, $id)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
+        
         // Validasi input
         $validated = $request->validate([
             'nomer_dehum_matras' => 'required|integer|between:1,23',
             'shift' => 'required|integer|between:1,3',
             'bulan' => 'required|date_format:Y-m',
         ]);
-
+    
         // Cari data dehum matras yang akan diupdate
         $dehumMatrasCheck = DehumMatrasCheck::findOrFail($id);
-
+    
         // Cek apakah ada perubahan pada data utama (nomer_dehum_matras, shift, bulan)
         if ($dehumMatrasCheck->nomer_dehum_matras != $request->nomer_dehum_matras || 
             $dehumMatrasCheck->shift != $request->shift || 
@@ -452,10 +438,10 @@ class DehumMatrasController extends Controller
                     ->with('error', 'Data dengan nomor dehum matras, shift, dan bulan yang sama sudah ada!');
             }
         }
-
+    
         // Mulai transaksi database
         DB::beginTransaction();
-
+    
         try {
             // Update data DehumMatrasCheck
             $dehumMatrasCheck->update([
@@ -582,43 +568,28 @@ class DehumMatrasController extends Controller
                 }
             }
             
-            // Ambil data checked_by yang sudah ada
+            // Ambil data checker_id dan approver_id yang sudah ada
             $existingDetails = DehumMatrasDetail::where('tanggal_check_id', $id)
                 ->get()
                 ->keyBy('tanggal');
-            
-            // Proses informasi checked_by untuk semua hari (1-31)
+            // Proses informasi checker_id dan approver_id untuk semua hari (1-31)
             for ($i = 1; $i <= 31; $i++) {
-                $checkedByKey = "checked_by_{$i}";
-                $approvedByKey = "approved_by_{$i}";
+                $checkerIdKey = "checker_id_{$i}";
                 
-                if ($request->has($checkedByKey) || $request->has($approvedByKey)) {
+                // Hanya proses checker_id, abaikan approver_id
+                if ($request->has($checkerIdKey) && !empty($request->$checkerIdKey)) {
                     $detailData = [
-                        'checked_by' => $request->$checkedByKey ?? null,
+                        'checker_id' => $request->$checkerIdKey
                     ];
                     
-                    // Tambahkan approved_by jika ada
-                    if ($request->has($approvedByKey) && !empty($request->$approvedByKey)) {
-                        $detailData['approved_by'] = $request->$approvedByKey;
-                    }
-                    
                     $existingDetail = $existingDetails->get($i);
-                    
                     if ($existingDetail) {
-                        // Update data yang sudah ada
                         $existingDetail->update($detailData);
                     } else {
-                        // Buat data baru
                         $detailData['tanggal_check_id'] = $id;
                         $detailData['tanggal'] = $i;
-                        if (!isset($detailData['approved_by'])) {
-                            $detailData['approved_by'] = null;
-                        }
                         DehumMatrasDetail::create($detailData);
                     }
-                } elseif ($existingDetails->has($i)) {
-                    // Jika tidak ada data di form tapi ada di database, update nilai checked_by menjadi null
-                    $existingDetails->get($i)->update(['checked_by' => null]);
                 }
             }
             
@@ -643,6 +614,7 @@ class DehumMatrasController extends Controller
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
+        
         // Ambil data utama dehum matras check
         $check = DehumMatrasCheck::findOrFail($id);
         
@@ -651,23 +623,13 @@ class DehumMatrasController extends Controller
         $resultsTable2 = DehumMatrasResultsTable2::where('check_id', $id)->get();
         $resultsTable3 = DehumMatrasResultsTable3::where('check_id', $id)->get();
         
-        // Ambil data detail (checked_by dan approved_by)
-        $detailChecks = DehumMatrasDetail::where('tanggal_check_id', $id)->get();
+        // Ambil data detail dengan eager loading untuk checker dan approver
+        $detailChecks = DehumMatrasDetail::with(['checker', 'approver'])
+            ->where('tanggal_check_id', $id)
+            ->get();
         
         // Siapkan data untuk view dalam format yang sesuai dengan helper function
         $results = collect();
-        
-        // Buat array untuk menyimpan data checked_by berdasarkan tanggal
-        $checkedByData = [];
-        
-        // Buat array untuk menyimpan data approved_by berdasarkan tanggal
-        $approvedByData = [];
-        
-        // Proses data checked_by dan approved_by dulu agar tersedia untuk digunakan kemudian
-        foreach ($detailChecks as $detail) {
-            $checkedByData[$detail->tanggal] = $detail->checked_by;
-            $approvedByData[$detail->tanggal] = $detail->approved_by ?? '';
-        }
         
         // Define the checked items for Dehum Matras
         $items = [
@@ -684,27 +646,20 @@ class DehumMatrasController extends Controller
         foreach ($resultsTable1 as $row) {
             $itemId = array_search($row->checked_items, $items);
             
-            // Jika item ditemukan, proses untuk setiap tanggal (1-11)
             if ($itemId) {
                 for ($j = 1; $j <= 11; $j++) {
                     $tanggalField = "tanggal{$j}";
-                    $keteranganField = "keterangan_tanggal{$j}";
                     
                     if (isset($row->$tanggalField)) {
-                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
-                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
-                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
-                        
-                        // Periksa apakah keterangan field ada di model
-                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        // Cari data checker dan approver untuk tanggal ini
+                        $detail = $detailChecks->where('tanggal', $j)->first();
                         
                         $results->push([
                             'tanggal' => $j,
                             'item_id' => $itemId,
                             'result' => $row->$tanggalField,
-                            'keterangan' => $keterangan,
-                            'checked_by' => $checkedBy,
-                            'approved_by' => $approvedBy
+                            'checked_by' => $detail ? $detail->checker->username ?? null : null,
+                            'approved_by' => $detail ? $detail->approver->username ?? null : null
                         ]);
                     }
                 }
@@ -718,23 +673,17 @@ class DehumMatrasController extends Controller
             if ($itemId) {
                 for ($j = 12; $j <= 22; $j++) {
                     $tanggalField = "tanggal{$j}";
-                    $keteranganField = "keterangan_tanggal{$j}";
                     
                     if (isset($row->$tanggalField)) {
-                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
-                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
-                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
-                        
-                        // Periksa apakah keterangan field ada di model
-                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        // Cari data checker dan approver untuk tanggal ini
+                        $detail = $detailChecks->where('tanggal', $j)->first();
                         
                         $results->push([
                             'tanggal' => $j,
                             'item_id' => $itemId,
                             'result' => $row->$tanggalField,
-                            'keterangan' => $keterangan,
-                            'checked_by' => $checkedBy,
-                            'approved_by' => $approvedBy
+                            'checked_by' => $detail ? $detail->checker->username ?? null : null,
+                            'approved_by' => $detail ? $detail->approver->username ?? null : null
                         ]);
                     }
                 }
@@ -748,36 +697,30 @@ class DehumMatrasController extends Controller
             if ($itemId) {
                 for ($j = 23; $j <= 31; $j++) {
                     $tanggalField = "tanggal{$j}";
-                    $keteranganField = "keterangan_tanggal{$j}";
                     
                     if (isset($row->$tanggalField)) {
-                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
-                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
-                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
-                        
-                        // Periksa apakah keterangan field ada di model
-                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        // Cari data checker dan approver untuk tanggal ini
+                        $detail = $detailChecks->where('tanggal', $j)->first();
                         
                         $results->push([
                             'tanggal' => $j,
                             'item_id' => $itemId,
                             'result' => $row->$tanggalField,
-                            'keterangan' => $keterangan,
-                            'checked_by' => $checkedBy,
-                            'approved_by' => $approvedBy
+                            'checked_by' => $detail ? $detail->checker->username ?? null : null,
+                            'approved_by' => $detail ? $detail->approver->username ?? null : null
                         ]);
                     }
                 }
             }
         }
         
-        // Tambahkan data checked_by dan approved_by untuk tanggal yang mungkin belum memiliki item
-        for ($j = 1; $j <= 31; $j++) {
-            if (isset($checkedByData[$j]) && !$results->where('tanggal', $j)->where('checked_by', '!=', null)->count()) {
+        // Tambahkan data checker dan approver untuk tanggal yang hanya memiliki checker/approver tanpa item
+        foreach ($detailChecks as $detail) {
+            if (!$results->where('tanggal', $detail->tanggal)->count()) {
                 $results->push([
-                    'tanggal' => $j,
-                    'checked_by' => $checkedByData[$j],
-                    'approved_by' => $approvedByData[$j] ?? ''
+                    'tanggal' => $detail->tanggal,
+                    'checked_by' => $detail->checker ? $detail->checker->username : null,
+                    'approved_by' => $detail->approver ? $detail->approver->username : null
                 ]);
             }
         }
@@ -792,6 +735,7 @@ class DehumMatrasController extends Controller
         if (!$this->isAuthenticatedAs('approver')) {
             return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
         }
+
         // Validasi input
         $request->validate([
             'approved_by_*' => 'sometimes|string',
@@ -805,30 +749,37 @@ class DehumMatrasController extends Controller
             // Ambil data DehumMatrasCheck berdasarkan ID
             $check = DehumMatrasCheck::findOrFail($id);
             
-            // Proses informasi penanggung jawab untuk semua hari (1-31)
-            for ($i = 1; $i <= 31; $i++) {
-                $approvedByKey = "approved_by_{$i}";
-                $approveNumKey = "approve_num_{$i}";
-                
-                if ($request->has($approvedByKey) && !empty($request->input($approvedByKey))) {
-                    // Cari detail yang sudah ada untuk tanggal ini
-                    $detail = DehumMatrasDetail::where('tanggal_check_id', $id)
-                        ->where('tanggal', $i)
-                        ->first();
+            // Proses informasi penanggung jawab hanya untuk tanggal yang dipilih
+            foreach ($request->all() as $key => $value) {
+                // Hanya proses jika key adalah approved_by_ dan value tidak kosong
+                if (strpos($key, 'approved_by_') === 0 && !empty($value)) {
+                    // Ambil nomor tanggal dari key (misal: approved_by_5 akan mengambil 5)
+                    $tanggal = (int)str_replace('approved_by_', '', $key);
                     
-                    if ($detail) {
-                        // Update jika detail sudah ada
-                        $detail->update([
-                            'approved_by' => $request->$approvedByKey
-                        ]);
-                    } else {
-                        // Buat baru jika tidak ada detail
-                        DehumMatrasDetail::create([
-                            'tanggal_check_id' => $id,
-                            'tanggal' => $i,
-                            'checked_by' => null, // Checker akan diisi nanti
-                            'approved_by' => $request->$approvedByKey,
-                        ]);
+                    // Pastikan approve_num untuk tanggal ini juga ada dan sesuai
+                    $approveNumKey = 'approve_num_' . $tanggal;
+                    if ($request->has($approveNumKey) && $request->$approveNumKey == $tanggal) {
+                        // Cari detail yang sudah ada untuk tanggal ini
+                        $detail = DehumMatrasDetail::where('tanggal_check_id', $id)
+                            ->where('tanggal', $tanggal)
+                            ->first();
+                        
+                        if ($detail) {
+                            // Update jika detail sudah ada dan belum memiliki approver_id
+                            if (empty($detail->approver_id)) {
+                                $detail->update([
+                                    'approver_id' => $user->id
+                                ]);
+                            }
+                        } else {
+                            // Buat baru jika tidak ada detail
+                            DehumMatrasDetail::create([
+                                'tanggal_check_id' => $id,
+                                'tanggal' => $tanggal,
+                                'checker_id' => null,
+                                'approver_id' => $user->id
+                            ]);
+                        }
                     }
                 }
             }
@@ -853,11 +804,12 @@ class DehumMatrasController extends Controller
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
+        
         // Ambil data utama dehum matras check
         $dehumMatras = DehumMatrasCheck::findOrFail($id);
         
         // Ambil data form terkait
-        $form = Form::where('nomor_form', 'APTEK/048/REV.01')->firstOrFail(); // Sesuaikan dengan nomor form yang benar
+        $form = Form::where('nomor_form', 'APTEK/048/REV.01')->firstOrFail();
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
@@ -867,22 +819,23 @@ class DehumMatrasController extends Controller
         $resultsTable2 = DehumMatrasResultsTable2::where('check_id', $id)->get();
         $resultsTable3 = DehumMatrasResultsTable3::where('check_id', $id)->get();
         
-        // Ambil data detail (checked_by dan approved_by)
-        $detailChecks = DehumMatrasDetail::where('tanggal_check_id', $id)->get();
+        // Ambil data detail dengan join untuk mendapatkan username dari model Checker dan Approver
+        $detailChecks = DehumMatrasDetail::with(['checker', 'approver'])
+            ->where('tanggal_check_id', $id)
+            ->get();
         
         // Siapkan data untuk view dalam format yang sesuai
         $results = collect();
         
-        // Buat array untuk menyimpan data checked_by berdasarkan tanggal
-        $checkedByData = [];
+        // Buat array untuk menyimpan data checker dan approver berdasarkan tanggal
+        $checkerData = [];
+        $approverData = [];
         
-        // Buat array untuk menyimpan data approved_by berdasarkan tanggal
-        $approvedByData = [];
-        
-        // Proses data checked_by dan approved_by dulu agar tersedia untuk digunakan kemudian
+        // Proses data checker dan approver dulu agar tersedia untuk digunakan kemudian
         foreach ($detailChecks as $detail) {
-            $checkedByData[$detail->tanggal] = $detail->checked_by;
-            $approvedByData[$detail->tanggal] = $detail->approved_by ?? '';
+            // Simpan username dari relasi checker dan approver
+            $checkerData[$detail->tanggal] = $detail->checker ? $detail->checker->username : null;
+            $approverData[$detail->tanggal] = $detail->approver ? $detail->approver->username : null;
         }
         
         // Define the checked items for Dehum Matras
@@ -900,25 +853,19 @@ class DehumMatrasController extends Controller
         foreach ($resultsTable1 as $row) {
             $itemId = array_search($row->checked_items, $items);
             
-            // Jika item ditemukan, proses untuk setiap tanggal (1-11)
             if ($itemId) {
                 for ($j = 1; $j <= 11; $j++) {
                     $tanggalField = "tanggal{$j}";
-                    $keteranganField = "keterangan_tanggal{$j}";
                     
                     if (isset($row->$tanggalField)) {
-                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
-                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
-                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
-                        
-                        // Periksa apakah keterangan field ada di model
-                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        // Ambil username dari array yang sudah disiapkan
+                        $checkedBy = isset($checkerData[$j]) ? $checkerData[$j] : null;
+                        $approvedBy = isset($approverData[$j]) ? $approverData[$j] : null;
                         
                         $results->push([
                             'tanggal' => $j,
                             'item_id' => $itemId,
                             'result' => $row->$tanggalField,
-                            'keterangan' => $keterangan,
                             'checked_by' => $checkedBy,
                             'approved_by' => $approvedBy
                         ]);
@@ -934,21 +881,16 @@ class DehumMatrasController extends Controller
             if ($itemId) {
                 for ($j = 12; $j <= 22; $j++) {
                     $tanggalField = "tanggal{$j}";
-                    $keteranganField = "keterangan_tanggal{$j}";
                     
                     if (isset($row->$tanggalField)) {
-                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
-                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
-                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
-                        
-                        // Periksa apakah keterangan field ada di model
-                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        // Ambil username dari array yang sudah disiapkan
+                        $checkedBy = isset($checkerData[$j]) ? $checkerData[$j] : null;
+                        $approvedBy = isset($approverData[$j]) ? $approverData[$j] : null;
                         
                         $results->push([
                             'tanggal' => $j,
                             'item_id' => $itemId,
                             'result' => $row->$tanggalField,
-                            'keterangan' => $keterangan,
                             'checked_by' => $checkedBy,
                             'approved_by' => $approvedBy
                         ]);
@@ -964,21 +906,16 @@ class DehumMatrasController extends Controller
             if ($itemId) {
                 for ($j = 23; $j <= 31; $j++) {
                     $tanggalField = "tanggal{$j}";
-                    $keteranganField = "keterangan_tanggal{$j}";
                     
                     if (isset($row->$tanggalField)) {
-                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
-                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
-                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
-                        
-                        // Periksa apakah keterangan field ada di model
-                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        // Ambil username dari array yang sudah disiapkan
+                        $checkedBy = isset($checkerData[$j]) ? $checkerData[$j] : null;
+                        $approvedBy = isset($approverData[$j]) ? $approverData[$j] : null;
                         
                         $results->push([
                             'tanggal' => $j,
                             'item_id' => $itemId,
                             'result' => $row->$tanggalField,
-                            'keterangan' => $keterangan,
                             'checked_by' => $checkedBy,
                             'approved_by' => $approvedBy
                         ]);
@@ -987,13 +924,13 @@ class DehumMatrasController extends Controller
             }
         }
         
-        // Tambahkan data checked_by dan approved_by untuk tanggal yang mungkin belum memiliki item
-        for ($j = 1; $j <= 31; $j++) {
-            if (isset($checkedByData[$j]) && !$results->where('tanggal', $j)->where('checked_by', '!=', null)->count()) {
+        // Tambahkan data checker dan approver untuk tanggal yang hanya memiliki checker/approver tanpa item
+        foreach ($detailChecks as $detail) {
+            if (!$results->where('tanggal', $detail->tanggal)->count()) {
                 $results->push([
-                    'tanggal' => $j,
-                    'checked_by' => $checkedByData[$j],
-                    'approved_by' => $approvedByData[$j] ?? ''
+                    'tanggal' => $detail->tanggal,
+                    'checked_by' => $detail->checker ? $detail->checker->username : null,
+                    'approved_by' => $detail->approver ? $detail->approver->username : null
                 ]);
             }
         }
@@ -1010,11 +947,12 @@ class DehumMatrasController extends Controller
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
+        
         // Ambil data utama dehum matras check
         $dehumMatras = DehumMatrasCheck::findOrFail($id);
         
         // Ambil data form terkait
-        $form = Form::where('nomor_form', 'APTEK/048/REV.01')->firstOrFail(); // Sesuaikan dengan nomor form yang benar
+        $form = Form::where('nomor_form', 'APTEK/048/REV.01')->firstOrFail();
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
@@ -1024,22 +962,23 @@ class DehumMatrasController extends Controller
         $resultsTable2 = DehumMatrasResultsTable2::where('check_id', $id)->get();
         $resultsTable3 = DehumMatrasResultsTable3::where('check_id', $id)->get();
         
-        // Ambil data detail (checked_by dan approved_by)
-        $detailChecks = DehumMatrasDetail::where('tanggal_check_id', $id)->get();
+        // Ambil data detail dengan join untuk mendapatkan username dari model Checker dan Approver
+        $detailChecks = DehumMatrasDetail::with(['checker', 'approver'])
+            ->where('tanggal_check_id', $id)
+            ->get();
         
         // Siapkan data untuk view dalam format yang sesuai
         $results = collect();
         
-        // Buat array untuk menyimpan data checked_by berdasarkan tanggal
-        $checkedByData = [];
+        // Buat array untuk menyimpan data checker dan approver berdasarkan tanggal
+        $checkerData = [];
+        $approverData = [];
         
-        // Buat array untuk menyimpan data approved_by berdasarkan tanggal
-        $approvedByData = [];
-        
-        // Proses data checked_by dan approved_by dulu agar tersedia untuk digunakan kemudian
+        // Proses data checker dan approver dulu agar tersedia untuk digunakan kemudian
         foreach ($detailChecks as $detail) {
-            $checkedByData[$detail->tanggal] = $detail->checked_by;
-            $approvedByData[$detail->tanggal] = $detail->approved_by ?? '';
+            // Simpan username dari relasi checker dan approver
+            $checkerData[$detail->tanggal] = $detail->checker ? $detail->checker->username : null;
+            $approverData[$detail->tanggal] = $detail->approver ? $detail->approver->username : null;
         }
         
         // Define the checked items for Dehum Matras
@@ -1057,25 +996,19 @@ class DehumMatrasController extends Controller
         foreach ($resultsTable1 as $row) {
             $itemId = array_search($row->checked_items, $items);
             
-            // Jika item ditemukan, proses untuk setiap tanggal (1-11)
             if ($itemId) {
                 for ($j = 1; $j <= 11; $j++) {
                     $tanggalField = "tanggal{$j}";
-                    $keteranganField = "keterangan_tanggal{$j}";
                     
                     if (isset($row->$tanggalField)) {
-                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
-                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
-                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
-                        
-                        // Periksa apakah keterangan field ada di model
-                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        // Ambil username dari array yang sudah disiapkan
+                        $checkedBy = isset($checkerData[$j]) ? $checkerData[$j] : null;
+                        $approvedBy = isset($approverData[$j]) ? $approverData[$j] : null;
                         
                         $results->push([
                             'tanggal' => $j,
                             'item_id' => $itemId,
                             'result' => $row->$tanggalField,
-                            'keterangan' => $keterangan,
                             'checked_by' => $checkedBy,
                             'approved_by' => $approvedBy
                         ]);
@@ -1091,21 +1024,16 @@ class DehumMatrasController extends Controller
             if ($itemId) {
                 for ($j = 12; $j <= 22; $j++) {
                     $tanggalField = "tanggal{$j}";
-                    $keteranganField = "keterangan_tanggal{$j}";
                     
                     if (isset($row->$tanggalField)) {
-                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
-                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
-                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
-                        
-                        // Periksa apakah keterangan field ada di model
-                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        // Ambil username dari array yang sudah disiapkan
+                        $checkedBy = isset($checkerData[$j]) ? $checkerData[$j] : null;
+                        $approvedBy = isset($approverData[$j]) ? $approverData[$j] : null;
                         
                         $results->push([
                             'tanggal' => $j,
                             'item_id' => $itemId,
                             'result' => $row->$tanggalField,
-                            'keterangan' => $keterangan,
                             'checked_by' => $checkedBy,
                             'approved_by' => $approvedBy
                         ]);
@@ -1121,21 +1049,16 @@ class DehumMatrasController extends Controller
             if ($itemId) {
                 for ($j = 23; $j <= 31; $j++) {
                     $tanggalField = "tanggal{$j}";
-                    $keteranganField = "keterangan_tanggal{$j}";
                     
                     if (isset($row->$tanggalField)) {
-                        // Cek apakah ada data checked_by dan approved_by untuk tanggal ini
-                        $checkedBy = isset($checkedByData[$j]) ? $checkedByData[$j] : null;
-                        $approvedBy = isset($approvedByData[$j]) ? $approvedByData[$j] : null;
-                        
-                        // Periksa apakah keterangan field ada di model
-                        $keterangan = isset($row->$keteranganField) ? $row->$keteranganField : null;
+                        // Ambil username dari array yang sudah disiapkan
+                        $checkedBy = isset($checkerData[$j]) ? $checkerData[$j] : null;
+                        $approvedBy = isset($approverData[$j]) ? $approverData[$j] : null;
                         
                         $results->push([
                             'tanggal' => $j,
                             'item_id' => $itemId,
                             'result' => $row->$tanggalField,
-                            'keterangan' => $keterangan,
                             'checked_by' => $checkedBy,
                             'approved_by' => $approvedBy
                         ]);
@@ -1144,17 +1067,18 @@ class DehumMatrasController extends Controller
             }
         }
         
-        // Tambahkan data checked_by dan approved_by untuk tanggal yang mungkin belum memiliki item
-        for ($j = 1; $j <= 31; $j++) {
-            if (isset($checkedByData[$j]) && !$results->where('tanggal', $j)->where('checked_by', '!=', null)->count()) {
+        // Tambahkan data checker dan approver untuk tanggal yang hanya memiliki checker/approver tanpa item
+        foreach ($detailChecks as $detail) {
+            if (!$results->where('tanggal', $detail->tanggal)->count()) {
                 $results->push([
-                    'tanggal' => $j,
-                    'checked_by' => $checkedByData[$j],
-                    'approved_by' => $approvedByData[$j] ?? ''
+                    'tanggal' => $detail->tanggal,
+                    'checked_by' => $detail->checker ? $detail->checker->username : null,
+                    'approved_by' => $detail->approver ? $detail->approver->username : null
                 ]);
             }
         }
         
+        // Generate filename untuk PDF
         $nomor = $dehumMatras->nomer_dehum_matras ?? 'unknown';
         $shift = $dehumMatras->shift ?? 'unknown';
         
@@ -1163,15 +1087,15 @@ class DehumMatrasController extends Controller
 
         $filename = "Dehum_matras_nomer_{$nomor}_shift_{$shift}_bulan_{$namaBulan}.pdf";
         
-        // Render view sebagai HTML
+        // Render view sebagai HTML menggunakan compact yang sama dengan reviewPdf
         $html = view('dehum-matras.review_pdf', compact('dehumMatras', 'results', 'form', 'formattedTanggalEfektif', 'items', 'user', 'currentGuard'))->render();
         
         // Inisialisasi Dompdf
         $dompdf = new \Dompdf\Dompdf();
         $dompdf->loadHtml($html);
         
-        // Atur ukuran dan orientasi halaman (opsional)
-        $dompdf->setPaper('A4', 'potrait');
+        // Atur ukuran dan orientasi halaman
+        $dompdf->setPaper('A4', 'portrait'); // Diperbaiki dari 'potrait' ke 'portrait'
         
         // Render PDF (mengubah HTML menjadi PDF)
         $dompdf->render();
