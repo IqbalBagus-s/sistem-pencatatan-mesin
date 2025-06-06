@@ -16,8 +16,10 @@ return new class extends Migration
             $table->string('nomer_caplining');
             for ($i = 1; $i <= 5; $i++) {
                 $table->string('tanggal_check' . $i)->nullable();
-                $table->string('checked_by' . $i)->nullable();
-                $table->string('approved_by' . $i)->nullable();
+                $table->unsignedBigInteger('checker_id' . $i)->nullable();
+                $table->unsignedBigInteger('approver_id' . $i)->nullable();
+                $table->foreign('checker_id' . $i)->references('id')->on('checkers')->onDelete('set null')->onUpdate('cascade');
+                $table->foreign('approver_id' . $i)->references('id')->on('approvers')->onDelete('set null')->onUpdate('cascade');
             }
             $table->enum('status', ['disetujui', 'belum_disetujui'])->default('belum_disetujui');
             

@@ -18,8 +18,10 @@ return new class extends Migration
             
             // data checker & approver tiap minggu
             for ($i = 1; $i <= 4; $i++) {
-                $table->string("checked_by_minggu{$i}")->nullable(); // Bisa bernilai null
-                $table->string("approved_by_minggu{$i}")->nullable(); // Bisa bernilai null
+                $table->unsignedBigInteger("checker_minggu{$i}_id")->nullable();
+                $table->unsignedBigInteger("approver_minggu{$i}_id")->nullable();
+                $table->foreign("checker_minggu{$i}_id")->references('id')->on('checkers')->onDelete('set null')->onUpdate('cascade');
+                $table->foreign("approver_minggu{$i}_id")->references('id')->on('approvers')->onDelete('set null')->onUpdate('cascade');
             }
             $table->enum('status', ['disetujui', 'belum_disetujui'])->default('belum_disetujui');
 
