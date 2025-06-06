@@ -149,9 +149,9 @@
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             <div class="flex flex-col items-center space-y-1">
-                                @if($check->checked_by)
+                                @if($check->checker)
                                     <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm inline-block">
-                                        {{ $check->checked_by }}
+                                        {{ $check->checker->username }}
                                     </div>
                                 @else
                                     <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">

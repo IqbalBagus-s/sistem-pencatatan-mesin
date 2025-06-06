@@ -217,11 +217,11 @@
                                         <div class="flex flex-col gap-2 w-full">
                                             <input type="text" name="checked_by_1" x-ref="user1"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center readonly-input"
-                                                readonly value="{{ $check->checker_minggu2 }}">
+                                                readonly value="{{ old('checked_by_1', $check->checker_minggu2) }}">
 
                                             <input type="text" name="check_date_1" x-ref="date1"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center readonly-input"
-                                                readonly value="{{ $tanggal_minggu2 }}">
+                                                readonly value="{{ old('check_date_1', $tanggal_minggu2 ? formatTanggalIndonesia($tanggal_minggu2) : '') }}">
 
                                             <input type="hidden" name="check_num_1" x-ref="checkNum1" value="{{ $check_num_1 }}">
 
@@ -338,11 +338,11 @@
                                         <div class="flex flex-col gap-2 w-full">
                                             <input type="text" name="checked_by_2" x-ref="user2"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center readonly-input"
-                                                readonly value="{{ $check->checker_minggu4 }}">
+                                                readonly value="{{ old('checked_by_2', $check->checker_minggu4) }}">
                                             
                                             <input type="text" name="check_date_2" x-ref="date2"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center readonly-input"
-                                                readonly value="{{ $tanggal_minggu4 }}">
+                                                readonly value="{{ old('check_date_2', $tanggal_minggu4 ? formatTanggalIndonesia($tanggal_minggu4) : '') }}">
                                             
                                             <input type="hidden" name="check_num_2" x-ref="checkNum2" value="{{ $check_num_2 }}">
 

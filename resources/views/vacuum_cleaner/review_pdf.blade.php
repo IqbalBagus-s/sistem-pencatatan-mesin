@@ -77,7 +77,6 @@
             background-color: #f0f9ff;
         }
         
-        /* Perbaikan untuk horizontal note boxes - menggunakan border yang sama dengan tabel */
         .note-container {
             width: 100%;
             border-collapse: collapse;
@@ -120,12 +119,13 @@
 
         <table class="header-table">
             <tr>
-                <td width="50%"><span class="label">No Vacuum Cleaner:</span> {{ $vacuumCheck->nomer_vacum_cleaner }}</td>
-                <td width="50%" style="text-align: right;"><span class="label">Bulan:</span> {{ \Carbon\Carbon::parse($vacuumCheck->bulan)->translatedFormat('F Y') }}</td>
+                <td width="50%"><span class="label">No Vacuum Cleaner:</span> {{ $check->nomer_vacum_cleaner }}</td>
+                <td width="50%" style="text-align: right;"><span class="label">Bulan:</span> {{ \Carbon\Carbon::parse($check->bulan)->translatedFormat('F Y') }}</td>
             </tr>
         </table>
 
         <!-- Tabel Minggu 02 -->
+        @if($check_num_1)
         <table class="main-table">
             <thead>
                 <tr>
@@ -139,17 +139,15 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($items as $i => $item)
+                @foreach($itemsMap as $itemId => $itemName)
+                    @php
+                        $minggu2Data = $groupedResults->get(2, collect())->where('item_id', $itemId)->first();
+                        $resultValue = $minggu2Data ? $minggu2Data['result'] : '-';
+                        $keteranganValue = $minggu2Data ? $minggu2Data['keterangan'] : '';
+                    @endphp
                     <tr>
-                        <td>{{ $i }}</td>
-                        <td class="text-left">{{ $item }}</td>
-                        
-                        @php
-                            $hasChecker = !empty($vacuumCheck->checker_minggu2);
-                            $resultValue = $hasChecker && isset($vacuumCheck->check_2[$i]) ? $vacuumCheck->check_2[$i] : '-';
-                            $keteranganValue = $hasChecker && isset($vacuumCheck->keterangan_2[$i]) ? $vacuumCheck->keterangan_2[$i] : '';
-                        @endphp
-                        
+                        <td>{{ $itemId }}</td>
+                        <td class="text-left">{{ $itemName }}</td>
                         <td class="status-normal">{{ $resultValue }}</td>
                         <td class="text-left">{{ $keteranganValue }}</td>
                     </tr>
@@ -161,18 +159,16 @@
                     <td class="text-left" style="font-weight: bold;">Dibuat Oleh</td>
                     
                     @php
-                        $checkedBy = $vacuumCheck->checker_minggu2 ?? '';
-                        $tanggalRaw = $vacuumCheck->tanggal_dibuat_minggu2;
-                        $checkedDate = $tanggalRaw
-                            ? \Carbon\Carbon::parse($tanggalRaw)
+                        $checkedDate = $tanggal_minggu2
+                            ? \Carbon\Carbon::parse($tanggal_minggu2)
                                 ->locale('id')
                                 ->isoFormat('D MMMM YYYY')
                             : '-';
                     @endphp
                     
                     <td colspan="2" style="text-align: center;">
-                        {{ $checkedBy ?: '-' }}
-                        @if($checkedBy)
+                        {{ $checker_minggu2 ?: '-' }}
+                        @if($checker_minggu2)
                             <br>
                             <span style="font-size: 9px;">{{ $checkedDate }}</span>
                         @endif
@@ -183,17 +179,14 @@
                 <tr class="approver-row">
                     <td>-</td>
                     <td class="text-left" style="font-weight: bold;">Penanggung Jawab</td>
-                    
-                    @php
-                        $approvedBy = $vacuumCheck->approver_minggu2 ?? '-';
-                    @endphp
-                    
-                    <td colspan="2" style="text-align: center;">{{ $approvedBy }}</td>
+                    <td colspan="2" style="text-align: center;">{{ $approver_minggu2 ?: '-' }}</td>
                 </tr>
             </tbody>
         </table>
+        @endif
 
         <!-- Tabel Minggu 04 -->
+        @if($check_num_2)
         <table class="main-table">
             <thead>
                 <tr>
@@ -207,17 +200,15 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($items as $i => $item)
+                @foreach($itemsMap as $itemId => $itemName)
+                    @php
+                        $minggu4Data = $groupedResults->get(4, collect())->where('item_id', $itemId)->first();
+                        $resultValue = $minggu4Data ? $minggu4Data['result'] : '-';
+                        $keteranganValue = $minggu4Data ? $minggu4Data['keterangan'] : '';
+                    @endphp
                     <tr>
-                        <td>{{ $i }}</td>
-                        <td class="text-left">{{ $item }}</td>
-                        
-                        @php
-                            $hasChecker = !empty($vacuumCheck->checker_minggu4);
-                            $resultValue = $hasChecker && isset($vacuumCheck->check_4[$i]) ? $vacuumCheck->check_4[$i] : '-';
-                            $keteranganValue = $hasChecker && isset($vacuumCheck->keterangan_4[$i]) ? $vacuumCheck->keterangan_4[$i] : '';
-                        @endphp
-                        
+                        <td>{{ $itemId }}</td>
+                        <td class="text-left">{{ $itemName }}</td>
                         <td class="status-normal">{{ $resultValue }}</td>
                         <td class="text-left">{{ $keteranganValue }}</td>
                     </tr>
@@ -229,18 +220,16 @@
                     <td class="text-left" style="font-weight: bold;">Dibuat Oleh</td>
                     
                     @php
-                        $checkedBy = $vacuumCheck->checker_minggu4 ?? '';
-                        $tanggalRaw = $vacuumCheck->tanggal_dibuat_minggu4;
-                        $checkedDate = $tanggalRaw
-                            ? \Carbon\Carbon::parse($tanggalRaw)
+                        $checkedDate = $tanggal_minggu4
+                            ? \Carbon\Carbon::parse($tanggal_minggu4)
                                 ->locale('id')
                                 ->isoFormat('D MMMM YYYY')
                             : '-';
                     @endphp
                     
                     <td colspan="2" style="text-align: center;">
-                        {{ $checkedBy ?: '-' }}
-                        @if($checkedBy)
+                        {{ $checker_minggu4 ?: '-' }}
+                        @if($checker_minggu4)
                             <br>
                             <span style="font-size: 9px;">{{ $checkedDate }}</span>
                         @endif
@@ -251,17 +240,13 @@
                 <tr class="approver-row">
                     <td>-</td>
                     <td class="text-left" style="font-weight: bold;">Penanggung Jawab</td>
-                    
-                    @php
-                        $approvedBy = $vacuumCheck->approver_minggu4 ?? '-';
-                    @endphp
-                    
-                    <td colspan="2" style="text-align: center;">{{ $approvedBy }}</td>
+                    <td colspan="2" style="text-align: center;">{{ $approver_minggu4 ?: '-' }}</td>
                 </tr>
             </tbody>
         </table>
+        @endif
 
-        <!-- Horizontal Note Boxes - SUDAH DIPERBAIKI -->
+        <!-- Horizontal Note Boxes -->
         <table class="note-container">
             <tr>
                 <td>
@@ -291,11 +276,11 @@
                     <div style="margin-bottom: 40px;">Dibuat oleh:</div>
                     <div style="font-weight: bold;">
                         @php
-                            // Get unique checker names
-                            $checkers = collect([
-                                $vacuumCheck->checker_minggu2, 
-                                $vacuumCheck->checker_minggu4
-                            ])->filter()->unique()->values()->implode(', ') ?? '-';
+                            $checkers = collect([$checker_minggu2, $checker_minggu4])
+                                ->filter()
+                                ->unique()
+                                ->values()
+                                ->implode(', ') ?: '-';
                         @endphp
                         {{ $checkers }}
                     </div>
@@ -305,11 +290,11 @@
                     <div style="margin-bottom: 40px;">Disetujui oleh:</div>
                     <div style="font-weight: bold;">
                         @php
-                            // Get unique approver names
-                            $approvers = collect([
-                                $vacuumCheck->approver_minggu2, 
-                                $vacuumCheck->approver_minggu4
-                            ])->filter()->unique()->values()->implode(', ') ?? '........................';
+                            $approvers = collect([$approver_minggu2, $approver_minggu4])
+                                ->filter()
+                                ->unique()
+                                ->values()
+                                ->implode(', ') ?: '........................';
                         @endphp
                         {{ $approvers }}
                     </div>
@@ -318,12 +303,15 @@
             </tr>
         </table>
 
+        {{-- Bagian form info - sesuaikan jika ada variabel $form yang dikirim dari controller --}}
+        @if(isset($form))
         <table style="width: 100%; margin-bottom: 10px; margin-top: 20px;">
             <tr>
                 <td style="text-align: left;"><strong>Nomor Form:</strong> {{ $form->nomor_form }}</td>
-                <td style="text-align: right;"><strong>Tanggal Efektif:</strong> {{ $formattedTanggalEfektif }}</td>
+                <td style="text-align: right;"><strong>Tanggal Efektif:</strong> {{ $formattedTanggalEfektif ?? '-' }}</td>
             </tr>
         </table>
+        @endif
     </div>
 </body>
 </html>

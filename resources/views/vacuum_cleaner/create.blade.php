@@ -177,9 +177,10 @@
                                 <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-sm sticky left-0 z-10 w-12" rowspan="3">-</td>
                                 <td class="border border-gray-300 p-1 font-medium text-center bg-sky-50 text-sm sticky left-12 z-10 w-32">Dibuat Oleh</td>
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <input type="text" name="checked_by_1" x-ref="user"
+                                    <input type="text" name="checked_by_1_display" x-ref="userDisplay"
                                         class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                         readonly>
+                                    <input type="hidden" name="checked_by_1" x-ref="userId" value="">
                                     <input type="hidden" name="check_num_1" x-ref="checkNum" value="">
                                 </td>
                             </tr>
@@ -209,11 +210,13 @@
                                             @click="
                                                 selected = !selected; 
                                                 if(selected) {
-                                                    $refs.user.value = '{{ $user->username }}';
+                                                    $refs.userDisplay.value = '{{ $user->username }}';
+                                                    $refs.userId.value = '{{ $user->id }}';
                                                     $refs.checkNum.value = '1';
                                                     $refs.date.value = getFormattedDate();
                                                 } else {
-                                                    $refs.user.value = '';
+                                                    $refs.userDisplay.value = '';
+                                                    $refs.userId.value = '';
                                                     $refs.checkNum.value = '';
                                                     $refs.date.value = '';
                                                 }"
@@ -267,15 +270,19 @@
                                 </tr>
                             @endforeach
                         </tbody>
-                        {{-- baris checker --}}
+                        {{-- baris checker minggu ke-4 --}}
                         <tbody class="bg-white">
                             <tr class="bg-sky-50">
                                 <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-sm sticky left-0 z-10 w-12" rowspan="3">-</td>
                                 <td class="border border-gray-300 p-1 font-medium text-center bg-sky-50 text-sm sticky left-12 z-10 w-32">Dibuat Oleh</td>
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <input type="text" name="checked_by_2" x-ref="user2"
+                                    {{-- Input untuk menampilkan username (readonly) --}}
+                                    <input type="text" name="checked_by_2_display" x-ref="userDisplay2"
                                         class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                         readonly>
+                                    {{-- Input hidden untuk menyimpan ID user --}}
+                                    <input type="hidden" name="checked_by_2" x-ref="userId2" value="">
+                                    {{-- Input hidden untuk check number --}}
                                     <input type="hidden" name="check_num_2" x-ref="checkNum2" value="">
                                 </td>
                             </tr>
@@ -305,11 +312,20 @@
                                             @click="
                                                 selected = !selected; 
                                                 if(selected) {
-                                                    $refs.user2.value = '{{ $user->username }}';
+                                                    // Set username untuk tampilan
+                                                    $refs.userDisplay2.value = '{{ $user->username }}';
+                                                    // Set ID untuk database
+                                                    $refs.userId2.value = '{{ $user->id }}';
+                                                    // Set check number
                                                     $refs.checkNum2.value = '2';
+                                                    // Set tanggal
                                                     $refs.date2.value = getFormattedDate();
+                                                    // Debug console
+                                                    console.log('Minggu 4 - User ID yang dikirim:', '{{ $user->id }}');
+                                                    console.log('Minggu 4 - Username yang ditampilkan:', '{{ $user->username }}');
                                                 } else {
-                                                    $refs.user2.value = '';
+                                                    $refs.userDisplay2.value = '';
+                                                    $refs.userId2.value = '';
                                                     $refs.checkNum2.value = '';
                                                     $refs.date2.value = '';
                                                 }"

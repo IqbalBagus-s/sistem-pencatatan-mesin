@@ -174,40 +174,49 @@
                     </tr>
                 @endforeach
                 
-                <!-- Dibuat Oleh (Checker) -->
+                <!-- Dibuat Oleh (Checker) - DIPERBAIKI -->
                 <tr class="checker-row">
                     <td>-</td>
                     <td style="text-align: left; font-weight: bold;">Dibuat Oleh</td>
                     
-                   @for($j = 1; $j <= 5; $j++)
+                    @for($j = 1; $j <= 5; $j++)
                         @php
-                            $checkedByField = "checked_by{$j}";
+                            $checkerIdField = "checker_id{$j}";
                             $tanggalField = "tanggal_check{$j}";
-                            $checkedBy = $capliningCheck->$checkedByField ?? '';
+                            $checkerId = $capliningCheck->$checkerIdField ?? null;
                             $tanggalRaw = $capliningCheck->$tanggalField;
+                            
+                            // Ambil nama checker dari data yang sudah disiapkan di controller
+                            $checkerName = isset($checkerNames[$j]) ? $checkerNames[$j] : '-';
+                            
                             $checkedDate = $tanggalRaw
                                 ? \Carbon\Carbon::parse($tanggalRaw)
                                     ->locale('id')            // set locale ke Bahasa Indonesia
                                     ->isoFormat('D MMMM YYYY') // contoh: 9 Mei 2025
                                 : '-';
                         @endphp
-                        <td colspan="2" style="text-align: center;">
-                            {{ $checkedBy ?: '-' }}
+                        <td colspan="2" style="text-align: center;" data-checker-id="{{ $checkerId }}">
+                            {{ $checkerName }}
                         </td>
                     @endfor
                 </tr>
-                
-                <!-- Penanggung Jawab (Approver) -->
+
+                <!-- Penanggung Jawab (Approver) - DIPERBAIKI -->
                 <tr class="approver-row">
                     <td>-</td>
                     <td style="text-align: left; font-weight: bold;">Penanggung Jawab</td>
                     
                     @for($j = 1; $j <= 5; $j++)
                         @php
-                            $approvedByField = "approved_by{$j}";
-                            $approvedBy = $capliningCheck->$approvedByField ?? '-';
+                            $approverIdField = "approver_id{$j}";
+                            $approverId = $capliningCheck->$approverIdField ?? null;
+                            
+                            // Ambil nama approver dari data yang sudah disiapkan di controller
+                            $approverName = isset($approverNames[$j]) ? $approverNames[$j] : '-';
                         @endphp
-                        <td colspan="2" style="text-align: center;">{{ $approvedBy }}</td>
+                        <td colspan="2" style="text-align: center;" data-approver-id="{{ $approverId }}">
+                            {{ $approverName }}
+                        </td>
                     @endfor
                 </tr>
             </tbody>
@@ -232,23 +241,21 @@
             </tr>
         </table>
 
-        <!-- Tanda Tangan -->
+        <!-- Tanda Tangan - DIPERBAIKI -->
         <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
             <tr>
                 <td style="width: 50%; text-align: center; vertical-align: top;">
                     <div style="margin-bottom: 40px;">Dibuat oleh:</div>
                     <div style="font-weight: bold;">
                         @php
-                            // Get unique checker names
-                            $checkers = collect([
-                                $capliningCheck->checked_by1, 
-                                $capliningCheck->checked_by2, 
-                                $capliningCheck->checked_by3, 
-                                $capliningCheck->checked_by4,
-                                $capliningCheck->checked_by5
-                            ])->filter()->unique()->values()->implode(', ') ?? '-';
+                            // Get unique checker names dari data yang sudah disiapkan di controller
+                            $uniqueCheckers = collect($checkerNames)->filter(function($name) {
+                                return $name !== '-' && !empty($name);
+                            })->unique()->values();
+                            
+                            $displayCheckers = $uniqueCheckers->isNotEmpty() ? $uniqueCheckers->implode(', ') : '-';
                         @endphp
-                        {{ $checkers }}
+                        {{ $displayCheckers }}
                     </div>
                     <div>Checker</div>
                 </td>
@@ -256,16 +263,14 @@
                     <div style="margin-bottom: 40px;">Disetujui oleh:</div>
                     <div style="font-weight: bold;">
                         @php
-                            // Get unique approver names
-                            $approvers = collect([
-                                $capliningCheck->approved_by1, 
-                                $capliningCheck->approved_by2, 
-                                $capliningCheck->approved_by3, 
-                                $capliningCheck->approved_by4,
-                                $capliningCheck->approved_by5
-                            ])->filter()->unique()->values()->implode(', ') ?? '........................';
+                            // Get unique approver names dari data yang sudah disiapkan di controller
+                            $uniqueApprovers = collect($approverNames)->filter(function($name) {
+                                return $name !== '-' && !empty($name);
+                            })->unique()->values();
+                            
+                            $displayApprovers = $uniqueApprovers->isNotEmpty() ? $uniqueApprovers->implode(', ') : '........................';
                         @endphp
-                        {{ $approvers }}
+                        {{ $displayApprovers }}
                     </div>
                     <div>Penanggung Jawab</div>
                 </td>

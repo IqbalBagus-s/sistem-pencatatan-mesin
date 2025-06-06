@@ -119,11 +119,23 @@
                             @endif
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if(count($check->allCheckers) > 0)
+                            @php
+                                $checkers = collect([
+                                    $check->checker1,
+                                    $check->checker2,
+                                    $check->checker3,
+                                    $check->checker4,
+                                    $check->checker5
+                                ])->filter() // menghapus nilai null
+                                ->unique('id') // menghapus duplikasi berdasarkan ID
+                                ->values(); // re-index collection
+                            @endphp
+                            
+                            @if($checkers->count() > 0)
                                 <div class="flex flex-col items-center space-y-1">
-                                    @foreach($check->allCheckers as $checker)
+                                    @foreach($checkers as $checker)
                                         <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm inline-block">
-                                            {{ $checker }}
+                                            {{ $checker->name ?? $checker->username ?? 'Checker' }}
                                         </div>
                                     @endforeach
                                 </div>
@@ -135,14 +147,17 @@
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             @php
-                                $approvedCount = collect([
-                                    $check->approved_by1,
-                                    $check->approved_by2,
-                                    $check->approved_by3,
-                                    $check->approved_by4,
-                                    $check->approved_by5,
-                                ])->filter()->count();
+                                $approvers = collect([
+                                    $check->approver1,
+                                    $check->approver2,
+                                    $check->approver3,
+                                    $check->approver4,
+                                    $check->approver5
+                                ])->filter(); // menghapus nilai null
+                                
+                                $approvedCount = $approvers->count();
                             @endphp
+                            
                             @if($check->status === 'disetujui')
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui Penuh

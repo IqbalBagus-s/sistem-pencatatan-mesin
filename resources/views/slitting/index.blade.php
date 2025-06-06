@@ -132,12 +132,12 @@
                         <td class="py-3 px-4 border-b border-gray-200">
                             <div class="flex flex-col items-center space-y-1">
                                 @php
-                                    // Collect all non-empty checker names
+                                    // Collect all non-empty checker usernames from relations
                                     $checkers = collect([
-                                        $check->checked_by_minggu1,
-                                        $check->checked_by_minggu2,
-                                        $check->checked_by_minggu3,
-                                        $check->checked_by_minggu4
+                                        $check->checkerMinggu1?->username,
+                                        $check->checkerMinggu2?->username,
+                                        $check->checkerMinggu3?->username,
+                                        $check->checkerMinggu4?->username
                                     ])->filter()->unique()->values();
                                 @endphp
                                 
@@ -155,10 +155,10 @@
                         <td class="py-3 px-4 border-b border-gray-200">
                             @php
                                 $approvedCount = collect([
-                                    $check->approved_by_minggu1,
-                                    $check->approved_by_minggu2,
-                                    $check->approved_by_minggu3,
-                                    $check->approved_by_minggu4,
+                                    $check->approver_minggu1_id,
+                                    $check->approver_minggu2_id,
+                                    $check->approver_minggu3_id,
+                                    $check->approver_minggu4_id,
                                 ])->filter()->count();
                             @endphp
                             
@@ -168,7 +168,7 @@
                                 </span>
                             @elseif($approvedCount > 0)
                                 <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                    Disetujui Sebagian
+                                    Disetujui Sebagian ({{ $approvedCount }}/4)
                                 </span>
                             @else
                                 <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">

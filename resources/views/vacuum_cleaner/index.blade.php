@@ -154,8 +154,8 @@
                         <td class="py-3 px-4 border-b border-gray-200">
                             @php
                                 $approvedCount = collect([
-                                    $check->approver_minggu2,
-                                    $check->approver_minggu4,
+                                    $check->approver_minggu2_id,
+                                    $check->approver_minggu4_id,
                                 ])->filter()->count();
                             @endphp
                             

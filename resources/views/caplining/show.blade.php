@@ -67,35 +67,30 @@
                 
                 // Helper function untuk mendapatkan hasil check berdasarkan tanggal check dan item
                 function getCheckResult($results, $date, $itemId) {
-                    // Filter hasil berdasarkan tanggal_check dan item_id
                     $result = $results->where('tanggal_check', $date)->where('item_id', $itemId)->first();
                     return $result && isset($result['result']) ? $result['result'] : null;
                 }
 
                 // Helper function untuk mendapatkan keterangan berdasarkan tanggal check dan item
                 function getKeterangan($results, $date, $itemId) {
-                    // Filter hasil berdasarkan tanggal_check dan item_id
                     $result = $results->where('tanggal_check', $date)->where('item_id', $itemId)->first();
                     return $result && isset($result['keterangan']) ? $result['keterangan'] : '';
                 }
 
                 // Helper function untuk mendapatkan nama checker berdasarkan tanggal check
                 function getCheckerName($results, $date) {
-                    // Filter hasil berdasarkan tanggal_check
                     $result = $results->where('tanggal_check', $date)->first();
                     return $result && isset($result['checked_by']) ? $result['checked_by'] : '';
                 }
                 
                 // Helper function untuk mendapatkan nama penanggung jawab berdasarkan tanggal check
                 function getApprovedBy($results, $date) {
-                    // Filter hasil berdasarkan tanggal_check
                     $result = $results->where('tanggal_check', $date)->first();
                     return $result && isset($result['approved_by']) ? $result['approved_by'] : '';
                 }
                 
                 // Helper function untuk mendapatkan tanggal dari hasil check
                 function getTanggal($results, $date) {
-                    // Filter hasil berdasarkan tanggal_check
                     $result = $results->where('tanggal_check', $date)->first();
                     return $result && isset($result['tanggal']) ? $result['tanggal'] : '';
                 }
@@ -137,8 +132,14 @@
                                     </td>
                                     
                                     @for($j = 1; $j <= 5; $j++)
-                                        @php $checkedBy = $check->{"checked_by$j"}; @endphp
-                                        @if(empty($checkedBy))
+                                        @php 
+                                            // Cek apakah tanggal check tersedia
+                                            $tanggalCheck = "tanggal_check$j";
+                                            $checkerRelation = "checker$j";
+                                            $hasDateAndChecker = $check->$tanggalCheck && $check->$checkerRelation;
+                                        @endphp
+                                        
+                                        @if(!$hasDateAndChecker)
                                             <td class="border border-gray-300 p-1 h-10 text-center">—</td>
                                             <td class="border border-gray-300 p-1 h-10 text-sm text-gray-400 italic">Belum diisi</td>
                                         @else
@@ -178,15 +179,14 @@
                                     <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
                                         @php
                                             $approvedBy = getApprovedBy($results, $j);
+                                            $approverIdField = "approver_id$j";
+                                            $hasApprover = $check->$approverIdField;
                                         @endphp
                                         
                                         @if($approvedBy)
                                             <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
-                                            <div class="w-full px-2 py-1 text-sm">
-                                                <input type="text" name="approved_by_{{ $j }}" value="{{ $approvedBy }}"
-                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
-                                                    readonly>
-                                                <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
+                                            <div class="w-full px-2 py-1 text-sm text-center">
+                                                {{ $approvedBy }}
                                             </div>
                                         @else
                                             <!-- Jika belum ada penanggung jawab, tampilkan tombol pilih -->
@@ -196,21 +196,21 @@
                                                         @click="selected = true; 
                                                             userName = '{{ $user->username }}'; 
                                                             $refs.approver{{ $j }}.value = userName;
-                                                            $refs.approveNum{{ $j }}.value = '{{ $j }}';"
+                                                            $refs.approverId{{ $j }}.value = '{{ $user->id }}';"
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center bg-green-100 hover:bg-green-200">
                                                         Pilih
                                                     </button>
                                                 </div>
                                                 <div class="mt-1" x-show="selected">
-                                                    <input type="text" name="approved_by_{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
+                                                    <input type="text" x-ref="approver{{ $j }}" x-bind:value="userName"
                                                         class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                         readonly>
-                                                    <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="{{ $j }}">
+                                                    <input type="hidden" name="approver_id{{ $j }}" x-ref="approverId{{ $j }}" value="">
                                                     <button type="button" 
                                                         @click="selected = false; 
                                                             userName = ''; 
                                                             $refs.approver{{ $j }}.value = '';
-                                                            $refs.approveNum{{ $j }}.value = '';"
+                                                            $refs.approverId{{ $j }}.value = '';"
                                                         class="w-full px-2 py-1 text-xs border border-gray-300 rounded text-center bg-red-100 hover:bg-red-200">
                                                         Batal Pilih
                                                     </button>
@@ -281,19 +281,35 @@
                 <!-- Tombol Aksi - Sisi Kanan -->
                 <div class="flex flex-row flex-wrap gap-2 justify-end">
                     @php
-                        // Periksa apakah semua approved_by (1-5) telah terisi
+                        // Periksa apakah semua approver_id (1-5) telah terisi untuk tanggal check yang aktif
                         $allApproved = true;
+                        $hasActiveChecks = false;
+                        
+                        // Periksa setiap tanggal check yang aktif
                         for ($i = 1; $i <= 5; $i++) {
-                            $approvedByField = "approved_by{$i}";
-                            if (empty($check->$approvedByField)) {
-                                $allApproved = false;
-                                break;
+                            $tanggalField = "tanggal_check{$i}";
+                            $approverIdField = "approver_id{$i}";
+                            
+                            // Jika ada tanggal check yang terisi, berarti ada pemeriksaan aktif
+                            if (!empty($check->$tanggalField)) {
+                                $hasActiveChecks = true;
+                                
+                                // Periksa apakah tanggal check ini sudah disetujui (approver_id terisi)
+                                if (empty($check->$approverIdField)) {
+                                    $allApproved = false;
+                                    break;
+                                }
                             }
+                        }
+                        
+                        // Jika tidak ada pemeriksaan aktif sama sekali, anggap belum disetujui
+                        if (!$hasActiveChecks) {
+                            $allApproved = false;
                         }
                     @endphp
                     
                     @if (!$allApproved)
-                        <!-- Belum semua tanggal check disetujui, tampilkan tombol "Setujui" -->
+                        <!-- Belum semua tanggal check yang aktif disetujui, tampilkan tombol "Setujui" -->
                         <button type="submit" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -302,8 +318,8 @@
                         </button>
                     @endif
                     
-                    @if ($allApproved)
-                        <!-- Semua tanggal check telah disetujui, tampilkan tombol Preview dan Download PDF -->
+                    @if ($allApproved && $hasActiveChecks)
+                        <!-- Semua tanggal check yang aktif telah disetujui, tampilkan tombol Preview dan Download PDF -->
                         <!-- Tombol Preview PDF -->
                         <a href="{{ route('caplining.pdf', $check->id) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -317,9 +333,16 @@
                         <a href="{{ route('caplining.downloadPdf', $check->id) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Download PDF
+                            </svg>
+                            Download PDF
                         </a>
+                    @endif
+                    
+                    @if (!$hasActiveChecks)
+                        <!-- Jika belum ada pemeriksaan aktif, tampilkan pesan atau tombol untuk memulai pemeriksaan -->
+                        <div class="text-sm text-gray-500 italic">
+                            Belum ada pemeriksaan yang dilakukan
+                        </div>
                     @endif
                 </div>
             </div>

@@ -214,23 +214,25 @@
                                 
                                 <!-- Minggu 1 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
+                                    <div x-data="{ selected: false, checkerId: null, checkerName: '' }">
                                         <div class="mt-1 mb-1" x-show="selected">
-                                            <input type="text" name="checked_by_1" x-ref="user1" x-bind:value="userName"
+                                            <input type="text" x-ref="displayName1" x-bind:value="checkerName"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
-                                            <input type="hidden" name="check_num_1" x-ref="checkNum1" value="1">
+                                            <input type="hidden" name="checker_minggu1_id" x-ref="checkerId1" x-bind:value="checkerId">
                                         </div>
                                         <button type="button" 
                                             @click="selected = !selected; 
                                                 if(selected) {
-                                                    userName = '{{ $user->username }}'; 
-                                                    $refs.user1.value = userName;
-                                                    $refs.checkNum1.value = '1';
+                                                    checkerId = {{ $user->id }}; 
+                                                    checkerName = '{{ $user->username }}'; 
+                                                    $refs.checkerId1.value = checkerId;
+                                                    $refs.displayName1.value = checkerName;
                                                 } else {
-                                                    userName = '';
-                                                    $refs.user1.value = '';
-                                                    $refs.checkNum1.value = '';
+                                                    checkerId = null;
+                                                    checkerName = '';
+                                                    $refs.checkerId1.value = '';
+                                                    $refs.displayName1.value = '';
                                                 }"
                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                             :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
@@ -241,23 +243,25 @@
                                 
                                 <!-- Minggu 2 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
+                                    <div x-data="{ selected: false, checkerId: null, checkerName: '' }">
                                         <div class="mt-1 mb-1" x-show="selected">
-                                            <input type="text" name="checked_by_2" x-ref="user2" x-bind:value="userName"
+                                            <input type="text" x-ref="displayName2" x-bind:value="checkerName"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
-                                            <input type="hidden" name="check_num_2" x-ref="checkNum2" value="2">
+                                            <input type="hidden" name="checker_minggu2_id" x-ref="checkerId2" x-bind:value="checkerId">
                                         </div>
                                         <button type="button" 
                                             @click="selected = !selected; 
                                                 if(selected) {
-                                                    userName = '{{ $user->username }}'; 
-                                                    $refs.user2.value = userName;
-                                                    $refs.checkNum2.value = '2';
+                                                    checkerId = {{ $user->id }}; 
+                                                    checkerName = '{{ $user->username }}'; 
+                                                    $refs.checkerId2.value = checkerId;
+                                                    $refs.displayName2.value = checkerName;
                                                 } else {
-                                                    userName = '';
-                                                    $refs.user2.value = '';
-                                                    $refs.checkNum2.value = '';
+                                                    checkerId = null;
+                                                    checkerName = '';
+                                                    $refs.checkerId2.value = '';
+                                                    $refs.displayName2.value = '';
                                                 }"
                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                             :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
@@ -268,23 +272,25 @@
                                 
                                 <!-- Minggu 3 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
+                                    <div x-data="{ selected: false, checkerId: null, checkerName: '' }">
                                         <div class="mt-1 mb-1" x-show="selected">
-                                            <input type="text" name="checked_by_3" x-ref="user3" x-bind:value="userName"
+                                            <input type="text" x-ref="displayName3" x-bind:value="checkerName"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
-                                            <input type="hidden" name="check_num_3" x-ref="checkNum3" value="3">
+                                            <input type="hidden" name="checker_minggu3_id" x-ref="checkerId3" x-bind:value="checkerId">
                                         </div>
                                         <button type="button" 
                                             @click="selected = !selected; 
                                                 if(selected) {
-                                                    userName = '{{ $user->username }}'; 
-                                                    $refs.user3.value = userName;
-                                                    $refs.checkNum3.value = '3';
+                                                    checkerId = {{ $user->id }}; 
+                                                    checkerName = '{{ $user->username }}'; 
+                                                    $refs.checkerId3.value = checkerId;
+                                                    $refs.displayName3.value = checkerName;
                                                 } else {
-                                                    userName = '';
-                                                    $refs.user3.value = '';
-                                                    $refs.checkNum3.value = '';
+                                                    checkerId = null;
+                                                    checkerName = '';
+                                                    $refs.checkerId3.value = '';
+                                                    $refs.displayName3.value = '';
                                                 }"
                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                             :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
@@ -295,23 +301,25 @@
                                 
                                 <!-- Minggu 4 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
+                                    <div x-data="{ selected: false, checkerId: null, checkerName: '' }">
                                         <div class="mt-1 mb-1" x-show="selected">
-                                            <input type="text" name="checked_by_4" x-ref="user4" x-bind:value="userName"
+                                            <input type="text" x-ref="displayName4" x-bind:value="checkerName"
                                                 class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
-                                            <input type="hidden" name="check_num_4" x-ref="checkNum4" value="4">
+                                            <input type="hidden" name="checker_minggu4_id" x-ref="checkerId4" x-bind:value="checkerId">
                                         </div>
                                         <button type="button" 
                                             @click="selected = !selected; 
                                                 if(selected) {
-                                                    userName = '{{ $user->username }}'; 
-                                                    $refs.user4.value = userName;
-                                                    $refs.checkNum4.value = '4';
+                                                    checkerId = {{ $user->id }}; 
+                                                    checkerName = '{{ $user->username }}'; 
+                                                    $refs.checkerId4.value = checkerId;
+                                                    $refs.displayName4.value = checkerName;
                                                 } else {
-                                                    userName = '';
-                                                    $refs.user4.value = '';
-                                                    $refs.checkNum4.value = '';
+                                                    checkerId = null;
+                                                    checkerName = '';
+                                                    $refs.checkerId4.value = '';
+                                                    $refs.displayName4.value = '';
                                                 }"
                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                             :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">

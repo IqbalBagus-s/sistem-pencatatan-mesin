@@ -128,7 +128,6 @@
                         $result = $resultsByItem[$item] ?? null;
                         $checkValue = $result ? $result['check'] : '-';
                         $keterangan = $result ? $result['keterangan'] : '';
-                        
                     @endphp
                     <tr>
                         <td>{{ $i }}</td>
@@ -143,7 +142,7 @@
                     <td>-</td>
                     <td class="item-cell" style="font-weight: bold;">Dibuat Oleh</td>
                     <td colspan="2" style="text-align: center;">
-                        {{ $checkerData['checked_by'] }}
+                        {{ $checkerData['checker_name'] }}
                         @if($checkerData['tanggal'])
                             <br>
                             <span style="font-size: 9px;">{{ $checkerData['tanggal'] }}</span>
@@ -156,7 +155,7 @@
                     <td>-</td>
                     <td class="item-cell" style="font-weight: bold;">Penanggung Jawab</td>
                     <td colspan="2" style="text-align: center;">
-                        {{ $craneMatrasCheck->approved_by ?: '........................' }}
+                        {{ $checkerData['approver_name'] ?: '........................' }}
                     </td>
                 </tr>
             </tbody>
@@ -203,14 +202,14 @@
                 <td style="width: 50%; text-align: center; vertical-align: top;">
                     <div style="margin-bottom: 40px;">Dibuat oleh:</div>
                     <div style="font-weight: bold;">
-                        {{ $checkerData['checked_by'] }}
+                        {{ $checkerData['checker_name'] }}
                     </div>
                     <div>Checker</div>
                 </td>
                 <td style="width: 50%; text-align: center; vertical-align: top;">
                     <div style="margin-bottom: 40px;">Disetujui oleh:</div>
                     <div style="font-weight: bold;">
-                        {{ $craneMatrasCheck->approved_by ?: '........................' }}
+                        {{ $checkerData['approver_name'] ?: '........................' }}
                     </div>
                     <div>Penanggung Jawab</div>
                 </td>

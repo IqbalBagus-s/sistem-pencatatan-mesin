@@ -80,8 +80,8 @@
                             
                             @for ($i = 1; $i <= 4; $i++)
                                 @php
-                                    // Menggunakan format nama field yang benar
-                                    $isApproved = !empty($check->{'approved_by_minggu'.$i});
+                                    // Menggunakan format nama field yang benar untuk approval
+                                    $isApproved = !empty($check->{'approver_minggu'.$i.'_id'}) && $check->{'approver_minggu'.$i.'_id'} != '-';
                                 @endphp
                                 <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 text-sm" colspan="1">0{{ $i }}</th>
                                 <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 w-32 text-sm" rowspan="2">Keterangan</th>
@@ -91,8 +91,8 @@
                             <th class="border border-gray-300 bg-sky-50 p-2 min-w-28 text-sm sticky left-10 z-10">Item Terperiksa</th>
                             @for ($i = 1; $i <= 4; $i++)
                                 @php
-                                    // Menggunakan format nama field yang benar
-                                    $isApproved = !empty($check->{'approved_by_minggu'.$i});
+                                    // Menggunakan format nama field yang benar untuk approval
+                                    $isApproved = !empty($check->{'approver_minggu'.$i.'_id'}) && $check->{'approver_minggu'.$i.'_id'} != '-';
                                 @endphp
                                 <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 text-sm">Check</th>
                             @endfor
@@ -108,9 +108,9 @@
                                 
                                 @for($j = 1; $j <= 4; $j++)
                                     @php
-                                        // Menggunakan format nama field yang benar
-                                        $isApproved = !empty($check->{'approved_by_minggu'.$j});
-                                        $resultValue = isset($formattedResults[$i]['minggu'.$j]) ? $formattedResults[$i]['minggu'.$j] : '';
+                                        // Menggunakan format nama field yang benar untuk approval
+                                        $isApproved = !empty($check->{'approver_minggu'.$j.'_id'}) && $check->{'approver_minggu'.$j.'_id'} != '-';
+                                        $resultValue = isset($formattedResults[$i]['minggu'.$j]) ? $formattedResults[$i]['minggu'.$j] : 'V';
                                         $keteranganValue = isset($formattedResults[$i]['keterangan_minggu'.$j]) ? $formattedResults[$i]['keterangan_minggu'.$j] : '';
                                     @endphp
                                 
@@ -161,8 +161,16 @@
                                 @php
                                     $checkedBy = $checkerData['checked_by_'.$j] ?? '';
                                     $isChecked = !empty($checkedBy);
-                                    // Menggunakan format nama field yang benar
-                                    $isApproved = !empty($check->{'approved_by_minggu'.$j});
+                                    // Menggunakan format nama field yang benar untuk approval
+                                    $isApproved = !empty($check->{'approver_minggu'.$j.'_id'}) && $check->{'approver_minggu'.$j.'_id'} != '-';
+                                    
+                                    // Ambil nama approver
+                                    $approvedBy = '';
+                                    if($isApproved) {
+                                        $approverId = $check->{'approver_minggu'.$j.'_id'};
+                                        $approverUser = $approverId ? \App\Models\Approver::find($approverId) : null;
+                                        $approvedBy = $approverUser ? $approverUser->username : '';
+                                    }
                                 @endphp
                                 <td colspan="2" class="border border-gray-300 p-1 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }}">
                                     <div x-data="{ 
@@ -178,9 +186,9 @@
                                             
                                             @if($isApproved)
                                                 <div class="mt-1 text-xs text-green-600 text-center">
-                                                    Disetujui oleh: {{ $check->{'approved_by_minggu'.$j} }}
+                                                    Disetujui oleh: {{ $approvedBy }}
                                                 </div>
-                                                <input type="hidden" name="approved_by_minggu{{ $j }}" value="{{ $check->{'approved_by_minggu'.$j} }}">
+                                                <input type="hidden" name="approver_id_minggu{{ $j }}" value="{{ $check->{'approver_minggu'.$j.'_id'} }}">
                                             @endif
                                         </div>
                                         

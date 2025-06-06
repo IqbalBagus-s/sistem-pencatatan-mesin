@@ -83,8 +83,8 @@
                             
                             @for ($i = 1; $i <= 5; $i++)
                                 @php
-                                    // Check if this column is approved
-                                    $isApproved = !empty($check->{'approved_by'.$i});
+                                    // PERBAIKAN: Check if this column is approved - harus check approver_id bukan approved_by
+                                    $isApproved = !empty($check->{'approver_id'.$i}) && $check->{'approver_id'.$i} != '-';
                                 @endphp
                                 <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2" colspan="1">
                                     <!-- Conditionally editable date field based on whether date exists -->
@@ -176,7 +176,8 @@
                             <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
                             @for ($i = 1; $i <= 5; $i++)
                                 @php
-                                    $isApproved = !empty($check->{'approved_by'.$i});
+                                    // PERBAIKAN: Gunakan approver_id untuk check approval status
+                                    $isApproved = !empty($check->{'approver_id'.$i}) && $check->{'approver_id'.$i} != '-';
                                 @endphp
                                 <th class="border border-gray-300 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }} p-2 min-w-20">Cek</th>
                             @endfor
@@ -198,8 +199,8 @@
                                         $resultValue = $currentItem['result'] ?? '';
                                         $keteranganValue = $currentItem['keterangan'] ?? '';
                                         
-                                        // Check if this column is approved
-                                        $isApproved = !empty($check->{'approved_by'.$j});
+                                        // PERBAIKAN: Check if this column is approved - gunakan approver_id
+                                        $isApproved = !empty($check->{'approver_id'.$j}) && $check->{'approver_id'.$j} != '-';
                                     @endphp
                                     <td class="border border-gray-300 p-1 h-10 {{ $isApproved ? 'bg-green-50' : '' }}">
                                         @if($isApproved)
@@ -244,9 +245,19 @@
                             
                             @for($j = 1; $j <= 5; $j++)
                                 @php
-                                    $checkedBy = $check->{"checked_by$j"} ?? '';
-                                    $isChecked = !empty($checkedBy);
-                                    $isApproved = !empty($check->{"approved_by$j"});
+                                    // Ambil data checker dari relasi
+                                    $checkerRelation = "checker$j";
+                                    $checkedBy = $check->$checkerRelation ? $check->$checkerRelation->username : '';
+                                    $checkerId = $check->{"checker_id$j"} ?? '';
+                                    
+                                    // Ambil data approver dari relasi
+                                    $approverRelation = "approver$j";
+                                    $approvedBy = $check->$approverRelation ? $check->$approverRelation->username : '';
+                                    $approverId = $check->{"approver_id$j"} ?? '';
+                                    
+                                    $isChecked = !empty($checkerId);
+                                    // PERBAIKAN: Check approval status yang benar
+                                    $isApproved = !empty($approverId) && $approverId != '-';
                                 @endphp
                                 <td colspan="2" class="border border-gray-300 p-1 {{ $isApproved ? 'bg-green-50' : 'bg-sky-50' }}">
                                     <div x-data="{ 
@@ -254,6 +265,7 @@
                                         username: '{{ $isChecked ? $checkedBy : $user->username }}',
                                         originalUsername: '{{ $checkedBy }}',
                                         currentUsername: '{{ $user->username }}',
+                                        currentUserId: '{{ $user->id }}',
                                         isPreexisting: {{ $isChecked ? 'true' : 'false' }},
                                         isApproved: {{ $isApproved ? 'true' : 'false' }}
                                     }">
@@ -262,7 +274,7 @@
                                             </span>
                                             @if($isApproved)
                                                 <div class="mt-1 text-xs text-green-600 text-center">
-                                                    Disetujui oleh: {{ $check->{"approved_by$j"} }}
+                                                    Disetujui oleh: {{ $approvedBy }}
                                                 </div>
                                             @endif
                                         </div>
@@ -273,24 +285,24 @@
                                                 selected = !selected;
                                                 if(selected) {
                                                     username = currentUsername;
-                                                    document.querySelector('input[name=\'checked_by{{ $j }}\']').value = currentUsername;
+                                                    document.querySelector('input[name=\'checker_id{{ $j }}\']').value = currentUserId;
                                                     document.querySelector('input[name=\'tanggal_check{{ $j }}\']').value = 
                                                     document.querySelector('input[name=\'tanggal_{{ $j }}\']').value;
                                                 } else {
                                                     username = '';
-                                                    document.querySelector('input[name=\'checked_by{{ $j }}\']').value = '';
+                                                    document.querySelector('input[name=\'checker_id{{ $j }}\']').value = '';
                                                     document.querySelector('input[name=\'tanggal_check{{ $j }}\']').value = '';
                                                 }"
                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                             :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
                                             <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
                                         </button>
-                                        <!-- Hidden input to store who checked this column -->
-                                        <input type="hidden" name="checked_by{{ $j }}" value="{{ $checkedBy }}">
+                                        <!-- Hidden input to store checker ID (not username) -->
+                                        <input type="hidden" name="checker_id{{ $j }}" value="{{ $checkerId }}">
                                         <!-- Hidden input to store the check date for the controller -->
                                         <input type="hidden" name="tanggal_check{{ $j }}" value="{{ $check->{'tanggal_check'.$j} ? date('d', strtotime($check->{'tanggal_check'.$j})) . ' ' . $bulanSingkat[date('n', strtotime($check->{'tanggal_check'.$j}))] . ' ' . date('Y', strtotime($check->{'tanggal_check'.$j})) : '' }}">
-                                        <!-- Hidden input to maintain approved by value -->
-                                        <input type="hidden" name="approved_by{{ $j }}" value="{{ $check->{'approved_by'.$j} ?? '' }}">
+                                        <!-- Hidden input to maintain approver ID value -->
+                                        <input type="hidden" name="approver_id{{ $j }}" value="{{ $approverId }}">
                                     </div>
                                 </td>
                             @endfor

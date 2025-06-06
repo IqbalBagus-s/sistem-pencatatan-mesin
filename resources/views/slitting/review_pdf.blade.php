@@ -83,7 +83,7 @@
 
         <table class="header-table">
             <tr>
-                <td width="50%"><span class="label">No Slitting:</span> Slitting nomor {{ $slittingCheck->nomer_slitting }}</td>
+                <td width="50%"><span class="label">No Slitting:</span> {{ $slittingCheck->nomer_slitting }}</td>
                 <td width="50%" style="text-align: right;"><span class="label">Bulan:</span> {{ \Carbon\Carbon::parse($slittingCheck->bulan)->translatedFormat('F Y') }}</td>
             </tr>
         </table>
@@ -126,7 +126,7 @@
                         
                         @for($j = 1; $j <= 4; $j++)
                             @php
-                                $hasChecker = !empty($slittingCheck->{'checked_by_minggu'.$j});
+                                $hasChecker = !empty($slittingCheck->{'checker_minggu'.$j.'_id'});
                                 $resultValue = $hasChecker && isset($slittingCheck->{'check_'.$j}[$i]) ? $slittingCheck->{'check_'.$j}[$i] : '-';
                                 $keteranganValue = $hasChecker && isset($slittingCheck->{'keterangan_'.$j}[$i]) ? $slittingCheck->{'keterangan_'.$j}[$i] : '';
                             @endphp
@@ -151,7 +151,7 @@
                         
                         @for($j = 1; $j <= 4; $j++)
                             @php
-                                $hasChecker = !empty($slittingCheck->{'checked_by_minggu'.$j});
+                                $hasChecker = !empty($slittingCheck->{'checker_minggu'.$j.'_id'});
                                 $resultValue = $hasChecker && isset($slittingCheck->{'check_'.$j}[$i]) ? $slittingCheck->{'check_'.$j}[$i] : '-';
                                 $keteranganValue = $hasChecker && isset($slittingCheck->{'keterangan_'.$j}[$i]) ? $slittingCheck->{'keterangan_'.$j}[$i] : '';
                             @endphp
@@ -175,7 +175,7 @@
                         
                         @for($j = 1; $j <= 4; $j++)
                             @php
-                                $hasChecker = !empty($slittingCheck->{'checked_by_minggu'.$j});
+                                $hasChecker = !empty($slittingCheck->{'checker_minggu'.$j.'_id'});
                                 $resultValue = $hasChecker && isset($slittingCheck->{'check_'.$j}[$i]) ? $slittingCheck->{'check_'.$j}[$i] : '-';
                                 $keteranganValue = $hasChecker && isset($slittingCheck->{'keterangan_'.$j}[$i]) ? $slittingCheck->{'keterangan_'.$j}[$i] : '';
                             @endphp
@@ -202,7 +202,7 @@
                         
                         @for($j = 1; $j <= 4; $j++)
                             @php
-                                $hasChecker = !empty($slittingCheck->{'checked_by_minggu'.$j});
+                                $hasChecker = !empty($slittingCheck->{'checker_minggu'.$j.'_id'});
                                 $resultValue = $hasChecker && isset($slittingCheck->{'check_'.$j}[$i]) ? $slittingCheck->{'check_'.$j}[$i] : '-';
                                 $keteranganValue = $hasChecker && isset($slittingCheck->{'keterangan_'.$j}[$i]) ? $slittingCheck->{'keterangan_'.$j}[$i] : '';
                             @endphp
@@ -229,7 +229,7 @@
                         
                         @for($j = 1; $j <= 4; $j++)
                             @php
-                                $hasChecker = !empty($slittingCheck->{'checked_by_minggu'.$j});
+                                $hasChecker = !empty($slittingCheck->{'checker_minggu'.$j.'_id'});
                                 $resultValue = $hasChecker && isset($slittingCheck->{'check_'.$j}[$i]) ? $slittingCheck->{'check_'.$j}[$i] : '-';
                                 $keteranganValue = $hasChecker && isset($slittingCheck->{'keterangan_'.$j}[$i]) ? $slittingCheck->{'keterangan_'.$j}[$i] : '';
                             @endphp
@@ -239,31 +239,31 @@
                     </tr>
                 @endforeach
                 
-                <!-- Dibuat Oleh (Checker) -->
+                <!-- Dibuat Oleh (Checker) - Menampilkan nama checker melalui relasi -->
                 <tr class="checker-row">
                     <td>-</td>
                     <td style="text-align: left; font-weight: bold;">Dibuat Oleh</td>
                     
                    @for($j = 1; $j <= 4; $j++)
                         @php
-                            $checkedBy = $slittingCheck->{'checked_by_minggu'.$j} ?? '';
+                            $checkerName = $slittingCheck->getCheckerName($j) ?? '-';
                         @endphp
                         <td colspan="2" style="text-align: center;">
-                            {{ $checkedBy ?: '-' }}
+                            {{ $checkerName }}
                         </td>
                     @endfor
                 </tr>
                 
-                <!-- Penanggung Jawab (Approver) -->
+                <!-- Penanggung Jawab (Approver) - Menampilkan nama approver melalui relasi -->
                 <tr class="approver-row">
                     <td>-</td>
                     <td style="text-align: left; font-weight: bold;">Penanggung Jawab</td>
                     
                     @for($j = 1; $j <= 4; $j++)
                         @php
-                            $approvedBy = $slittingCheck->{'approved_by_minggu'.$j} ?? '-';
+                            $approverName = $slittingCheck->getApproverName($j) ?? '-';
                         @endphp
-                        <td colspan="2" style="text-align: center;">{{ $approvedBy }}</td>
+                        <td colspan="2" style="text-align: center;">{{ $approverName }}</td>
                     @endfor
                 </tr>
             </tbody>
@@ -288,20 +288,22 @@
             </tr>
         </table>
 
-        <!-- Tanda Tangan -->
+        <!-- Tanda Tangan - Menggunakan nama dari relasi -->
         <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
             <tr>
                 <td style="width: 50%; text-align: center; vertical-align: top;">
                     <div style="margin-bottom: 40px;">Dibuat oleh:</div>
                     <div style="font-weight: bold;">
                         @php
-                            // Get unique checker names
-                            $checkers = collect([
-                                $slittingCheck->checked_by_minggu1, 
-                                $slittingCheck->checked_by_minggu2, 
-                                $slittingCheck->checked_by_minggu3, 
-                                $slittingCheck->checked_by_minggu4
-                            ])->filter()->unique()->values()->implode(', ') ?? '-';
+                            // Get unique checker names using the model's helper method
+                            $checkerNames = [];
+                            for ($i = 1; $i <= 4; $i++) {
+                                $name = $slittingCheck->getCheckerName($i);
+                                if ($name && !in_array($name, $checkerNames)) {
+                                    $checkerNames[] = $name;
+                                }
+                            }
+                            $checkers = !empty($checkerNames) ? implode(', ', $checkerNames) : '-';
                         @endphp
                         {{ $checkers }}
                     </div>
@@ -311,13 +313,15 @@
                     <div style="margin-bottom: 40px;">Disetujui oleh:</div>
                     <div style="font-weight: bold;">
                         @php
-                            // Get unique approver names
-                            $approvers = collect([
-                                $slittingCheck->approved_by_minggu1, 
-                                $slittingCheck->approved_by_minggu2, 
-                                $slittingCheck->approved_by_minggu3, 
-                                $slittingCheck->approved_by_minggu4
-                            ])->filter()->unique()->values()->implode(', ') ?? '........................';
+                            // Get unique approver names using the model's helper method
+                            $approverNames = [];
+                            for ($i = 1; $i <= 4; $i++) {
+                                $name = $slittingCheck->getApproverName($i);
+                                if ($name && !in_array($name, $approverNames)) {
+                                    $approverNames[] = $name;
+                                }
+                            }
+                            $approvers = !empty($approverNames) ? implode(', ', $approverNames) : '........................';
                         @endphp
                         {{ $approvers }}
                     </div>

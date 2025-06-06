@@ -231,20 +231,20 @@
                                             <button type="button" 
                                                 @click="selected = !selected;
                                                     if(selected) {
-                                                        document.querySelector('input[name=\'checked_by{{ $j }}\']').value = '{{ $user->username }}';
+                                                        document.querySelector('input[name=\'checker_id{{ $j }}\']').value = '{{ $user->id }}';
                                                         document.querySelector('input[name=\'tanggal_check{{ $j }}\']').value = 
                                                         document.querySelector('input[name=\'tanggal_{{ $j }}\']').value;
                                                     } else {
-                                                        document.querySelector('input[name=\'checked_by{{ $j }}\']').value = '';
+                                                        document.querySelector('input[name=\'checker_id{{ $j }}\']').value = '';
                                                         document.querySelector('input[name=\'tanggal_check{{ $j }}\']').value = '';
                                                     }"
                                                 class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                                 :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
                                                 <span x-text="selected ? 'Batal Pilih' : 'Pilih'"></span>
                                             </button>
-                                            <!-- Hidden input to store who checked this column -->
-                                            <input type="hidden" name="checked_by{{ $j }}" value="">
-                                            <!-- Hidden input to store the check date for the controller -->
+                                            <!-- Hidden input untuk menyimpan ID checker yang melakukan check kolom ini -->
+                                            <input type="hidden" name="checker_id{{ $j }}" value="">
+                                            <!-- Hidden input untuk menyimpan tanggal check untuk controller -->
                                             <input type="hidden" name="tanggal_check{{ $j }}" value="">
                                         </div>
                                     </td>

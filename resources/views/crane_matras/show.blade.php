@@ -12,14 +12,14 @@
             @csrf
             @php
                 // Periksa apakah ada checker
-                $hasChecker = !empty($checkerData['checked_by']);
+                $hasChecker = !empty($checkerData['checker_name']);
             @endphp
 
             @if($hasChecker)
                 <!-- Menampilkan Nama Checker hanya jika ada data -->
                 <div class="bg-sky-50 p-4 rounded-md mb-5">
                     <span class="text-gray-600 font-bold">Checker: </span>
-                    <span class="font-bold text-blue-700">{{ $checkerData['checked_by'] }}</span>
+                    <span class="font-bold text-blue-700">{{ $checkerData['checker_name'] }}</span>
                 </div>
 
                 <!-- Info Display -->
@@ -158,7 +158,7 @@
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm h-10">
                                     <div class="w-full h-full flex flex-col items-center justify-center">
                                         @if($hasChecker)
-                                            <span>{{ $checkerData['checked_by'] }}</span>
+                                            <span>{{ $checkerData['checker_name'] }}</span>
                                             <span class="text-xs text-gray-600">{{ $checkerData['tanggal'] }}</span>
                                         @else
                                             <span class="text-gray-500 italic">-</span>
@@ -174,16 +174,16 @@
                                 <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10">Penanggung Jawab</td>
                                 
                                 <td colspan="4" class="border border-gray-300 p-1 bg-green-50">
-                                    @if($check->approved_by)
+                                    @if($checkerData['approver_name'])
                                         <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
                                         <div class="w-full h-10 flex items-center justify-center text-sm">
-                                            {{ $check->approved_by }}
+                                            {{ $checkerData['approver_name'] }}
                                         </div>
                                     @elseif($hasChecker)
                                         <!-- Jika ada checker tapi belum ada penanggung jawab, tampilkan tombol pilih -->
                                         <div x-data="{ selected: false, userName: '' }">
                                             <div class="mt-1" x-show="selected">
-                                                <input type="text" name="approved_by" x-ref="approver" x-bind:value="userName"
+                                                <input type="text" name="approver_id" x-ref="approver" x-bind:value="userName"
                                                     class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded mb-1 text-center"
                                                     readonly>
                                                 <input type="hidden" name="check_approver" x-ref="checkApprover" value="1">
@@ -370,7 +370,7 @@
                 
                 <!-- Tombol Aksi - Sisi Kanan -->
                 <div class="flex flex-row flex-wrap gap-2 justify-end">
-                    @if (empty($check->approved_by))
+                    @if (!$check->isApproved())
                         <!-- Belum disetujui, tampilkan tombol "Setujui" -->
                         <button type="submit" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -380,7 +380,7 @@
                         </button>
                     @endif
                     
-                    @if (!empty($check->approved_by))
+                    @if ($check->isApproved())
                         <!-- Sudah disetujui, tampilkan tombol Preview dan Download PDF -->
                         <!-- Tombol Preview PDF -->
                         <a href="{{ route('crane-matras.pdf', $check->id) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
