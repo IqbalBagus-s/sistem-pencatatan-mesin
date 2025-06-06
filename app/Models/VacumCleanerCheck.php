@@ -17,10 +17,10 @@ class VacumCleanerCheck extends Model
         'bulan',
         'tanggal_dibuat_minggu2',
         'tanggal_dibuat_minggu4',
-        'checker_minggu2',
-        'checker_minggu4',
-        'approver_minggu2',
-        'approver_minggu4',
+        'checker_minggu2_id',
+        'checker_minggu4_id',
+        'approver_minggu2_id',
+        'approver_minggu4_id',
         'status'
     ];
 
@@ -44,7 +44,39 @@ class VacumCleanerCheck extends Model
     }
 
     /**
-     * Method untuk update status berdasarkan approver_minggu2 dan approver_minggu4
+     * Relasi dengan model Checker untuk minggu 2
+     */
+    public function checkerMinggu2()
+    {
+        return $this->belongsTo(Checker::class, 'checker_minggu2_id');
+    }
+
+    /**
+     * Relasi dengan model Checker untuk minggu 4
+     */
+    public function checkerMinggu4()
+    {
+        return $this->belongsTo(Checker::class, 'checker_minggu4_id');
+    }
+
+    /**
+     * Relasi dengan model Approver untuk minggu 2
+     */
+    public function approverMinggu2()
+    {
+        return $this->belongsTo(Approver::class, 'approver_minggu2_id');
+    }
+
+    /**
+     * Relasi dengan model Approver untuk minggu 4
+     */
+    public function approverMinggu4()
+    {
+        return $this->belongsTo(Approver::class, 'approver_minggu4_id');
+    }
+
+    /**
+     * Method untuk update status berdasarkan approver_minggu2_id dan approver_minggu4_id
      * Status disetujui hanya jika KEDUA minggu sudah disetujui
      */
     private function updateStatus()
@@ -61,8 +93,8 @@ class VacumCleanerCheck extends Model
      */
     private function isBothWeeksApproved()
     {
-        return !empty($this->approver_minggu2) && $this->approver_minggu2 !== null &&
-               !empty($this->approver_minggu4) && $this->approver_minggu4 !== null;
+        return !empty($this->approver_minggu2_id) && $this->approver_minggu2_id !== null &&
+               !empty($this->approver_minggu4_id) && $this->approver_minggu4_id !== null;
     }
 
     /**
@@ -78,20 +110,20 @@ class VacumCleanerCheck extends Model
     }
 
     /**
-     * Mutator untuk approver_minggu2 yang otomatis update status
+     * Mutator untuk approver_minggu2_id yang otomatis update status
      */
-    public function setApproverMinggu2Attribute($value)
+    public function setApproverMinggu2IdAttribute($value)
     {
-        $this->attributes['approver_minggu2'] = $value;
+        $this->attributes['approver_minggu2_id'] = $value;
         $this->updateStatusFromMutator();
     }
 
     /**
-     * Mutator untuk approver_minggu4 yang otomatis update status
+     * Mutator untuk approver_minggu4_id yang otomatis update status
      */
-    public function setApproverMinggu4Attribute($value)
+    public function setApproverMinggu4IdAttribute($value)
     {
-        $this->attributes['approver_minggu4'] = $value;
+        $this->attributes['approver_minggu4_id'] = $value;
         $this->updateStatusFromMutator();
     }
 
@@ -112,8 +144,8 @@ class VacumCleanerCheck extends Model
      */
     private function isBothWeeksApprovedFromAttributes()
     {
-        return !empty($this->attributes['approver_minggu2']) && $this->attributes['approver_minggu2'] !== null &&
-               !empty($this->attributes['approver_minggu4']) && $this->attributes['approver_minggu4'] !== null;
+        return !empty($this->attributes['approver_minggu2_id']) && $this->attributes['approver_minggu2_id'] !== null &&
+               !empty($this->attributes['approver_minggu4_id']) && $this->attributes['approver_minggu4_id'] !== null;
     }
 
     /**
@@ -132,10 +164,10 @@ class VacumCleanerCheck extends Model
     /**
      * Method helper untuk approval lengkap (kedua minggu)
      */
-    public function approveAll($approverMinggu2, $approverMinggu4)
+    public function approveAll($approverMinggu2Id, $approverMinggu4Id)
     {
-        $this->approver_minggu2 = $approverMinggu2;
-        $this->approver_minggu4 = $approverMinggu4;
+        $this->approver_minggu2_id = $approverMinggu2Id;
+        $this->approver_minggu4_id = $approverMinggu4Id;
         $this->status = 'disetujui';
         $this->save();
         
@@ -145,12 +177,12 @@ class VacumCleanerCheck extends Model
     /**
      * Method helper untuk approval minggu tertentu
      */
-    public function approveWeek($week, $approvedBy)
+    public function approveWeek($week, $approverId)
     {
         if ($week == 2) {
-            $this->approver_minggu2 = $approvedBy;
+            $this->approver_minggu2_id = $approverId;
         } elseif ($week == 4) {
-            $this->approver_minggu4 = $approvedBy;
+            $this->approver_minggu4_id = $approverId;
         }
         
         if ($week == 2 || $week == 4) {
@@ -165,8 +197,8 @@ class VacumCleanerCheck extends Model
      */
     public function unapproveAll()
     {
-        $this->approver_minggu2 = null;
-        $this->approver_minggu4 = null;
+        $this->approver_minggu2_id = null;
+        $this->approver_minggu4_id = null;
         $this->status = 'belum_disetujui';
         $this->save();
         
@@ -179,9 +211,27 @@ class VacumCleanerCheck extends Model
     public function unapproveWeek($week)
     {
         if ($week == 2) {
-            $this->approver_minggu2 = null;
+            $this->approver_minggu2_id = null;
         } elseif ($week == 4) {
-            $this->approver_minggu4 = null;
+            $this->approver_minggu4_id = null;
+        }
+        
+        if ($week == 2 || $week == 4) {
+            $this->save();
+        }
+        
+        return $this;
+    }
+
+    /**
+     * Method helper untuk set checker minggu tertentu
+     */
+    public function setChecker($week, $checkerId)
+    {
+        if ($week == 2) {
+            $this->checker_minggu2_id = $checkerId;
+        } elseif ($week == 4) {
+            $this->checker_minggu4_id = $checkerId;
         }
         
         if ($week == 2 || $week == 4) {
@@ -205,9 +255,22 @@ class VacumCleanerCheck extends Model
     public function isWeekApproved($week)
     {
         if ($week == 2) {
-            return !empty($this->approver_minggu2) && $this->approver_minggu2 !== null;
+            return !empty($this->approver_minggu2_id) && $this->approver_minggu2_id !== null;
         } elseif ($week == 4) {
-            return !empty($this->approver_minggu4) && $this->approver_minggu4 !== null;
+            return !empty($this->approver_minggu4_id) && $this->approver_minggu4_id !== null;
+        }
+        return false;
+    }
+
+    /**
+     * Check apakah minggu tertentu sudah ada checker
+     */
+    public function isWeekChecked($week)
+    {
+        if ($week == 2) {
+            return !empty($this->checker_minggu2_id) && $this->checker_minggu2_id !== null;
+        } elseif ($week == 4) {
+            return !empty($this->checker_minggu4_id) && $this->checker_minggu4_id !== null;
         }
         return false;
     }
@@ -224,11 +287,30 @@ class VacumCleanerCheck extends Model
     }
 
     /**
+     * Get jumlah minggu yang sudah ada checker
+     */
+    public function getCheckedWeeksCount()
+    {
+        $count = 0;
+        if ($this->isWeekChecked(2)) $count++;
+        if ($this->isWeekChecked(4)) $count++;
+        return $count;
+    }
+
+    /**
      * Get persentase approval
      */
     public function getApprovalPercentage()
     {
         return ($this->getApprovedWeeksCount() / 2) * 100;
+    }
+
+    /**
+     * Get persentase checked
+     */
+    public function getCheckedPercentage()
+    {
+        return ($this->getCheckedWeeksCount() / 2) * 100;
     }
 
     /**
@@ -244,6 +326,47 @@ class VacumCleanerCheck extends Model
             $pending[] = 4;
         }
         return $pending;
+    }
+
+    /**
+     * Get list minggu yang belum ada checker
+     */
+    public function getUncheckedWeeks()
+    {
+        $unchecked = [];
+        if (!$this->isWeekChecked(2)) {
+            $unchecked[] = 2;
+        }
+        if (!$this->isWeekChecked(4)) {
+            $unchecked[] = 4;
+        }
+        return $unchecked;
+    }
+
+    /**
+     * Get nama checker untuk minggu tertentu
+     */
+    public function getCheckerName($week)
+    {
+        if ($week == 2 && $this->checkerMinggu2) {
+            return $this->checkerMinggu2->username;
+        } elseif ($week == 4 && $this->checkerMinggu4) {
+            return $this->checkerMinggu4->username;
+        }
+        return null;
+    }
+
+    /**
+     * Get nama approver untuk minggu tertentu
+     */
+    public function getApproverName($week)
+    {
+        if ($week == 2 && $this->approverMinggu2) {
+            return $this->approverMinggu2->username;
+        } elseif ($week == 4 && $this->approverMinggu4) {
+            return $this->approverMinggu4->username;
+        }
+        return null;
     }
 
     /**

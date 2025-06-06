@@ -26,8 +26,8 @@ class CraneMatrasCheck extends Model
         'nomer_crane_matras',
         'bulan',
         'tanggal',
-        'checked_by',
-        'approved_by',
+        'checker_id',
+        'approver_id',
         'status'
     ];
 
@@ -50,8 +50,24 @@ class CraneMatrasCheck extends Model
     }
 
     /**
-     * Method untuk update status berdasarkan approved_by
-     * Status disetujui hanya jika approved_by sudah terisi
+     * Relasi dengan model Checker
+     */
+    public function checker()
+    {
+        return $this->belongsTo(Checker::class, 'checker_id');
+    }
+
+    /**
+     * Relasi dengan model Approver
+     */
+    public function approver()
+    {
+        return $this->belongsTo(Approver::class, 'approver_id');
+    }
+
+    /**
+     * Method untuk update status berdasarkan approver_id
+     * Status disetujui hanya jika approver_id sudah terisi
      */
     private function updateStatus()
     {
@@ -67,7 +83,7 @@ class CraneMatrasCheck extends Model
      */
     private function isApprovedByFilled()
     {
-        return !empty($this->approved_by) && $this->approved_by !== null;
+        return !empty($this->approver_id) && $this->approver_id !== null;
     }
 
     /**
@@ -83,11 +99,11 @@ class CraneMatrasCheck extends Model
     }
 
     /**
-     * Mutator untuk approved_by yang otomatis update status
+     * Mutator untuk approver_id yang otomatis update status
      */
-    public function setApprovedByAttribute($value)
+    public function setApproverIdAttribute($value)
     {
-        $this->attributes['approved_by'] = $value;
+        $this->attributes['approver_id'] = $value;
         $this->updateStatusFromMutator();
     }
 
@@ -108,7 +124,7 @@ class CraneMatrasCheck extends Model
      */
     private function isApprovedFromAttributes()
     {
-        return !empty($this->attributes['approved_by']) && $this->attributes['approved_by'] !== null;
+        return !empty($this->attributes['approver_id']) && $this->attributes['approver_id'] !== null;
     }
 
     /**
@@ -127,9 +143,9 @@ class CraneMatrasCheck extends Model
     /**
      * Method helper untuk approval
      */
-    public function approve($approvedBy)
+    public function approve($approverId)
     {
-        $this->approved_by = $approvedBy;
+        $this->approver_id = $approverId;
         $this->status = 'disetujui';
         $this->save();
         
@@ -141,8 +157,19 @@ class CraneMatrasCheck extends Model
      */
     public function unapprove()
     {
-        $this->approved_by = null;
+        $this->approver_id = null;
         $this->status = 'belum_disetujui';
+        $this->save();
+        
+        return $this;
+    }
+
+    /**
+     * Method helper untuk set checker
+     */
+    public function setChecker($checkerId)
+    {
+        $this->checker_id = $checkerId;
         $this->save();
         
         return $this;
@@ -161,7 +188,15 @@ class CraneMatrasCheck extends Model
      */
     public function hasApprover()
     {
-        return !empty($this->approved_by) && $this->approved_by !== null;
+        return !empty($this->approver_id) && $this->approver_id !== null;
+    }
+
+    /**
+     * Check apakah ada checker
+     */
+    public function hasChecker()
+    {
+        return !empty($this->checker_id) && $this->checker_id !== null;
     }
 
     /**
@@ -173,13 +208,32 @@ class CraneMatrasCheck extends Model
     }
 
     /**
+     * Get nama checker
+     */
+    public function getCheckerName()
+    {
+        return $this->checker ? $this->checker->username : null;
+    }
+
+    /**
+     * Get nama approver
+     */
+    public function getApproverName()
+    {
+        return $this->approver ? $this->approver->username : null;
+    }
+
+    /**
      * Get informasi lengkap approval
      */
     public function getApprovalInfo()
     {
         return [
             'is_approved' => $this->isApproved(),
-            'approved_by' => $this->approved_by,
+            'approver_id' => $this->approver_id,
+            'approver_name' => $this->getApproverName(),
+            'checker_id' => $this->checker_id,
+            'checker_name' => $this->getCheckerName(),
             'status' => $this->status,
             'status_label' => $this->status_label,
             'approved_at' => $this->updated_at // Asumsi approved saat update terakhir
@@ -189,9 +243,17 @@ class CraneMatrasCheck extends Model
     /**
      * Scope untuk filter berdasarkan approver
      */
-    public function scopeApprovedBy($query, $approver)
+    public function scopeApprovedBy($query, $approverId)
     {
-        return $query->where('approved_by', $approver);
+        return $query->where('approver_id', $approverId);
+    }
+
+    /**
+     * Scope untuk filter berdasarkan checker
+     */
+    public function scopeCheckedBy($query, $checkerId)
+    {
+        return $query->where('checker_id', $checkerId);
     }
 
     /**

@@ -20,14 +20,14 @@ class SlittingCheck extends Model
     protected $fillable = [
         'nomer_slitting',
         'bulan',
-        'checked_by_minggu1',
-        'approved_by_minggu1',
-        'checked_by_minggu2',
-        'approved_by_minggu2',
-        'checked_by_minggu3',
-        'approved_by_minggu3',
-        'checked_by_minggu4',
-        'approved_by_minggu4',
+        'checker_minggu1_id',
+        'approver_minggu1_id',
+        'checker_minggu2_id',
+        'approver_minggu2_id',
+        'checker_minggu3_id',
+        'approver_minggu3_id',
+        'checker_minggu4_id',
+        'approver_minggu4_id',
         'status'
     ];
 
@@ -49,7 +49,71 @@ class SlittingCheck extends Model
     }
 
     /**
-     * Method untuk update status berdasarkan semua approved_by_minggu1-4
+     * Relasi dengan model Checker untuk minggu 1
+     */
+    public function checkerMinggu1()
+    {
+        return $this->belongsTo(Checker::class, 'checker_minggu1_id');
+    }
+
+    /**
+     * Relasi dengan model Checker untuk minggu 2
+     */
+    public function checkerMinggu2()
+    {
+        return $this->belongsTo(Checker::class, 'checker_minggu2_id');
+    }
+
+    /**
+     * Relasi dengan model Checker untuk minggu 3
+     */
+    public function checkerMinggu3()
+    {
+        return $this->belongsTo(Checker::class, 'checker_minggu3_id');
+    }
+
+    /**
+     * Relasi dengan model Checker untuk minggu 4
+     */
+    public function checkerMinggu4()
+    {
+        return $this->belongsTo(Checker::class, 'checker_minggu4_id');
+    }
+
+    /**
+     * Relasi dengan model Approver untuk minggu 1
+     */
+    public function approverMinggu1()
+    {
+        return $this->belongsTo(Approver::class, 'approver_minggu1_id');
+    }
+
+    /**
+     * Relasi dengan model Approver untuk minggu 2
+     */
+    public function approverMinggu2()
+    {
+        return $this->belongsTo(Approver::class, 'approver_minggu2_id');
+    }
+
+    /**
+     * Relasi dengan model Approver untuk minggu 3
+     */
+    public function approverMinggu3()
+    {
+        return $this->belongsTo(Approver::class, 'approver_minggu3_id');
+    }
+
+    /**
+     * Relasi dengan model Approver untuk minggu 4
+     */
+    public function approverMinggu4()
+    {
+        return $this->belongsTo(Approver::class, 'approver_minggu4_id');
+    }
+
+    /**
+     * Method untuk update status berdasarkan semua approver_minggu1-4_id
      * Status disetujui hanya jika SEMUA minggu sudah disetujui
      */
     private function updateStatus()
@@ -66,10 +130,10 @@ class SlittingCheck extends Model
      */
     private function isAllWeeksApproved()
     {
-        return !empty($this->approved_by_minggu1) && $this->approved_by_minggu1 !== null &&
-               !empty($this->approved_by_minggu2) && $this->approved_by_minggu2 !== null &&
-               !empty($this->approved_by_minggu3) && $this->approved_by_minggu3 !== null &&
-               !empty($this->approved_by_minggu4) && $this->approved_by_minggu4 !== null;
+        return !empty($this->approver_minggu1_id) && $this->approver_minggu1_id !== null &&
+               !empty($this->approver_minggu2_id) && $this->approver_minggu2_id !== null &&
+               !empty($this->approver_minggu3_id) && $this->approver_minggu3_id !== null &&
+               !empty($this->approver_minggu4_id) && $this->approver_minggu4_id !== null;
     }
 
     /**
@@ -85,38 +149,38 @@ class SlittingCheck extends Model
     }
 
     /**
-     * Mutator untuk approved_by_minggu1 yang otomatis update status
+     * Mutator untuk approver_minggu1_id yang otomatis update status
      */
-    public function setApprovedByMinggu1Attribute($value)
+    public function setApproverMinggu1IdAttribute($value)
     {
-        $this->attributes['approved_by_minggu1'] = $value;
+        $this->attributes['approver_minggu1_id'] = $value;
         $this->updateStatusFromMutator();
     }
 
     /**
-     * Mutator untuk approved_by_minggu2 yang otomatis update status
+     * Mutator untuk approver_minggu2_id yang otomatis update status
      */
-    public function setApprovedByMinggu2Attribute($value)
+    public function setApproverMinggu2IdAttribute($value)
     {
-        $this->attributes['approved_by_minggu2'] = $value;
+        $this->attributes['approver_minggu2_id'] = $value;
         $this->updateStatusFromMutator();
     }
 
     /**
-     * Mutator untuk approved_by_minggu3 yang otomatis update status
+     * Mutator untuk approver_minggu3_id yang otomatis update status
      */
-    public function setApprovedByMinggu3Attribute($value)
+    public function setApproverMinggu3IdAttribute($value)
     {
-        $this->attributes['approved_by_minggu3'] = $value;
+        $this->attributes['approver_minggu3_id'] = $value;
         $this->updateStatusFromMutator();
     }
 
     /**
-     * Mutator untuk approved_by_minggu4 yang otomatis update status
+     * Mutator untuk approver_minggu4_id yang otomatis update status
      */
-    public function setApprovedByMinggu4Attribute($value)
+    public function setApproverMinggu4IdAttribute($value)
     {
-        $this->attributes['approved_by_minggu4'] = $value;
+        $this->attributes['approver_minggu4_id'] = $value;
         $this->updateStatusFromMutator();
     }
 
@@ -137,10 +201,10 @@ class SlittingCheck extends Model
      */
     private function isAllWeeksApprovedFromAttributes()
     {
-        return !empty($this->attributes['approved_by_minggu1']) && $this->attributes['approved_by_minggu1'] !== null &&
-               !empty($this->attributes['approved_by_minggu2']) && $this->attributes['approved_by_minggu2'] !== null &&
-               !empty($this->attributes['approved_by_minggu3']) && $this->attributes['approved_by_minggu3'] !== null &&
-               !empty($this->attributes['approved_by_minggu4']) && $this->attributes['approved_by_minggu4'] !== null;
+        return !empty($this->attributes['approver_minggu1_id']) && $this->attributes['approver_minggu1_id'] !== null &&
+               !empty($this->attributes['approver_minggu2_id']) && $this->attributes['approver_minggu2_id'] !== null &&
+               !empty($this->attributes['approver_minggu3_id']) && $this->attributes['approver_minggu3_id'] !== null &&
+               !empty($this->attributes['approver_minggu4_id']) && $this->attributes['approver_minggu4_id'] !== null;
     }
 
     /**
@@ -159,12 +223,12 @@ class SlittingCheck extends Model
     /**
      * Method helper untuk approval lengkap (semua minggu)
      */
-    public function approveAll($approvedBy1, $approvedBy2, $approvedBy3, $approvedBy4)
+    public function approveAll($approverMinggu1Id, $approverMinggu2Id, $approverMinggu3Id, $approverMinggu4Id)
     {
-        $this->approved_by_minggu1 = $approvedBy1;
-        $this->approved_by_minggu2 = $approvedBy2;
-        $this->approved_by_minggu3 = $approvedBy3;
-        $this->approved_by_minggu4 = $approvedBy4;
+        $this->approver_minggu1_id = $approverMinggu1Id;
+        $this->approver_minggu2_id = $approverMinggu2Id;
+        $this->approver_minggu3_id = $approverMinggu3Id;
+        $this->approver_minggu4_id = $approverMinggu4Id;
         $this->status = 'disetujui';
         $this->save();
         
@@ -174,10 +238,10 @@ class SlittingCheck extends Model
     /**
      * Method helper untuk approval minggu tertentu
      */
-    public function approveWeek($week, $approvedBy)
+    public function approveWeek($week, $approverId)
     {
         if ($week >= 1 && $week <= 4) {
-            $this->{"approved_by_minggu{$week}"} = $approvedBy;
+            $this->{"approver_minggu{$week}_id"} = $approverId;
             $this->save();
         }
         
@@ -189,10 +253,10 @@ class SlittingCheck extends Model
      */
     public function unapproveAll()
     {
-        $this->approved_by_minggu1 = null;
-        $this->approved_by_minggu2 = null;
-        $this->approved_by_minggu3 = null;
-        $this->approved_by_minggu4 = null;
+        $this->approver_minggu1_id = null;
+        $this->approver_minggu2_id = null;
+        $this->approver_minggu3_id = null;
+        $this->approver_minggu4_id = null;
         $this->status = 'belum_disetujui';
         $this->save();
         
@@ -205,7 +269,20 @@ class SlittingCheck extends Model
     public function unapproveWeek($week)
     {
         if ($week >= 1 && $week <= 4) {
-            $this->{"approved_by_minggu{$week}"} = null;
+            $this->{"approver_minggu{$week}_id"} = null;
+            $this->save();
+        }
+        
+        return $this;
+    }
+
+    /**
+     * Method helper untuk set checker minggu tertentu
+     */
+    public function setChecker($week, $checkerId)
+    {
+        if ($week >= 1 && $week <= 4) {
+            $this->{"checker_minggu{$week}_id"} = $checkerId;
             $this->save();
         }
         
@@ -226,7 +303,19 @@ class SlittingCheck extends Model
     public function isWeekApproved($week)
     {
         if ($week >= 1 && $week <= 4) {
-            $fieldName = "approved_by_minggu{$week}";
+            $fieldName = "approver_minggu{$week}_id";
+            return !empty($this->$fieldName) && $this->$fieldName !== null;
+        }
+        return false;
+    }
+
+    /**
+     * Check apakah minggu tertentu sudah ada checker
+     */
+    public function isWeekChecked($week)
+    {
+        if ($week >= 1 && $week <= 4) {
+            $fieldName = "checker_minggu{$week}_id";
             return !empty($this->$fieldName) && $this->$fieldName !== null;
         }
         return false;
@@ -247,11 +336,33 @@ class SlittingCheck extends Model
     }
 
     /**
+     * Get jumlah minggu yang sudah ada checker
+     */
+    public function getCheckedWeeksCount()
+    {
+        $count = 0;
+        for ($i = 1; $i <= 4; $i++) {
+            if ($this->isWeekChecked($i)) {
+                $count++;
+            }
+        }
+        return $count;
+    }
+
+    /**
      * Get persentase approval
      */
     public function getApprovalPercentage()
     {
         return ($this->getApprovedWeeksCount() / 4) * 100;
+    }
+
+    /**
+     * Get persentase checked
+     */
+    public function getCheckedPercentage()
+    {
+        return ($this->getCheckedWeeksCount() / 4) * 100;
     }
 
     /**
@@ -266,6 +377,48 @@ class SlittingCheck extends Model
             }
         }
         return $pending;
+    }
+
+    /**
+     * Get list minggu yang belum ada checker
+     */
+    public function getUncheckedWeeks()
+    {
+        $unchecked = [];
+        for ($i = 1; $i <= 4; $i++) {
+            if (!$this->isWeekChecked($i)) {
+                $unchecked[] = $i;
+            }
+        }
+        return $unchecked;
+    }
+
+    /**
+     * Get nama checker untuk minggu tertentu
+     */
+    public function getCheckerName($week)
+    {
+        if ($week >= 1 && $week <= 4) {
+            $relationName = "checkerMinggu{$week}";
+            if ($this->$relationName) {
+                return $this->$relationName->username;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get nama approver untuk minggu tertentu
+     */
+    public function getApproverName($week)
+    {
+        if ($week >= 1 && $week <= 4) {
+            $relationName = "approverMinggu{$week}";
+            if ($this->$relationName) {
+                return $this->$relationName->username;
+            }
+        }
+        return null;
     }
 
     /**
