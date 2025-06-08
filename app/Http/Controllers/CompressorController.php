@@ -243,7 +243,7 @@ class CompressorController extends Controller
         }
     }
 
-    public function edit($id)
+    public function edit(CompressorCheck $compressor)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
@@ -251,20 +251,20 @@ class CompressorController extends Controller
         // Get current guard
         $currentGuard = $this->getCurrentGuard();
 
-        // Ambil data check berdasarkan ID
-        $check = CompressorCheck::findOrFail($id);
+        // $compressor sudah otomatis di-resolve dari hashid oleh trait Hashidable
+        $check = $compressor;
         
         // Ambil data hasil low kompressor
-        $lowResults = CompressorResultKl::where('check_id', $id)->get();
+        $lowResults = CompressorResultKl::where('check_id', $check->id)->get();
         
         // Ambil data hasil high kompressor
-        $highResults = CompressorResultKh::where('check_id', $id)->get();
+        $highResults = CompressorResultKh::where('check_id', $check->id)->get();
         
         // Tampilkan view edit dengan data yang diperlukan
         return view('compressor.edit', compact('check', 'lowResults', 'highResults', 'user', 'currentGuard'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, CompressorCheck $compressor)
     {
         // Validasi data yang diterima dari form
         $request->validate([
@@ -280,11 +280,11 @@ class CompressorController extends Controller
             'humidity_shift2' => 'nullable|string',
         ]);
         
-        // Cari data compressor check berdasarkan ID
-        $compressorCheck = CompressorCheck::findOrFail($id);
+        // $compressor sudah otomatis di-resolve dari hashid oleh trait Hashidable
+        $id = $compressor->id;
         
         // Update data di tabel compressor_checks
-        $compressorCheck->update([
+        $compressor->update([
             'checker_shift1_id' => $request->checker_shift1_id,
             'checker_shift2_id' => $request->checker_shift2_id,
             'kompressor_on_kl' => $request->kompressor_on_kl,
@@ -397,72 +397,75 @@ class CompressorController extends Controller
         return redirect()->route('compressor.index')->with('success', 'Data berhasil diperbarui!');
     }
 
-    public function show($id)
-    {
-        $user = $this->ensureAuthenticatedUser();
-        if (!is_object($user)) return $user;
+public function show(CompressorCheck $compressor)
+{
+    $user = $this->ensureAuthenticatedUser();
+    if (!is_object($user)) return $user;
 
-        // Get current guard
-        $currentGuard = $this->getCurrentGuard();
+    // Get current guard
+    $currentGuard = $this->getCurrentGuard();
 
-        // Ambil data compressor check berdasarkan ID
-        $check = CompressorCheck::with(['checkerShift1', 'checkerShift2', 'approverShift1', 'approverShift2'])->findOrFail($id);
-        
-        // Ambil data low kompressor
-        $lowResults = CompressorResultkl::where('check_id', $id)
-            ->whereIn('checked_items', [
-                "Temperatur motor", "Temperatur screw", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
-                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
-                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
-                "Ampere", "Skun", "Service hour", "Load hours", "Temperatur ADT"
-            ])
-            ->get();
-        
-        // Ambil data high kompressor
-        $highResults = CompressorResultkh::where('check_id', $id)
-            ->whereIn('checked_items', [
-                "Temperatur Motor", "Temperatur Piston", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
-                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
-                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
-                "Ampere", "Skun", "Service hour", "Load hours", "Inlet Preasure", "Outlet Preasure"
-            ])
-            ->get();
-        
-        // Kirim ID approver yang sedang login (jika guard approver)
-        $approverId = null;
-        if ($currentGuard === 'approver') {
-            $approverId = $user->id;
-        }
-        // Tampilkan view dengan data yang diperlukan
-        return view('compressor.show', compact('check', 'lowResults', 'highResults', 'user', 'currentGuard', 'approverId'));
+    // $compressor sudah otomatis di-resolve dari hashid oleh trait Hashidable
+    $check = $compressor->load(['checkerShift1', 'checkerShift2', 'approverShift1', 'approverShift2']);
+    $id = $compressor->id;
+    
+    // Ambil data low kompressor
+    $lowResults = CompressorResultkl::where('check_id', $id)
+        ->whereIn('checked_items', [
+            "Temperatur motor", "Temperatur screw", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
+            "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
+            "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
+            "Ampere", "Skun", "Service hour", "Load hours", "Temperatur ADT"
+        ])
+        ->get();
+    
+    // Ambil data high kompressor
+    $highResults = CompressorResultkh::where('check_id', $id)
+        ->whereIn('checked_items', [
+            "Temperatur Motor", "Temperatur Piston", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
+            "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
+            "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
+            "Ampere", "Skun", "Service hour", "Load hours", "Inlet Preasure", "Outlet Preasure"
+        ])
+        ->get();
+    
+    // Kirim ID approver yang sedang login (jika guard approver)
+    $approverId = null;
+    if ($currentGuard === 'approver') {
+        $approverId = $user->id;
+    }
+    
+    // Tampilkan view dengan data yang diperlukan
+    return view('compressor.show', compact('check', 'lowResults', 'highResults', 'user', 'currentGuard', 'approverId'));
+}
+
+public function approve(Request $request, CompressorCheck $compressor)
+{
+    $user = $this->ensureAuthenticatedUser(['approver']);
+    if (!is_object($user)) return $user;
+
+    // Verifikasi bahwa user adalah approver
+    if (!$this->isAuthenticatedAs('approver')) {
+        return redirect()->back()
+            ->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
     }
 
-    public function approve(Request $request, $id)
-    {
-        $user = $this->ensureAuthenticatedUser(['approver']);
-        if (!is_object($user)) return $user;
+    // $compressor sudah otomatis di-resolve dari hashid oleh trait Hashidable
+    $check = $compressor;
 
-        // Verifikasi bahwa user adalah approver
-        if (!$this->isAuthenticatedAs('approver')) {
-            return redirect()->back()
-                ->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
-        }
-
-        $check = CompressorCheck::findOrFail($id);
-
-        // Update field yang tersedia
-        if ($request->shift1) {
-            $check->approver_shift1_id = $request->shift1;
-        }
-
-        if ($request->shift2) {
-            $check->approver_shift2_id = $request->shift2;
-        }
-
-        $check->save(); // Simpan perubahan ke database
-
-        return redirect()->route('compressor.index')->with('success', 'Persetujuan berhasil disimpan.');
+    // Update field yang tersedia
+    if ($request->shift1) {
+        $check->approver_shift1_id = $request->shift1;
     }
+
+    if ($request->shift2) {
+        $check->approver_shift2_id = $request->shift2;
+    }
+
+    $check->save(); // Simpan perubahan ke database
+
+    return redirect()->route('compressor.index')->with('success', 'Persetujuan berhasil disimpan.');
+}
 
     public function reviewPdf($id) 
     {
