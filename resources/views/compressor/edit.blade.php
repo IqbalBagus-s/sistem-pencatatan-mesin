@@ -19,7 +19,7 @@
 
 @section('content')
     <!-- Form Input -->
-    <form action="{{ route('compressor.update', $check->id) }}" method="POST" id="compressor-form" autocomplete="off">
+    <form action="{{ route('compressor.update', $check->hashid) }}" method="POST" id="compressor-form" autocomplete="off">
         @csrf
         @method('PUT')
         <div class="grid md:grid-cols-2 gap-4 mb-4">

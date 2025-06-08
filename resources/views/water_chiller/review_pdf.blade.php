@@ -74,8 +74,8 @@
         <table class="header-table">
             <tr>
                 <!-- Hari di kiri, Tanggal di kanan -->
-                <td width="50%"><span class="label">Hari:</span> {{ $waterChiller->hari }}</td>
-                <td width="50%" style="text-align: right;"><span class="label">Tanggal:</span> {{ \Carbon\Carbon::parse($waterChiller->tanggal)->translatedFormat('d F Y') }}</td>
+                <td width="50%"><span class="label">Hari:</span> {{ $waterChillerCheck->hari }}</td>
+                <td width="50%" style="text-align: right;"><span class="label">Tanggal:</span> {{ \Carbon\Carbon::parse($waterChillerCheck->tanggal)->translatedFormat('d F Y') }}</td>
             </tr>
         </table>
 
@@ -150,7 +150,7 @@
         <!-- Catatan Tambahan -->
         <div style="border: 1px solid #000; padding: 5px; margin-bottom: 10px;">
             <div class="note-title">Catatan Tambahan</div>
-            {{ $waterChiller->keterangan ?: 'Tidak ada catatan' }}
+            {{ $waterChillerCheck->keterangan ?: 'Tidak ada catatan' }}
         </div>
 
         <!-- Tanda Tangan -->
@@ -158,12 +158,12 @@
             <tr>
                 <td style="width: 50%; text-align: center; vertical-align: top;">
                     <div style="margin-bottom: 40px;">Diperiksa oleh:</div>
-                    <div style="font-weight: bold;">{{ $waterChiller->checker?->username }}</div>
+                    <div style="font-weight: bold;">{{ $waterChillerCheck->checker?->username }}</div>
                     <div>Checker</div>
                 </td>
                 <td style="width: 50%; text-align: center; vertical-align: top;">
                     <div style="margin-bottom: 40px;">Disetujui oleh:</div>
-                    <div style="font-weight: bold;">{{ $waterChiller->approver?->username ?: '.........................' }}</div>
+                    <div style="font-weight: bold;">{{ $waterChillerCheck->approver?->username ?: '.........................' }}</div>
                     <div>Penanggung Jawab</div>
                 </td>
             </tr>
