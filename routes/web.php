@@ -71,14 +71,28 @@ Route::middleware(['check.role:approver,checker'])->group(function () {
     ];
     
     // Buat resource route untuk semua controller
+    $modelBindings = [
+        'air-dryer' => 'airDryer',
+        'water-chiller' => 'waterChillerCheck',
+        'compressor' => 'compressor',
+        'hopper' => 'hopper',
+        'dehum-bahan' => 'dehumBahan',
+        'giling' => 'giling',
+        'autoloader' => 'autoloader',
+        'dehum-matras' => 'dehumMatras',
+        'caplining' => 'caplining',
+        'vacuum-cleaner' => 'vacumCleaner',
+        'slitting' => 'slitting',
+        'crane-matras' => 'craneMatras',
+    ];
     foreach ($controllers as $route => $controller) {
-        Route::resource($route, $controller);
-        
-        // Bungkus route khusus approve dan PDF dengan middleware approver
-        Route::middleware(['check.role:approver'])->group(function () use ($route, $controller) {
-            Route::post("/$route/{id}/approve", [$controller, 'approve'])->name("$route.approve");
-            Route::get("/$route/{id}/review-pdf", [$controller, 'reviewPdf'])->name("$route.pdf");
-            Route::get("/$route/{id}/download-pdf", [$controller, 'downloadPdf'])->name("$route.downloadPdf");
+        $param = $modelBindings[$route] ?? 'id';
+        Route::resource($route, $controller)
+            ->parameters([$route => $param]);
+        Route::middleware(['check.role:approver'])->group(function () use ($route, $controller, $param) {
+            Route::post("/$route/{{$param}}/approve", [$controller, 'approve'])->name("$route.approve");
+            Route::get("/$route/{{$param}}/review-pdf", [$controller, 'reviewPdf'])->name("$route.pdf");
+            Route::get("/$route/{{$param}}/download-pdf", [$controller, 'downloadPdf'])->name("$route.downloadPdf");
         });
     }
 });
