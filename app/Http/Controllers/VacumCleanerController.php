@@ -374,18 +374,18 @@ class VacumCleanerController extends Controller
         }
     }
 
-    public function edit($id)
+    public function edit($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
         try {
-            // Retrieve the vacuum cleaner check record with the given ID
-            $check = VacumCleanerCheck::findOrFail($id);
+            // Gunakan trait Hashidable untuk resolve hashid ke model instance
+            $check = (new VacumCleanerCheck)->resolveRouteBinding($hashid);
             
             // Retrieve the related items from both tables
-            $resultsTable1 = VacumCleanerResultsTable1::where('check_id', $id)->get();
-            $resultsTable2 = VacumCleanerResultsTable2::where('check_id', $id)->get();
+            $resultsTable1 = VacumCleanerResultsTable1::where('check_id', $check->id)->get();
+            $resultsTable2 = VacumCleanerResultsTable2::where('check_id', $check->id)->get();
             
             // Prepare collection to store all results in a structured format
             $results = collect();
@@ -476,19 +476,20 @@ class VacumCleanerController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
+        
         // Validasi input
         $validated = $request->validate([
             'nomer_vacuum_cleaner' => 'required|integer|between:1,3',
             'bulan' => 'required|date_format:Y-m',
         ]);
 
-        // Cari data vacuum cleaner yang akan diupdate
-        $vacuumCheck = VacumCleanerCheck::findOrFail($id);
+        // Gunakan trait Hashidable untuk resolve hashid ke model instance
+        $vacuumCheck = (new VacumCleanerCheck)->resolveRouteBinding($hashid);
 
         // Cek apakah ada perubahan pada data utama (nomer_vacuum_cleaner, bulan)
         if ($vacuumCheck->nomer_vacum_cleaner != $request->nomer_vacuum_cleaner || 
@@ -497,7 +498,7 @@ class VacumCleanerController extends Controller
             // Periksa apakah data dengan kombinasi baru sudah ada
             $existingRecord = VacumCleanerCheck::where('nomer_vacum_cleaner', $request->nomer_vacuum_cleaner)
                 ->where('bulan', $request->bulan)
-                ->where('id', '!=', $id) // Kecualikan record saat ini
+                ->where('id', '!=', $vacuumCheck->id) // Kecualikan record saat ini
                 ->first();
             
             if ($existingRecord) {
@@ -530,7 +531,7 @@ class VacumCleanerController extends Controller
             
             // Update data untuk minggu 2 (table 1)
             if ($request->has('check_1')) {
-                $existingTable1Data = VacumCleanerResultsTable1::where('check_id', $id)->get()->keyBy('checked_items');
+                $existingTable1Data = VacumCleanerResultsTable1::where('check_id', $vacuumCheck->id)->get()->keyBy('checked_items');
                 
                 foreach ($items as $itemId => $itemName) {
                     $result = isset($request->check_1[$itemId]) ? $request->check_1[$itemId] : '-';
@@ -547,7 +548,7 @@ class VacumCleanerController extends Controller
                     } else {
                         // Buat record baru jika belum ada
                         VacumCleanerResultsTable1::create([
-                            'check_id' => $id,
+                            'check_id' => $vacuumCheck->id,
                             'checked_items' => $itemName,
                             'minggu2' => $result,
                             'keterangan_minggu2' => $keterangan
@@ -558,7 +559,7 @@ class VacumCleanerController extends Controller
             
             // Update data untuk minggu 4 (table 2)
             if ($request->has('check_2')) {
-                $existingTable2Data = VacumCleanerResultsTable2::where('check_id', $id)->get()->keyBy('checked_items');
+                $existingTable2Data = VacumCleanerResultsTable2::where('check_id', $vacuumCheck->id)->get()->keyBy('checked_items');
                 
                 foreach ($items as $itemId => $itemName) {
                     $result = isset($request->check_2[$itemId]) ? $request->check_2[$itemId] : '-';
@@ -575,7 +576,7 @@ class VacumCleanerController extends Controller
                     } else {
                         // Buat record baru jika belum ada
                         VacumCleanerResultsTable2::create([
-                            'check_id' => $id,
+                            'check_id' => $vacuumCheck->id,
                             'checked_items' => $itemName,
                             'minggu4' => $result,
                             'keterangan_minggu4' => $keterangan
@@ -681,18 +682,18 @@ class VacumCleanerController extends Controller
         }
     }
 
-    public function show($id)
+    public function show($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
         try {
-            // Ambil data utama vacuum cleaner check
-            $check = VacumCleanerCheck::findOrFail($id);
+            // Gunakan trait Hashidable untuk resolve hashid ke model instance
+            $check = (new VacumCleanerCheck)->resolveRouteBinding($hashid);
             
             // Ambil data hasil dari kedua tabel
-            $resultsTable1 = VacumCleanerResultsTable1::where('check_id', $id)->get();
-            $resultsTable2 = VacumCleanerResultsTable2::where('check_id', $id)->get();
+            $resultsTable1 = VacumCleanerResultsTable1::where('check_id', $check->id)->get();
+            $resultsTable2 = VacumCleanerResultsTable2::where('check_id', $check->id)->get();
             
             // Siapkan collection untuk menyimpan semua hasil dalam format terstruktur
             $results = collect();
@@ -783,7 +784,7 @@ class VacumCleanerController extends Controller
         }
     }
 
-    public function approve(Request $request, $id)
+    public function approve(Request $request, $hashid)
     {
         $user = $this->ensureAuthenticatedUser(['approver']);
         if (!is_object($user)) return $user;
@@ -798,21 +799,22 @@ class VacumCleanerController extends Controller
             'approved_by_minggu2' => 'sometimes|string',
             'approved_by_minggu4' => 'sometimes|string',
         ]);
-    
+
         try {
-            $check = VacumCleanerCheck::findOrFail($id);
+            // Gunakan trait Hashidable untuk resolve hashid ke model instance
+            $check = (new VacumCleanerCheck)->resolveRouteBinding($hashid);
             $updated = false;
             $messages = [];
             
             // Cek kondisi untuk minggu 2
             $shouldApproveMinggu2 = $request->filled('approve_minggu2') && 
-                                   $request->approve_minggu2 == '2' && 
-                                   $request->filled('approved_by_minggu2');
+                                $request->approve_minggu2 == '2' && 
+                                $request->filled('approved_by_minggu2');
             
             // Cek kondisi untuk minggu 4                       
             $shouldApproveMinggu4 = $request->filled('approve_minggu4') && 
-                                   $request->approve_minggu4 == '4' && 
-                                   $request->filled('approved_by_minggu4');
+                                $request->approve_minggu4 == '4' && 
+                                $request->filled('approved_by_minggu4');
             
             // Update approver minggu ke-2
             if ($shouldApproveMinggu2) {
@@ -861,19 +863,19 @@ class VacumCleanerController extends Controller
         }
     }
 
-    public function reviewPdf($id)
+    public function reviewPdf($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
         
         try {
-            // Ambil data utama vacuum cleaner check
-            $check = VacumCleanerCheck::findOrFail($id);
+            // Gunakan trait Hashidable untuk resolve hashid ke model instance
+            $check = (new VacumCleanerCheck)->resolveRouteBinding($hashid);
             
             // Ambil data hasil dari kedua tabel
-            $resultsTable1 = VacumCleanerResultsTable1::where('check_id', $id)->get();
-            $resultsTable2 = VacumCleanerResultsTable2::where('check_id', $id)->get();
+            $resultsTable1 = VacumCleanerResultsTable1::where('check_id', $check->id)->get();
+            $resultsTable2 = VacumCleanerResultsTable2::where('check_id', $check->id)->get();
             
             // Siapkan collection untuk menyimpan semua hasil dalam format terstruktur
             $results = collect();
@@ -970,15 +972,15 @@ class VacumCleanerController extends Controller
         }
     }
 
-    public function downloadPdf($id)
+    public function downloadPdf($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
         
         try {
-            // Ambil data utama vacuum cleaner check
-            $check = VacumCleanerCheck::findOrFail($id);
+            // Gunakan trait Hashidable untuk resolve hashid ke model instance
+            $check = (new VacumCleanerCheck)->resolveRouteBinding($hashid);
             
             // Ambil data form terkait (sesuaikan nomor form untuk vacuum cleaner)
             $form = Form::where('nomor_form', 'APTEK/006/REV.01')->firstOrFail();
@@ -987,8 +989,8 @@ class VacumCleanerController extends Controller
             $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
             
             // Ambil data hasil dari kedua tabel
-            $resultsTable1 = VacumCleanerResultsTable1::where('check_id', $id)->get();
-            $resultsTable2 = VacumCleanerResultsTable2::where('check_id', $id)->get();
+            $resultsTable1 = VacumCleanerResultsTable1::where('check_id', $check->id)->get();
+            $resultsTable2 = VacumCleanerResultsTable2::where('check_id', $check->id)->get();
             
             // Siapkan collection untuk menyimpan semua hasil dalam format terstruktur
             $results = collect();

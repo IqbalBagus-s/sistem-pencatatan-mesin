@@ -112,203 +112,212 @@ class CraneMatrasControler extends Controller
     }
 
     public function store(Request $request)
-{
-    $user = $this->ensureAuthenticatedUser();
-    if (!is_object($user)) return $user;
-    $currentGuard = $this->getCurrentGuard();
-    
-    // Custom error messages
-    $customMessages = [
-        'nomer_crane_matras.required' => 'Silakan pilih nomor crane matras terlebih dahulu!',
-    ];
-    
-    // Validasi input - checked_by_1 dan tanggal_1 tidak wajib
-    $validatedData = $request->validate([
-        'nomer_crane_matras' => 'required|integer|min:1|max:3',
-        'bulan' => 'required|date_format:Y-m',
-        'checked_by_1' => 'nullable|string|max:255',
-        'tanggal_1' => 'nullable|string',
-        'check_num_1' => 'nullable|string',
-        'checked_items' => 'required|array',
-        'check' => 'required|array',
-        'keterangan' => 'nullable|array',
-    ], $customMessages);
-    
-    // Cek apakah ada data dengan nomer_crane_matras dan bulan yang sama
-    $existingRecord = CraneMatrasCheck::where('nomer_crane_matras', $request->input('nomer_crane_matras'))
-        ->where('bulan', $request->input('bulan'))
-        ->first();
-
-    if ($existingRecord) {
-        // Format bulan dari Y-m menjadi nama bulan dan tahun
-        $formattedMonth = Carbon::parse($request->input('bulan') . '-01')->locale('id')->isoFormat('MMMM YYYY');
-        
-        // Buat pesan error dengan detail data yang duplikat
-        $errorMessage = "Data duplikat ditemukan untuk Crane Matras Nomor {$request->input('nomer_crane_matras')} pada bulan {$formattedMonth}!";
-        
-        // Redirect kembali dengan pesan error yang lebih informatif
-        return redirect()->back()
-            ->with('error', $errorMessage)
-            ->withInput();
-    }
-    
-    // Mengubah format tanggal dari "DD Bulan YYYY" menjadi "YYYY-MM-DD"
-    $tanggal = null;
-    $tanggalFormatted = null; // Untuk activity log
-    
-    if ($request->filled('tanggal_1')) {
-        $bulanIndonesia = [
-            'Januari' => '01', 'Februari' => '02', 'Maret' => '03', 'April' => '04',
-            'Mei' => '05', 'Juni' => '06', 'Juli' => '07', 'Agustus' => '08',
-            'September' => '09', 'Oktober' => '10', 'November' => '11', 'Desember' => '12'
-        ];
-        
-        $parts = explode(' ', $request->tanggal_1);
-        if (count($parts) == 3 && isset($bulanIndonesia[$parts[1]])) {
-            $day = str_pad($parts[0], 2, '0', STR_PAD_LEFT);
-            $month = $bulanIndonesia[$parts[1]];
-            $year = $parts[2];
-            $tanggal = "$year-$month-$day";
-            $tanggalFormatted = $request->tanggal_1; // Simpan format asli untuk log
-        }
-    }
-    
-    // Cari user berdasarkan username yang dipilih (jika ada)
-    $checkerUser = null;
-    $checkerId = null;
-    
-    if ($request->filled('checked_by_1') && $request->filled('check_num_1')) {
-        // Cari user berdasarkan username yang dipilih
-        $checkerUser = Checker::where('username', $request->input('checked_by_1'))->first();
-        
-        if (!$checkerUser) {
-            return redirect()->back()
-                ->with('error', 'User dengan username "' . $request->input('checked_by_1') . '" tidak ditemukan!')
-                ->withInput();
-        }
-        
-        $checkerId = $checkerUser->id;
-    }
-    
-    try {
-        // Mulai transaksi database
-        DB::beginTransaction();
-        
-        // Buat record baru di CraneMatrasCheck
-        $craneMatrasCheck = CraneMatrasCheck::create([
-            'nomer_crane_matras' => $request->input('nomer_crane_matras'),
-            'bulan' => $request->input('bulan'),
-            'tanggal' => $tanggal, // Akan null jika tombol tidak dipilih
-            'checker_id' => $checkerId, // Akan null jika tombol tidak dipilih
-            'approver_id' => null, // Diisi pada tahap approval
-            // status akan otomatis diset menjadi 'belum_disetujui' oleh model
-        ]);
-
-        // Log untuk debugging
-        Log::info('Checked Items:', $request->input('checked_items'));
-        Log::info('Check Values:', $request->input('check'));
-        
-        // Mendefinisikan daftar item yang diperiksa
-        $items = $request->input('checked_items');
-        
-        // Array untuk menyimpan detail items yang disimpan (untuk activity log)
-        $itemsProcessed = [];
-        
-        // Simpan hasil pemeriksaan untuk setiap item
-        foreach ($items as $index => $item) {
-            // Ambil nilai check dan keterangan untuk item ini
-            $checkValue = isset($request->input('check')[$index]) ? $request->input('check')[$index] : null;
-            $keterangan = isset($request->input('keterangan')[$index]) ? $request->input('keterangan')[$index] : null;
-            
-            // Log untuk debugging
-            Log::info("Menyimpan item {$index}: {$item} dengan nilai check: {$checkValue}");
-            
-            // Simpan ke model CraneMatrasResult
-            CraneMatrasResult::create([
-                'check_id' => $craneMatrasCheck->id,
-                'checked_items' => $item,
-                'check' => $checkValue,
-                'keterangan' => $keterangan,
-            ]);
-            
-            // Simpan detail untuk activity log
-            $itemsProcessed[] = [
-                'item' => $item,
-                'check' => $checkValue,
-                'keterangan' => $keterangan
-            ];
-        }
-
-        // LOG AKTIVITAS
-        $bulanFormatted = Carbon::parse($request->input('bulan') . '-01')->locale('id')->isoFormat('MMMM YYYY');
-        $tanggalString = $tanggalFormatted ? $tanggalFormatted : 'Tidak ada tanggal pemeriksaan';
-        
-        // Buat deskripsi berdasarkan apakah checker dipilih atau tidak
-        $description = '';
-        if ($checkerUser) {
-            $description = 'User ' . $user->username . ' membuat pemeriksaan Crane Matras Nomor ' . $request->input('nomer_crane_matras') . ' untuk bulan ' . $bulanFormatted . ' atas nama checker ' . $checkerUser->username . ($tanggalFormatted ? ' pada tanggal: ' . $tanggalString : '');
-        } else {
-            $description = 'User ' . $user->username . ' membuat pemeriksaan Crane Matras Nomor ' . $request->input('nomer_crane_matras') . ' untuk bulan ' . $bulanFormatted . ' (tanpa checker yang ditentukan)';
-        }
-        
-        Activity::logActivity(
-            'checker',                                              // user_type
-            $user->id,                                             // user_id (yang melakukan input)
-            $user->username,                                       // user_name (yang melakukan input)
-            'created',                                             // action
-            $description,                                          // description
-            'crane_matras_check',                                  // target_type
-            $craneMatrasCheck->id,                                 // target_id
-            [
-                'nomer_crane_matras' => $request->input('nomer_crane_matras'),
-                'bulan' => $request->input('bulan'),
-                'bulan_formatted' => $bulanFormatted,
-                'tanggal_check' => $tanggalFormatted,
-                'tanggal_check_db' => $tanggal,
-                'checker_id' => $checkerId,
-                'checker_name' => $checkerUser ? $checkerUser->username : null,
-                'input_by_id' => $user->id,
-                'input_by_name' => $user->username,
-                'total_items' => count($items),
-                'items_processed' => $itemsProcessed,
-                'status' => $craneMatrasCheck->status,
-                'has_checker' => $checkerUser ? true : false
-            ]                                                      // details (JSON)
-        );
-
-        // Commit transaksi
-        DB::commit();
-
-        // Redirect dengan pesan sukses
-        return redirect()->route('crane-matras.index')
-            ->with('success', 'Data pemeriksaan Crane Matras berhasil disimpan.');
-            
-    } catch (\Exception $e) {
-        // Rollback transaksi jika terjadi kesalahan
-        DB::rollBack();
-
-        // Log kesalahan untuk debugging
-        Log::error('Crane Matras store error: ' . $e->getMessage());
-        Log::error('Error detail: ' . $e->getTraceAsString());
-        Log::error('Request data: ' . json_encode($request->all()));
-
-        // Redirect kembali dengan pesan kesalahan
-        return redirect()->back()->with('error', 'Gagal menyimpan data pemeriksaan Crane Matras: ' . $e->getMessage())
-                        ->withInput();
-    }
-}
-
-    public function edit($id)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
         
-        // Ambil data utama crane matras check
-        $check = CraneMatrasCheck::findOrFail($id);
+        // Custom error messages
+        $customMessages = [
+            'nomer_crane_matras.required' => 'Silakan pilih nomor crane matras terlebih dahulu!',
+        ];
         
-        // Ambil data hasil pemeriksaan
-        $results = CraneMatrasResult::where('check_id', $id)->get();
+        // Validasi input - checked_by_1 dan tanggal_1 tidak wajib
+        $validatedData = $request->validate([
+            'nomer_crane_matras' => 'required|integer|min:1|max:3',
+            'bulan' => 'required|date_format:Y-m',
+            'checked_by_1' => 'nullable|string|max:255',
+            'tanggal_1' => 'nullable|string',
+            'check_num_1' => 'nullable|string',
+            'checked_items' => 'required|array',
+            'check' => 'required|array',
+            'keterangan' => 'nullable|array',
+        ], $customMessages);
+        
+        // Cek apakah ada data dengan nomer_crane_matras dan bulan yang sama
+        $existingRecord = CraneMatrasCheck::where('nomer_crane_matras', $request->input('nomer_crane_matras'))
+            ->where('bulan', $request->input('bulan'))
+            ->first();
+
+        if ($existingRecord) {
+            // Format bulan dari Y-m menjadi nama bulan dan tahun
+            $formattedMonth = Carbon::parse($request->input('bulan') . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            
+            // Buat pesan error dengan detail data yang duplikat
+            $errorMessage = "Data duplikat ditemukan untuk Crane Matras Nomor {$request->input('nomer_crane_matras')} pada bulan {$formattedMonth}!";
+            
+            // Redirect kembali dengan pesan error yang lebih informatif
+            return redirect()->back()
+                ->with('error', $errorMessage)
+                ->withInput();
+        }
+        
+        // Mengubah format tanggal dari "DD Bulan YYYY" menjadi "YYYY-MM-DD"
+        $tanggal = null;
+        $tanggalFormatted = null; // Untuk activity log
+        
+        if ($request->filled('tanggal_1')) {
+            $bulanIndonesia = [
+                'Januari' => '01', 'Februari' => '02', 'Maret' => '03', 'April' => '04',
+                'Mei' => '05', 'Juni' => '06', 'Juli' => '07', 'Agustus' => '08',
+                'September' => '09', 'Oktober' => '10', 'November' => '11', 'Desember' => '12'
+            ];
+            
+            $parts = explode(' ', $request->tanggal_1);
+            if (count($parts) == 3 && isset($bulanIndonesia[$parts[1]])) {
+                $day = str_pad($parts[0], 2, '0', STR_PAD_LEFT);
+                $month = $bulanIndonesia[$parts[1]];
+                $year = $parts[2];
+                $tanggal = "$year-$month-$day";
+                $tanggalFormatted = $request->tanggal_1; // Simpan format asli untuk log
+            }
+        }
+        
+        // Cari user berdasarkan username yang dipilih (jika ada)
+        $checkerUser = null;
+        $checkerId = null;
+        
+        if ($request->filled('checked_by_1') && $request->filled('check_num_1')) {
+            // Cari user berdasarkan username yang dipilih
+            $checkerUser = Checker::where('username', $request->input('checked_by_1'))->first();
+            
+            if (!$checkerUser) {
+                return redirect()->back()
+                    ->with('error', 'User dengan username "' . $request->input('checked_by_1') . '" tidak ditemukan!')
+                    ->withInput();
+            }
+            
+            $checkerId = $checkerUser->id;
+        }
+        
+        try {
+            // Mulai transaksi database
+            DB::beginTransaction();
+            
+            // Buat record baru di CraneMatrasCheck
+            $craneMatrasCheck = CraneMatrasCheck::create([
+                'nomer_crane_matras' => $request->input('nomer_crane_matras'),
+                'bulan' => $request->input('bulan'),
+                'tanggal' => $tanggal, // Akan null jika tombol tidak dipilih
+                'checker_id' => $checkerId, // Akan null jika tombol tidak dipilih
+                'approver_id' => null, // Diisi pada tahap approval
+                // status akan otomatis diset menjadi 'belum_disetujui' oleh model
+            ]);
+
+            // Log untuk debugging
+            Log::info('Checked Items:', $request->input('checked_items'));
+            Log::info('Check Values:', $request->input('check'));
+            
+            // Mendefinisikan daftar item yang diperiksa
+            $items = $request->input('checked_items');
+            
+            // Array untuk menyimpan detail items yang disimpan (untuk activity log)
+            $itemsProcessed = [];
+            
+            // Simpan hasil pemeriksaan untuk setiap item
+            foreach ($items as $index => $item) {
+                // Ambil nilai check dan keterangan untuk item ini
+                $checkValue = isset($request->input('check')[$index]) ? $request->input('check')[$index] : null;
+                $keterangan = isset($request->input('keterangan')[$index]) ? $request->input('keterangan')[$index] : null;
+                
+                // Log untuk debugging
+                Log::info("Menyimpan item {$index}: {$item} dengan nilai check: {$checkValue}");
+                
+                // Simpan ke model CraneMatrasResult
+                CraneMatrasResult::create([
+                    'check_id' => $craneMatrasCheck->id,
+                    'checked_items' => $item,
+                    'check' => $checkValue,
+                    'keterangan' => $keterangan,
+                ]);
+                
+                // Simpan detail untuk activity log
+                $itemsProcessed[] = [
+                    'item' => $item,
+                    'check' => $checkValue,
+                    'keterangan' => $keterangan
+                ];
+            }
+
+            // LOG AKTIVITAS
+            $bulanFormatted = Carbon::parse($request->input('bulan') . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            $tanggalString = $tanggalFormatted ? $tanggalFormatted : 'Tidak ada tanggal pemeriksaan';
+            
+            // Buat deskripsi berdasarkan apakah checker dipilih atau tidak
+            $description = '';
+            if ($checkerUser) {
+                $description = 'User ' . $user->username . ' membuat pemeriksaan Crane Matras Nomor ' . $request->input('nomer_crane_matras') . ' untuk bulan ' . $bulanFormatted . ' atas nama checker ' . $checkerUser->username . ($tanggalFormatted ? ' pada tanggal: ' . $tanggalString : '');
+            } else {
+                $description = 'User ' . $user->username . ' membuat pemeriksaan Crane Matras Nomor ' . $request->input('nomer_crane_matras') . ' untuk bulan ' . $bulanFormatted . ' (tanpa checker yang ditentukan)';
+            }
+            
+            Activity::logActivity(
+                'checker',                                              // user_type
+                $user->id,                                             // user_id (yang melakukan input)
+                $user->username,                                       // user_name (yang melakukan input)
+                'created',                                             // action
+                $description,                                          // description
+                'crane_matras_check',                                  // target_type
+                $craneMatrasCheck->id,                                 // target_id
+                [
+                    'nomer_crane_matras' => $request->input('nomer_crane_matras'),
+                    'bulan' => $request->input('bulan'),
+                    'bulan_formatted' => $bulanFormatted,
+                    'tanggal_check' => $tanggalFormatted,
+                    'tanggal_check_db' => $tanggal,
+                    'checker_id' => $checkerId,
+                    'checker_name' => $checkerUser ? $checkerUser->username : null,
+                    'input_by_id' => $user->id,
+                    'input_by_name' => $user->username,
+                    'total_items' => count($items),
+                    'items_processed' => $itemsProcessed,
+                    'status' => $craneMatrasCheck->status,
+                    'has_checker' => $checkerUser ? true : false
+                ]                                                      // details (JSON)
+            );
+
+            // Commit transaksi
+            DB::commit();
+
+            // Redirect dengan pesan sukses
+            return redirect()->route('crane-matras.index')
+                ->with('success', 'Data pemeriksaan Crane Matras berhasil disimpan.');
+                
+        } catch (\Exception $e) {
+            // Rollback transaksi jika terjadi kesalahan
+            DB::rollBack();
+
+            // Log kesalahan untuk debugging
+            Log::error('Crane Matras store error: ' . $e->getMessage());
+            Log::error('Error detail: ' . $e->getTraceAsString());
+            Log::error('Request data: ' . json_encode($request->all()));
+
+            // Redirect kembali dengan pesan kesalahan
+            return redirect()->back()->with('error', 'Gagal menyimpan data pemeriksaan Crane Matras: ' . $e->getMessage())
+                            ->withInput();
+        }
+    }
+
+    public function edit($hashid)
+    {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
+        // Model CraneMatrasCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $check = (new CraneMatrasCheck)->resolveRouteBinding($hashid);
+        
+        // Load relasi setelah mendapatkan instance model
+        $check->load([
+            'results',
+            // Tambahkan relasi untuk checker dan approver jika diperlukan
+            // 'checker',
+            // 'approver'
+        ]);
+        
+        // Ambil data hasil pemeriksaan dari relasi yang sudah di-load
+        $results = $check->results;
         
         // Memformat data hasil pemeriksaan untuk tampilan
         $formattedResults = [];
@@ -354,7 +363,7 @@ class CraneMatrasControler extends Controller
         return view('crane_matras.edit', compact('check', 'formattedResults', 'items', 'checkerData', 'approvalStatus', 'user', 'currentGuard'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
@@ -365,10 +374,11 @@ class CraneMatrasControler extends Controller
             'nomer_crane_matras' => 'required|integer|between:1,10',
             'bulan' => 'required|date_format:Y-m',
         ]);
-    
-        // Cari data crane matras yang akan diupdate
-        $craneMatrasCheck = CraneMatrasCheck::findOrFail($id);
-    
+
+        // Model CraneMatrasCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $craneMatrasCheck = (new CraneMatrasCheck)->resolveRouteBinding($hashid);
+
         // Cek apakah ada perubahan pada data utama (nomer_crane_matras, bulan)
         if ($craneMatrasCheck->nomer_crane_matras != $request->nomer_crane_matras || 
             $craneMatrasCheck->bulan != $request->bulan) {
@@ -376,7 +386,7 @@ class CraneMatrasControler extends Controller
             // Periksa apakah data dengan kombinasi baru sudah ada
             $existingRecord = CraneMatrasCheck::where('nomer_crane_matras', $request->nomer_crane_matras)
                 ->where('bulan', $request->bulan)
-                ->where('id', '!=', $id) // Kecualikan record saat ini
+                ->where('id', '!=', $craneMatrasCheck->id) // Menggunakan id dari model instance
                 ->first();
             
             if ($existingRecord) {
@@ -385,10 +395,10 @@ class CraneMatrasControler extends Controller
                     ->with('error', 'Data dengan nomor crane matras dan bulan yang sama sudah ada!');
             }
         }
-    
+
         // Mulai transaksi database
         DB::beginTransaction();
-    
+
         try {
             // Simpan data lama untuk activity log
             $oldData = [
@@ -400,12 +410,16 @@ class CraneMatrasControler extends Controller
             ];
             
             // Update data CraneMatrasCheck
-            $craneMatrasCheck->update([
+            $updateData = [
                 'nomer_crane_matras' => $request->nomer_crane_matras,
                 'bulan' => $request->bulan,
                 'tanggal' => now(), // Default ke waktu sekarang jika tidak ada input tanggal
-                // checker_id tetap sama, tidak diubah saat update
-            ]);
+            ];
+            
+            // Update checker_id berdasarkan user yang sedang login (karena yang edit adalah checker itu sendiri)
+            $updateData['checker_id'] = $user->id;
+            
+            $craneMatrasCheck->update($updateData);
             
             // Reset approval jika sebelumnya sudah diapprove dan ada perubahan data
             if ($craneMatrasCheck->hasApprover() && $request->has('check')) {
@@ -415,8 +429,8 @@ class CraneMatrasControler extends Controller
                 ]);
             }
             
-            // Ambil data existing dari tabel CraneMatrasResult
-            $existingResults = CraneMatrasResult::where('check_id', $id)->get()->keyBy('checked_items');
+            // Ambil data existing dari tabel CraneMatrasResult - menggunakan id dari model instance
+            $existingResults = CraneMatrasResult::where('check_id', $craneMatrasCheck->id)->get()->keyBy('checked_items');
             
             // Proses setiap item dari form
             $itemCount = count($request->input('checked_items', []));
@@ -438,8 +452,8 @@ class CraneMatrasControler extends Controller
                     // Update record yang sudah ada
                     $existingResult->update($resultData);
                 } else {
-                    // Buat record baru jika belum ada
-                    $resultData['check_id'] = $id;
+                    // Buat record baru jika belum ada - menggunakan id dari model instance
+                    $resultData['check_id'] = $craneMatrasCheck->id;
                     $resultData['checked_items'] = $itemName;
                     CraneMatrasResult::create($resultData);
                 }
@@ -451,33 +465,6 @@ class CraneMatrasControler extends Controller
                     'keterangan' => $resultData['keterangan']
                 ];
             }
-            
-            // LOG AKTIVITAS - Tambahkan setelah data berhasil diupdate
-            $bulanFormatted = Carbon::parse($request->input('bulan') . '-01')->locale('id')->isoFormat('MMMM YYYY');
-            
-            Activity::logActivity(
-                'checker',                                              // user_type
-                $user->id,                                             // user_id
-                $user->username,                                       // user_name
-                'updated',                                             // action
-                'Checker ' . $user->username . ' memperbarui pemeriksaan Crane Matras Nomor ' . $request->input('nomer_crane_matras') . ' untuk bulan ' . $bulanFormatted,  // description
-                'crane_matras_check',                                  // target_type
-                $craneMatrasCheck->id,                                 // target_id
-                [
-                    'old_data' => $oldData,
-                    'new_data' => [
-                        'nomer_crane_matras' => $request->input('nomer_crane_matras'),
-                        'bulan' => $request->input('bulan'),
-                        'bulan_formatted' => $bulanFormatted,
-                        'tanggal_check' => now()->format('Y-m-d H:i:s'),
-                        'checker_id' => $craneMatrasCheck->checker_id,
-                        'checker_name' => $craneMatrasCheck->getCheckerName(),
-                        'total_items' => $itemCount,
-                        'items_processed' => $itemsProcessed,
-                        'status' => $craneMatrasCheck->fresh()->status // Refresh untuk mendapatkan status terbaru
-                    ]
-                ]                                                      // details (JSON)
-            );
             
             // Commit transaksi
             DB::commit();
@@ -498,17 +485,21 @@ class CraneMatrasControler extends Controller
         }
     }
 
-    public function show($id)
+    public function show($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
 
-        // Ambil data utama crane matras check
-        $check = CraneMatrasCheck::with(['checker', 'approver'])->findOrFail($id);
+        // Model CraneMatrasCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $check = (new CraneMatrasCheck)->resolveRouteBinding($hashid);
         
-        // Ambil data hasil pemeriksaan
-        $results = CraneMatrasResult::where('check_id', $id)->get();
+        // Load relasi setelah mendapatkan instance model
+        $check->load(['checker', 'approver', 'results']);
+        
+        // Ambil data hasil pemeriksaan dari relasi yang sudah di-load
+        $results = $check->results;
         
         // Memformat data hasil pemeriksaan untuk tampilan
         $formattedResults = [];
@@ -551,7 +542,7 @@ class CraneMatrasControler extends Controller
         return view('crane_matras.show', compact('check', 'formattedResults', 'checkerData', 'approvalStatus', 'user', 'currentGuard'));
     }
 
-    public function approve(Request $request, $id)
+    public function approve(Request $request, $hashid)
     {
         $user = $this->ensureAuthenticatedUser(['approver']);
         if (!is_object($user)) return $user;
@@ -559,8 +550,9 @@ class CraneMatrasControler extends Controller
             return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
         }
 
-        // Ambil data crane matras check
-        $check = CraneMatrasCheck::findOrFail($id);
+        // Model CraneMatrasCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $check = (new CraneMatrasCheck)->resolveRouteBinding($hashid);
         
         // Cek jika sudah disetujui
         if ($check->isApproved()) {
@@ -575,14 +567,15 @@ class CraneMatrasControler extends Controller
             ->with('success', 'Persetujuan berhasil disimpan');
     }
 
-    public function reviewPdf($id) 
+    public function reviewPdf($hashid) 
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
 
-        // Ambil data pemeriksaan crane matras berdasarkan ID dengan eager loading
-        $craneMatrasCheck = CraneMatrasCheck::with(['checker', 'approver'])->findOrFail($id);
+        // Model CraneMatrasCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $craneMatrasCheck = (new CraneMatrasCheck)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait (sesuaikan nomor form dengan yang digunakan untuk crane matras)
         $form = Form::where('nomor_form', 'APTEK/005/REV.00')->firstOrFail();
@@ -590,8 +583,8 @@ class CraneMatrasControler extends Controller
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
         
-        // Ambil detail hasil pemeriksaan untuk crane matras
-        $craneMatrasResults = CraneMatrasResult::where('check_id', $id)->get();
+        // Ambil detail hasil pemeriksaan untuk crane matras menggunakan ID asli
+        $craneMatrasResults = CraneMatrasResult::where('check_id', $craneMatrasCheck->id)->get();
         
         // Format tanggal pemeriksaan dalam bahasa Indonesia
         $tanggalFormatted = null;
@@ -647,14 +640,15 @@ class CraneMatrasControler extends Controller
         return $view;
     }
 
-    public function downloadPdf($id)
+    public function downloadPdf($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
 
-        // Ambil data pemeriksaan crane matras berdasarkan ID dengan eager loading
-        $craneMatrasCheck = CraneMatrasCheck::with(['checker', 'approver'])->findOrFail($id);
+        // Model CraneMatrasCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $craneMatrasCheck = (new CraneMatrasCheck)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait (sesuaikan nomor form dengan yang digunakan untuk crane matras)
         $form = Form::where('nomor_form', 'APTEK/005/REV.00')->firstOrFail();
@@ -662,8 +656,8 @@ class CraneMatrasControler extends Controller
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
         
-        // Ambil detail hasil pemeriksaan untuk crane matras
-        $craneMatrasResults = CraneMatrasResult::where('check_id', $id)->get();
+        // Ambil detail hasil pemeriksaan untuk crane matras menggunakan ID asli
+        $craneMatrasResults = CraneMatrasResult::where('check_id', $craneMatrasCheck->id)->get();
         
         // Format tanggal pemeriksaan dalam bahasa Indonesia
         $tanggalFormatted = null;

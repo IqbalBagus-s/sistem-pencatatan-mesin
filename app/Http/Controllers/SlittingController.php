@@ -345,14 +345,18 @@ class SlittingController extends Controller
         }
     }
 
-    public function edit($id)
+    public function edit($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
         
-        // Ambil data utama slitting check dengan relasi checker dan approver
-        $check = SlittingCheck::with([
+        // Model SlittingCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $check = (new SlittingCheck)->resolveRouteBinding($hashid);
+        
+        // Load relasi yang diperlukan setelah mendapatkan instance
+        $check->load([
             'checkerMinggu1', 
             'checkerMinggu2', 
             'checkerMinggu3', 
@@ -361,10 +365,10 @@ class SlittingController extends Controller
             'approverMinggu2', 
             'approverMinggu3', 
             'approverMinggu4'
-        ])->findOrFail($id);
+        ]);
         
-        // Ambil data hasil pemeriksaan
-        $results = SlittingResult::where('check_id', $id)->get();
+        // Ambil data hasil pemeriksaan menggunakan ID asli
+        $results = SlittingResult::where('check_id', $check->id)->get();
         
         // Definisikan items sama seperti di fungsi store
         $items = [
@@ -390,7 +394,6 @@ class SlittingController extends Controller
         // Format data untuk view
         $formattedResults = [];
         
-        // PERBAIKAN 1: Konsistensi nama field checker
         // Pastikan menggunakan format yang sama dengan database dan view
         $checkerData = [
             'checked_by_1' => $check->checkerMinggu1 ? $check->checkerMinggu1->username : '',
@@ -439,41 +442,32 @@ class SlittingController extends Controller
             }
         }
         
-        // PERBAIKAN 4: Pastikan method isWeekApproved() ada di model atau gunakan alternatif
         // Jika method isWeekApproved() tidak ada, gunakan pengecekan langsung
         $approvalStatus = [
-            'minggu1' => !empty($check->approver_minggu1_id) && $check->approver_minggu1_id != '-',
-            'minggu2' => !empty($check->approver_minggu2_id) && $check->approver_minggu2_id != '-',
-            'minggu3' => !empty($check->approver_minggu3_id) && $check->approver_minggu3_id != '-',
-            'minggu4' => !empty($check->approver_minggu4_id) && $check->approver_minggu4_id != '-'
+            'minggu1' => $check->isWeekApproved(1),
+            'minggu2' => $check->isWeekApproved(2),
+            'minggu3' => $check->isWeekApproved(3),
+            'minggu4' => $check->isWeekApproved(4)
         ];
-        
-        // ALTERNATIF: Jika method isWeekApproved() sudah ada dan bekerja dengan baik
-        // $approvalStatus = [
-        //     'minggu1' => $check->isWeekApproved(1),
-        //     'minggu2' => $check->isWeekApproved(2),
-        //     'minggu3' => $check->isWeekApproved(3),
-        //     'minggu4' => $check->isWeekApproved(4)
-        // ];
         
         return view('slitting.edit', compact('check', 'formattedResults', 'items', 'checkerData', 'approvalStatus', 'user', 'currentGuard'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
+        
+        // Gunakan trait Hashidable untuk resolve hashid ke model instance
+        $slittingCheck = (new SlittingCheck)->resolveRouteBinding($hashid);
         
         // Validasi input
         $validated = $request->validate([
             'nomer_slitting' => 'required|integer|between:1,10',
             'bulan' => 'required|date_format:Y-m',
         ]);
-    
-        // Cari data slitting yang akan diupdate
-        $slittingCheck = SlittingCheck::findOrFail($id);
-    
+
         // Cek apakah ada perubahan pada data utama (nomer_slitting, bulan)
         if ($slittingCheck->nomer_slitting != $request->nomer_slitting || 
             $slittingCheck->bulan != $request->bulan) {
@@ -481,7 +475,7 @@ class SlittingController extends Controller
             // Periksa apakah data dengan kombinasi baru sudah ada
             $existingRecord = SlittingCheck::where('nomer_slitting', $request->nomer_slitting)
                 ->where('bulan', $request->bulan)
-                ->where('id', '!=', $id) // Kecualikan record saat ini
+                ->where('id', '!=', $slittingCheck->id) // Gunakan ID dari resolved model
                 ->first();
             
             if ($existingRecord) {
@@ -490,10 +484,10 @@ class SlittingController extends Controller
                     ->with('error', 'Data dengan nomor slitting dan bulan yang sama sudah ada!');
             }
         }
-    
+
         // Mulai transaksi database
         DB::beginTransaction();
-    
+
         try {
             // Siapkan data untuk update checker berdasarkan guard
             $checkerData = [];
@@ -523,7 +517,7 @@ class SlittingController extends Controller
                     $checkerData["checker_minggu{$week}_id"] = null;
                 }
             }
-    
+
             // Update data SlittingCheck dengan data baru dan checker yang sudah diproses
             $updateData = array_merge([
                 'nomer_slitting' => $request->nomer_slitting,
@@ -553,8 +547,8 @@ class SlittingController extends Controller
                 17 => 'Air Filter',
             ];
             
-            // Ambil data existing dari tabel SlittingResult
-            $existingResults = SlittingResult::where('check_id', $id)->get()->keyBy('checked_items');
+            // Ambil data existing dari tabel SlittingResult menggunakan ID asli
+            $existingResults = SlittingResult::where('check_id', $slittingCheck->id)->get()->keyBy('checked_items');
             
             // Proses setiap item
             foreach ($items as $itemId => $itemName) {
@@ -589,7 +583,7 @@ class SlittingController extends Controller
                     }
                 } else {
                     // Buat record baru jika belum ada
-                    $resultData['check_id'] = $id;
+                    $resultData['check_id'] = $slittingCheck->id;
                     $resultData['checked_items'] = $itemName;
                     SlittingResult::create($resultData);
                 }
@@ -611,14 +605,17 @@ class SlittingController extends Controller
         }
     }
 
-    public function show($id)
+    public function show($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
         
-        // Fetch the slitting check with its results and relations
-        $check = SlittingCheck::with([
+        // Gunakan trait Hashidable untuk resolve hashid ke model instance
+        $check = (new SlittingCheck)->resolveRouteBinding($hashid);
+        
+        // Load relasi yang diperlukan setelah mendapatkan instance
+        $check->load([
             'checkerMinggu1',
             'checkerMinggu2', 
             'checkerMinggu3',
@@ -627,10 +624,10 @@ class SlittingController extends Controller
             'approverMinggu2',
             'approverMinggu3',
             'approverMinggu4'
-        ])->findOrFail($id);
+        ]);
         
-        // Get all results related to this check
-        $results = SlittingResult::where('check_id', $id)->get();
+        // Get all results related to this check menggunakan ID asli
+        $results = SlittingResult::where('check_id', $check->id)->get();
         
         // Define items like in the edit function
         $items = [
@@ -734,7 +731,7 @@ class SlittingController extends Controller
         return view('slitting.show', compact('check', 'formattedResults', 'checkers', 'approvers', 'user', 'currentGuard'));
     }
 
-    public function approve(Request $request, $id)
+    public function approve(Request $request, $hashid)
     {
         $user = $this->ensureAuthenticatedUser(['approver']);
         if (!is_object($user)) return $user;
@@ -742,7 +739,8 @@ class SlittingController extends Controller
             return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
         }
         
-        $check = SlittingCheck::findOrFail($id);
+        // Gunakan trait Hashidable untuk resolve hashid ke model instance
+        $check = (new SlittingCheck)->resolveRouteBinding($hashid);
         
         // Process approvals for each week
         for ($week = 1; $week <= 4; $week++) {
@@ -766,13 +764,14 @@ class SlittingController extends Controller
             ->with('success', 'Persetujuan berhasil disimpan');
     }
    
-    public function reviewPdf($id) 
+    public function reviewPdf($hashid) 
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
-        // Ambil data pemeriksaan slitting berdasarkan ID
-        $slittingCheck = SlittingCheck::findOrFail($id);
+        
+        // Gunakan trait Hashidable untuk resolve hashid ke model instance
+        $slittingCheck = (new SlittingCheck)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait (sesuaikan nomor form untuk slitting)
         $form = Form::where('nomor_form', 'APTEK/014/REV.00')->firstOrFail(); // Ganti XXX dengan nomor form yang sesuai
@@ -781,7 +780,7 @@ class SlittingController extends Controller
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
         
         // Ambil semua hasil pemeriksaan terkait check ini
-        $results = SlittingResult::where('check_id', $id)->get();
+        $results = SlittingResult::where('check_id', $slittingCheck->id)->get();
         
         // Definisikan items yang akan ditampilkan di PDF
         $items = [
@@ -859,14 +858,15 @@ class SlittingController extends Controller
         // Return view untuk preview
         return $view;
     }
-    
-    public function downloadPdf($id)
+
+    public function downloadPdf($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
-        // Ambil data pemeriksaan slitting berdasarkan ID
-        $slittingCheck = SlittingCheck::findOrFail($id);
+        
+        // Gunakan trait Hashidable untuk resolve hashid ke model instance
+        $slittingCheck = (new SlittingCheck)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait
         $form = Form::where('nomor_form', 'APTEK/014/REV.00')->firstOrFail();
@@ -875,7 +875,7 @@ class SlittingController extends Controller
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
         
         // Ambil semua hasil pemeriksaan terkait check ini
-        $results = SlittingResult::where('check_id', $id)->get();
+        $results = SlittingResult::where('check_id', $slittingCheck->id)->get();
         
         // Definisikan items yang akan ditampilkan di PDF
         $items = [
