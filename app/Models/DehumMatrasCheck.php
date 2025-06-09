@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\Hashidable;
 
 class DehumMatrasCheck extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Hashidable;
     
     protected $table = 'dehum_matras_checks';
     
