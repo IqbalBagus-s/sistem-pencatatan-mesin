@@ -36,7 +36,7 @@
                     <button type="button" 
                         @click="open = !open" 
                         class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative">
-                        <span x-text="selected ? 'Crane Matras nomor ' + selected : 'Pilih Crane Matras'"></span>
+                        <span x-text="selected ? 'Crane Matras Nomor ' + selected : 'Pilih Crane Matras'"></span>
                         
                         <!-- Selection Indicator -->
                         <div class="absolute right-3 top-1/2 -translate-y-1/2">

@@ -9,7 +9,7 @@
 
 @section('content')
     <!-- Form Input -->
-    <form action="{{ route('caplining.update', $check->id) }}" method="POST" autocomplete="off">
+    <form action="{{ route('caplining.update', $check->hashid) }}" method="POST" autocomplete="off">
         @csrf
         @method('PUT')
         <div class="grid md:grid-cols-2 gap-4 mb-4">
@@ -20,7 +20,7 @@
                 
                 <!-- Display field (not editable) -->
                 <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
-                    <span>Caplining {{ $check->nomer_caplining }}</span>
+                    <span>Caplining Nomor {{ $check->nomer_caplining }}</span>
                 </div>
                 
                 <!-- Hidden Input to keep the value for submission -->

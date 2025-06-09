@@ -168,7 +168,7 @@
                                 </span>
                             @elseif($approvedCount > 0)
                                 <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                    Disetujui Sebagian ({{ $approvedCount }}/4)
+                                    Disetujui Sebagian
                                 </span>
                             @else
                                 <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
@@ -179,13 +179,13 @@
                         <td class="py-3 px-4 border-b border-gray-200">
                             {{-- Menu lihat --}}
                             @if($currentGuard === 'approver')
-                                <a href="{{ route('slitting.show', $check->id) }}" title="Lihat Detail">
+                                <a href="{{ route('slitting.show', $check->hashid) }}" title="Lihat Detail">
                                     <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit --}}
                             @elseif($currentGuard === 'checker')
                                 @if($check->status === 'belum_disetujui')
-                                    <a href="{{ route('slitting.edit', $check->id) }}" title="Edit">
+                                    <a href="{{ route('slitting.edit', $check->hashid) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
                                 @else

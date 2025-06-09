@@ -9,7 +9,7 @@
 
 @section('content')
     <!-- Form Input -->
-    <form action="{{ route('crane-matras.update', $check->id) }}" method="POST" autocomplete="off">
+    <form action="{{ route('crane-matras.update', $check->hashid) }}" method="POST" autocomplete="off">
         @csrf
         @method('PUT')
         <div class="grid md:grid-cols-2 gap-4 mb-4">
@@ -20,7 +20,7 @@
                 </label>
                 
                 <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
-                    Crane Matras nomor {{ $checkerData['nomer_crane_matras'] }}
+                    Crane Matras Nomor {{ $checkerData['nomer_crane_matras'] }}
                 </div>
                 
                 <!-- Hidden Input untuk dikirim ke server -->
@@ -114,11 +114,11 @@
                                 }">
                                     <div class="mt-1" x-show="selected || isPrefilledData">
                                         <input type="text" name="checked_by_1" x-ref="user1" value="{{ $checkerData['checked_by_1'] ?? '' }}"
-                                            class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded mb-1 text-center"
-                                            readonly>
+                                            class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded mb-1 text-center">
                                         <input type="text" name="tanggal_1" x-ref="date1" value="{{ $checkerData['tanggal_1'] ?? '' }}"
-                                            class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
-                                            readonly>
+                                            class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center">
+                                        <!-- Hidden input untuk menyimpan checker_id -->
+                                        <input type="hidden" name="checker_id" value="{{ $user->id }}">
                                         <input type="hidden" name="check_num_1" x-ref="checkNum1" value="1">
                                     </div>
                                     

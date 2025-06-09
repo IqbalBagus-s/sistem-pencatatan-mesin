@@ -502,17 +502,17 @@
                     @php
                         $machines = [
                             ['name' => 'Air Dryer', 'route' => 'air-dryer.index', 'key' => 'air_dryer'],
-                            ['name' => 'Water Chiller', 'route' => 'water-chiller.index', 'key' => 'water_chiller'],
+                            ['name' => 'Auto Loader', 'route' => 'autoloader.index', 'key' => 'auto_loader'],
+                            ['name' => 'Caplining', 'route' => 'caplining.index', 'key' => 'caplining'],
                             ['name' => 'Compressor', 'route' => 'compressor.index', 'key' => 'compressor'],
-                            ['name' => 'Hopper', 'route' => 'hopper.index', 'key' => 'hopper'],
+                            ['name' => 'Crane Matras', 'route' => 'crane-matras.index', 'key' => 'crane_matras'],
                             ['name' => 'Dehum Bahan', 'route' => 'dehum-bahan.index', 'key' => 'dehum_bahan'],
                             ['name' => 'Dehum Matras', 'route' => 'dehum-matras.index', 'key' => 'dehum_matras'],
-                            ['name' => 'Auto Loader', 'route' => 'autoloader.index', 'key' => 'auto_loader'],
                             ['name' => 'Gilingan', 'route' => 'giling.index', 'key' => 'gilingan'],
-                            ['name' => 'Caplining', 'route' => 'caplining.index', 'key' => 'caplining'],
-                            ['name' => 'Vacuum Cleaner', 'route' => 'vacuum-cleaner.index', 'key' => 'vacuum_cleaner'],
+                            ['name' => 'Hopper', 'route' => 'hopper.index', 'key' => 'hopper'],
                             ['name' => 'Slitting', 'route' => 'slitting.index', 'key' => 'slitting'],
-                            ['name' => 'Crane Matras', 'route' => 'crane-matras.index', 'key' => 'crane_matras']
+                            ['name' => 'Vacuum Cleaner', 'route' => 'vacuum-cleaner.index', 'key' => 'vacuum_cleaner'],
+                            ['name' => 'Water Chiller', 'route' => 'water-chiller.index', 'key' => 'water_chiller']
                         ];
                     @endphp
                     

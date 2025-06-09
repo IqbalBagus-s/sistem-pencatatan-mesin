@@ -176,13 +176,13 @@
                         <td class="py-3 px-4 border-b border-gray-200">
                             {{-- Menu lihat untuk Approver --}}
                             @if($currentGuard === 'approver')
-                                <a href="{{ route('vacuum-cleaner.show', $check->id) }}" title="Lihat Detail">
+                                <a href="{{ route('vacuum-cleaner.show', $check->hashid) }}" title="Lihat Detail">
                                     <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit untuk Checker --}}
                             @elseif($currentGuard === 'checker')
                                 @if($check->status === 'belum_disetujui')
-                                    <a href="{{ route('vacuum-cleaner.edit', $check->id) }}" title="Edit">
+                                    <a href="{{ route('vacuum-cleaner.edit', $check->hashid) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
                                 @else

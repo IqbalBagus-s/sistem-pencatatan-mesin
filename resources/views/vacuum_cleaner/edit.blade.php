@@ -14,7 +14,7 @@
     </div>
 
     <!-- Form Input -->
-    <form action="{{ route('vacuum-cleaner.update', $check->id) }}" method="POST" autocomplete="off">
+    <form action="{{ route('vacuum-cleaner.update', $check->hashid) }}" method="POST" autocomplete="off">
             @csrf
             @method('PUT')
             <div class="grid md:grid-cols-2 gap-4 mb-4">
@@ -24,7 +24,7 @@
                         No Vacuum cleaner: 
                     </label>
                     <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm text-left flex items-center">
-                        <span>Vacuum cleaner nomor {{ $check->nomer_vacum_cleaner }}</span>
+                        <span>Vacuum Cleaner Nomor {{ $check->nomer_vacum_cleaner }}</span>
                     </div>
                     <!-- Hidden input untuk nomer vacuum cleaner -->
                     <input type="hidden" name="nomer_vacuum_cleaner" value="{{ $check->nomer_vacum_cleaner }}">
