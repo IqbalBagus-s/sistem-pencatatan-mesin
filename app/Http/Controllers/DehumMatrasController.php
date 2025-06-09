@@ -277,14 +277,18 @@ class DehumMatrasController extends Controller
         }
     }
 
-    public function edit($id)
+    public function edit($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
         
-        // Ambil data utama dehum matras check
-        $check = DehumMatrasCheck::findOrFail($id);
+        // Model DehumMatrasCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $check = (new DehumMatrasCheck)->resolveRouteBinding($hashid);
+        
+        // Get the real ID untuk query lainnya
+        $id = $check->id;
         
         // Ambil data hasil dari ketiga tabel
         $resultsTable1 = DehumMatrasResultsTable1::where('check_id', $id)->get();
@@ -404,7 +408,7 @@ class DehumMatrasController extends Controller
         return view('dehum-matras.edit', compact('check', 'results', 'user', 'currentGuard'));
     }
     
-    public function update(Request $request, $id)
+    public function update(Request $request, $hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
@@ -416,10 +420,11 @@ class DehumMatrasController extends Controller
             'shift' => 'required|integer|between:1,3',
             'bulan' => 'required|date_format:Y-m',
         ]);
-    
-        // Cari data dehum matras yang akan diupdate
-        $dehumMatrasCheck = DehumMatrasCheck::findOrFail($id);
-    
+
+        // Model DehumMatrasCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $dehumMatrasCheck = (new DehumMatrasCheck)->resolveRouteBinding($hashid);
+
         // Cek apakah ada perubahan pada data utama (nomer_dehum_matras, shift, bulan)
         if ($dehumMatrasCheck->nomer_dehum_matras != $request->nomer_dehum_matras || 
             $dehumMatrasCheck->shift != $request->shift || 
@@ -429,7 +434,7 @@ class DehumMatrasController extends Controller
             $existingRecord = DehumMatrasCheck::where('nomer_dehum_matras', $request->nomer_dehum_matras)
                 ->where('shift', $request->shift)
                 ->where('bulan', $request->bulan)
-                ->where('id', '!=', $id) // Kecualikan record saat ini
+                ->where('id', '!=', $dehumMatrasCheck->id) // Kecualikan record saat ini
                 ->first();
             
             if ($existingRecord) {
@@ -438,10 +443,10 @@ class DehumMatrasController extends Controller
                     ->with('error', 'Data dengan nomor dehum matras, shift, dan bulan yang sama sudah ada!');
             }
         }
-    
+
         // Mulai transaksi database
         DB::beginTransaction();
-    
+
         try {
             // Update data DehumMatrasCheck
             $dehumMatrasCheck->update([
@@ -462,9 +467,9 @@ class DehumMatrasController extends Controller
             ];
             
             // Ambil data existing dari ketiga tabel
-            $existingTable1Data = DehumMatrasResultsTable1::where('check_id', $id)->get()->keyBy('checked_items');
-            $existingTable2Data = DehumMatrasResultsTable2::where('check_id', $id)->get()->keyBy('checked_items');
-            $existingTable3Data = DehumMatrasResultsTable3::where('check_id', $id)->get()->keyBy('checked_items');
+            $existingTable1Data = DehumMatrasResultsTable1::where('check_id', $dehumMatrasCheck->id)->get()->keyBy('checked_items');
+            $existingTable2Data = DehumMatrasResultsTable2::where('check_id', $dehumMatrasCheck->id)->get()->keyBy('checked_items');
+            $existingTable3Data = DehumMatrasResultsTable3::where('check_id', $dehumMatrasCheck->id)->get()->keyBy('checked_items');
             
             // Proses setiap item
             foreach ($items as $itemId => $itemName) {
@@ -496,7 +501,7 @@ class DehumMatrasController extends Controller
                     $table1Record->update($resultData1);
                 } else {
                     // Buat record baru jika belum ada
-                    $resultData1['check_id'] = $id;
+                    $resultData1['check_id'] = $dehumMatrasCheck->id;
                     $resultData1['checked_items'] = $itemName;
                     DehumMatrasResultsTable1::create($resultData1);
                 }
@@ -529,7 +534,7 @@ class DehumMatrasController extends Controller
                     $table2Record->update($resultData2);
                 } else {
                     // Buat record baru jika belum ada
-                    $resultData2['check_id'] = $id;
+                    $resultData2['check_id'] = $dehumMatrasCheck->id;
                     $resultData2['checked_items'] = $itemName;
                     DehumMatrasResultsTable2::create($resultData2);
                 }
@@ -562,14 +567,14 @@ class DehumMatrasController extends Controller
                     $table3Record->update($resultData3);
                 } else {
                     // Buat record baru jika belum ada
-                    $resultData3['check_id'] = $id;
+                    $resultData3['check_id'] = $dehumMatrasCheck->id;
                     $resultData3['checked_items'] = $itemName;
                     DehumMatrasResultsTable3::create($resultData3);
                 }
             }
             
             // Ambil data checker_id dan approver_id yang sudah ada
-            $existingDetails = DehumMatrasDetail::where('tanggal_check_id', $id)
+            $existingDetails = DehumMatrasDetail::where('tanggal_check_id', $dehumMatrasCheck->id)
                 ->get()
                 ->keyBy('tanggal');
             // Proses informasi checker_id dan approver_id untuk semua hari (1-31)
@@ -586,7 +591,7 @@ class DehumMatrasController extends Controller
                     if ($existingDetail) {
                         $existingDetail->update($detailData);
                     } else {
-                        $detailData['tanggal_check_id'] = $id;
+                        $detailData['tanggal_check_id'] = $dehumMatrasCheck->id;
                         $detailData['tanggal'] = $i;
                         DehumMatrasDetail::create($detailData);
                     }
@@ -609,23 +614,24 @@ class DehumMatrasController extends Controller
         }
     }
 
-    public function show($id)
+    public function show($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
         
-        // Ambil data utama dehum matras check
-        $check = DehumMatrasCheck::findOrFail($id);
+        // Model DehumMatrasCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $check = (new DehumMatrasCheck)->resolveRouteBinding($hashid);
         
         // Ambil data hasil dari ketiga tabel
-        $resultsTable1 = DehumMatrasResultsTable1::where('check_id', $id)->get();
-        $resultsTable2 = DehumMatrasResultsTable2::where('check_id', $id)->get();
-        $resultsTable3 = DehumMatrasResultsTable3::where('check_id', $id)->get();
+        $resultsTable1 = DehumMatrasResultsTable1::where('check_id', $check->id)->get();
+        $resultsTable2 = DehumMatrasResultsTable2::where('check_id', $check->id)->get();
+        $resultsTable3 = DehumMatrasResultsTable3::where('check_id', $check->id)->get();
         
         // Ambil data detail dengan eager loading untuk checker dan approver
         $detailChecks = DehumMatrasDetail::with(['checker', 'approver'])
-            ->where('tanggal_check_id', $id)
+            ->where('tanggal_check_id', $check->id)
             ->get();
         
         // Siapkan data untuk view dalam format yang sesuai dengan helper function
@@ -728,7 +734,7 @@ class DehumMatrasController extends Controller
         return view('dehum-matras.show', compact('check', 'results', 'user', 'currentGuard'));
     }
 
-    public function approve(Request $request, $id)
+    public function approve(Request $request, $hashid)
     {
         $user = $this->ensureAuthenticatedUser(['approver']);
         if (!is_object($user)) return $user;
@@ -741,13 +747,14 @@ class DehumMatrasController extends Controller
             'approved_by_*' => 'sometimes|string',
             'approve_num_*' => 'sometimes|integer|between:1,31',
         ]);
-    
+
         // Mulai transaksi database
         DB::beginTransaction();
-    
+
         try {
-            // Ambil data DehumMatrasCheck berdasarkan ID
-            $check = DehumMatrasCheck::findOrFail($id);
+            // Model DehumMatrasCheck akan otomatis resolve hashid menjadi model instance
+            // karena menggunakan trait Hashidable
+            $check = (new DehumMatrasCheck)->resolveRouteBinding($hashid);
             
             // Proses informasi penanggung jawab hanya untuk tanggal yang dipilih
             foreach ($request->all() as $key => $value) {
@@ -760,7 +767,7 @@ class DehumMatrasController extends Controller
                     $approveNumKey = 'approve_num_' . $tanggal;
                     if ($request->has($approveNumKey) && $request->$approveNumKey == $tanggal) {
                         // Cari detail yang sudah ada untuk tanggal ini
-                        $detail = DehumMatrasDetail::where('tanggal_check_id', $id)
+                        $detail = DehumMatrasDetail::where('tanggal_check_id', $check->id)
                             ->where('tanggal', $tanggal)
                             ->first();
                         
@@ -774,7 +781,7 @@ class DehumMatrasController extends Controller
                         } else {
                             // Buat baru jika tidak ada detail
                             DehumMatrasDetail::create([
-                                'tanggal_check_id' => $id,
+                                'tanggal_check_id' => $check->id,
                                 'tanggal' => $tanggal,
                                 'checker_id' => null,
                                 'approver_id' => $user->id
@@ -799,14 +806,15 @@ class DehumMatrasController extends Controller
         }
     }
 
-    public function reviewPdf($id)
+    public function reviewPdf($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
         
-        // Ambil data utama dehum matras check
-        $dehumMatras = DehumMatrasCheck::findOrFail($id);
+        // Gunakan trait untuk mendapatkan model berdasarkan hashid
+        $dehumMatras = app(DehumMatrasCheck::class)->resolveRouteBinding($hashid);
+        $id = $dehumMatras->id; // Simpan ID untuk kompatibilitas dengan kode yang ada
         
         // Ambil data form terkait
         $form = Form::where('nomor_form', 'APTEK/048/REV.01')->firstOrFail();
@@ -942,14 +950,15 @@ class DehumMatrasController extends Controller
         return $view;
     }
 
-    public function downloadPdf($id)
+    public function downloadPdf($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
         
-        // Ambil data utama dehum matras check
-        $dehumMatras = DehumMatrasCheck::findOrFail($id);
+        // Gunakan trait untuk mendapatkan model berdasarkan hashid
+        $dehumMatras = app(DehumMatrasCheck::class)->resolveRouteBinding($hashid);
+        $id = $dehumMatras->id; // Simpan ID untuk kompatibilitas dengan kode yang ada
         
         // Ambil data form terkait
         $form = Form::where('nomor_form', 'APTEK/048/REV.01')->firstOrFail();

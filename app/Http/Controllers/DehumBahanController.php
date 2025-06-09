@@ -263,21 +263,26 @@ class DehumBahanController extends Controller
         }
     }
 
-    public function edit($id)
+    public function edit($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
-        $dehumCheck = DehumBahanCheck::findOrFail($id);
+        
+        // Model DehumBahanCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $dehumCheck = (new DehumBahanCheck)->resolveRouteBinding($hashid);
+        
         $dehumResults = $dehumCheck->results;
         return view('dehum-bahan.edit', compact('dehumCheck', 'dehumResults', 'user', 'currentGuard'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
+        
         // Validasi data request
         $validatedData = $request->validate([
             'nomer_dehum_bahan' => 'required|integer|min:1',
@@ -305,13 +310,13 @@ class DehumBahanController extends Controller
             'keterangan_4' => 'nullable|array',
         ]);
 
-        // Cari record DehumBahanCheck yang akan diupdate
-        $dehumCheck = DehumBahanCheck::findOrFail($id);
+        // Gunakan resolveRouteBinding yang sudah ada di trait
+        $dehumCheck = (new DehumBahanCheck)->resolveRouteBinding($hashid);
 
         // Cek apakah ada record lain dengan nomor dehum dan bulan yang sama (kecuali record saat ini)
         $existingRecord = DehumBahanCheck::where('nomer_dehum_bahan', $request->input('nomer_dehum_bahan'))
             ->where('bulan', $request->input('bulan'))
-            ->where('id', '!=', $id)
+            ->where('id', '!=', $dehumCheck->id)
             ->first();
 
         if ($existingRecord) {
@@ -421,17 +426,25 @@ class DehumBahanController extends Controller
         }
     }
 
-    public function show($check_id)
+    public function show($dehumBahan)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
-        // Find the main dehum bahan record
-        $dehumBahanRecord = DehumBahanCheck::findOrFail($check_id);
+        
+        // Check if $dehumBahan is string or model instance
+        if (is_string($dehumBahan)) {
+            // If it's still a string, use the trait's resolve method
+            $dehumBahanRecord = (new DehumBahanCheck())->resolveRouteBinding($dehumBahan);
+        } else {
+            // If it's already a model instance
+            $dehumBahanRecord = $dehumBahan;
+        }
         
         // Map the field names from the database to match template expectations
         $viewData = [
             'id' => $dehumBahanRecord->id,
+            'hashid' => $dehumBahanRecord->hashid, // Add hashid property
             'nomer_dehum_bahan' => $dehumBahanRecord->nomer_dehum_bahan,
             'bulan' => $dehumBahanRecord->bulan,
             'checker_1' => $dehumBahanRecord->checkerMinggu1?->username,
@@ -468,8 +481,8 @@ class DehumBahanController extends Controller
             6 => ['Dew Point']
         ];
 
-        // Fetch associated results
-        $dehumBahanResults = DehumBahanResult::where('check_id', $check_id)->get();
+        // Fetch associated results using the record's actual ID
+        $dehumBahanResults = DehumBahanResult::where('check_id', $dehumBahanRecord->id)->get();
         
         // Debug untuk melihat semua item di database (uncomment jika perlu)
         // $checkItemsList = $dehumBahanResults->pluck('checked_items')->toArray();
@@ -507,7 +520,7 @@ class DehumBahanController extends Controller
         ]);
     }
 
-    public function approve(Request $request, $id)
+    public function approve(Request $request, $dehumBahan)
     {
         $user = $this->ensureAuthenticatedUser(['approver']);
         if (!is_object($user)) return $user;
@@ -528,8 +541,14 @@ class DehumBahanController extends Controller
             'approved_by_minggu4' => 'nullable|string',
         ]);
 
-        // Find the existing DehumBahan record
-        $dehumBahanRecord = DehumBahanCheck::findOrFail($id);
+        // Handle parameter - could be string (hashid) or model instance
+        if (is_string($dehumBahan)) {
+            // If it's still a string, use the trait's resolve method
+            $dehumBahanRecord = (new DehumBahanCheck())->resolveRouteBinding($dehumBahan);
+        } else {
+            // If it's already a model instance
+            $dehumBahanRecord = $dehumBahan;
+        }
 
         // Update hanya field yang ada dalam request dan tidak null
         for ($i = 1; $i <= 4; $i++) {
@@ -547,13 +566,14 @@ class DehumBahanController extends Controller
             ->with('success', 'Persetujuan berhasil disimpan!');
     }
 
-    public function reviewPdf($id) 
+    public function reviewPdf($hashid) 
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
-        // Ambil data pemeriksaan dehum bahan berdasarkan ID
-        $dehumBahanCheck = DehumBahanCheck::findOrFail($id);
+        
+        // Gunakan trait untuk mendapatkan model berdasarkan hashid
+        $dehumBahanCheck = app(DehumBahanCheck::class)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait
         $form = Form::where('nomor_form', 'APTEK/035/REV.02')->firstOrFail();
@@ -562,7 +582,7 @@ class DehumBahanController extends Controller
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
         
         // Ambil detail hasil pemeriksaan untuk dehum bahan
-        $dehumBahanResults = DehumBahanResult::where('check_id', $id)->get();
+        $dehumBahanResults = DehumBahanResult::where('check_id', $dehumBahanCheck->id)->get();
         
         // Definisikan items yang akan ditampilkan di PDF
         $items = [
@@ -630,14 +650,15 @@ class DehumBahanController extends Controller
         // Return view untuk preview
         return $view;
     }
-    
-    public function downloadPdf($id)
+
+    public function downloadPdf($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
-        // Ambil data pemeriksaan dehum bahan berdasarkan ID
-        $dehumBahanCheck = DehumBahanCheck::findOrFail($id);
+        
+        // Gunakan trait untuk mendapatkan model berdasarkan hashid
+        $dehumBahanCheck = app(DehumBahanCheck::class)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait
         $form = Form::where('nomor_form', 'APTEK/035/REV.02')->firstOrFail();
@@ -646,7 +667,7 @@ class DehumBahanController extends Controller
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
         
         // Ambil detail hasil pemeriksaan untuk dehum bahan
-        $dehumBahanResults = DehumBahanResult::where('check_id', $id)->get();
+        $dehumBahanResults = DehumBahanResult::where('check_id', $dehumBahanCheck->id)->get();
         
         // Definisikan items yang akan ditampilkan di PDF
         $items = [

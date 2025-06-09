@@ -267,14 +267,18 @@ class HopperController extends Controller
         }
     }
 
-    public function edit($id)
+    public function edit($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
         
-        // PERBAIKAN: Tambahkan eager loading untuk User relations
-        $hopperCheck = HopperCheck::with([
+        // Model HopperCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $hopperCheck = (new HopperCheck)->resolveRouteBinding($hashid);
+        
+        // Load relasi setelah mendapatkan instance model
+        $hopperCheck->load([
             'results',
             // Tambahkan relasi untuk checker dan approver setiap minggu
             'checkerMinggu1',
@@ -285,33 +289,35 @@ class HopperController extends Controller
             'approverMinggu2',
             'approverMinggu3', 
             'approverMinggu4'
-        ])->findOrFail($id);
+        ]);
         
         // Get the associated results
         $hopperResults = $hopperCheck->results;
-    
+
         // Return the view and pass both $hopperCheck and $hopperResults
         return view('hopper.edit', compact('hopperCheck', 'hopperResults', 'user', 'currentGuard'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
+        
         // Validasi hanya untuk field yang dibutuhkan, tidak perlu validasi semua field
         $validatedData = $request->validate([
             'nomer_hopper' => 'required|integer|min:1|max:15',
             'bulan' => 'required|date_format:Y-m',
         ]);
 
-        // Find the existing HopperCheck record
-        $hopperCheck = HopperCheck::findOrFail($id);
+        // Model HopperCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $hopperCheck = (new HopperCheck)->resolveRouteBinding($hashid);
 
         // Check for existing record with the same nomer_hopper and bulan, excluding the current record
         $existingRecord = HopperCheck::where('nomer_hopper', $request->input('nomer_hopper'))
             ->where('bulan', $request->input('bulan'))
-            ->where('id', '!=', $id)
+            ->where('id', '!=', $hopperCheck->id)
             ->first();
 
         if ($existingRecord) {
@@ -409,16 +415,21 @@ class HopperController extends Controller
         }
     }
 
-    public function show($check_id)
+    public function show($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
-        // Find the main hopper record with relationships
-        $hopperRecord = HopperCheck::with([
+        
+        // Model HopperCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $hopperRecord = (new HopperCheck)->resolveRouteBinding($hashid);
+        
+        // Load relasi setelah mendapatkan instance model
+        $hopperRecord->load([
             'checkerMinggu1', 'checkerMinggu2', 'checkerMinggu3', 'checkerMinggu4',
             'approverMinggu1', 'approverMinggu2', 'approverMinggu3', 'approverMinggu4',
-        ])->findOrFail($check_id);
+        ]);
 
         // Collect unique checker usernames
         $checkerUsernames = collect([
@@ -448,7 +459,7 @@ class HopperController extends Controller
         ];
 
         // Fetch associated results
-        $hopperResults = HopperResult::where('check_id', $check_id)->get()->keyBy('checked_items');
+        $hopperResults = HopperResult::where('check_id', $hopperRecord->id)->get()->keyBy('checked_items');
 
         // Prepare check and keterangan arrays for each week
         $weekFields = [
@@ -462,8 +473,24 @@ class HopperController extends Controller
             'keterangan_4' => 'keterangan_minggu4'
         ];
 
-        // Create a new array to store the modified data
-        $viewData = $hopperRecord->toArray();
+        // Create a new array to store the modified data dengan mapping yang jelas
+        $viewData = [
+            'id' => $hopperRecord->id,
+            'hashid' => $hopperRecord->hashid, // Add hashid property
+            'nomer_hopper' => $hopperRecord->nomer_hopper,
+            'bulan' => $hopperRecord->bulan,
+            'unique_checkers' => $hopperRecord->unique_checkers,
+            'unique_approvers' => $hopperRecord->unique_approvers,
+        ];
+
+        // Add checker and approver data for each week
+        for ($i = 1; $i <= 4; $i++) {
+            $viewData['checker_id_minggu'.$i] = $hopperRecord->{'checker_id_minggu'.$i};
+            $viewData['tanggal_minggu'.$i] = $hopperRecord->{'tanggal_minggu'.$i};
+            $viewData['approver_id_minggu'.$i] = $hopperRecord->{'approver_id_minggu'.$i};
+            $viewData['checker_username_minggu'.$i] = optional($hopperRecord->{'checkerMinggu'.$i})->username;
+            $viewData['approver_username_minggu'.$i] = optional($hopperRecord->{'approverMinggu'.$i})->username;
+        }
 
         // Dynamically populate the arrays
         foreach ($weekFields as $recordKey => $dbField) {
@@ -471,12 +498,6 @@ class HopperController extends Controller
             foreach ($items as $index => $item) {
                 $viewData[$recordKey][$index] = optional($hopperResults->get($item))->$dbField ?? '';
             }
-        }
-
-        // Add checker and approver usernames for each week
-        for ($i = 1; $i <= 4; $i++) {
-            $viewData['checker_username_minggu'.$i] = optional($hopperRecord->{'checkerMinggu'.$i})->username;
-            $viewData['approver_username_minggu'.$i] = optional($hopperRecord->{'approverMinggu'.$i})->username;
         }
 
         // Convert back to an object for view compatibility
@@ -490,13 +511,14 @@ class HopperController extends Controller
         ]);
     }
 
-    public function approve(Request $request, $id)
+    public function approve(Request $request, $hashid)
     {
         $user = $this->ensureAuthenticatedUser(['approver']);
         if (!is_object($user)) return $user;
         if (!$this->isAuthenticatedAs('approver')) {
             return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
         }
+        
         // Validate the request - hanya validasi field yang dikirim dalam request
         $validatedData = $request->validate([
             'approver_id_minggu1' => 'nullable|exists:approvers,id',
@@ -505,8 +527,9 @@ class HopperController extends Controller
             'approver_id_minggu4' => 'nullable|exists:approvers,id'
         ]);
 
-        // Find the existing Hopper record
-        $hopperRecord = HopperCheck::findOrFail($id);
+        // Model HopperCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $hopperRecord = (new HopperCheck)->resolveRouteBinding($hashid);
 
         // Hanya update field yang ada dalam request
         foreach ($validatedData as $field => $value) {
@@ -523,13 +546,14 @@ class HopperController extends Controller
             ->with('success', 'Persetujuan berhasil disimpan!');
     }
 
-    public function reviewPdf($id) 
+    public function reviewPdf($hashid) 
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
-        // Ambil data pemeriksaan hopper berdasarkan ID
-        $hopperCheck = HopperCheck::findOrFail($id);
+        
+        // Gunakan trait untuk mendapatkan model berdasarkan hashid
+        $hopperCheck = app(HopperCheck::class)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait
         $form = Form::where('nomor_form', 'APTEK/047/REV.01')->firstOrFail();
@@ -538,7 +562,7 @@ class HopperController extends Controller
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
         
         // Ambil detail hasil pemeriksaan untuk hopper dan urutkan berdasarkan item terperiksa
-        $hopperResults = HopperResult::where('check_id', $id)->get()->keyBy('checked_items');
+        $hopperResults = HopperResult::where('check_id', $hopperCheck->id)->get()->keyBy('checked_items');
         
         // Definisikan items yang akan ditampilkan di PDF
         $items = [
@@ -549,6 +573,9 @@ class HopperController extends Controller
             5 => 'MCB'
         ];
         
+        // Debug: Cek struktur data hopperResults
+        // dd($hopperResults); // Uncomment untuk debugging
+        
         // Siapkan semua field check dan keterangan untuk empat minggu
         for ($j = 1; $j <= 4; $j++) {
             // Inisialisasi array untuk menyimpan hasil check dan keterangan per minggu
@@ -558,13 +585,31 @@ class HopperController extends Controller
             // Isi array dengan data dari hopperResults
             foreach ($items as $i => $item) {
                 $result = $hopperResults->get($item);
-                ${'check_' . $j}[$i] = optional($result)->{'minggu' . $j} ?? '';
-                ${'keterangan_' . $j}[$i] = optional($result)->{'keterangan_minggu' . $j} ?? '';
+                
+                // Pastikan data ada dan tidak null
+                if ($result) {
+                    ${'check_' . $j}[$i] = $result->{'minggu' . $j} ?? '-';
+                    ${'keterangan_' . $j}[$i] = $result->{'keterangan_minggu' . $j} ?? '';
+                } else {
+                    ${'check_' . $j}[$i] = '-';
+                    ${'keterangan_' . $j}[$i] = '';
+                }
             }
             
             // Tambahkan array ke hopperCheck object
             $hopperCheck->{'check_' . $j} = ${'check_' . $j};
             $hopperCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+            
+            // Set status checker untuk setiap minggu
+            // Periksa apakah ada data yang terisi untuk minggu ini
+            $hasData = false;
+            foreach (${'check_' . $j} as $checkValue) {
+                if ($checkValue !== '-' && $checkValue !== '') {
+                    $hasData = true;
+                    break;
+                }
+            }
+            $hopperCheck->{'checked_by_minggu' . $j} = $hasData ? 'checked' : '';
         }
         
         // Render view sebagai HTML untuk preview PDF
@@ -581,13 +626,14 @@ class HopperController extends Controller
         return $view;
     }
 
-    public function downloadPdf($id)
+    public function downloadPdf($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
-        // Ambil data pemeriksaan hopper berdasarkan ID
-        $hopperCheck = HopperCheck::findOrFail($id);
+        
+        // Gunakan trait untuk mendapatkan model berdasarkan hashid
+        $hopperCheck = app(HopperCheck::class)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait
         $form = Form::where('nomor_form', 'APTEK/047/REV.01')->firstOrFail();
@@ -596,7 +642,7 @@ class HopperController extends Controller
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
         
         // Ambil detail hasil pemeriksaan untuk hopper dan urutkan berdasarkan item terperiksa
-        $hopperResults = HopperResult::where('check_id', $id)->get()->keyBy('checked_items');
+        $hopperResults = HopperResult::where('check_id', $hopperCheck->id)->get()->keyBy('checked_items');
         
         // Definisikan items yang akan ditampilkan di PDF
         $items = [
@@ -616,13 +662,31 @@ class HopperController extends Controller
             // Isi array dengan data dari hopperResults
             foreach ($items as $i => $item) {
                 $result = $hopperResults->get($item);
-                ${'check_' . $j}[$i] = optional($result)->{'minggu' . $j} ?? '';
-                ${'keterangan_' . $j}[$i] = optional($result)->{'keterangan_minggu' . $j} ?? '';
+                
+                // Pastikan data ada dan tidak null - sesuai dengan reviewPdf
+                if ($result) {
+                    ${'check_' . $j}[$i] = $result->{'minggu' . $j} ?? '-';
+                    ${'keterangan_' . $j}[$i] = $result->{'keterangan_minggu' . $j} ?? '';
+                } else {
+                    ${'check_' . $j}[$i] = '-';
+                    ${'keterangan_' . $j}[$i] = '';
+                }
             }
             
             // Tambahkan array ke hopperCheck object
             $hopperCheck->{'check_' . $j} = ${'check_' . $j};
             $hopperCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+            
+            // Set status checker untuk setiap minggu - sesuai dengan reviewPdf
+            // Periksa apakah ada data yang terisi untuk minggu ini
+            $hasData = false;
+            foreach (${'check_' . $j} as $checkValue) {
+                if ($checkValue !== '-' && $checkValue !== '') {
+                    $hasData = true;
+                    break;
+                }
+            }
+            $hopperCheck->{'checked_by_minggu' . $j} = $hasData ? 'checked' : '';
         }
         
         // Format tanggal dari model HopperCheck untuk mendapatkan bulan dan tahun

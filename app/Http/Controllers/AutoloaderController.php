@@ -303,13 +303,15 @@ class AutoloaderController extends Controller
         }
     }
 
-    public function edit($id)
+    public function edit($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
-        // Ambil data utama autoloader check
-        $check = AutoloaderCheck::findOrFail($id);
+        
+        // Gunakan trait untuk mendapatkan model berdasarkan hashid
+        $check = app(AutoloaderCheck::class)->resolveRouteBinding($hashid);
+        $id = $check->id; // Simpan ID untuk kompatibilitas dengan kode yang ada
         
         // Ambil data hasil dari ketiga tabel
         $resultsTable1 = AutoloaderResultTable1::where('check_id', $id)->get();
@@ -449,21 +451,23 @@ class AutoloaderController extends Controller
         return view('autoloader.edit', compact('check', 'results', 'user', 'currentGuard'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
+        
         // Validasi input
         $validated = $request->validate([
             'nomer_autoloader' => 'required|integer|between:1,23',
             'shift' => 'required|integer|between:1,3',
             'bulan' => 'required|date_format:Y-m',
         ]);
-    
-        // Cari data autoloader yang akan diupdate
-        $autoloaderCheck = AutoloaderCheck::findOrFail($id);
-    
+
+        // Model AutoloaderCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $autoloaderCheck = (new AutoloaderCheck)->resolveRouteBinding($hashid);
+
         // Cek apakah ada perubahan pada data utama (nomer_autoloader, shift, bulan)
         if ($autoloaderCheck->nomer_autoloader != $request->nomer_autoloader || 
             $autoloaderCheck->shift != $request->shift || 
@@ -473,7 +477,7 @@ class AutoloaderController extends Controller
             $existingRecord = AutoloaderCheck::where('nomer_autoloader', $request->nomer_autoloader)
                 ->where('shift', $request->shift)
                 ->where('bulan', $request->bulan)
-                ->where('id', '!=', $id) // Kecualikan record saat ini
+                ->where('id', '!=', $autoloaderCheck->id) // Kecualikan record saat ini
                 ->first();
             
             if ($existingRecord) {
@@ -482,10 +486,10 @@ class AutoloaderController extends Controller
                     ->with('error', 'Data dengan nomor autoloader, shift, dan bulan yang sama sudah ada!');
             }
         }
-    
+
         // Mulai transaksi database
         DB::beginTransaction();
-    
+
         try {
             // Update data AutoloaderCheck
             $autoloaderCheck->update([
@@ -505,9 +509,9 @@ class AutoloaderController extends Controller
             ];
             
             // Ambil data existing dari ketiga tabel
-            $existingTable1Data = AutoloaderResultTable1::where('check_id', $id)->get()->keyBy('checked_items');
-            $existingTable2Data = AutoloaderResultTable2::where('check_id', $id)->get()->keyBy('checked_items');
-            $existingTable3Data = AutoloaderResultTable3::where('check_id', $id)->get()->keyBy('checked_items');
+            $existingTable1Data = AutoloaderResultTable1::where('check_id', $autoloaderCheck->id)->get()->keyBy('checked_items');
+            $existingTable2Data = AutoloaderResultTable2::where('check_id', $autoloaderCheck->id)->get()->keyBy('checked_items');
+            $existingTable3Data = AutoloaderResultTable3::where('check_id', $autoloaderCheck->id)->get()->keyBy('checked_items');
             
             // Proses setiap item
             foreach ($items as $itemId => $itemName) {
@@ -537,7 +541,7 @@ class AutoloaderController extends Controller
                     $table1Record->update($resultData1);
                 } else {
                     // Buat record baru jika belum ada
-                    $resultData1['check_id'] = $id;
+                    $resultData1['check_id'] = $autoloaderCheck->id;
                     $resultData1['checked_items'] = $itemName;
                     AutoloaderResultTable1::create($resultData1);
                 }
@@ -568,7 +572,7 @@ class AutoloaderController extends Controller
                     $table2Record->update($resultData2);
                 } else {
                     // Buat record baru jika belum ada
-                    $resultData2['check_id'] = $id;
+                    $resultData2['check_id'] = $autoloaderCheck->id;
                     $resultData2['checked_items'] = $itemName;
                     AutoloaderResultTable2::create($resultData2);
                 }
@@ -599,14 +603,14 @@ class AutoloaderController extends Controller
                     $table3Record->update($resultData3);
                 } else {
                     // Buat record baru jika belum ada
-                    $resultData3['check_id'] = $id;
+                    $resultData3['check_id'] = $autoloaderCheck->id;
                     $resultData3['checked_items'] = $itemName;
                     AutoloaderResultTable3::create($resultData3);
                 }
             }
             
             // Ambil data checker_id yang sudah ada
-            $existingDetails = AutoloaderDetail::where('tanggal_check_id', $id)
+            $existingDetails = AutoloaderDetail::where('tanggal_check_id', $autoloaderCheck->id)
                 ->get()
                 ->keyBy('tanggal');
             
@@ -625,7 +629,7 @@ class AutoloaderController extends Controller
                         $existingDetail->update($detailData);
                     } else {
                         // Buat data baru
-                        $detailData['tanggal_check_id'] = $id;
+                        $detailData['tanggal_check_id'] = $autoloaderCheck->id;
                         $detailData['tanggal'] = $i;
                         $detailData['approver_id'] = null;
                         AutoloaderDetail::create($detailData);
@@ -652,23 +656,24 @@ class AutoloaderController extends Controller
         }
     }
 
-    public function show($id)
+    public function show($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
         
-        // Ambil data utama autoloader check
-        $check = AutoloaderCheck::findOrFail($id);
+        // Model AutoloaderCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $check = (new AutoloaderCheck)->resolveRouteBinding($hashid);
         
         // Ambil data hasil dari ketiga tabel
-        $resultsTable1 = AutoloaderResultTable1::where('check_id', $id)->get();
-        $resultsTable2 = AutoloaderResultTable2::where('check_id', $id)->get();
-        $resultsTable3 = AutoloaderResultTable3::where('check_id', $id)->get();
+        $resultsTable1 = AutoloaderResultTable1::where('check_id', $check->id)->get();
+        $resultsTable2 = AutoloaderResultTable2::where('check_id', $check->id)->get();
+        $resultsTable3 = AutoloaderResultTable3::where('check_id', $check->id)->get();
         
         // Ambil data detail dengan eager loading untuk checker dan approver
         $detailChecks = AutoloaderDetail::with(['checker', 'approver'])
-            ->where('tanggal_check_id', $id)
+            ->where('tanggal_check_id', $check->id)
             ->get();
         
         // Siapkan data untuk view dalam format yang sesuai dengan helper function
@@ -815,13 +820,14 @@ class AutoloaderController extends Controller
         return view('autoloader.show', compact('check', 'results', 'user', 'currentGuard'));
     }
 
-    public function approve(Request $request, $id)
+    public function approve(Request $request, $hashid)
     {
         $user = $this->ensureAuthenticatedUser(['approver']);
         if (!is_object($user)) return $user;
         if (!$this->isAuthenticatedAs('approver')) {
             return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
         }
+        
         // Validasi input
         $request->validate([
             'approver_id_*' => 'sometimes|string',
@@ -832,8 +838,9 @@ class AutoloaderController extends Controller
         DB::beginTransaction();
 
         try {
-            // Ambil data AutoloaderCheck berdasarkan ID
-            $check = AutoloaderCheck::findOrFail($id);
+            // Model AutoloaderCheck akan otomatis resolve hashid menjadi model instance
+            // karena menggunakan trait Hashidable
+            $check = (new AutoloaderCheck)->resolveRouteBinding($hashid);
             
             // Proses informasi penanggung jawab untuk semua hari (1-31)
             for ($i = 1; $i <= 31; $i++) {
@@ -842,7 +849,7 @@ class AutoloaderController extends Controller
                 
                 if ($request->has($approverKey) && !empty($request->input($approverKey))) {
                     // Cari detail yang sudah ada untuk tanggal ini
-                    $detail = AutoloaderDetail::where('tanggal_check_id', $id)
+                    $detail = AutoloaderDetail::where('tanggal_check_id', $check->id)
                         ->where('tanggal', $i)
                         ->first();
                     
@@ -854,7 +861,7 @@ class AutoloaderController extends Controller
                     } else {
                         // Buat baru jika tidak ada detail
                         AutoloaderDetail::create([
-                            'tanggal_check_id' => $id,
+                            'tanggal_check_id' => $check->id,
                             'tanggal' => $i,
                             'checker_id' => null, // Checker akan diisi nanti
                             'approver_id' => $request->$approverKey,
@@ -878,14 +885,15 @@ class AutoloaderController extends Controller
         }
     }
 
-    public function reviewPdf($id)
+    public function reviewPdf($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
         
-        // Ambil data utama autoloader check
-        $check = AutoloaderCheck::findOrFail($id);
+        // Model AutoloaderCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $check = (new AutoloaderCheck)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait
         $form = Form::where('nomor_form', 'APTEK/046/REV.01')->firstOrFail();
@@ -894,13 +902,13 @@ class AutoloaderController extends Controller
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
         
         // Ambil data hasil dari ketiga tabel
-        $resultsTable1 = AutoloaderResultTable1::where('check_id', $id)->get();
-        $resultsTable2 = AutoloaderResultTable2::where('check_id', $id)->get();
-        $resultsTable3 = AutoloaderResultTable3::where('check_id', $id)->get();
+        $resultsTable1 = AutoloaderResultTable1::where('check_id', $check->id)->get();
+        $resultsTable2 = AutoloaderResultTable2::where('check_id', $check->id)->get();
+        $resultsTable3 = AutoloaderResultTable3::where('check_id', $check->id)->get();
         
         // Ambil data detail dengan relasi ke user checker dan approver
         $detailChecks = AutoloaderDetail::with(['checker:id,username', 'approver:id,username'])
-            ->where('tanggal_check_id', $id)
+            ->where('tanggal_check_id', $check->id)
             ->get();
         
         // Siapkan data untuk view dalam format yang sesuai
@@ -1045,14 +1053,15 @@ class AutoloaderController extends Controller
         return view('autoloader.review_pdf', compact('check', 'results', 'form', 'formattedTanggalEfektif', 'items', 'user', 'currentGuard'));
     }
 
-    public function downloadPdf($id)
+    public function downloadPdf($hashid)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
         
-        // Ambil data utama autoloader check
-        $check = AutoloaderCheck::findOrFail($id);
+        // Model AutoloaderCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $check = (new AutoloaderCheck)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait
         $form = Form::where('nomor_form', 'APTEK/046/REV.01')->firstOrFail();
@@ -1061,13 +1070,13 @@ class AutoloaderController extends Controller
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
         
         // Ambil data hasil dari ketiga tabel
-        $resultsTable1 = AutoloaderResultTable1::where('check_id', $id)->get();
-        $resultsTable2 = AutoloaderResultTable2::where('check_id', $id)->get();
-        $resultsTable3 = AutoloaderResultTable3::where('check_id', $id)->get();
+        $resultsTable1 = AutoloaderResultTable1::where('check_id', $check->id)->get();
+        $resultsTable2 = AutoloaderResultTable2::where('check_id', $check->id)->get();
+        $resultsTable3 = AutoloaderResultTable3::where('check_id', $check->id)->get();
         
         // Ambil data detail dengan relasi ke user checker dan approver
         $detailChecks = AutoloaderDetail::with(['checker:id,username', 'approver:id,username'])
-            ->where('tanggal_check_id', $id)
+            ->where('tanggal_check_id', $check->id)
             ->get();
         
         // Siapkan data untuk view dalam format yang sesuai

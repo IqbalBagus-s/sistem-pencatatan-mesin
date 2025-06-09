@@ -205,7 +205,7 @@ class GilingController extends Controller
         }
     }
 
-    public function edit($id)
+    public function edit(GilingCheck $giling)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
@@ -213,7 +213,10 @@ class GilingController extends Controller
         // Get current guard
         $currentGuard = $this->getCurrentGuard();
 
-        $check = GilingCheck::with('result')->findOrFail($id);
+        // Dengan route model binding, Laravel otomatis resolve hashid ke model
+        // berkat trait Hashidable yang mengimplementasikan resolveRouteBinding
+        // Parameter $giling sesuai dengan route parameter {giling}
+        $check = $giling->load('result');
 
         $results = [];
 
@@ -239,10 +242,11 @@ class GilingController extends Controller
         return view('giling.edit', compact('check', 'results', 'user', 'currentGuard'));
     }
 
-    public function update(Request $request, $id) 
+    public function update(Request $request, GilingCheck $giling) 
     {
-        // Find the GilingCheck record
-        $check = GilingCheck::findOrFail($id);
+        // Dengan route model binding, parameter $giling sudah berupa instance GilingCheck
+        // yang sudah di-resolve dari hashid melalui trait Hashidable
+        $check = $giling;
         
         // Update only the keterangan field, keeping bulan and minggu unchanged
         $check->update([
@@ -291,7 +295,7 @@ class GilingController extends Controller
         return redirect()->route('giling.index')->with('success', 'Data berhasil diperbarui!');
     }
 
-    public function show($id)
+    public function show(GilingCheck $giling)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
@@ -299,8 +303,9 @@ class GilingController extends Controller
         // Get current guard
         $currentGuard = $this->getCurrentGuard();
 
-        // Fetch the GilingCheck record with its results
-        $check = GilingCheck::with('result')->findOrFail($id);
+        // Dengan route model binding, $giling sudah berupa instance GilingCheck
+        // yang sudah di-resolve dari hashid melalui trait Hashidable
+        $check = $giling->load('result');
         
         // Get the associated results and organize into a more usable format
         $results = $check->result->keyBy('checked_items');
@@ -309,7 +314,7 @@ class GilingController extends Controller
         return view('giling.show', compact('check', 'results', 'user', 'currentGuard'));
     }
 
-    public function approve(Request $request, $id)
+    public function approve(Request $request, GilingCheck $giling)
     {
         // Validate the incoming request
         $request->validate([
@@ -318,8 +323,9 @@ class GilingController extends Controller
             'approval_date1' => 'nullable|date',
         ]);
 
-        // Find the specified giling check
-        $gilingCheck = GilingCheck::findOrFail($id);
+        // Dengan route model binding, $giling sudah berupa instance GilingCheck
+        // yang sudah di-resolve dari hashid melalui trait Hashidable
+        $gilingCheck = $giling;
 
         // Update the approval information
         $gilingCheck->update([
@@ -333,7 +339,7 @@ class GilingController extends Controller
             ->with('success', 'Persetujuan berhasil disimpan!');
     }
     
-    public function reviewPdf($id)
+    public function reviewPdf(GilingCheck $giling)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
@@ -341,8 +347,9 @@ class GilingController extends Controller
         // Get current guard
         $currentGuard = $this->getCurrentGuard();
 
-        // Ambil data pemeriksaan mesin giling berdasarkan ID
-        $gilingCheck = GilingCheck::findOrFail($id);
+        // Dengan route model binding, $giling sudah berupa instance GilingCheck
+        // yang sudah di-resolve dari hashid melalui trait Hashidable
+        $gilingCheck = $giling;
 
         // Ambil data form terkait
         $form = Form::findOrFail(6); // Sesuaikan ID form untuk mesin giling
@@ -351,13 +358,13 @@ class GilingController extends Controller
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
 
         // Ambil detail hasil pemeriksaan untuk mesin giling
-        $details = GilingResult::where('check_id', $id)->get();
+        $details = GilingResult::where('check_id', $gilingCheck->id)->get();
 
         // Render view sebagai HTML untuk preview PDF
         return view('giling.review_pdf', compact('gilingCheck', 'details', 'form', 'formattedTanggalEfektif', 'user', 'currentGuard'));
     }
-    
-    public function downloadPdf($id)
+
+    public function downloadPdf(GilingCheck $giling)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
@@ -365,8 +372,9 @@ class GilingController extends Controller
         // Get current guard
         $currentGuard = $this->getCurrentGuard();
 
-        // Ambil data pemeriksaan mesin giling berdasarkan ID
-        $gilingCheck = GilingCheck::findOrFail($id);
+        // Dengan route model binding, $giling sudah berupa instance GilingCheck
+        // yang sudah di-resolve dari hashid melalui trait Hashidable
+        $gilingCheck = $giling;
 
         // Ambil data form terkait
         $form = Form::findOrFail(6); // Pastikan ID form sesuai untuk mesin giling
@@ -375,7 +383,7 @@ class GilingController extends Controller
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
 
         // Ambil semua detail hasil pemeriksaan untuk mesin giling
-        $details = GilingResult::where('check_id', $id)->get();
+        $details = GilingResult::where('check_id', $gilingCheck->id)->get();
 
         // Format nama file
         Carbon::setLocale('id'); // Pastikan hasil bulan dalam Bahasa Indonesia
