@@ -9,7 +9,7 @@
 
 @section('content')
     <!-- Form Edit -->
-    <form action="{{ route('giling.update', $check->id) }}" method="POST" autocomplete="off">
+    <form action="{{ route('giling.update', $check->hashid) }}" method="POST" autocomplete="off">
         @csrf
         @method('PUT')
         <div class="grid md:grid-cols-2 gap-4 mb-4">

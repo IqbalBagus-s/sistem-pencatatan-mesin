@@ -7,7 +7,7 @@
 
 @section('content')
 <!-- Form Input -->
-<form action="{{ route('autoloader.update', $check->id) }}" method="POST" autocomplete="off">
+<form action="{{ route('autoloader.update', $check->hashid) }}" method="POST" autocomplete="off">
     @csrf
     @method('PUT')
     <!-- Info Display (Not Editable) -->

@@ -8,7 +8,7 @@
 
 @section('content')
     <!-- Form Input -->
-    <form action="{{ route('hopper.update', $hopperCheck->id) }}" method="POST" autocomplete="off">
+    <form action="{{ route('hopper.update', $hopperCheck->hashid) }}" method="POST" autocomplete="off">
         @csrf
         @method('PUT')
         <div class="grid md:grid-cols-2 gap-4 mb-4">
@@ -18,7 +18,7 @@
                     No Hopper: 
                 </label>
                 <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm text-left flex items-center">
-                    <span>Hopper {{ $hopperCheck->nomer_hopper }}</span>
+                    <span>Hopper Nomor {{ $hopperCheck->nomer_hopper }}</span>
                 </div>
                 <input type="hidden" name="nomer_hopper" value="{{ $hopperCheck->nomer_hopper }}">
             </div>

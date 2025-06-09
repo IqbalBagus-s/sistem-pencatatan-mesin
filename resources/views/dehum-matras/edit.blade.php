@@ -9,7 +9,7 @@
 
 @section('content')
     <!-- Form Input -->
-    <form action="{{ route('dehum-matras.update', $check->id) }}" method="POST" autocomplete="off">
+    <form action="{{ route('dehum-matras.update', $check->hashid) }}" method="POST" autocomplete="off">
         @csrf
         @method('PUT')
         <!-- Info Display (Not Editable) -->

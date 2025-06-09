@@ -8,7 +8,7 @@
 
 @section('content')
     <!-- Form Input -->
-    <form action="{{ route('dehum-bahan.update', $dehumCheck->id) }}" method="POST" autocomplete="off">
+    <form action="{{ route('dehum-bahan.update', $dehumCheck->hashid) }}" method="POST" autocomplete="off">
         @csrf
         @method('PUT')
         <div class="grid md:grid-cols-2 gap-4 mb-4">
@@ -18,7 +18,7 @@
                     No Dehum: 
                 </label>
                 <div class="w-full h-10 px-3 py-2 bg-white border border-blue-300 rounded-md text-sm text-left flex items-center">
-                    <span>Dehum {{ $dehumCheck->nomer_dehum_bahan }}</span>
+                    <span>Dehum Bahan Nomor {{ $dehumCheck->nomer_dehum_bahan }}</span>
                 </div>
                 <input type="hidden" name="nomer_dehum_bahan" value="{{ $dehumCheck->nomer_dehum_bahan }}">
             </div>

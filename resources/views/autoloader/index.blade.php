@@ -234,7 +234,7 @@
                         <td class="py-3 px-4 border-b border-gray-200">
                             {{-- Menu lihat --}}
                             @if($currentGuard === 'approver')
-                                <a href="{{ route('autoloader.show', $check->id) }}" title="Lihat Detail">
+                                <a href="{{ route('autoloader.show', $check->hashid) }}" title="Lihat Detail">
                                     <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit --}}
@@ -245,7 +245,7 @@
                                 @endphp
                                 
                                 @if(!$isFullyApproved)
-                                    <a href="{{ route('autoloader.edit', $check->id) }}" title="Edit">
+                                    <a href="{{ route('autoloader.edit', $check->hashid) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
                                 @else

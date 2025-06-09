@@ -7,7 +7,7 @@
 
 <div class="bg-white rounded-lg shadow-md mb-5">
     <div class="p-4">
-        <form method="POST" action="{{ route('dehum-bahan.approve', $dehumBahanRecord->id) }}" id="approveForm">
+        <form method="POST" action="{{ route('dehum-bahan.approve', $dehumBahanRecord->hashid) }}" id="approveForm">
             @csrf
             <!-- Menampilkan Nama Checker -->
             <div class="bg-sky-50 p-4 rounded-md mb-5">
@@ -331,7 +331,7 @@
                     @if ($allApproved)
                         <!-- Semua minggu telah disetujui, tampilkan tombol Preview dan Download PDF -->
                         <!-- Tombol Preview PDF -->
-                        <a href="{{ route('dehum-bahan.pdf', $dehumBahanRecord->id) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                        <a href="{{ route('dehum-bahan.pdf', $dehumBahanRecord->hashid) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -340,7 +340,7 @@
                         </a>
                         
                         <!-- Tombol Download PDF -->
-                        <a href="{{ route('dehum-bahan.downloadPdf', $dehumBahanRecord->id) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                        <a href="{{ route('dehum-bahan.downloadPdf', $dehumBahanRecord->hashid) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
