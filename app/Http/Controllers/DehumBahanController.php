@@ -576,7 +576,7 @@ class DehumBahanController extends Controller
         $dehumBahanCheck = app(DehumBahanCheck::class)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait
-        $form = Form::where('nomor_form', 'APTEK/035/REV.02')->firstOrFail();
+        $form = Form::findOrFail(8); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
@@ -661,7 +661,7 @@ class DehumBahanController extends Controller
         $dehumBahanCheck = app(DehumBahanCheck::class)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait
-        $form = Form::where('nomor_form', 'APTEK/035/REV.02')->firstOrFail();
+        $form = Form::findOrFail(8); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');

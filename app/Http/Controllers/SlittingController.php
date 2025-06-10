@@ -774,7 +774,7 @@ class SlittingController extends Controller
         $slittingCheck = (new SlittingCheck)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait (sesuaikan nomor form untuk slitting)
-        $form = Form::where('nomor_form', 'APTEK/014/REV.00')->firstOrFail(); // Ganti XXX dengan nomor form yang sesuai
+        $form = Form::findOrFail(2); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
@@ -869,7 +869,7 @@ class SlittingController extends Controller
         $slittingCheck = (new SlittingCheck)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait
-        $form = Form::where('nomor_form', 'APTEK/014/REV.00')->firstOrFail();
+        $form = Form::findOrFail(2); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');

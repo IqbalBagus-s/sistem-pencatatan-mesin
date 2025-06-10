@@ -817,7 +817,7 @@ class DehumMatrasController extends Controller
         $id = $dehumMatras->id; // Simpan ID untuk kompatibilitas dengan kode yang ada
         
         // Ambil data form terkait
-        $form = Form::where('nomor_form', 'APTEK/048/REV.01')->firstOrFail();
+        $form = Form::findOrFail(3); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
@@ -961,7 +961,7 @@ class DehumMatrasController extends Controller
         $id = $dehumMatras->id; // Simpan ID untuk kompatibilitas dengan kode yang ada
         
         // Ambil data form terkait
-        $form = Form::where('nomor_form', 'APTEK/048/REV.01')->firstOrFail();
+        $form = Form::findOrFail(3); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');

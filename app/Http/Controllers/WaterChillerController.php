@@ -255,7 +255,7 @@ class WaterChillerController extends Controller
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
-        $form = Form::where('nomor_form', 'APTEK/023/REV.01')->firstOrFail();
+        $form = Form::findOrFail(5); 
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
         $details = WaterChillerResult::where('check_id', $waterChillerCheck->id)->get();
         return view('water_chiller.review_pdf', compact('waterChillerCheck', 'details', 'form', 'formattedTanggalEfektif', 'user', 'currentGuard'));
@@ -266,7 +266,7 @@ class WaterChillerController extends Controller
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
         $currentGuard = $this->getCurrentGuard();
-        $form = Form::where('nomor_form', 'APTEK/023/REV.01')->firstOrFail();
+        $form = Form::findOrFail(5); 
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
         $details = WaterChillerResult::where('check_id', $waterChillerCheck->id)->get();
         $tanggal = new \DateTime($waterChillerCheck->tanggal);

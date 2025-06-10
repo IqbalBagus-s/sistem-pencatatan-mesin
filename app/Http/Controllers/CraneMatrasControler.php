@@ -578,7 +578,7 @@ class CraneMatrasControler extends Controller
         $craneMatrasCheck = (new CraneMatrasCheck)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait (sesuaikan nomor form dengan yang digunakan untuk crane matras)
-        $form = Form::where('nomor_form', 'APTEK/005/REV.00')->firstOrFail();
+        $form = Form::findOrFail(12); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
@@ -651,7 +651,7 @@ class CraneMatrasControler extends Controller
         $craneMatrasCheck = (new CraneMatrasCheck)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait (sesuaikan nomor form dengan yang digunakan untuk crane matras)
-        $form = Form::where('nomor_form', 'APTEK/005/REV.00')->firstOrFail();
+        $form = Form::findOrFail(12); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');

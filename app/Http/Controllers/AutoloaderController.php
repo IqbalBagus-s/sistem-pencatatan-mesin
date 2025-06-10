@@ -896,7 +896,7 @@ class AutoloaderController extends Controller
         $check = (new AutoloaderCheck)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait
-        $form = Form::where('nomor_form', 'APTEK/046/REV.01')->firstOrFail();
+        $form = Form::findOrFail(10); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
@@ -1064,7 +1064,7 @@ class AutoloaderController extends Controller
         $check = (new AutoloaderCheck)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait
-        $form = Form::where('nomor_form', 'APTEK/046/REV.01')->firstOrFail();
+        $form = Form::findOrFail(10); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');

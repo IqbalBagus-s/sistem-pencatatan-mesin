@@ -556,7 +556,7 @@ class HopperController extends Controller
         $hopperCheck = app(HopperCheck::class)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait
-        $form = Form::where('nomor_form', 'APTEK/047/REV.01')->firstOrFail();
+        $form = Form::findOrFail(7); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
@@ -636,7 +636,7 @@ class HopperController extends Controller
         $hopperCheck = app(HopperCheck::class)->resolveRouteBinding($hashid);
         
         // Ambil data form terkait
-        $form = Form::where('nomor_form', 'APTEK/047/REV.01')->firstOrFail();
+        $form = Form::findOrFail(7); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');

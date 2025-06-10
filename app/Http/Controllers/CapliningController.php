@@ -1140,7 +1140,7 @@ class CapliningController extends Controller
         ]);
         
         // Ambil data form terkait
-        $form = Form::where('nomor_form', 'APTEK/016/REV.01')->firstOrFail();
+        $form = Form::findOrFail(11); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
@@ -1303,7 +1303,7 @@ class CapliningController extends Controller
         ]);
         
         // Ambil data form terkait
-        $form = Form::where('nomor_form', 'APTEK/016/REV.01')->firstOrFail();
+        $form = Form::findOrFail(11); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');

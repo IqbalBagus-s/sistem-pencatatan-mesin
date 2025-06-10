@@ -873,6 +873,12 @@ class VacumCleanerController extends Controller
             // Gunakan trait Hashidable untuk resolve hashid ke model instance
             $check = (new VacumCleanerCheck)->resolveRouteBinding($hashid);
             
+            // Ambil data form terkait (sesuaikan nomor form untuk vacuum cleaner)
+            $form = Form::findOrFail(1); 
+            
+            // Format tanggal efektif
+            $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+            
             // Ambil data hasil dari kedua tabel
             $resultsTable1 = VacumCleanerResultsTable1::where('check_id', $check->id)->get();
             $resultsTable2 = VacumCleanerResultsTable2::where('check_id', $check->id)->get();
@@ -956,6 +962,8 @@ class VacumCleanerController extends Controller
                 'approver_minggu4' => $approver_minggu4,
                 'tanggal_minggu2' => $tanggal_minggu2,
                 'tanggal_minggu4' => $tanggal_minggu4,
+                'form' => $form,
+                'formattedTanggalEfektif' => $formattedTanggalEfektif,
                 'user' => $user,
                 'currentGuard' => $currentGuard
             ];
@@ -983,7 +991,7 @@ class VacumCleanerController extends Controller
             $check = (new VacumCleanerCheck)->resolveRouteBinding($hashid);
             
             // Ambil data form terkait (sesuaikan nomor form untuk vacuum cleaner)
-            $form = Form::where('nomor_form', 'APTEK/006/REV.01')->firstOrFail();
+            $form = Form::findOrFail(1); 
             
             // Format tanggal efektif
             $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');

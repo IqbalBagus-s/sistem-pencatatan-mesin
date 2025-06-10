@@ -241,7 +241,7 @@ class AirDryerController extends Controller
 
     public function reviewPdf(AirDryerCheck $airDryer)
     {
-        $form = Form::where('nomor_form', 'APTEK/019/REV.02')->firstOrFail();
+        $form = Form::findOrFail(4); 
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
         
         // Menggunakan $airDryer->id karena Laravel sudah resolve hashid ke model instance
@@ -253,7 +253,7 @@ class AirDryerController extends Controller
 
     public function downloadPdf(AirDryerCheck $airDryer)
     {
-        $form = Form::where('nomor_form', 'APTEK/019/REV.02')->firstOrFail();
+        $form = Form::findOrFail(4); 
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
         
         // Menggunakan $airDryer->id karena Laravel sudah resolve hashid ke model instance

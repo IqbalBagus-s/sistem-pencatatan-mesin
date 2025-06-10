@@ -479,7 +479,7 @@ public function approve(Request $request, CompressorCheck $compressor)
         $check = CompressorCheck::with(['checkerShift1', 'checkerShift2', 'approverShift1', 'approverShift2'])->findOrFail($id);
         
         // Ambil data form terkait
-        $form = Form::where('nomor_form', 'APTEK/041/REV.00')->firstOrFail();
+        $form = Form::findOrFail(9); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
@@ -528,7 +528,7 @@ public function approve(Request $request, CompressorCheck $compressor)
         $check = CompressorCheck::with(['checkerShift1', 'checkerShift2', 'approverShift1', 'approverShift2'])->findOrFail($id);
         
         // Ambil data form terkait
-        $form = Form::where('nomor_form', 'APTEK/041/REV.00')->firstOrFail();
+        $form = Form::findOrFail(9); 
         
         // Format tanggal efektif
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
