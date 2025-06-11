@@ -15,6 +15,7 @@ class FormSeeder extends Seeder
     public function run(): void
     {
         $forms = [
+            // 1
             [
                 'nomor_form' => 'APTEK/006/REV.01',
                 'nama_form' => 'PENGECEKAN VACUUM CLEANER',
@@ -22,6 +23,7 @@ class FormSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            // 2
             [
                 'nomor_form' => 'APTEK/014/REV.00',
                 'nama_form' => 'PENGECEKAN MESIN SLEETING',
@@ -29,6 +31,7 @@ class FormSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            // 3
             [
                 'nomor_form' => 'APTEK/048/REV.01',
                 'nama_form' => 'CHECKLIST DEHUM MATRAS',
@@ -36,6 +39,7 @@ class FormSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            // 4
             [
                 'nomor_form' => 'APTEK/019/REV.02',
                 'nama_form' => 'PENGECEKAN MESIN AIR DRYER',
@@ -43,6 +47,7 @@ class FormSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            // 5
             [
                 'nomor_form' => 'APTEK/023/REV.01',
                 'nama_form' => 'PENGECEKAN CHILLER',
@@ -50,6 +55,7 @@ class FormSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            // 6
             [
                 'nomor_form' => 'APTEK/015/REV.04',
                 'nama_form' => 'PEMERIKSAAN MESIN GILING',
@@ -57,6 +63,7 @@ class FormSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            // 7
             [
                 'nomor_form' => 'APTEK/047/REV.01',
                 'nama_form' => 'PENGECEKAN HOPPER',
@@ -64,6 +71,7 @@ class FormSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            // 8
             [
                 'nomor_form' => 'APTEK/035/REV.02',
                 'nama_form' => 'PENGECEKAN DEHUM BAHAN',
@@ -71,6 +79,7 @@ class FormSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            // 9
             [
                 'nomor_form' => 'APTEK/041/REV.00',
                 'nama_form' => 'FORM PEMERIKSAAN COMPRESSOR',
@@ -78,6 +87,7 @@ class FormSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            // 10
             [
                 'nomor_form' => 'APTEK/046/REV.01',
                 'nama_form' => 'FORM PENGECEKAN AUTOLOADER',
@@ -85,13 +95,15 @@ class FormSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            // 11
             [
                 'nomor_form' => 'APTEK/016/REV.01',
-                'nama_form' => 'FORM PENGECEKAN MESIN CAPLINGIN',
+                'nama_form' => 'FORM PENGECEKAN MESIN CAPLINING',
                 'tanggal_efektif' => '2022-10-19 00:00:00',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            // 12
             [
                 'nomor_form' => 'APTEK/005/REV.00',
                 'nama_form' => 'CHECKLIST PERAWATAN CRANE MATRAS',
