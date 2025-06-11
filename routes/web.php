@@ -35,64 +35,86 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Route untuk handle unauthorized access
 Route::get('/unauthorized', [AuthController::class, 'unauthorizedAccess'])->name('unauthorized');
 
-// Dashboard Routing untuk Approver dan Checker (menggunakan method index yang sama)
+// Dashboard untuk semua role (approver dan checker)
 Route::middleware(['check.role:approver,checker'])->group(function () {
-    // Dashboard untuk Approver dan Checker - menggunakan method index
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 // Route khusus untuk Host
 Route::middleware(['check.role:host'])->prefix('host')->name('host.')->group(function () {
-    // Dashboard Host - menggunakan method hostDashboard
     Route::get('/dashboard', [DashboardController::class, 'hostDashboard'])->name('dashboard');
-    
-    // Resource routes untuk Host
     Route::resource('/approvers', ApproverController::class);
     Route::resource('/checkers', CheckerController::class);
     Route::resource('/forms', FormController::class);
 });
 
-// Route untuk User Approver dan Checker
-Route::middleware(['check.role:approver,checker'])->group(function () {
-    // Daftar kontroler mesin dengan operasi CRUD yang sama
-    $controllers = [
-        'air-dryer' => AirDryerController::class,
-        'water-chiller' => WaterChillerController::class,
-        'compressor' => CompressorController::class,
-        'hopper' => HopperController::class,
-        'dehum-bahan' => DehumBahanController::class,
-        'giling' => GilingController::class,
-        'autoloader' => AutoloaderController::class,
-        'dehum-matras' => DehumMatrasController::class,
-        'caplining' => CapliningController::class,
-        'vacuum-cleaner' => VacumCleanerController::class,
-        'slitting' => SlittingController::class,
-        'crane-matras' => CraneMatrasControler::class,
-    ];
-    
-    // Buat resource route untuk semua controller
-    $modelBindings = [
-        'air-dryer' => 'airDryer',
-        'water-chiller' => 'waterChillerCheck',
-        'compressor' => 'compressor',
-        'hopper' => 'hopper',
-        'dehum-bahan' => 'dehumBahan',
-        'giling' => 'giling',
-        'autoloader' => 'autoloader',
-        'dehum-matras' => 'dehumMatras',
-        'caplining' => 'caplining',
-        'vacuum-cleaner' => 'vacumCleaner',
-        'slitting' => 'slitting',
-        'crane-matras' => 'craneMatras',
-    ];
+// Definisi controllers dan model bindings
+$controllers = [
+    'air-dryer' => AirDryerController::class,
+    'water-chiller' => WaterChillerController::class,
+    'compressor' => CompressorController::class,
+    'hopper' => HopperController::class,
+    'dehum-bahan' => DehumBahanController::class,
+    'giling' => GilingController::class,
+    'autoloader' => AutoloaderController::class,
+    'dehum-matras' => DehumMatrasController::class,
+    'caplining' => CapliningController::class,
+    'vacuum-cleaner' => VacumCleanerController::class,
+    'slitting' => SlittingController::class,
+    'crane-matras' => CraneMatrasControler::class,
+];
+
+$modelBindings = [
+    'air-dryer' => 'airDryer',
+    'water-chiller' => 'waterChillerCheck',
+    'compressor' => 'compressor',
+    'hopper' => 'hopper',
+    'dehum-bahan' => 'dehumBahan',
+    'giling' => 'giling',
+    'autoloader' => 'autoloader',
+    'dehum-matras' => 'dehumMatras',
+    'caplining' => 'caplining',
+    'vacuum-cleaner' => 'vacumCleaner',
+    'slitting' => 'slitting',
+    'crane-matras' => 'craneMatras',
+];
+
+// Route untuk Checker DAN Approver (operasi view dan create saja)
+Route::middleware(['check.role:checker,approver'])->group(function () use ($controllers, $modelBindings) {
     foreach ($controllers as $route => $controller) {
         $param = $modelBindings[$route] ?? 'id';
-        Route::resource($route, $controller)
-            ->parameters([$route => $param]);
-        Route::middleware(['check.role:approver'])->group(function () use ($route, $controller, $param) {
-            Route::post("/$route/{{$param}}/approve", [$controller, 'approve'])->name("$route.approve");
-            Route::get("/$route/{{$param}}/review-pdf", [$controller, 'reviewPdf'])->name("$route.pdf");
-            Route::get("/$route/{{$param}}/download-pdf", [$controller, 'downloadPdf'])->name("$route.downloadPdf");
-        });
+        
+        // Route yang bisa diakses checker dan approver
+        Route::get("/$route", [$controller, 'index'])->name("$route.index");
+        Route::get("/$route/create", [$controller, 'create'])->name("$route.create");
+        Route::post("/$route", [$controller, 'store'])->name("$route.store");
+    }
+});
+
+// Route KHUSUS untuk Checker saja (operasi edit/update)
+Route::middleware(['check.role:checker'])->group(function () use ($controllers, $modelBindings) {
+    foreach ($controllers as $route => $controller) {
+        $param = $modelBindings[$route] ?? 'id';
+        
+        // Route yang HANYA bisa diakses checker
+        Route::get("/$route/{{$param}}/edit", [$controller, 'edit'])->name("$route.edit");
+        Route::put("/$route/{{$param}}", [$controller, 'update'])->name("$route.update");
+        Route::patch("/$route/{{$param}}", [$controller, 'update']);
+    }
+});
+
+// Route KHUSUS untuk Approver saja (operasi lanjutan)
+Route::middleware(['check.role:approver'])->group(function () use ($controllers, $modelBindings) {
+    foreach ($controllers as $route => $controller) {
+        $param = $modelBindings[$route] ?? 'id';
+        
+        // Route yang HANYA bisa diakses approver
+        Route::get("/$route/{{$param}}", [$controller, 'show'])->name("$route.show");
+        Route::delete("/$route/{{$param}}", [$controller, 'destroy'])->name("$route.destroy");
+        
+        // Route khusus approver (approve, PDF, etc.)
+        Route::post("/$route/{{$param}}/approve", [$controller, 'approve'])->name("$route.approve");
+        Route::get("/$route/{{$param}}/review-pdf", [$controller, 'reviewPdf'])->name("$route.pdf");
+        Route::get("/$route/{{$param}}/download-pdf", [$controller, 'downloadPdf'])->name("$route.downloadPdf");
     }
 });
