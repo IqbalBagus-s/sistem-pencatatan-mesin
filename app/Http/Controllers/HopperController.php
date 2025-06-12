@@ -25,20 +25,22 @@ class HopperController extends Controller
         $currentGuard = $this->getCurrentGuard();
         $query = HopperCheck::query();
 
-        // Filter berdasarkan nama checker jika ada
+        // Filter berdasarkan nama checker (username, bukan hanya ID)
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
-            $query->whereHas('checkerMinggu1', function($q) use ($search) {
-                $q->where('username', 'LIKE', $search);
-            })
-            ->orWhereHas('checkerMinggu2', function($q) use ($search) {
-                $q->where('username', 'LIKE', $search);
-            })
-            ->orWhereHas('checkerMinggu3', function($q) use ($search) {
-                $q->where('username', 'LIKE', $search);
-            })
-            ->orWhereHas('checkerMinggu4', function($q) use ($search) {
-                $q->where('username', 'LIKE', $search);
+            $query->where(function($q) use ($search) {
+                $q->orWhereHas('checkerMinggu1', function($qc) use ($search) {
+                    $qc->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checkerMinggu2', function($qc) use ($search) {
+                    $qc->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checkerMinggu3', function($qc) use ($search) {
+                    $qc->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checkerMinggu4', function($qc) use ($search) {
+                    $qc->where('username', 'LIKE', $search);
+                });
             });
         }
 

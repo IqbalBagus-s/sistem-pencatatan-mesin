@@ -33,40 +33,33 @@ class SlittingController extends Controller
             'approverMinggu1', 'approverMinggu2', 'approverMinggu3', 'approverMinggu4'
         ]);
 
-        // Filter berdasarkan nama checker jika ada
+        // Filter berdasarkan nama checker atau approver (username, bukan hanya ID)
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
             $query->where(function ($q) use ($search) {
-                $q->whereHas('checkerMinggu1', function ($subQ) use ($search) {
-                    $subQ->where('username', 'LIKE', $search);
-                })
-                ->orWhereHas('checkerMinggu2', function ($subQ) use ($search) {
-                    $subQ->where('username', 'LIKE', $search);
-                })
-                ->orWhereHas('checkerMinggu3', function ($subQ) use ($search) {
-                    $subQ->where('username', 'LIKE', $search);
-                })
-                ->orWhereHas('checkerMinggu4', function ($subQ) use ($search) {
+                $q->orWhereHas('checkerMinggu1', function ($subQ) use ($search) {
                     $subQ->where('username', 'LIKE', $search);
                 });
-            });
-        }
-
-        // Filter berdasarkan nama approver jika ada (opsional tambahan)
-        if ($request->filled('search_approver')) {
-            $searchApprover = '%' . $request->search_approver . '%';
-            $query->where(function ($q) use ($searchApprover) {
-                $q->whereHas('approverMinggu1', function ($subQ) use ($searchApprover) {
-                    $subQ->where('username', 'LIKE', $searchApprover);
-                })
-                ->orWhereHas('approverMinggu2', function ($subQ) use ($searchApprover) {
-                    $subQ->where('username', 'LIKE', $searchApprover);
-                })
-                ->orWhereHas('approverMinggu3', function ($subQ) use ($searchApprover) {
-                    $subQ->where('username', 'LIKE', $searchApprover);
-                })
-                ->orWhereHas('approverMinggu4', function ($subQ) use ($searchApprover) {
-                    $subQ->where('username', 'LIKE', $searchApprover);
+                $q->orWhereHas('checkerMinggu2', function ($subQ) use ($search) {
+                    $subQ->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checkerMinggu3', function ($subQ) use ($search) {
+                    $subQ->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checkerMinggu4', function ($subQ) use ($search) {
+                    $subQ->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approverMinggu1', function ($subQ) use ($search) {
+                    $subQ->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approverMinggu2', function ($subQ) use ($search) {
+                    $subQ->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approverMinggu3', function ($subQ) use ($search) {
+                    $subQ->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approverMinggu4', function ($subQ) use ($search) {
+                    $subQ->where('username', 'LIKE', $search);
                 });
             });
         }

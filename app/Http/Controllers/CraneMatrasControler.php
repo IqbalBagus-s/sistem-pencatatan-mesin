@@ -27,12 +27,16 @@ class CraneMatrasControler extends Controller
         
         $query = CraneMatrasCheck::query();
 
-        // Filter berdasarkan nama checker menggunakan relasi
+        // Filter berdasarkan nama checker atau approver (username, bukan hanya name)
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
             $query->whereHas('checker', function ($q) use ($search) {
                 $q->where('username', 'LIKE', $search)
-                ->orWhere('name', 'LIKE', $search); // Jika ada field name
+                  ->orWhere('name', 'LIKE', $search);
+            })
+            ->orWhereHas('approver', function ($q) use ($search) {
+                $q->where('username', 'LIKE', $search)
+                  ->orWhere('name', 'LIKE', $search);
             });
         }
 

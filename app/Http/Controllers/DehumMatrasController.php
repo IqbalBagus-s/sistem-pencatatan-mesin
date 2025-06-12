@@ -28,12 +28,14 @@ class DehumMatrasController extends Controller
         $currentGuard = $this->getCurrentGuard();
         $query = DehumMatrasCheck::query();
 
-        // Filter berdasarkan checker_id atau approver_id jika ada
+        // Filter berdasarkan nama checker atau approver (username, bukan checker_id/approver_id)
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
-            $query->whereHas('detail', function ($q) use ($search) {
-                $q->where('checker_id', 'LIKE', $search)
-                ->orWhere('approver_id', 'LIKE', $search);
+            $query->whereHas('detail.checker', function ($q) use ($search) {
+                $q->where('username', 'LIKE', $search);
+            })
+            ->orWhereHas('detail.approver', function ($q) use ($search) {
+                $q->where('username', 'LIKE', $search);
             });
         }
 
