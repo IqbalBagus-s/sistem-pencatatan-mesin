@@ -27,12 +27,11 @@ class AutoloaderController extends Controller
         $currentGuard = $this->getCurrentGuard();
         $query = AutoloaderCheck::query();
     
-        // Filter berdasarkan checker_id atau approver_id jika ada
+        // Filter berdasarkan checker username jika ada
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
-            $query->whereHas('checkerAndApprover', function ($q) use ($search) {
-                $q->where('checker_id', 'LIKE', $search)
-                  ->orWhere('approver_id', 'LIKE', $search);
+            $query->whereHas('checkerAndApprover.checker', function ($q) use ($search) {
+                $q->where('username', 'LIKE', $search);
             });
         }
     
