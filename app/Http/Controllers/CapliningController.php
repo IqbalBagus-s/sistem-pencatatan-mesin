@@ -25,12 +25,41 @@ class CapliningController extends Controller
         $currentGuard = $this->getCurrentGuard();
         $query = CapliningCheck::query();
 
-        // Filter berdasarkan nama checker atau approver
+        // Filter berdasarkan nama checker atau approver (username, bukan checked_by/approved_by)
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
             $query->where(function($q) use ($search) {
-                $q->where('checked_by', 'LIKE', $search)
-                ->orWhere('approved_by', 'LIKE', $search);
+                $q->orWhereHas('checker1', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checker2', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checker3', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checker4', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checker5', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                // Jika ingin bisa cari nama approver juga, tambahkan baris berikut:
+                $q->orWhereHas('approver1', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approver2', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approver3', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approver4', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approver5', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
             });
         }
 
@@ -994,8 +1023,8 @@ class CapliningController extends Controller
                         $results->push([
                             'tanggal_check' => $i,
                             'item_id' => $itemId,
-                            'result' => $itemResult->$checkField ?? null,
-                            'keterangan' => $itemResult->$keteranganField ?? '',
+                            'result' => $itemResult->$checkField,
+                            'keterangan' => $itemResult->$keteranganField,
                             'checked_by' => $checkerUsername,
                             'approved_by' => $approverUsername ?? '',
                             'tanggal' => $formatDisplayTanggal($check->$tanggalField)
