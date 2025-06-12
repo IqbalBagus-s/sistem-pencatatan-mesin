@@ -38,14 +38,20 @@ class CompressorController extends Controller
                   ->whereYear('tanggal', $tahun);
         }
 
-        // Filter berdasarkan nama checker atau approver (username, bukan hanya ID)
+        // Filter berdasarkan nama checker atau approver (username, gunakan relasi checkerShift1, checkerShift2, approverShift1, approverShift2)
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
             $query->where(function ($q) use ($search) {
-                $q->orWhereHas('checker', function($qc) use ($search) {
+                $q->orWhereHas('checkerShift1', function($qc) use ($search) {
                     $qc->where('username', 'LIKE', $search);
                 });
-                $q->orWhereHas('approver', function($qa) use ($search) {
+                $q->orWhereHas('checkerShift2', function($qc) use ($search) {
+                    $qc->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approverShift1', function($qa) use ($search) {
+                    $qa->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approverShift2', function($qa) use ($search) {
                     $qa->where('username', 'LIKE', $search);
                 });
             });

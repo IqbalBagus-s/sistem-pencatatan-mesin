@@ -32,20 +32,20 @@ class VacumCleanerController extends Controller
             'approverMinggu4'
         ]);
 
-        // Filter berdasarkan nama checker atau approver (username, bukan hanya ID/string)
+        // Filter berdasarkan nama checker atau approver (username, gunakan relasi yang ada saja)
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
             $query->where(function ($q) use ($search) {
-                $q->orWhereHas('checkerMinggu1', function ($qc) use ($search) {
-                    $qc->where('username', 'LIKE', $search);
-                });
                 $q->orWhereHas('checkerMinggu2', function ($qc) use ($search) {
                     $qc->where('username', 'LIKE', $search);
                 });
-                $q->orWhereHas('approverMinggu1', function ($qa) use ($search) {
-                    $qa->where('username', 'LIKE', $search);
+                $q->orWhereHas('checkerMinggu4', function ($qc) use ($search) {
+                    $qc->where('username', 'LIKE', $search);
                 });
                 $q->orWhereHas('approverMinggu2', function ($qa) use ($search) {
+                    $qa->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approverMinggu4', function ($qa) use ($search) {
                     $qa->where('username', 'LIKE', $search);
                 });
             });
