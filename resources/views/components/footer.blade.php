@@ -32,12 +32,12 @@
                         <a href="https://iqbalbagus-s.github.io/my-portfolio/" target="_blank" class="text-xs text-gray-600 hover:text-blue-500">Iqbal</a>
                     </div>
                     <div class="flex flex-col items-center">
-                        <a href="https:https://fasilkom.upnjatim.ac.id/" target="_blank" class="block">
+                        <a href="https://fasilkom.upnjatim.ac.id/" target="_blank" class="block">
                             <div class="w-8 h-8 bg-gray-300 rounded-full overflow-hidden mb-1">
                                 <img src="/images/logo-UPN.png" alt="UPN VETERAN JAWA TIMUR" class="w-full h-full object-cover">
                             </div>
                         </a>
-                        <a href="https://iqbalbagus-s.github.io/my-portfolio/" target="_blank" class="text-xs text-center text-gray-600 hover:text-blue-500">FASILKOM<br>UPNVJT</a>
+                        <a href="https://fasilkom.upnjatim.ac.id/" target="_blank" class="text-xs text-center text-gray-600 hover:text-blue-500">FASILKOM<br>UPNVJT</a>
                     </div>
                     <div class="flex flex-col items-center">
                         <a href="https://reiirei.github.io/MyPortofolio/" target="_blank" class="block">

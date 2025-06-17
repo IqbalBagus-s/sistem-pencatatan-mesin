@@ -135,7 +135,7 @@
                             @foreach($items as $i => $item)
                                 @if($i == 3)
                                 <tr>
-                                    <td colspan="10" class="border border-gray-300 text-center p-2 bg-gray-100 font-medium text-xs">
+                                    <td colspan="10" class="border border-gray-300 text-center p-2 bg-white font-medium text-xs">
                                         Panel Kelistrikan
                                     </td>
                                 </tr>
