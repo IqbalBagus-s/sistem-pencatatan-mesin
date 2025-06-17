@@ -180,6 +180,38 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        /* Notification badge styling */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 2px solid white;
+            z-index: 10;
+        }
+        
+        .card-header {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .notification-icon {
+            position: relative;
+            display: inline-block;
+        }
         
         /* Machine card styling */
         .machine-card {
@@ -397,6 +429,25 @@
                 min-height: calc(100vh - 130px); /* Viewport height - (header + footer) */
             }
         }
+
+        /* Responsive notification badge */
+        @media (max-width: 640px) {
+            .notification-badge {
+                width: 16px;
+                height: 16px;
+                font-size: 0.625rem;
+                top: -3px;
+                right: -3px;
+            }
+        }
+        
+        @media (max-width: 359px) {
+            .notification-badge {
+                width: 14px;
+                height: 14px;
+                font-size: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body class="bg-blue-50">
@@ -439,38 +490,53 @@
         <!-- Main Content Area -->
         <div id="content-area">
             <div class="container mx-auto px-3 sm:px-4">
-                <h1 class="font-bold text-xl sm:text-2xl page-title mt-3 sm:mt-4">Halo, {{ auth()->user()->username }} 👋</h1>
-                <p class="text-gray-500 text-sm sm:text-base subtitle">Anda login sebagai {{ auth()->user() instanceof \App\Models\Approver ? 'Approver' : 'Checker' }}</p>
+                <h1 class="font-bold text-xl sm:text-2xl page-title mt-3 sm:mt-4">Halo, {{ $user->username ?? $user->name }} 👋</h1>
+                <p class="text-gray-500 text-sm sm:text-base subtitle">Anda login sebagai {{ $currentGuard === 'approver' ? 'Approver' : 'Checker' }}</p>
         
                 <h2 class="mt-5 sm:mt-6 text-center font-bold text-lg sm:text-xl section-title">
-                    {{ auth()->user() instanceof \App\Models\Approver ? 'Daftar Form Pengajuan Pencatatan Mesin' : 'Daftar Form Pencatatan Mesin' }}
+                    {{ $currentGuard === 'approver' ? 'Daftar Form Pengajuan Pencatatan Mesin' : 'Daftar Form Pencatatan Mesin' }}
                 </h2>
         
+
                 <div class="machine-grid mt-4 sm:mt-6">
                     @php
                         $machines = [
-                            ['name' => 'Air Dryer', 'route' => 'air-dryer.index'],
-                            ['name' => 'Water Chiller', 'route' => 'water-chiller.index'],
-                            ['name' => 'Compressor', 'route' => 'compressor.index'],
-                            ['name' => 'Hopper', 'route' => 'hopper.index'],
-                            ['name' => 'Dehum Bahan', 'route' => 'dehum-bahan.index'],
-                            ['name' => 'Dehum Matras', 'route' => 'dehum-matras.index'],
-                            ['name' => 'Auto Loader', 'route' => 'autoloader.index'],
-                            ['name' => 'Gilingan', 'route' => 'giling.index'],
-                            ['name' => 'Caplining', 'route' => 'caplining.index'],
-                            ['name' => 'Vacuum Cleaner', 'route' => 'vacuum-cleaner.index'],
-                            ['name' => 'Slitting', 'route' => 'slitting.index'],
-                            ['name' => 'Crane Matras', 'route' => 'crane-matras.index']
+                            ['name' => 'Air Dryer', 'route' => 'air-dryer.index', 'key' => 'air_dryer'],
+                            ['name' => 'Auto Loader', 'route' => 'autoloader.index', 'key' => 'auto_loader'],
+                            ['name' => 'Caplining', 'route' => 'caplining.index', 'key' => 'caplining'],
+                            ['name' => 'Compressor', 'route' => 'compressor.index', 'key' => 'compressor'],
+                            ['name' => 'Crane Matras', 'route' => 'crane-matras.index', 'key' => 'crane_matras'],
+                            ['name' => 'Dehum Bahan', 'route' => 'dehum-bahan.index', 'key' => 'dehum_bahan'],
+                            ['name' => 'Dehum Matras', 'route' => 'dehum-matras.index', 'key' => 'dehum_matras'],
+                            ['name' => 'Gilingan', 'route' => 'giling.index', 'key' => 'gilingan'],
+                            ['name' => 'Hopper', 'route' => 'hopper.index', 'key' => 'hopper'],
+                            ['name' => 'Slitting', 'route' => 'slitting.index', 'key' => 'slitting'],
+                            ['name' => 'Vacuum Cleaner', 'route' => 'vacuum-cleaner.index', 'key' => 'vacuum_cleaner'],
+                            ['name' => 'Water Chiller', 'route' => 'water-chiller.index', 'key' => 'water_chiller']
                         ];
                     @endphp
                     
-                    @foreach ($machines as $machine)
+                    @foreach ($machines as $index => $machine)
                         <div>
                             <div class="bg-white rounded-lg shadow-md overflow-hidden machine-card">
                                 <div class="p-2 sm:p-3 md:p-4 card-content">
-                                    <h5 class="font-semibold mb-2 sm:mb-3 md:mb-4 text-center text-xs sm:text-sm md:text-base">
-                                        {{ $machine['name'] }}
-                                    </h5>
+                                    <div class="card-header">
+                                        <h5 class="font-semibold text-center text-xs sm:text-sm md:text-base">
+                                            {{ $machine['name'] }}
+                                        </h5>
+                                        <!-- Ikon notifikasi dengan badge - hanya tampil untuk approver -->
+                                        @if($currentGuard === 'approver')
+                                            <div class="notification-icon ml-2">
+                                                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                                                </svg>
+                                                <!-- Badge notifikasi berdasarkan data real -->
+                                                @if(isset($notificationCounts[$machine['key']]) && $notificationCounts[$machine['key']] > 0)
+                                                    <span class="notification-badge">{{ $notificationCounts[$machine['key']] }}</span>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </div>
                                     @if ($machine['route'])
                                         <a href="{{ route($machine['route']) }}" class="btn-check-machine text-white py-1.5 sm:py-2 px-2 sm:px-3 md:px-4 rounded mt-auto text-xs sm:text-sm md:text-base">Cek Disini</a>
                                     @else
@@ -481,8 +547,42 @@
                         </div>
                     @endforeach
                 </div>
+                @if($currentGuard === 'approver')
+                    <!-- Recent Activities -->
+                    <div class="mt-8 mb-6">
+                        <h3 class="mt-5 sm:mt-6 mb-5 sm:mb-6 text-center font-bold text-lg sm:text-xl section-title">Aktivitas Terbaru</h3>
+                        <div class="bg-white rounded-lg shadow overflow-hidden">
+                            <div class="p-4">
+                                @if(isset($recentActivities) && count($recentActivities) > 0)
+                                    <ul class="divide-y divide-gray-200">
+                                        @foreach($recentActivities as $activity)
+                                            <li class="py-3">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0">
+                                                        <span class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                                            <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                                            </svg>
+                                                        </span>
+                                                    </div>
+                                                    <div class="ml-3">
+                                                        <p class="sm:text-sm md:text-sm text-gray-900">{{ $activity->description }}</p>
+                                                        <p class="text-xs text-gray-500">{{ $activity->created_at->diffForHumans() }}</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <p class="text-gray-500 text-center py-4">Tidak ada aktivitas terbaru</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
+
 
         <!-- Include Footer Component -->
         @include('components.footer')
@@ -497,13 +597,13 @@
             
             // Format tanggal: DD/MM/YYYY
             const date = now.getDate().toString().padStart(2, '0') + '/' + 
-                         (now.getMonth() + 1).toString().padStart(2, '0') + '/' + 
-                         now.getFullYear();
+                        (now.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                        now.getFullYear();
             
             // Format waktu: HH:MM:SS
             const time = now.getHours().toString().padStart(2, '0') + ':' + 
-                         now.getMinutes().toString().padStart(2, '0') + ':' + 
-                         now.getSeconds().toString().padStart(2, '0');
+                        now.getMinutes().toString().padStart(2, '0') + ':' + 
+                        now.getSeconds().toString().padStart(2, '0');
             
             // Update elemen HTML
             document.getElementById('currentDateTime').innerHTML = date + ' ' + time;
@@ -521,7 +621,7 @@
             if (width < 360) {
                 const now = new Date();
                 const time = now.getHours().toString().padStart(2, '0') + ':' + 
-                             now.getMinutes().toString().padStart(2, '0');
+                            now.getMinutes().toString().padStart(2, '0');
                 dateTimeElement.innerHTML = time;
             } else {
                 // Normal display will be handled by updateDateTime
@@ -546,6 +646,19 @@
             const contentArea = document.getElementById('content-area');
             contentArea.style.minHeight = (windowHeight - headerHeight - footerHeight) + 'px';
         }
+
+        // Fungsi untuk menampilkan notifikasi
+        function showNotification() {
+            const notification = document.getElementById('notification-popup');
+            if (notification) {
+                notification.style.display = 'block';
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 5000);
+            }
+        }
         
         // Mulai saat halaman dimuat
         document.addEventListener('DOMContentLoaded', function() {
@@ -559,20 +672,10 @@
                 adjustContentHeight();
             });
 
-            // Check if user just logged in
-            if (localStorage.getItem('just_logged_in') === 'true') {
-                // Show login success notification
-                const notification = document.getElementById('notification-popup');
-                notification.style.display = 'block';
-                
-                // Remove the flag from localStorage
-                localStorage.removeItem('just_logged_in');
-                
-                // Auto-hide after 5 seconds
-                setTimeout(() => {
-                    notification.style.display = 'none';
-                }, 5000);
-            }
+            // **Cek session flash untuk notifikasi login**
+            @if(session('login_success'))
+                showNotification();
+            @endif
             
             // Add click event to close button
             const closeButtons = document.querySelectorAll('.close-notification');
@@ -584,8 +687,9 @@
 
             // Add event listener to the logout form
             document.getElementById('logout-form').addEventListener('submit', function(e) {
-                // Store logout status in localStorage before form submission
-                localStorage.setItem('just_logged_out', 'true');
+                // Disable button to prevent multiple clicks
+                const button = this.querySelector('button');
+                button.disabled = true;
             });
         });
     </script>

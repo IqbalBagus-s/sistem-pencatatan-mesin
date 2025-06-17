@@ -9,7 +9,7 @@
 @endsection
 
 @section('custom-filters')
-    @if(auth()->user() instanceof \App\Models\Approver)
+    @if($currentGuard === 'approver')
     <div>
         <label for="search" class="block font-medium text-gray-700 mb-2">Cari berdasarkan nama Checker:</label>
         <input type="text" name="search" id="search" placeholder="Masukkan nama checker..." 
@@ -192,7 +192,7 @@
                             class="py-3 px-4 border-b border-gray-200">
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                            <span class="bg-blue-100 text-blue-800 px-4 py-1 rounded-full text-sm inline-block">
                                 Shift {{ $check->shift }}
                             </span>
                         </td>
@@ -230,19 +230,19 @@
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             {{-- Menu lihat --}}
-                            @if(auth()->user() instanceof \App\Models\Approver)
-                                <a href="{{ route('dehum-matras.show', $check->id) }}" title="Lihat Detail">
+                            @if($currentGuard === 'approver')
+                                <a href="{{ route('dehum-matras.show', $check->hashid) }}" title="Lihat Detail">
                                     <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit --}}
-                            @elseif(auth()->user() instanceof \App\Models\Checker)
+                            @elseif($currentGuard === 'checker')
                                 @php
                                     // Cek apakah disetujui sepenuhnya
                                     $isFullyApproved = $check->approvedDatesCount >= $check->daysInMonth;
                                 @endphp
                                 
                                 @if(!$isFullyApproved)
-                                    <a href="{{ route('dehum-matras.edit', $check->id) }}" title="Edit">
+                                    <a href="{{ route('dehum-matras.edit', $check->hashid) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
                                 @else
@@ -257,27 +257,11 @@
     </table>
 @endsection
 
-@section('pagination')
-    <div class="flex justify-center mt-4">
-        <div class="flex flex-wrap gap-1 justify-center">
-            <!-- Previous button -->
-            @if (!$checks->onFirstPage())
-                <a href="{{ $checks->previousPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">&laquo; Previous</a>
-            @endif
-            
-            <!-- Page numbers -->
-            @foreach ($checks->getUrlRange(1, $checks->lastPage()) as $page => $url)
-                <a href="{{ $url }}" class="px-3 py-2 border {{ $page == $checks->currentPage() ? 'bg-primary text-white border-primary font-bold' : 'bg-white text-primary border-gray-300 hover:bg-gray-100' }} rounded-md transition duration-200">
-                    {{ $page }}
-                </a>
-            @endforeach
-            
-            <!-- Next button -->
-            @if ($checks->hasMorePages())
-                <a href="{{ $checks->nextPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">Next &raquo;</a>
-            @endif
-        </div>
-    </div>
+@section('pagination-data')
+    @if(method_exists($checks, 'links') && $checks->hasPages())
+        {{-- Menggunakan komponen pagination yang sudah dibuat --}}
+        @include('components.pagination', ['paginator' => $checks])
+    @endif
 @endsection
 
 @section('back-route')

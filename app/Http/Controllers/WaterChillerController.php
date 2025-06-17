@@ -5,19 +5,31 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\WaterChillerCheck;
 use App\Models\WaterChillerResult;
+use App\Models\Form;
+use App\Models\Activity;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
+use App\Traits\WithAuthentication;
 
 class WaterChillerController extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
-        $query = WaterChillerCheck::orderBy('tanggal', 'desc');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user; // If it's a redirect response
+
+        // Tentukan guard yang sedang aktif
+        $currentGuard = $this->getCurrentGuard();
+
+        $query = WaterChillerCheck::orderBy('created_at', 'desc');
 
         // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
-        if (Auth::user() instanceof \App\Models\Checker) {
-            $query->where('checked_by', Auth::user()->username);
+        if ($this->isAuthenticatedAs('checker')) {
+            $query->where('checker_id', $user->id);
         }
 
         // Filter berdasarkan bulan jika ada
@@ -30,18 +42,23 @@ class WaterChillerController extends Controller
 
         // Filter berdasarkan nama checker jika ada
         if ($request->filled('search')) {
-            $query->where('checked_by', 'LIKE', '%' . $request->search . '%');
+            $query->whereHas('checker', function ($q) use ($request) {
+                $q->where('username', 'LIKE', '%' . $request->search . '%');
+            });
         }
 
         // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
         $checks = $query->paginate(10)->appends($request->query());
 
-        return view('water_chiller.index', compact('checks'));
+        return view('water_chiller.index', compact('checks', 'user', 'currentGuard'));
     }
 
     public function create()
     {
-        return view('water_chiller.create');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
+        return view('water_chiller.create', compact('user'));
     }
 
     public function store(Request $request)
@@ -53,20 +70,20 @@ class WaterChillerController extends Controller
             'catatan' => 'nullable|string',
         ]);
 
-        // Extract month from the date
-        $bulan = date('m', strtotime($request->tanggal));
-        
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
         // Check if record for this date already exists
         $existingRecord = WaterChillerCheck::whereDate('tanggal', $request->tanggal)
             ->first();
-        
+
         if ($existingRecord) {
+            $tanggal = Carbon::parse($request->tanggal)->locale('id')->isoFormat('D MMMM YYYY');
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Data untuk tanggal tersebut sudah ada!');
+                ->with('error', "Data untuk tanggal {$tanggal} sudah ada!");
         }
 
-        // Begin transaction to ensure data integrity
         DB::beginTransaction();
         
         try {
@@ -74,7 +91,7 @@ class WaterChillerController extends Controller
             $waterChillerCheck = WaterChillerCheck::create([
                 'tanggal' => $request->tanggal,
                 'hari' => $request->hari,
-                'checked_by' => Auth::user()->username, 
+                'checker_id' => $user->id,
                 'keterangan' => $request->catatan,
             ]);
             
@@ -95,14 +112,32 @@ class WaterChillerController extends Controller
                 ]);
             }
             
-            // Commit the transaction if everything is successful
+            // Log activity
+            Activity::logActivity(
+                'checker',
+                $user->id,
+                $user->username,
+                'created',
+                'Checker ' . $user->username . ' Membuat pemeriksaan Water Chiller untuk tanggal ' . 
+                Carbon::parse($request->tanggal)->locale('id')->isoFormat('D MMMM YYYY'),
+                'water_chiller_check',
+                $waterChillerCheck->id,
+                [
+                    'tanggal' => $request->tanggal,
+                    'hari' => $request->hari,
+                    'total_mesin' => 32,
+                    'catatan' => $request->catatan,
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent()
+                ]
+            );
+            
             DB::commit();
             
             return redirect()->route('water-chiller.index')
                 ->with('success', 'Data pemeriksaan Water Chiller berhasil disimpan.');
                 
         } catch (\Exception $e) {
-            // Rollback transaction if there is an error
             DB::rollBack();
             
             return redirect()->back()
@@ -111,54 +146,39 @@ class WaterChillerController extends Controller
         }
     }
 
-        public function edit($id)
+    public function edit(WaterChillerCheck $waterChillerCheck)
     {
-        // Find the water chiller check by ID
-        $waterChillerCheck = WaterChillerCheck::findOrFail($id);
-        
-        // Ambil semua hasil untuk check ini 
-        // (relasi results seharusnya hasMany, bukan hasOne)
-        $resultsCollection = WaterChillerResult::where('check_id', $id)->get();
-        
-        // Organize results by machine number for easy access in the view
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+
+        // Get current guard
+        $currentGuard = $this->getCurrentGuard();
+
+        $resultsCollection = WaterChillerResult::where('check_id', $waterChillerCheck->id)->get();
         $results = [];
-        
         foreach ($resultsCollection as $result) {
             $machineNumber = str_replace('CH', '', $result->no_mesin);
             $results[$machineNumber] = $result;
         }
-        
-        return view('water_chiller.edit', compact('waterChillerCheck', 'results'));
+        return view('water_chiller.edit', compact('waterChillerCheck', 'results', 'user', 'currentGuard'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, WaterChillerCheck $waterChillerCheck)
     {
-        // Validate the request
         $request->validate([
             'tanggal' => 'required|date',
             'hari' => 'required|string',
             'catatan' => 'nullable|string',
         ]);
-
-        // Begin transaction to ensure data integrity
         DB::beginTransaction();
-        
         try {
-            // Find the existing water chiller check record
-            $waterChillerCheck = WaterChillerCheck::findOrFail($id);
-            
-            // Update the main record
             $waterChillerCheck->update([
                 'tanggal' => $request->tanggal,
                 'hari' => $request->hari,
                 'keterangan' => $request->catatan,
-                // Not updating checked_by to preserve the original checker's identity
             ]);
-            
-            // Process each water chiller machine data (32 machines)
             for ($i = 1; $i <= 32; $i++) {
-                // Find the existing result or create a new one if it doesn't exist
-                $result = WaterChillerResult::updateOrCreate(
+                WaterChillerResult::updateOrCreate(
                     [
                         'check_id' => $waterChillerCheck->id,
                         'no_mesin' => 'CH' . $i,
@@ -176,61 +196,106 @@ class WaterChillerController extends Controller
                     ]
                 );
             }
-            
-            // Commit the transaction if everything is successful
             DB::commit();
-            
             return redirect()->route('water-chiller.index')
                 ->with('success', 'Data pemeriksaan Water Chiller berhasil diperbarui.');
-                
         } catch (\Exception $e) {
-            // Rollback transaction if there is an error
             DB::rollBack();
-            
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage())
                 ->withInput();
         }
     }
-public function show($id)
-{
-    // Mencari data water chiller check berdasarkan ID
-    $waterChillerCheck = WaterChillerCheck::findOrFail($id);
-    
-    // Mengambil detail hasil pemeriksaan water chiller
-    $details = WaterChillerResult::where('check_id', $id)->get();
-    
-    // Menampilkan view dengan data yang sesuai
-    return view('water_chiller.show', compact('waterChillerCheck', 'details'));
-}
 
-    public function approve(Request $request, $check_id)
+    public function show(WaterChillerCheck $waterChillerCheck)
     {
-        $check = WaterChillerCheck::findOrFail($check_id);
-        
-        // Update approved_by field dengan username approver yang login
-        $check->update([
-            'approved_by' => Auth::user()->username
-        ]);
-        
-        return redirect()->route('water-chiller.index')
-            ->with('success', 'Data berhasil disetujui!');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        $details = WaterChillerResult::where('check_id', $waterChillerCheck->id)->get();
+        return view('water_chiller.show', compact('waterChillerCheck', 'details', 'user', 'currentGuard'));
     }
 
-    public function downloadPdf($id)
+    public function approve(Request $request, WaterChillerCheck $waterChillerCheck)
     {
-        // Ambil data dari database berdasarkan ID
-        $check = WaterChillerCheck::findOrFail($id);
-        $results = WaterChillerResult::where('check_id', $id)->get();
-        
-        // Load view untuk PDF dengan ukuran halaman yang sesuai
-        $pdf = Pdf::loadView('water_chiller.pdf', compact('check', 'results'))
-            ->setPaper('a4', 'landscape'); // Set ukuran kertas A4 landscape
-    
-        // Format tanggal untuk nama file
-        $formattedDate = date('d-m-Y', strtotime($check->tanggal));
+        try {
+            $user = $this->ensureAuthenticatedUser(['approver']);
+            if (!is_object($user)) return $user;
+            if (!$this->isAuthenticatedAs('approver')) {
+                return redirect()->back()
+                    ->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
+            }
+            $waterChillerCheck->approver_id = $user->id;
+            $waterChillerCheck->save();
+            Activity::logActivity(
+                'approver',
+                $user->id,
+                $user->username,
+                'approved',
+                'Approver ' . $user->username . ' menyetujui pemeriksaan Water Chiller tanggal ' . 
+                Carbon::parse($waterChillerCheck->tanggal)->translatedFormat('d F Y'),
+                'water_chiller_check',
+                $waterChillerCheck->id,
+                [
+                    'tanggal' => $waterChillerCheck->tanggal,
+                    'checker' => $waterChillerCheck->checker?->username,
+                    'status' => 'disetujui'
+                ]
+            );
+            return redirect()->route('water-chiller.index')
+                ->with('success', 'Data berhasil disetujui!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menyetujui data: ' . $e->getMessage());
+        }
+    }
 
-        // Mengembalikan file PDF untuk di-download dengan format nama yang baru
-        return $pdf->download('Water Chiller Form_' . $formattedDate . '.pdf');
+    public function reviewPdf(WaterChillerCheck $waterChillerCheck)
+    {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        $form = Form::findOrFail(5); 
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        $details = WaterChillerResult::where('check_id', $waterChillerCheck->id)->get();
+        return view('water_chiller.review_pdf', compact('waterChillerCheck', 'details', 'form', 'formattedTanggalEfektif', 'user', 'currentGuard'));
+    }
+
+    public function downloadPdf(WaterChillerCheck $waterChillerCheck)
+    {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        $form = Form::findOrFail(5); 
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        $details = WaterChillerResult::where('check_id', $waterChillerCheck->id)->get();
+        $tanggal = new \DateTime($waterChillerCheck->tanggal);
+        $tanggalFormatted = $tanggal->format('d_F_Y');
+        $bulanIndonesia = [
+            'January' => 'Januari',
+            'February' => 'Februari',
+            'March' => 'Maret',
+            'April' => 'April',
+            'May' => 'Mei',
+            'June' => 'Juni',
+            'July' => 'Juli',
+            'August' => 'Agustus',
+            'September' => 'September',
+            'October' => 'Oktober',
+            'November' => 'November',
+            'December' => 'Desember'
+        ];
+        foreach ($bulanIndonesia as $english => $indonesia) {
+            $tanggalFormatted = str_replace($english, $indonesia, $tanggalFormatted);
+        }
+        $filename = 'Waterchiller_tanggal_' . $tanggalFormatted . '.pdf';
+        $html = view('water_chiller.review_pdf', compact('waterChillerCheck', 'details', 'form', 'formattedTanggalEfektif', 'user', 'currentGuard'))->render();
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+        return $dompdf->stream($filename, [
+            'Attachment' => false,
+        ]);
     }
 }

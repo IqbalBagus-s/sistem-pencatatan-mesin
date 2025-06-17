@@ -5,25 +5,62 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SlittingCheck;
 use App\Models\SlittingResult;
+use App\Models\Form;
+use App\Models\Activity;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
+use App\Traits\WithAuthentication;
 
 
 class SlittingController extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
         $query = SlittingCheck::query();
 
-        // Filter berdasarkan nama checker jika ada
+        // Eager load relasi untuk menghindari N+1 query problem
+        $query->with([
+            'checkerMinggu1', 'checkerMinggu2', 'checkerMinggu3', 'checkerMinggu4',
+            'approverMinggu1', 'approverMinggu2', 'approverMinggu3', 'approverMinggu4'
+        ]);
+
+        // Filter berdasarkan nama checker atau approver (username, bukan hanya ID)
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
             $query->where(function ($q) use ($search) {
-                $q->where('checked_by_minggu1', 'LIKE', $search)
-                ->orWhere('checked_by_minggu2', 'LIKE', $search)
-                ->orWhere('checked_by_minggu3', 'LIKE', $search)
-                ->orWhere('checked_by_minggu4', 'LIKE', $search);
+                $q->orWhereHas('checkerMinggu1', function ($subQ) use ($search) {
+                    $subQ->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checkerMinggu2', function ($subQ) use ($search) {
+                    $subQ->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checkerMinggu3', function ($subQ) use ($search) {
+                    $subQ->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checkerMinggu4', function ($subQ) use ($search) {
+                    $subQ->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approverMinggu1', function ($subQ) use ($search) {
+                    $subQ->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approverMinggu2', function ($subQ) use ($search) {
+                    $subQ->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approverMinggu3', function ($subQ) use ($search) {
+                    $subQ->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approverMinggu4', function ($subQ) use ($search) {
+                    $subQ->where('username', 'LIKE', $search);
+                });
             });
         }
 
@@ -43,33 +80,52 @@ class SlittingController extends Controller
             }
         }
 
+        // Filter berdasarkan status (opsional tambahan)
+        if ($request->filled('status')) {
+            if ($request->status === 'disetujui') {
+                $query->disetujui();
+            } elseif ($request->status === 'belum_disetujui') {
+                $query->belumDisetujui();
+            }
+        }
+
+        $query->orderBy('created_at', 'desc');
+
         // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
         $checks = $query->paginate(10)->appends($request->query());
 
-        return view('slitting.index', compact('checks'));
+        return view('slitting.index', compact('checks', 'user', 'currentGuard'));
     }
 
     public function create()
     {
-        return view('slitting.create');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        return view('slitting.create', compact('user', 'currentGuard'));
     }
 
     public function store(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
+        $customMessages = [
+            'nomer_slitting.required' => 'Silakan pilih nomer slitting terlebih dahulu!',
+            'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
+        ];
+        
         // Validate the request
         $validatedData = $request->validate([
             'nomer_slitting' => 'required|integer|min:1|max:15',
             'bulan' => 'required|date_format:Y-m',
             
-            // Updated validation for checker fields to match form names
-            'checked_by_1' => 'nullable|string|max:255',
-            'check_num_1' => 'nullable|string',
-            'checked_by_2' => 'nullable|string|max:255',
-            'check_num_2' => 'nullable|string',
-            'checked_by_3' => 'nullable|string|max:255',
-            'check_num_3' => 'nullable|string',
-            'checked_by_4' => 'nullable|string|max:255',
-            'check_num_4' => 'nullable|string',
+            // Updated validation for checker fields - now using checker IDs
+            'checker_minggu1_id' => 'nullable|exists:checkers,id',
+            'checker_minggu2_id' => 'nullable|exists:checkers,id',
+            'checker_minggu3_id' => 'nullable|exists:checkers,id',
+            'checker_minggu4_id' => 'nullable|exists:checkers,id',
             
             // Validation for checked items and checks
             'checked_items' => 'required|array',
@@ -81,7 +137,7 @@ class SlittingController extends Controller
             'keterangan_3' => 'nullable|array',
             'check_4' => 'nullable|array',
             'keterangan_4' => 'nullable|array',
-        ]);
+        ], $customMessages);
     
         // Check for existing record with the same nomer_slitting and bulan
         $existingRecord = SlittingCheck::where('nomer_slitting', $request->input('nomer_slitting'))
@@ -89,8 +145,15 @@ class SlittingController extends Controller
             ->first();
     
         if ($existingRecord) {
-            // If a record with the same Slitting number and month exists, return an error
-            return redirect()->back()->with('error', 'Data sudah ada, silahkan buat ulang')
+            // Ambil nilai yang duplikat
+            $nomerSlitting = $request->input('nomer_slitting');
+            $bulan = Carbon::parse($request->input('bulan') . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            
+            // Buat pesan error dengan informasi spesifik
+            $pesanError = "Data sudah ada untuk Slitting nomor {$nomerSlitting} pada bulan {$bulan}, silahkan buat ulang";
+            
+            // Redirect dengan pesan error yang detail
+            return redirect()->back()->with('error', $pesanError)
                             ->withInput();
         }
     
@@ -98,23 +161,16 @@ class SlittingController extends Controller
             // Start a database transaction
             DB::beginTransaction();
     
-            // Create SlittingCheck record with corrected field names
+            // Create SlittingCheck record with updated field names
             $slittingCheck = SlittingCheck::create([
                 'nomer_slitting' => $request->input('nomer_slitting'),
                 'bulan' => $request->input('bulan'),
                 
-                // Map the form field names to database field names
-                'checked_by_minggu1' => $request->input('checked_by_1'),
-                'checked_date_minggu1' => $request->has('check_num_1') && $request->input('check_num_1') ? now() : null,
-                
-                'checked_by_minggu2' => $request->input('checked_by_2'),
-                'checked_date_minggu2' => $request->has('check_num_2') && $request->input('check_num_2') ? now() : null,
-                
-                'checked_by_minggu3' => $request->input('checked_by_3'),
-                'checked_date_minggu3' => $request->has('check_num_3') && $request->input('check_num_3') ? now() : null,
-                
-                'checked_by_minggu4' => $request->input('checked_by_4'),
-                'checked_date_minggu4' => $request->has('check_num_4') && $request->input('check_num_4') ? now() : null,
+                // Store checker IDs instead of usernames
+                'checker_minggu1_id' => $request->input('checker_minggu1_id'),
+                'checker_minggu2_id' => $request->input('checker_minggu2_id'),
+                'checker_minggu3_id' => $request->input('checker_minggu3_id'),
+                'checker_minggu4_id' => $request->input('checker_minggu4_id'),
             ]);
     
             // Log untuk debugging
@@ -142,6 +198,9 @@ class SlittingController extends Controller
                 17 => 'Air Filter',
             ];
             
+            // Array untuk menyimpan detail items yang diproses (untuk activity log)
+            $itemsProcessed = [];
+            
             // Proses setiap item sesuai dengan key di $items, bukan indeks dari array checked_items
             foreach ($items as $key => $item) {
                 // Mengakses nilai dari form menggunakan key yang sama dengan key di array $items
@@ -160,7 +219,7 @@ class SlittingController extends Controller
                 // Log untuk debugging
                 Log::info("Menyimpan item {$key}: {$item} dengan nilai minggu1: {$minggu1}");
                 
-                SlittingResult::create([
+                $resultData = [
                     'check_id' => $slittingCheck->id,
                     'checked_items' => $item, // Gunakan nilai item dari array $items
                     
@@ -179,14 +238,91 @@ class SlittingController extends Controller
                     // Week 4 data
                     'minggu4' => $minggu4,
                     'keterangan_minggu4' => $keterangan4,
-                ]);
+                ];
+                
+                SlittingResult::create($resultData);
+                
+                // Simpan detail untuk activity log
+                $itemsProcessed[] = [
+                    'item' => $item,
+                    'minggu1' => $minggu1,
+                    'minggu2' => $minggu2,
+                    'minggu3' => $minggu3,
+                    'minggu4' => $minggu4,
+                    'keterangan_minggu1' => $keterangan1,
+                    'keterangan_minggu2' => $keterangan2,
+                    'keterangan_minggu3' => $keterangan3,
+                    'keterangan_minggu4' => $keterangan4,
+                ];
             }
+    
+            // LOG AKTIVITAS - Updated to work with checker IDs
+            $bulanFormatted = Carbon::parse($request->input('bulan') . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            
+            // Kumpulkan checker dan tanggal untuk setiap minggu dengan mengambil data checker dari relasi
+            $weeklyData = [];
+            for ($i = 1; $i <= 4; $i++) {
+                $checkerId = $request->input("checker_minggu{$i}_id");
+                $checkerName = null;
+                
+                if ($checkerId) {
+                    // Get checker name from ID using the relation
+                    $checker = $slittingCheck->{"checkerMinggu{$i}"};
+                    $checkerName = $checker ? $checker->username : null;
+                }
+                
+                if ($checkerId && $checkerName) {
+                    $weeklyData["minggu_{$i}"] = [
+                        'checker_id' => $checkerId,
+                        'checker' => $checkerName,
+                        'tanggal' => now()->locale('id')->isoFormat('D MMMM YYYY')
+                    ];
+                }
+            }
+            
+            // Buat string deskripsi untuk checker dan tanggal
+            $checkerString = [];
+            foreach ($weeklyData as $minggu => $data) {
+                if ($data['checker']) {
+                    $mingguLabel = ucfirst(str_replace('_', ' ', $minggu));
+                    $checkerInfo = $mingguLabel . ': ' . $data['checker'];
+                    if ($data['tanggal']) {
+                        $checkerInfo .= ' (' . $data['tanggal'] . ')';
+                    }
+                    $checkerString[] = $checkerInfo;
+                }
+            }
+            $checkerDescription = !empty($checkerString) ? implode(', ', $checkerString) : 'Tidak ada checker yang ditetapkan';
+            
+            Activity::logActivity(
+                'checker',                                              // user_type
+                $user->id,                                       // user_id
+                $user->username,                                 // user_name
+                'created',                                              // action
+                'Checker ' . $user->username . ' membuat pemeriksaan Slitting Nomor ' . $request->input('nomer_slitting') . ' untuk bulan ' . $bulanFormatted,  // description
+                'slitting_check',                                       // target_type
+                $slittingCheck->id,                                     // target_id
+                [
+                    'nomer_slitting' => $request->input('nomer_slitting'),
+                    'bulan' => $request->input('bulan'),
+                    'bulan_formatted' => $bulanFormatted,
+                    'weekly_data' => $weeklyData,
+                    'total_items' => count($items),
+                    'items_processed' => $itemsProcessed,
+                    'total_weeks_filled' => count($weeklyData),
+                    'status' => $slittingCheck->status ?? 'belum_disetujui'
+                ]                                                       // details (JSON)
+            );
     
             // Commit the transaction
             DB::commit();
     
+            // Log untuk debugging
+            Log::info('Transaksi slitting berhasil disimpan dengan ID: ' . $slittingCheck->id);
+    
             // Redirect with success message
             return redirect()->route('slitting.index')->with('success', 'Data pemeriksaan Slitting berhasil disimpan.');
+            
         } catch (\Exception $e) {
             // Rollback the transaction in case of error
             DB::rollBack();
@@ -198,17 +334,34 @@ class SlittingController extends Controller
     
             // Redirect back with error message
             return redirect()->back()->with('error', 'Gagal menyimpan data pemeriksaan Slitting: ' . $e->getMessage())
-                             ->withInput();
+                            ->withInput();
         }
     }
 
-    public function edit($id)
+    public function edit($hashid)
     {
-        // Ambil data utama slitting check
-        $check = SlittingCheck::findOrFail($id);
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         
-        // Ambil data hasil pemeriksaan
-        $results = SlittingResult::where('check_id', $id)->get();
+        // Model SlittingCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $check = (new SlittingCheck)->resolveRouteBinding($hashid);
+        
+        // Load relasi yang diperlukan setelah mendapatkan instance
+        $check->load([
+            'checkerMinggu1', 
+            'checkerMinggu2', 
+            'checkerMinggu3', 
+            'checkerMinggu4',
+            'approverMinggu1', 
+            'approverMinggu2', 
+            'approverMinggu3', 
+            'approverMinggu4'
+        ]);
+        
+        // Ambil data hasil pemeriksaan menggunakan ID asli
+        $results = SlittingResult::where('check_id', $check->id)->get();
         
         // Definisikan items sama seperti di fungsi store
         $items = [
@@ -234,20 +387,20 @@ class SlittingController extends Controller
         // Format data untuk view
         $formattedResults = [];
         
-        // Siapkan array untuk menyimpan data checker dan approval status
+        // Pastikan menggunakan format yang sama dengan database dan view
         $checkerData = [
-            'checked_by_1' => $check->checked_by_minggu1,
-            'check_num_1' => $check->checked_by_minggu1 ? true : false,
-            'checked_by_2' => $check->checked_by_minggu2,
-            'check_num_2' => $check->checked_by_minggu2 ? true : false,
-            'checked_by_3' => $check->checked_by_minggu3,
-            'check_num_3' => $check->checked_by_minggu3 ? true : false,
-            'checked_by_4' => $check->checked_by_minggu4,
-            'check_num_4' => $check->checked_by_minggu4 ? true : false,
-            'approved_by_1' => $check->approved_by_minggu1,
-            'approved_by_2' => $check->approved_by_minggu2,
-            'approved_by_3' => $check->approved_by_minggu3,
-            'approved_by_4' => $check->approved_by_minggu4
+            'checked_by_1' => $check->checkerMinggu1 ? $check->checkerMinggu1->username : '',
+            'check_num_1' => !empty($check->checker_minggu1_id) ? 1 : '', // Ubah dari boolean ke number/string
+            'checked_by_2' => $check->checkerMinggu2 ? $check->checkerMinggu2->username : '',
+            'check_num_2' => !empty($check->checker_minggu2_id) ? 2 : '', // Ubah dari boolean ke number/string
+            'checked_by_3' => $check->checkerMinggu3 ? $check->checkerMinggu3->username : '',
+            'check_num_3' => !empty($check->checker_minggu3_id) ? 3 : '', // Ubah dari boolean ke number/string
+            'checked_by_4' => $check->checkerMinggu4 ? $check->checkerMinggu4->username : '',
+            'check_num_4' => !empty($check->checker_minggu4_id) ? 4 : '', // Ubah dari boolean ke number/string
+            'approved_by_1' => $check->approverMinggu1 ? $check->approverMinggu1->username : '',
+            'approved_by_2' => $check->approverMinggu2 ? $check->approverMinggu2->username : '',
+            'approved_by_3' => $check->approverMinggu3 ? $check->approverMinggu3->username : '',
+            'approved_by_4' => $check->approverMinggu4 ? $check->approverMinggu4->username : ''
         ];
         
         // Format data hasil pemeriksaan berdasarkan item
@@ -257,52 +410,56 @@ class SlittingController extends Controller
             if ($result) {
                 $formattedResults[$key] = [
                     'item' => $item,
-                    'minggu1' => $result->minggu1,
-                    'keterangan_minggu1' => $result->keterangan_minggu1,
-                    'minggu2' => $result->minggu2,
-                    'keterangan_minggu2' => $result->keterangan_minggu2,
-                    'minggu3' => $result->minggu3,
-                    'keterangan_minggu3' => $result->keterangan_minggu3,
-                    'minggu4' => $result->minggu4,
-                    'keterangan_minggu4' => $result->keterangan_minggu4,
+                    'minggu1' => $result->minggu1 ?? 'V', // PERBAIKAN 2: Default value jika null
+                    'keterangan_minggu1' => $result->keterangan_minggu1 ?? '',
+                    'minggu2' => $result->minggu2 ?? 'V',
+                    'keterangan_minggu2' => $result->keterangan_minggu2 ?? '',
+                    'minggu3' => $result->minggu3 ?? 'V',
+                    'keterangan_minggu3' => $result->keterangan_minggu3 ?? '',
+                    'minggu4' => $result->minggu4 ?? 'V',
+                    'keterangan_minggu4' => $result->keterangan_minggu4 ?? '',
                 ];
             } else {
-                // Jika tidak ada data untuk item ini, siapkan struktur kosong
+                // Jika tidak ada data untuk item ini, siapkan struktur dengan default values
                 $formattedResults[$key] = [
                     'item' => $item,
-                    'minggu1' => null,
-                    'keterangan_minggu1' => null,
-                    'minggu2' => null,
-                    'keterangan_minggu2' => null,
-                    'minggu3' => null,
-                    'keterangan_minggu3' => null,
-                    'minggu4' => null,
-                    'keterangan_minggu4' => null,
+                    'minggu1' => 'V', // PERBAIKAN 3: Default ke 'V' bukan null
+                    'keterangan_minggu1' => '',
+                    'minggu2' => 'V',
+                    'keterangan_minggu2' => '',
+                    'minggu3' => 'V',
+                    'keterangan_minggu3' => '',
+                    'minggu4' => 'V',
+                    'keterangan_minggu4' => '',
                 ];
             }
         }
         
-        // Pass the approval status to the view
+        // Jika method isWeekApproved() tidak ada, gunakan pengecekan langsung
         $approvalStatus = [
-            'minggu1' => !empty($check->approved_by_minggu1),
-            'minggu2' => !empty($check->approved_by_minggu2),
-            'minggu3' => !empty($check->approved_by_minggu3),
-            'minggu4' => !empty($check->approved_by_minggu4)
+            'minggu1' => $check->isWeekApproved(1),
+            'minggu2' => $check->isWeekApproved(2),
+            'minggu3' => $check->isWeekApproved(3),
+            'minggu4' => $check->isWeekApproved(4)
         ];
         
-        return view('slitting.edit', compact('check', 'formattedResults', 'items', 'checkerData', 'approvalStatus'));
+        return view('slitting.edit', compact('check', 'formattedResults', 'items', 'checkerData', 'approvalStatus', 'user', 'currentGuard'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $hashid)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
+        // Gunakan trait Hashidable untuk resolve hashid ke model instance
+        $slittingCheck = (new SlittingCheck)->resolveRouteBinding($hashid);
+        
         // Validasi input
         $validated = $request->validate([
             'nomer_slitting' => 'required|integer|between:1,10',
             'bulan' => 'required|date_format:Y-m',
         ]);
-
-        // Cari data slitting yang akan diupdate
-        $slittingCheck = SlittingCheck::findOrFail($id);
 
         // Cek apakah ada perubahan pada data utama (nomer_slitting, bulan)
         if ($slittingCheck->nomer_slitting != $request->nomer_slitting || 
@@ -311,7 +468,7 @@ class SlittingController extends Controller
             // Periksa apakah data dengan kombinasi baru sudah ada
             $existingRecord = SlittingCheck::where('nomer_slitting', $request->nomer_slitting)
                 ->where('bulan', $request->bulan)
-                ->where('id', '!=', $id) // Kecualikan record saat ini
+                ->where('id', '!=', $slittingCheck->id) // Gunakan ID dari resolved model
                 ->first();
             
             if ($existingRecord) {
@@ -325,19 +482,42 @@ class SlittingController extends Controller
         DB::beginTransaction();
 
         try {
-            // Update data SlittingCheck
-            $slittingCheck->update([
+            // Siapkan data untuk update checker berdasarkan guard
+            $checkerData = [];
+            
+            // Proses setiap minggu untuk checker
+            for ($week = 1; $week <= 4; $week++) {
+                $checkedBy = $request->input("checked_by_{$week}");
+                $checkNum = $request->input("check_num_{$week}");
+                
+                if ($checkedBy && $checkNum) {
+                    // Cari checker berdasarkan username dan guard
+                    $checker = null;
+                    if ($currentGuard === 'checker') {
+                        $checker = \App\Models\Checker::where('username', $checkedBy)->first();
+                    } elseif ($currentGuard === 'approver') {
+                        $checker = \App\Models\Approver::where('username', $checkedBy)->first();
+                    }
+                    
+                    if ($checker) {
+                        $checkerData["checker_minggu{$week}_id"] = $checker->id;
+                    } else {
+                        // Jika checker tidak ditemukan, set null
+                        $checkerData["checker_minggu{$week}_id"] = null;
+                    }
+                } else {
+                    // Jika tidak ada checker dipilih, set null
+                    $checkerData["checker_minggu{$week}_id"] = null;
+                }
+            }
+
+            // Update data SlittingCheck dengan data baru dan checker yang sudah diproses
+            $updateData = array_merge([
                 'nomer_slitting' => $request->nomer_slitting,
                 'bulan' => $request->bulan,
-                'checked_by_minggu1' => $request->checked_by_1,
-                'checked_date_minggu1' => $request->check_num_1 ? now() : null,
-                'checked_by_minggu2' => $request->checked_by_2,
-                'checked_date_minggu2' => $request->check_num_2 ? now() : null,
-                'checked_by_minggu3' => $request->checked_by_3,
-                'checked_date_minggu3' => $request->check_num_3 ? now() : null,
-                'checked_by_minggu4' => $request->checked_by_4,
-                'checked_date_minggu4' => $request->check_num_4 ? now() : null,
-            ]);
+            ], $checkerData);
+            
+            $slittingCheck->update($updateData);
             
             // Definisikan items yang diperiksa
             $items = [
@@ -360,8 +540,8 @@ class SlittingController extends Controller
                 17 => 'Air Filter',
             ];
             
-            // Ambil data existing dari tabel SlittingResult
-            $existingResults = SlittingResult::where('check_id', $id)->get()->keyBy('checked_items');
+            // Ambil data existing dari tabel SlittingResult menggunakan ID asli
+            $existingResults = SlittingResult::where('check_id', $slittingCheck->id)->get()->keyBy('checked_items');
             
             // Proses setiap item
             foreach ($items as $itemId => $itemName) {
@@ -381,11 +561,22 @@ class SlittingController extends Controller
                 $existingResult = $existingResults->get($itemName);
                 
                 if ($existingResult) {
-                    // Update record yang sudah ada
-                    $existingResult->update($resultData);
+                    // Update hanya jika minggu tersebut belum disetujui
+                    $updateFields = [];
+                    
+                    for ($week = 1; $week <= 4; $week++) {
+                        if (!$slittingCheck->isWeekApproved($week)) {
+                            $updateFields["minggu{$week}"] = $resultData["minggu{$week}"];
+                            $updateFields["keterangan_minggu{$week}"] = $resultData["keterangan_minggu{$week}"];
+                        }
+                    }
+                    
+                    if (!empty($updateFields)) {
+                        $existingResult->update($updateFields);
+                    }
                 } else {
                     // Buat record baru jika belum ada
-                    $resultData['check_id'] = $id;
+                    $resultData['check_id'] = $slittingCheck->id;
                     $resultData['checked_items'] = $itemName;
                     SlittingResult::create($resultData);
                 }
@@ -407,13 +598,29 @@ class SlittingController extends Controller
         }
     }
 
-    public function show($id)
+    public function show($hashid)
     {
-        // Fetch the slitting check with its results
-        $check = SlittingCheck::findOrFail($id);
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         
-        // Get all results related to this check
-        $results = SlittingResult::where('check_id', $id)->get();
+        // Gunakan trait Hashidable untuk resolve hashid ke model instance
+        $check = (new SlittingCheck)->resolveRouteBinding($hashid);
+        
+        // Load relasi yang diperlukan setelah mendapatkan instance
+        $check->load([
+            'checkerMinggu1',
+            'checkerMinggu2', 
+            'checkerMinggu3',
+            'checkerMinggu4',
+            'approverMinggu1',
+            'approverMinggu2',
+            'approverMinggu3',
+            'approverMinggu4'
+        ]);
+        
+        // Get all results related to this check menggunakan ID asli
+        $results = SlittingResult::where('check_id', $check->id)->get();
         
         // Define items like in the edit function
         $items = [
@@ -492,32 +699,57 @@ class SlittingController extends Controller
             }
         }
         
-        // Periksa kolom mana yang memiliki penanggung jawab
-        $hasApprovedBy = [];
+        // Siapkan data checker dan approver untuk setiap minggu
+        $checkers = [];
+        $approvers = [];
+        
         for ($i = 1; $i <= 4; $i++) {
-            $approvedBy = $check->{'approved_by_minggu'.$i} ?? '';
-            $hasApprovedBy[$i] = !empty($approvedBy);
+            // Get checker data
+            $checkerRelation = 'checkerMinggu' . $i;
+            $checkers[$i] = [
+                'id' => $check->{'checker_minggu' . $i . '_id'},
+                'name' => $check->$checkerRelation ? $check->$checkerRelation->username : null,
+                'has_data' => !empty($check->{'checker_minggu' . $i . '_id'})
+            ];
+            
+            // Get approver data
+            $approverRelation = 'approverMinggu' . $i;
+            $approvers[$i] = [
+                'id' => $check->{'approver_minggu' . $i . '_id'},
+                'name' => $check->$approverRelation ? $check->$approverRelation->username : null,
+                'has_data' => !empty($check->{'approver_minggu' . $i . '_id'})
+            ];
         }
         
-        return view('slitting.show', compact('check', 'formattedResults', 'hasApprovedBy'));
+        return view('slitting.show', compact('check', 'formattedResults', 'checkers', 'approvers', 'user', 'currentGuard'));
     }
 
-    public function approve(Request $request, $id)
+    public function approve(Request $request, $hashid)
     {
-        $check = SlittingCheck::findOrFail($id);
+        $user = $this->ensureAuthenticatedUser(['approver']);
+        if (!is_object($user)) return $user;
+        if (!$this->isAuthenticatedAs('approver')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
+        }
+        
+        // Gunakan trait Hashidable untuk resolve hashid ke model instance
+        $check = (new SlittingCheck)->resolveRouteBinding($hashid);
         
         // Process approvals for each week
         for ($week = 1; $week <= 4; $week++) {
             $approverKey = "approved_by_minggu{$week}";
+            $approverIdField = "approver_minggu{$week}_id"; // Field yang benar di model
             
             if ($request->has($approverKey) && !empty($request->input($approverKey))) {
-                // Set the approved_by field if it's not already set
-                if (empty($check->$approverKey)) {
-                    $check->$approverKey = $request->input($approverKey);
+                // Check if this week is not already approved
+                if (empty($check->$approverIdField)) {
+                    // Set the approver_minggu_id field dengan ID user yang sedang login
+                    $check->$approverIdField = $user->id;
                 }
             }
         }
         
+        // Save will automatically trigger the status update logic in the model
         $check->save();
         
         return redirect()
@@ -525,50 +757,232 @@ class SlittingController extends Controller
             ->with('success', 'Persetujuan berhasil disimpan');
     }
    
-    public function reviewPdf($id)
+    public function reviewPdf($hashid) 
     {
-        // Cari dokumen SlittingCheck berdasarkan ID dengan eager loading untuk relasi results
-        $slittingCheck = SlittingCheck::with('results')->findOrFail($id);
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         
-        // Data yang akan dikirim ke view
-        $data = [
-            'slittingCheck' => $slittingCheck,
-            'title' => 'Review PDF ' . $slittingCheck->nomer_slitting,
-            'results' => $slittingCheck->results,
-            'bulan' => $slittingCheck->bulan
+        // Gunakan trait Hashidable untuk resolve hashid ke model instance
+        $slittingCheck = (new SlittingCheck)->resolveRouteBinding($hashid);
+        
+        // Ambil data form terkait (sesuaikan nomor form untuk slitting)
+        $form = Form::findOrFail(2); 
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil semua hasil pemeriksaan terkait check ini
+        $results = SlittingResult::where('check_id', $slittingCheck->id)->get();
+        
+        // Definisikan items yang akan ditampilkan di PDF
+        $items = [
+            1 => 'Conveyor',
+            2 => 'Motor Conveyor',
+            3 => 'Kelistrikan',
+            4 => 'Kontaktor',
+            5 => 'Inverter',
+            6 => 'Vibrator',
+            7 => 'Motor Vibrator',
+            8 => 'Motor Blower',
+            9 => 'Selang angin',
+            10 => 'Flow Control',
+            11 => 'Sensor',
+            12 => 'Limit Switch',
+            13 => 'Pisau Cutting',
+            14 => 'Motor Cutting',
+            15 => 'Elemen',
+            16 => 'Regulator',
+            17 => 'Air Filter',
         ];
         
-        // Gunakan nama view secara langsung
-        return view('slitting.review_pdf', $data);
-    }
-    
-    public function downloadPdf($id)
-    {
-        // Cari dokumen SlittingCheck berdasarkan ID
-        $slittingCheck = SlittingCheck::findOrFail($id);
+        // Siapkan semua field check dan keterangan untuk empat minggu
+        for ($j = 1; $j <= 4; $j++) {
+            // Inisialisasi array untuk menyimpan hasil check dan keterangan per minggu
+            ${'check_' . $j} = [];
+            ${'keterangan_' . $j} = [];
+            
+            // Isi array dengan data dari results
+            foreach ($items as $i => $item) {
+                // Cari hasil berdasarkan item menggunakan logika yang sama seperti di fungsi show
+                $result = $results->where('checked_items', $item)->first();
+                
+                // Jika tidak ditemukan, coba cari dengan format lain
+                if (!$result) {
+                    $result = $results->first(function($record) use ($i) {
+                        // Coba cocokkan item_id jika ada
+                        if (isset($record->item_id) && $record->item_id == $i) {
+                            return true;
+                        }
+                        
+                        // Coba cocokkan format "1:Conveyor"
+                        if (strpos($record->checked_items, $i.':') === 0) {
+                            return true;
+                        }
+                        
+                        // Coba cocokkan hanya angka
+                        if ($record->checked_items == (string)$i) {
+                            return true;
+                        }
+                        
+                        return false;
+                    });
+                }
+                
+                ${'check_' . $j}[$i] = optional($result)->{'minggu' . $j} ?? '';
+                ${'keterangan_' . $j}[$i] = optional($result)->{'keterangan_minggu' . $j} ?? '';
+            }
+            
+            // Tambahkan array ke slittingCheck object
+            $slittingCheck->{'check_' . $j} = ${'check_' . $j};
+            $slittingCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+        }
         
-        // Ambil data hasil slitting
-        $results = $slittingCheck->results;
-        
-        // Generate PDF dengan menggunakan string HTML langsung
-        $pdf = PDF::loadView('slitting.review_pdf', [
+        // Render view sebagai HTML untuk preview PDF
+        $view = view('slitting.review_pdf', [
             'slittingCheck' => $slittingCheck,
-            'results' => $results,
-            'bulan' => $slittingCheck->bulan,
-            'title' => 'Dokumen Check Slitting ' . $slittingCheck->nomer_slitting
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'items' => $items,
+            'user' => $user,
+            'currentGuard' => $currentGuard
         ]);
         
-        // Konfigurasi PDF
-        $pdf->setPaper('A4', 'portrait');
-        $pdf->setOptions([
-            'isHtml5ParserEnabled' => true,
-            'isRemoteEnabled' => true
+        // Return view untuk preview
+        return $view;
+    }
+
+    public function downloadPdf($hashid)
+    {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
+        // Gunakan trait Hashidable untuk resolve hashid ke model instance
+        $slittingCheck = (new SlittingCheck)->resolveRouteBinding($hashid);
+        
+        // Ambil data form terkait
+        $form = Form::findOrFail(2); 
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil semua hasil pemeriksaan terkait check ini
+        $results = SlittingResult::where('check_id', $slittingCheck->id)->get();
+        
+        // Definisikan items yang akan ditampilkan di PDF
+        $items = [
+            1 => 'Conveyor',
+            2 => 'Motor Conveyor',
+            3 => 'Kelistrikan',
+            4 => 'Kontaktor',
+            5 => 'Inverter',
+            6 => 'Vibrator',
+            7 => 'Motor Vibrator',
+            8 => 'Motor Blower',
+            9 => 'Selang angin',
+            10 => 'Flow Control',
+            11 => 'Sensor',
+            12 => 'Limit Switch',
+            13 => 'Pisau Cutting',
+            14 => 'Motor Cutting',
+            15 => 'Elemen',
+            16 => 'Regulator',
+            17 => 'Air Filter',
+        ];
+        
+        // Siapkan semua field check dan keterangan untuk empat minggu
+        for ($j = 1; $j <= 4; $j++) {
+            // Inisialisasi array untuk menyimpan hasil check dan keterangan per minggu
+            ${'check_' . $j} = [];
+            ${'keterangan_' . $j} = [];
+            
+            // Isi array dengan data dari results
+            foreach ($items as $i => $item) {
+                // Cari hasil berdasarkan item menggunakan logika yang sama seperti di fungsi show
+                $result = $results->where('checked_items', $item)->first();
+                
+                // Jika tidak ditemukan, coba cari dengan format lain
+                if (!$result) {
+                    $result = $results->first(function($record) use ($i) {
+                        // Coba cocokkan item_id jika ada
+                        if (isset($record->item_id) && $record->item_id == $i) {
+                            return true;
+                        }
+                        
+                        // Coba cocokkan format "1:Conveyor"
+                        if (strpos($record->checked_items, $i.':') === 0) {
+                            return true;
+                        }
+                        
+                        // Coba cocokkan hanya angka
+                        if ($record->checked_items == (string)$i) {
+                            return true;
+                        }
+                        
+                        return false;
+                    });
+                }
+                
+                ${'check_' . $j}[$i] = optional($result)->{'minggu' . $j} ?? '';
+                ${'keterangan_' . $j}[$i] = optional($result)->{'keterangan_minggu' . $j} ?? '';
+            }
+            
+            // Tambahkan array ke slittingCheck object
+            $slittingCheck->{'check_' . $j} = ${'check_' . $j};
+            $slittingCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+        }
+        
+        // Format tanggal dari model SlittingCheck untuk mendapatkan bulan dan tahun
+        $tanggal = new \DateTime($slittingCheck->tanggal);
+        $bulan = $tanggal->format('F');
+        $tahun = $tanggal->format('Y');
+        
+        // Ubah nama bulan ke Bahasa Indonesia
+        $bulanIndonesia = [
+            'January' => 'Januari',
+            'February' => 'Februari',
+            'March' => 'Maret',
+            'April' => 'April',
+            'May' => 'Mei',
+            'June' => 'Juni',
+            'July' => 'Juli',
+            'August' => 'Agustus',
+            'September' => 'September',
+            'October' => 'Oktober',
+            'November' => 'November',
+            'December' => 'Desember'
+        ];
+        
+        // Ganti nama bulan dalam bahasa Inggris dengan nama bulan dalam Bahasa Indonesia
+        $bulanFormatted = $bulanIndonesia[$bulan] ?? $bulan;
+        
+        // Generate nama file PDF dengan format Slitting_nomer_1_bulan_Mei_2025
+        $filename = 'Slitting_nomer_' . $slittingCheck->nomer_slitting . '_bulan_' . $bulanFormatted . '_' . $tahun . '.pdf';
+        
+        // Render view sebagai HTML
+        $html = view('slitting.review_pdf', [
+            'slittingCheck' => $slittingCheck,
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'items' => $items,
+            'user' => $user,
+            'currentGuard' => $currentGuard
+        ])->render();
+        
+        // Inisialisasi Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        
+        // Atur ukuran dan orientasi halaman
+        $dompdf->setPaper('A4', 'potrait');
+        
+        // Render PDF (mengubah HTML menjadi PDF)
+        $dompdf->render();
+        
+        // Download file PDF
+        return $dompdf->stream($filename, [
+            'Attachment' => false, // Set true untuk download otomatis
         ]);
-        
-        // Nama file yang akan didownload
-        $filename = 'Dokumen_Slitting_' . $slittingCheck->nomer_slitting . '_' . $slittingCheck->bulan . '.pdf';
-        
-        // Return response download
-        return $pdf->download($filename);
     }
 }

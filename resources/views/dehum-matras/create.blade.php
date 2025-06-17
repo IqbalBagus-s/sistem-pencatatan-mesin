@@ -10,7 +10,7 @@
         <!-- Menampilkan Nama Checker -->
         <div class="bg-sky-50 p-4 rounded-md mb-5">
             <span class="text-gray-600 font-bold">Checker: </span>
-            <span class="font-bold text-blue-700">{{ Auth::user()->username }}</span>
+            <span class="font-bold text-blue-700">{{ $user->username }}</span>
         </div>
 
         <!-- Form Input -->
@@ -30,8 +30,8 @@
                     <label class="block mb-2 text-sm font-medium text-gray-700">Pilih No Dehum Matras:</label>
                     
                     <!-- Dropdown Button -->
-                    <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative">
-                        <span x-text="selected ? 'Dehum Matras ' + selected : 'Pilih Dehum Matras'"></span>
+                    <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative">
+                        <span x-text="selected ? 'Dehum Matras Nomor ' + selected : 'Pilih Dehum Matras'"></span>
                         
                         <!-- Selection Indicator -->
                         <div class="absolute right-3 top-1/2 -translate-y-1/2">
@@ -85,7 +85,7 @@
                     <label class="block mb-2 text-sm font-medium text-gray-700">Pilih Shift:</label>
                     
                     <!-- Dropdown Button -->
-                    <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative">
+                    <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative">
                         <span x-text="selected ? 'Shift ' + selected : 'Pilih Shift'"></span>
                         
                         <!-- Selection Indicator -->
@@ -129,7 +129,7 @@
             
                 <div>
                     <label for="bulan" class="block mb-2 text-sm font-medium text-gray-700">Pilih Bulan:</label>
-                    <input type="month" id="bulan" name="bulan" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
+                    <input type="month" id="bulan" name="bulan" class="w-full h-10 px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
                 </div>
             </div>                    
                 @php
@@ -162,7 +162,7 @@
                     <div class="md:hidden text-sm text-gray-500 italic mb-2">
                         ← Geser ke kanan untuk melihat semua kolom →
                     </div>
-                    <div class="overflow-x-auto mb-6 border border-gray-300">
+                    <div class="overflow-x-auto mb-6">
                         <table class="w-full border-collapse">
                             <thead>
                                 <tr>
@@ -200,23 +200,23 @@
                                     
                                     @for($j = 1; $j <= 11; $j++)
                                         <td class="border border-gray-300 p-1 bg-sky-50">
-                                            <div x-data="{ selected: false, userName: '' }">
-                                                <div class="mt-1" x-show="selected">
-                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
-                                                    readonly>
-                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                        <div x-data="{ selected: false, userName: '', userId: '' }">
+                                                <div class="mt-1 mb-1" x-show="selected">
+                                                    <input type="text" x-bind:value="userName"
+                                                        class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
+                                                        readonly>
+                                                    <input type="hidden" name="checker_id_{{ $j }}" x-ref="checker{{ $j }}" x-bind:value="userId">
                                                 </div>
                                                 <button type="button" 
                                                     @click="selected = !selected; 
                                                         if(selected) {
-                                                            userName = '{{ Auth::user()->username }}'; 
-                                                            $refs.user{{ $j }}.value = userName;
-                                                            $refs.checkNum{{ $j }}.value = '{{ $j }}';
+                                                            userName = '{{ $user->username }}'; 
+                                                            userId = '{{ $user->id }}';
+                                                            $refs.checker{{ $j }}.value = userId;
                                                         } else {
                                                             userName = '';
-                                                            $refs.user{{ $j }}.value = '';
-                                                            $refs.checkNum{{ $j }}.value = '';
+                                                            userId = '';
+                                                            $refs.checker{{ $j }}.value = '';
                                                         }"
                                                     class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                                     :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
@@ -235,7 +235,7 @@
                     <div class="md:hidden text-sm text-gray-500 italic mb-2">
                         ← Geser ke kanan untuk melihat semua kolom →
                     </div>
-                    <div class="overflow-x-auto mb-6 border border-gray-300">
+                    <div class="overflow-x-auto mb-6">
                         <table class="w-full border-collapse">
                             <thead>
                                 <tr>
@@ -273,23 +273,23 @@
                                     
                                     @for($j = 12; $j <= 22; $j++)
                                         <td class="border border-gray-300 p-1 bg-sky-50">
-                                            <div x-data="{ selected: false, userName: '' }">
-                                                <div class="mt-1" x-show="selected">
-                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                            <div x-data="{ selected: false, userName: '', userId: '' }">
+                                                <div class="mt-1 mb-1" x-show="selected">
+                                                    <input type="text" x-bind:value="userName"
+                                                        class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                         readonly>
-                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                                    <input type="hidden" name="checker_id_{{ $j }}" x-ref="checker{{ $j }}" x-bind:value="userId">
                                                 </div>
                                                 <button type="button" 
                                                     @click="selected = !selected; 
                                                         if(selected) {
-                                                            userName = '{{ Auth::user()->username }}'; 
-                                                            $refs.user{{ $j }}.value = userName;
-                                                            $refs.checkNum{{ $j }}.value = '{{ $j }}';
+                                                            userName = '{{ $user->username }}'; 
+                                                            userId = '{{ $user->id }}';
+                                                            $refs.checker{{ $j }}.value = userId;
                                                         } else {
                                                             userName = '';
-                                                            $refs.user{{ $j }}.value = '';
-                                                            $refs.checkNum{{ $j }}.value = '';
+                                                            userId = '';
+                                                            $refs.checker{{ $j }}.value = '';
                                                         }"
                                                     class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                                     :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
@@ -308,7 +308,7 @@
                     <div class="md:hidden text-sm text-gray-500 italic mb-2">
                         ← Geser ke kanan untuk melihat semua kolom →
                     </div>
-                    <div class="overflow-x-auto mb-6 border border-gray-300">
+                    <div class="overflow-x-auto mb-6">
                         <table class="border-collapse table-fixed" style="width: max-content;">
                             <thead>
                                 <tr>
@@ -346,23 +346,23 @@
                                     
                                     @for($j = 23; $j <= 31; $j++)
                                         <td class="border border-gray-300 p-1 bg-sky-50" style="width: 90px;">
-                                            <div x-data="{ selected: false, userName: '' }">
-                                                <div class="mt-1" x-show="selected">
-                                                    <input type="text" name="checked_by_{{ $j }}" x-ref="user{{ $j }}" x-bind:value="userName"
-                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                            <div x-data="{ selected: false, userName: '', userId: '' }">
+                                                <div class="mt-1 mb-1" x-show="selected">
+                                                    <input type="text" x-bind:value="userName"
+                                                        class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                         readonly>
-                                                    <input type="hidden" name="check_num_{{ $j }}" x-ref="checkNum{{ $j }}" value="{{ $j }}">
+                                                    <input type="hidden" name="checker_id_{{ $j }}" x-ref="checker{{ $j }}" x-bind:value="userId">
                                                 </div>
                                                 <button type="button" 
                                                     @click="selected = !selected; 
                                                         if(selected) {
-                                                            userName = '{{ Auth::user()->username }}'; 
-                                                            $refs.user{{ $j }}.value = userName;
-                                                            $refs.checkNum{{ $j }}.value = '{{ $j }}';
+                                                            userName = '{{ $user->username }}'; 
+                                                            userId = '{{ $user->id }}';
+                                                            $refs.checker{{ $j }}.value = userId;
                                                         } else {
                                                             userName = '';
-                                                            $refs.user{{ $j }}.value = '';
-                                                            $refs.checkNum{{ $j }}.value = '';
+                                                            userId = '';
+                                                            $refs.checker{{ $j }}.value = '';
                                                         }"
                                                     class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                                     :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">

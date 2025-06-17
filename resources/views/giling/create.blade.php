@@ -17,7 +17,7 @@
         <!-- Menampilkan Nama Checker -->
         <div class="bg-sky-50 p-4 rounded-md mb-5">
             <span class="text-gray-600 font-bold">Checker: </span>
-            <span class="font-bold text-blue-700">{{ Auth::user()->username }}</span>
+            <span class="font-bold text-blue-700">{{ $user->username }}</span>
         </div>
 
         <!-- Form Input -->
@@ -27,23 +27,35 @@
                 <!-- Input Minggu -->
                 <div>
                     <label class="block mb-2">Minggu:</label>
-                    <select 
-                        x-model="selectedWeek" 
-                        name="minggu" 
-                        class="w-full px-3 py-2 bg-white border border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded-md"
-                    >
-                        <option value="">Pilih Minggu</option>
-                        <option value="1">Minggu ke-1</option>
-                        <option value="2">Minggu ke-2</option>
-                        <option value="3">Minggu ke-3</option>
-                        <option value="4">Minggu ke-4</option>
-                    </select>
+                    <div class="relative">
+                        <select 
+                            x-model="selectedWeek" 
+                            name="minggu" 
+                            class="w-full px-3 py-2 bg-white border border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded-md pr-10 appearance-none"
+                        >
+                            <option value="">Pilih Minggu</option>
+                            <option value="1">Minggu ke-1</option>
+                            <option value="2">Minggu ke-2</option>
+                            <option value="3">Minggu ke-3</option>
+                            <option value="4">Minggu ke-4</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                            <svg class="w-6 h-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
-                
+
                 <!-- Input Bulan -->
                 <div>
                     <label for="bulan" class="block mb-2">Bulan:</label>
-                    <input type="month" id="bulan" name="bulan" class="w-full px-3 py-2 bg-white border border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded-md" required>
+                    <div class="relative">
+                        <input type="month" id="bulan" name="bulan" class="w-full px-3 py-2 bg-white border border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded-md" required>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                            <!-- Icon calendar sudah ada di browser secara default untuk input type="month" -->
+                        </div>
+                    </div>
                 </div>
             </div>
             

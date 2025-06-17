@@ -9,7 +9,7 @@
 @endsection
 
 @section('custom-filters')
-    @if(auth()->user() instanceof \App\Models\Approver)
+    @if($currentGuard === 'approver')
     <div>
         <label for="search" class="block font-medium text-gray-700 mb-2">Cari berdasarkan nama Checker:</label>
         <input type="text" name="search" id="search" placeholder="Masukkan nama checker..." 
@@ -149,9 +149,9 @@
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             <div class="flex flex-col items-center space-y-1">
-                                @if($check->checked_by)
+                                @if($check->checker)
                                     <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm inline-block">
-                                        {{ $check->checked_by }}
+                                        {{ $check->checker->username }}
                                     </div>
                                 @else
                                     <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
@@ -161,7 +161,7 @@
                             </div>
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if($check->approved_by)
+                            @if($check->status === 'disetujui')
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui
                                 </span>
@@ -173,18 +173,14 @@
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             {{-- Menu lihat --}}
-                            @if(auth()->user() instanceof \App\Models\Approver)
-                                <a href="{{ route('crane-matras.show', $check->id) }}" title="Lihat Detail">
-                                    @if($check->approved_by)
-                                        <i class="fas fa-eye text-primary opacity-70" title="Sudah disetujui"></i>
-                                    @else
-                                        <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
-                                    @endif
+                            @if($currentGuard === 'approver')
+                                <a href="{{ route('crane-matras.show', $check->hashid) }}" title="Lihat Detail">
+                                    <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit --}}
-                            @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @if(!$check->approved_by)
-                                    <a href="{{ route('crane-matras.edit', $check->id) }}" title="Edit">
+                            @elseif($currentGuard === 'checker')
+                                @if($check->status === 'belum_disetujui')
+                                    <a href="{{ route('crane-matras.edit', $check->hashid) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
                                 @else
@@ -199,10 +195,11 @@
     </table>
 @endsection
 
-@section('pagination')
-    <div class="flex justify-center mt-4">
-        {{ $checks->links() }}
-    </div>
+@section('pagination-data')
+    @if(method_exists($checks, 'links') && $checks->hasPages())
+        {{-- Menggunakan komponen pagination yang sudah dibuat --}}
+        @include('components.pagination', ['paginator' => $checks])
+    @endif
 @endsection
 
 @section('back-route')

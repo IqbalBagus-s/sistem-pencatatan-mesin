@@ -442,7 +442,7 @@
         <!-- Main Content Area -->
         <div id="content-area">
             <div class="container mx-auto px-3 sm:px-4">
-                <h1 class="font-bold text-xl sm:text-2xl page-title mt-3 sm:mt-4">Halo, {{ auth()->user()->username }} 👋</h1>
+                <h1 class="font-bold text-xl sm:text-2xl page-title mt-3 sm:mt-4">Halo, {{ Auth::guard('host')->user()->username }} 👋</h1>
                 <p class="text-gray-500 text-sm sm:text-base subtitle">Anda login sebagai Administrator</p>
         
                 <h2 class="mt-5 sm:mt-6 text-center font-bold text-lg sm:text-xl section-title">
@@ -452,9 +452,21 @@
                 <div class="menu-grid mt-4 sm:mt-6">
                     @php
                         $menuItems = [
-                            ['name' => 'Kelola Approver', 'route' => 'host.approvers.index', 'icon' => 'fas fa-user-check'],
-                            ['name' => 'Kelola Checker', 'route' => 'host.checkers.index', 'icon' => 'fas fa-user-gear'],
-                            ['name' => 'Kelola Form', 'route' => 'host.forms.index', 'icon' => 'fas fa-file-lines']
+                            [
+                                'name' => 'Kelola Approver', 
+                                'route' => 'host.approvers.index', 
+                                'svg' => '<svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>'
+                            ],
+                            [
+                                'name' => 'Kelola Checker', 
+                                'route' => 'host.checkers.index', 
+                                'svg' => '<svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg>'
+                            ],
+                            [
+                                'name' => 'Kelola Form', 
+                                'route' => 'host.forms.index', 
+                                'svg' => '<svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>'
+                            ]
                         ];
                     @endphp
                     
@@ -463,8 +475,9 @@
                             <div class="bg-white rounded-lg shadow-md overflow-hidden menu-card admin-card relative">
                                 <div class="p-2 sm:p-3 md:p-4 card-content">
                                     <h5 class="font-semibold mb-2 sm:mb-3 md:mb-4 text-center text-xs sm:text-sm md:text-base">
-                                        <i class="fas {{ $item['icon'] }} mr-2 text-blue-700"></i>{{ $item['name'] }}
+                                        <span class="text-blue-700">{!! $item['svg'] !!}</span>{{ $item['name'] }}
                                     </h5>
+                                    
                                     @if ($item['route'])
                                         <a href="{{ route($item['route']) }}" class="btn-menu text-white py-1.5 sm:py-2 px-2 sm:px-3 md:px-4 rounded mt-auto text-xs sm:text-sm md:text-base">Kelola</a>
                                     @else
@@ -495,7 +508,7 @@
                     </div>
                 </div>
                 
-                <!-- Recent Activities (Optional) -->
+                <!-- Recent Activities -->
                 <div class="mt-8 mb-6">
                     <h3 class="font-bold text-lg mb-4">Aktivitas Terbaru</h3>
                     <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -507,7 +520,9 @@
                                             <div class="flex items-center">
                                                 <div class="flex-shrink-0">
                                                     <span class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                                        <i class="fas fa-history text-blue-600"></i>
+                                                        <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                                        </svg>
                                                     </span>
                                                 </div>
                                                 <div class="ml-3">
@@ -540,13 +555,13 @@
             
             // Format tanggal: DD/MM/YYYY
             const date = now.getDate().toString().padStart(2, '0') + '/' + 
-                         (now.getMonth() + 1).toString().padStart(2, '0') + '/' + 
-                         now.getFullYear();
+                        (now.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                        now.getFullYear();
             
             // Format waktu: HH:MM:SS
             const time = now.getHours().toString().padStart(2, '0') + ':' + 
-                         now.getMinutes().toString().padStart(2, '0') + ':' + 
-                         now.getSeconds().toString().padStart(2, '0');
+                        now.getMinutes().toString().padStart(2, '0') + ':' + 
+                        now.getSeconds().toString().padStart(2, '0');
             
             // Update elemen HTML
             document.getElementById('currentDateTime').innerHTML = date + ' ' + time;
@@ -564,7 +579,7 @@
             if (width < 360) {
                 const now = new Date();
                 const time = now.getHours().toString().padStart(2, '0') + ':' + 
-                             now.getMinutes().toString().padStart(2, '0');
+                            now.getMinutes().toString().padStart(2, '0');
                 dateTimeElement.innerHTML = time;
             } else {
                 // Normal display will be handled by updateDateTime
@@ -589,9 +604,29 @@
             const contentArea = document.getElementById('content-area');
             contentArea.style.minHeight = (windowHeight - headerHeight - footerHeight) + 'px';
         }
+
+        // Fungsi untuk menampilkan notifikasi
+        function showNotification() {
+            console.log('Trying to show notification...'); // Debug log
+            const notification = document.getElementById('notification-popup');
+            if (notification) {
+                console.log('Notification element found, showing...'); // Debug log
+                notification.style.display = 'block';
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                    console.log('Notification hidden after 5 seconds'); // Debug log
+                }, 5000);
+            } else {
+                console.log('Notification element not found!'); // Debug log
+            }
+        }
         
         // Mulai saat halaman dimuat
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded'); // Debug log
+            
             updateDateTime();
             handleResize();
             adjustContentHeight();
@@ -602,34 +637,39 @@
                 adjustContentHeight();
             });
 
-            // Check if user just logged in
-            if (localStorage.getItem('just_logged_in') === 'true') {
-                // Show login success notification
-                const notification = document.getElementById('notification-popup');
-                notification.style.display = 'block';
-                
-                // Remove the flag from localStorage
-                localStorage.removeItem('just_logged_in');
-                
-                // Auto-hide after 5 seconds
+            // **Cek session flash untuk notifikasi login dengan debugging**
+            @if(session('login_success'))
+                console.log('Login success session detected!'); // Debug log
+                // Tunggu sebentar agar DOM benar-benar siap
                 setTimeout(() => {
-                    notification.style.display = 'none';
-                }, 5000);
-            }
+                    showNotification();
+                }, 100);
+            @else
+                console.log('No login success session found'); // Debug log
+            @endif
             
             // Add click event to close button
             const closeButtons = document.querySelectorAll('.close-notification');
+            console.log('Found close buttons:', closeButtons.length); // Debug log
+            
             closeButtons.forEach(button => {
                 button.addEventListener('click', () => {
+                    console.log('Close button clicked'); // Debug log
                     document.getElementById('notification-popup').style.display = 'none';
                 });
             });
 
             // Add event listener to the logout form
-            document.getElementById('logout-form').addEventListener('submit', function(e) {
-                // Store logout status in localStorage before form submission
-                localStorage.setItem('just_logged_out', 'true');
-            });
+            const logoutForm = document.getElementById('logout-form');
+            if (logoutForm) {
+                logoutForm.addEventListener('submit', function(e) {
+                    // Disable button to prevent multiple clicks
+                    const button = this.querySelector('button');
+                    if (button) {
+                        button.disabled = true;
+                    }
+                });
+            }
         });
     </script>
 </body>

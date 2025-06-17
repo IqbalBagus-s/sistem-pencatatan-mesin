@@ -7,7 +7,7 @@
 
 <div class="bg-white rounded-lg shadow-md mb-5">
     <div class="p-4">
-        <form method="POST" action="{{ route('dehum-bahan.approve', $dehumBahanRecord->id) }}" id="approveForm">
+        <form method="POST" action="{{ route('dehum-bahan.approve', $dehumBahanRecord->hashid) }}" id="approveForm">
             @csrf
             <!-- Menampilkan Nama Checker -->
             <div class="bg-sky-50 p-4 rounded-md mb-5">
@@ -16,10 +16,10 @@
                     @php
                         // Extract all unique checker names
                         $checkers = collect([
-                            $dehumBahanRecord->created_by_1, 
-                            $dehumBahanRecord->created_by_2, 
-                            $dehumBahanRecord->created_by_3, 
-                            $dehumBahanRecord->created_by_4
+                            $dehumBahanRecord->checker_1,
+                            $dehumBahanRecord->checker_2,
+                            $dehumBahanRecord->checker_3,
+                            $dehumBahanRecord->checker_4
                         ])->filter()->unique()->values()->implode(', ') ?? 'Belum ada checker';
                     @endphp
                     {{ $checkers }}
@@ -31,15 +31,15 @@
                 <!-- No Dehum Bahan Display -->
                 <div class="w-full">
                     <label class="block mb-2 text-sm font-medium text-gray-700">No Dehum Bahan:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-300 rounded-md text-sm flex items-center">
                         {{ $dehumBahanRecord->nomer_dehum_bahan }}
                     </div>
                 </div>
 
                 <div>
                     <label class="block mb-2 text-sm font-medium text-gray-700">Bulan:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
-                        {{ \Carbon\Carbon::parse($dehumBahanRecord->bulan)->translatedFormat('F Y') }}
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-300 rounded-md text-sm flex items-center">
+                        {{ \Carbon\Carbon::parse($dehumBahanRecord->bulan)->locale('id')->isoFormat('MMMM YYYY') }}
                     </div>
                 </div>
             </div>
@@ -55,18 +55,21 @@
                     6 => 'Dew Point'
                 ];
 
-                // Opsi check dengan ikon (seperti di hopper)
+                // Opsi check dengan ikon dan warna seperti di halaman hopper
                 $options = [
-                    'V' => '✓',
-                    'X' => '✗',
-                    '-' => '—',
-                    'OFF' => 'OFF'
+                    'V' => '<span class="text-green-600 font-bold">V</span>',
+                    'X' => '<span class="text-red-600 font-bold">X</span>',
+                    '-' => '<span class="text-gray-600">—</span>',
+                    'OFF' => '<span class="text-gray-600">OFF</span>'
                 ];
             @endphp
             
             <!-- Tabel Inspeksi Mingguan -->
             <div class="mb-6">
                 <div class="overflow-x-auto mb-6 border border-gray-300">
+                    <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                        ← Geser ke kanan untuk melihat semua kolom →
+                    </div>
                     <table class="w-full border-collapse">
                         <thead>
                             <tr>
@@ -96,7 +99,7 @@
                                     @for($j = 1; $j <= 4; $j++)
                                         @php
                                             // Periksa apakah ada checker untuk minggu ini
-                                            $hasChecker = !empty($dehumBahanRecord->{'created_by_'.$j});
+                                            $hasChecker = !empty($dehumBahanRecord->{'checker_'.$j});
                                             
                                             if (!$hasChecker) {
                                                 // Jika tidak ada checker, tampilkan tanda "-" dan "Belum ada data"
@@ -130,7 +133,7 @@
                                 </tr>
                                 @if($i == 2)
                                     <tr>
-                                        <td colspan="10" class="border border-gray-300 text-center p-2 h-12 bg-gray-100 font-medium">
+                                        <td colspan="10" class="border border-gray-300 text-center p-2 h-12 bg-white font-medium">
                                             Panel Kelistrikan
                                         </td>
                                     </tr>
@@ -144,7 +147,7 @@
                                 
                                 @for($j = 1; $j <= 4; $j++)
                                     @php
-                                        $checkedBy = $dehumBahanRecord->{'created_by_'.$j} ?? '';
+                                        $checkedBy = $dehumBahanRecord->{'checker_'.$j} ?? '';
                                         $checkedDate = $dehumBahanRecord->{'created_date_'.$j} ? 
                                             \Carbon\Carbon::parse($dehumBahanRecord->{'created_date_'.$j})->locale('id')->format('d').' '.
                                             \Carbon\Carbon::parse($dehumBahanRecord->{'created_date_'.$j})->locale('id')->isoFormat('MMMM').' '.
@@ -170,7 +173,7 @@
                                 @for($j = 1; $j <= 4; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
                                         @php
-                                            $approvedBy = $dehumBahanRecord->{'approved_by_minggu'.$j} ?? '';
+                                            $approvedBy = $dehumBahanRecord->{'approver_'.$j} ?? '';
                                         @endphp
                                         
                                         @if($approvedBy)
@@ -180,28 +183,28 @@
                                             </div>
                                         @else
                                             <!-- Jika belum ada penanggung jawab, tampilkan tombol pilih -->
-                                            <div x-data="{ selected: false, userName: '' }" class="w-full">
-                                                <div x-show="!selected" class="w-full flex justify-center py-1">
+                                            <div x-data="{ selected{{ $j }}: false, userName{{ $j }}: '' }" class="w-full">
+                                                <div x-show="!selected{{ $j }}" class="w-full flex justify-center py-1">
                                                     <button type="button" 
-                                                        @click="selected = true; 
-                                                            userName = '{{ Auth::user()->username }}'; 
-                                                            $refs.approver{{ $j }}.value = userName;
-                                                            $refs.approveNum{{ $j }}.value = '{{ $j }}';"
+                                                        @click="selected{{ $j }} = true; 
+                                                            userName{{ $j }} = '{{ $user->username }}'; 
+                                                            $refs.approver{{ $j }}.value = userName{{ $j }};
+                                                            $refs.approverID{{ $j }}.value = '{{ $user->id }}';"
                                                         class="w-full max-w-xs px-2 py-1 text-sm border border-gray-300 rounded text-center bg-green-100 hover:bg-green-200">
                                                         Pilih
                                                     </button>
                                                 </div>
-                                                <div x-show="selected" class="w-full py-1">
+                                                <div x-show="selected{{ $j }}" class="w-full py-1">
                                                     <div class="flex flex-col items-center">
-                                                        <input type="text" name="approved_by_minggu{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
-                                                            class="w-full max-w-xs px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1"
+                                                        <input type="text" name="approved_by_minggu{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName{{ $j }}"
+                                                            class="w-full max-w-xs px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                             readonly>
-                                                        <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="">
+                                                        <input type="hidden" name="approver_id_minggu{{ $j }}" x-ref="approverID{{ $j }}" value="">
                                                         <button type="button" 
-                                                            @click="selected = false; 
-                                                                userName = ''; 
+                                                            @click="selected{{ $j }} = false; 
+                                                                userName{{ $j }} = ''; 
                                                                 $refs.approver{{ $j }}.value = '';
-                                                                $refs.approveNum{{ $j }}.value = '';"
+                                                                $refs.approverID{{ $j }}.value = '';"
                                                             class="w-full max-w-xs px-2 py-1 text-xs border border-gray-300 rounded text-center bg-red-100 hover:bg-red-200">
                                                             Batal Pilih
                                                         </button>
@@ -225,6 +228,28 @@
                     </svg>
                     Catatan Pemeriksaan
                 </h5>
+                
+                <div class="p-3 bg-blue-50 rounded-lg col-span-1 md:col-span-2 lg:col-span-3 mb-4">
+                    <p class="font-semibold text-blue-800 mb-1">Keterangan Status:</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-700">
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-green-100 text-green-700 text-center font-bold mr-2 rounded">V</span>
+                            <span>Baik/Normal</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-red-100 text-red-700 text-center font-bold mr-2 rounded">X</span>
+                            <span>Tidak Baik/Abnormal</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-white text-gray-700 text-center font-bold mr-2 rounded">-</span>
+                            <span>Tidak Diisi</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-white text-gray-700 text-center font-bold mr-2 rounded">OFF</span>
+                            <span>Mesin Mati</span>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="bg-white p-4 rounded-lg border border-blue-100">
                     <h6 class="font-medium text-blue-600 mb-2">Standar Kriteria Pemeriksaan:</h6>
@@ -263,62 +288,66 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            <span><span class="font-medium">Dew Point:</span> Baik</span>
+                            <span><span class="font-medium">Dew Point:</span> Berfungsi</span>
                         </li>
                     </ul>
                 </div>
             </div>
             
             <!-- Button Controls -->
-            <div class="flex justify-between mt-6">
-                <a href="{{ route('dehum-bahan.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
-                    <span class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="flex flex-row flex-wrap items-center justify-between gap-2 mt-6">
+                <!-- Tombol Kembali - Sisi Kiri -->
+                <div class="flex-shrink-0">
+                    <a href="{{ route('dehum-bahan.index') }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                         Kembali
-                    </span>
-                </a>
+                    </a>
+                </div>
                 
-                @php
-                    // Check if all 4 weeks have approved_by filled
-                    $allApproved = true;
-                    for ($j = 1; $j <= 4; $j++) {
-                        if (empty($dehumBahanRecord->{'approved_by_minggu'.$j})) {
-                            $allApproved = false;
-                            break;
+                <!-- Tombol Aksi - Sisi Kanan -->
+                <div class="flex flex-row flex-wrap gap-2 justify-end">
+                    @php
+                        $allApproved = true;
+                        for ($j = 1; $j <= 4; $j++) {
+                            if (empty($dehumBahanRecord->{'approver_'.$j})) {
+                                $allApproved = false;
+                                break;
+                            }
                         }
-                    }
-                @endphp
-                
-                @if ($allApproved)
-                    <!-- All weeks are approved, show "Sudah Disetujui" button and "Download PDF" button -->
-                    <div class="flex space-x-3">
-                        <button type="button" disabled class="bg-green-600 text-white py-2 px-4 rounded opacity-75 cursor-not-allowed">
-                            Sudah Disetujui
+                    @endphp
+                    
+                    @if (!$allApproved)
+                        <!-- Belum semua minggu disetujui, tampilkan tombol "Setujui" -->
+                        <button type="submit" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Setujui
                         </button>
-                        <!-- Tombol untuk review PDF -->
-                        <a href="{{ route('dehum-bahan.pdf', $dehumBahanRecord->id) }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    @endif
+                    
+                    @if ($allApproved)
+                        <!-- Semua minggu telah disetujui, tampilkan tombol Preview dan Download PDF -->
+                        <!-- Tombol Preview PDF -->
+                        <a href="{{ route('dehum-bahan.pdf', $dehumBahanRecord->hashid) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
                             Preview PDF
                         </a>
-                        <!-- Tombol untuk download PDF -->
-                        <a href="{{ route('dehum-bahan.downloadPdf', $dehumBahanRecord->id) }}" class="download-pdf-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        
+                        <!-- Tombol Download PDF -->
+                        <a href="{{ route('dehum-bahan.downloadPdf', $dehumBahanRecord->hashid) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             Download PDF
                         </a>
-                    </div>
-                @else
-                    <!-- Not all weeks are approved, show "Setujui" button -->
-                    <button type="submit" class="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800">
-                        Setujui
-                    </button>
-                @endif
+                    @endif
+                </div>
             </div>
         </form>
     </div>

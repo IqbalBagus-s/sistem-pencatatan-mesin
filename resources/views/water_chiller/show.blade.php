@@ -12,11 +12,13 @@
         <div class="grid md:grid-cols-2 gap-4 mb-4">
             <div class="bg-sky-50 p-4 rounded-md">
                 <span class="text-gray-600 font-bold">Checker: </span>
-                <span class="font-bold text-blue-700">{{ $waterChillerCheck->checked_by }}</span>
+                <span class="font-bold text-blue-700">{{ $waterChillerCheck->checker?->username }}<span>
             </div>
             <div class="bg-sky-50 p-4 rounded-md">
                 <span class="text-gray-600 font-bold">Approver: </span>
-                <span class="font-bold text-blue-700">{{ Auth::user()->username }}</span>
+                <span class="font-bold text-blue-700">
+                    {{ $waterChillerCheck->approver?->username ?: $user->username }}
+                </span>
             </div>
         </div>
 
@@ -24,13 +26,13 @@
         <div class="grid md:grid-cols-2 gap-4 mb-4">
             <div class="w-full">
                 <label class="block mb-2 text-sm font-medium text-gray-700">Hari:</label>
-                <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
+                <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
                     {{ $waterChillerCheck->hari }}
                 </div>
             </div>
             <div class="w-full">
                 <label class="block mb-2 text-sm font-medium text-gray-700">Tanggal:</label>
-                <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
+                <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
                     {{ \Carbon\Carbon::parse($waterChillerCheck->tanggal)->translatedFormat('d F Y') }}
                 </div>
             </div>
@@ -39,6 +41,9 @@
         <!-- Tabel Water Chiller -->
         <div class="mb-6">
             <div class="overflow-x-auto border border-gray-300 rounded-lg">
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <table class="w-full border-collapse">
                     <thead>
                         <tr class="bg-sky-50">
@@ -151,13 +156,25 @@
                                     <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span>Evaporator: V / X / _ / OFF</span>
+                                    <span>Evaporator: V / X / - / OFF</span>
                                 </li>
                                 <li class="flex items-center">
                                     <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span>Fan Evaporator: V / X / _ / OFF</span>
+                                    <span>Fan Evaporator: V / X / - / OFF</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Freon: V / X / - / OFF</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <svg class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Air: V / X / - / OFF</span>
                                 </li>
                             </ul>
                         </div>
@@ -212,9 +229,9 @@
                 <!-- Action Buttons - Right Side -->
                 <div class="flex flex-row flex-wrap gap-2 justify-end">
                     <!-- Conditional rendering based on approval status -->
-                    @if (empty($waterChillerCheck->approved_by))
+                    @if ($waterChillerCheck->status === 'belum_disetujui' && $currentGuard === 'approver')
                         <!-- Approval Button -->
-                        <form action="{{ route('water-chiller.approve', $waterChillerCheck->id) }}" method="POST">
+                        <form action="{{ route('water-chiller.approve', $waterChillerCheck->hashid) }}" method="POST">
                             @csrf
                             <button type="submit" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -225,7 +242,7 @@
                         </form>
                     @else
                         <!-- PDF Preview Button -->
-                        <a href="{{ route('water-chiller.pdf', $waterChillerCheck->id) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                        <a href="{{ route('water-chiller.pdf', $waterChillerCheck->hashid) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -234,7 +251,7 @@
                         </a>
                         
                         <!-- Download PDF Button -->
-                        <a href="{{ route('water-chiller.downloadPdf', $waterChillerCheck->id) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                        <a href="{{ route('water-chiller.downloadPdf', $waterChillerCheck->hashid) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>

@@ -16,12 +16,14 @@ return new class extends Migration
             $table->string('nomer_crane_matras');
             $table->string('bulan');
             $table->string('tanggal')->nullable();
-            $table->string('checked_by')->nullable();
-            $table->string('approved_by')->nullable();
-            
+            $table->unsignedBigInteger('checker_id')->nullable();
+            $table->unsignedBigInteger('approver_id')->nullable();
+            $table->enum('status', ['disetujui', 'belum_disetujui'])->default('belum_disetujui');
             
             $table->timestamps();
             $table->softDeletes(); // Soft delete untuk menyimpan data yang dihapus
+            $table->foreign('checker_id')->references('id')->on('checkers')->onDelete('set null')->onUpdate('cascade');
+            $table->foreign('approver_id')->references('id')->on('approvers')->onDelete('set null')->onUpdate('cascade');
         });
     }
 

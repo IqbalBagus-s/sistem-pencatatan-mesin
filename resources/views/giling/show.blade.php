@@ -9,25 +9,30 @@
 <div class="bg-white rounded-lg shadow-md mb-5">
     <div class="p-4">
         <!-- Form wrapper with Alpine.js untuk persetujuan -->
-        <form action="{{ route('giling.approve', $check->id) }}" method="POST" id="approvalForm"
+        <form action="{{ route('giling.approve', $check->hashid) }}" method="POST" id="approvalForm"
               x-data="{
-                dbApprover1: '{{ $check->approved_by1 }}',
-                dbApprover2: '{{ $check->approved_by2 }}',
+                dbApprover1: '{{ $check->approver_id1 }}',
+                dbApprover2: '{{ $check->approver_id2 }}',
                 dbApprovalDate1: '{{ $check->approval_date1 }}',
-                approver1: '{{ $check->approved_by1 }}',
-                approver2: '{{ $check->approved_by2 }}',
+                approver1: '{{ $check->approver_id1 }}',
+                approver2: '{{ $check->approver_id2 }}',
                 approvalDate1: '{{ $check->approval_date1 }}',
+                approver1Name: '{{ $check->approver1?->username ?? '' }}',
+                approver2Name: '{{ $check->approver2?->username ?? '' }}',
                 formChanged: false,
                 
                 pilihApprover(position) {
-                    const user = '{{ Auth::user()->username }}';
+                    const userId = '{{ $user->id }}';
+                    const userName = '{{ $user->username }}';
                     const currentDate = new Date().toISOString().split('T')[0];
                     
                     if (position === 1) {
-                        this.approver1 = user;
+                        this.approver1 = userId;
+                        this.approver1Name = userName;
                         this.approvalDate1 = currentDate;
                     } else if (position === 2) {
-                        this.approver2 = user;
+                        this.approver2 = userId;
+                        this.approver2Name = userName;
                     }
                     this.updateFormChanged();
                 },
@@ -35,9 +40,11 @@
                 batalPilih(position) {
                     if (position === 1) {
                         this.approver1 = '';
+                        this.approver1Name = '';
                         this.approvalDate1 = '';
                     } else if (position === 2) {
                         this.approver2 = '';
+                        this.approver2Name = '';
                     }
                     this.updateFormChanged();
                 },
@@ -54,19 +61,29 @@
               }">
             @csrf
             <!-- Hidden fields for form submission -->
-            <input type="hidden" name="approved_by1" x-model="approver1">
-            <input type="hidden" name="approved_by2" x-model="approver2">
+            <input type="hidden" name="approver_id1" x-model="approver1">
+            <input type="hidden" name="approver_id2" x-model="approver2">
             <input type="hidden" name="approval_date1" x-model="approvalDate1">
         
             <!-- Header dengan Info Petugas -->
             <div class="grid md:grid-cols-2 gap-4 mb-4">
                 <div class="bg-sky-50 p-4 rounded-md">
                     <span class="text-gray-600 font-bold">Checker: </span>
-                    <span class="font-bold text-blue-700">{{ $check->checked_by }}</span>
+                    <span class="font-bold text-blue-700">{{ $check->checker?->username }}</span>
                 </div>
+                @php
+                    // Kumpulkan nilai approver yang terisi
+                    $approvers = collect([$check->approver1?->username, $check->approver2?->username])
+                                    ->filter()          
+                                    ->implode(', ');    
+                @endphp
+                
                 <div class="bg-sky-50 p-4 rounded-md">
                     <span class="text-gray-600 font-bold">Approver: </span>
-                    <span class="font-bold text-blue-700">{{ $check->approved_by ?? Auth::user()->username }}</span>
+                    <span class="font-bold text-blue-700">
+                        {{-- jika ada approver terisi tampilkan, kalau tidak pakai username login --}}
+                        {{ $approvers ?: $user->username }}
+                    </span>
                 </div>
             </div>
 
@@ -88,7 +105,10 @@
             
             <!-- Tabel Pemeriksaan Mesin Giling -->
             <div class="mb-6">
-                <div class="overflow-x-auto border border-gray-300 rounded-lg">
+                    <div class="overflow-x-auto border border-gray-300 rounded-lg">
+                        <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                        ← Geser ke kanan untuk melihat semua kolom →
+                    </div>
                     <table class="w-full border-collapse">
                         <thead>
                             <tr class="bg-sky-50">
@@ -211,7 +231,8 @@
                                 <div>
                                     <input type="text" 
                                         class="w-full p-2 border rounded border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                                        x-model="approver1" readonly placeholder="Nama">
+                                        :value="approver1Name"
+                                        readonly placeholder="Nama">
                                 </div>
                                 
                                 <!-- Date field -->
@@ -223,19 +244,21 @@
                             </div>
                             
                             <!-- Conditional buttons -->
-                            <button type="button" 
-                                x-show="!approver1" 
-                                class="w-full bg-blue-500 text-white py-2 px-3 rounded hover:bg-blue-700 cursor-pointer" 
-                                @click="pilihApprover(1)">
-                                Pilih 
-                            </button>
-                            
-                            <button type="button" 
-                                x-show="approver1" 
-                                class="w-full bg-red-500 text-white py-2 px-3 rounded hover:bg-red-600 cursor-pointer" 
-                                @click="batalPilih(1)">
-                                Batal Pilih
-                            </button>
+                            @if($currentGuard === 'approver')
+                                <button type="button" 
+                                    x-show="!approver1" 
+                                    class="w-full bg-blue-500 text-white py-2 px-3 rounded hover:bg-blue-700 cursor-pointer" 
+                                    @click="pilihApprover(1)">
+                                    Pilih 
+                                </button>
+                                
+                                <button type="button" 
+                                    x-show="approver1" 
+                                    class="w-full bg-red-500 text-white py-2 px-3 rounded hover:bg-red-600 cursor-pointer" 
+                                    @click="batalPilih(1)">
+                                    Batal Pilih
+                                </button>
+                            @endif
                         </div>
 
                         <!-- Approver 2 with full-width name field -->
@@ -246,23 +269,26 @@
                             <div class="mb-3">
                                 <input type="text" 
                                     class="w-full p-2 border rounded border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                                    x-model="approver2" readonly placeholder="Nama">
+                                    :value="approver2Name"
+                                    readonly placeholder="Nama">
                             </div>
                             
                             <!-- Conditional buttons with same height as first section -->
-                            <button type="button" 
-                                x-show="!approver2" 
-                                class="w-full bg-blue-500 text-white py-2 px-3 rounded hover:bg-blue-700 cursor-pointer" 
-                                @click="pilihApprover(2)">
-                                Pilih
-                            </button>
-                            
-                            <button type="button" 
-                                x-show="approver2" 
-                                class="w-full bg-red-500 text-white py-2 px-3 rounded hover:bg-red-600 cursor-pointer" 
-                                @click="batalPilih(2)">
-                                Batal Pilih
-                            </button>
+                            @if($currentGuard === 'approver')
+                                <button type="button" 
+                                    x-show="!approver2" 
+                                    class="w-full bg-blue-500 text-white py-2 px-3 rounded hover:bg-blue-700 cursor-pointer" 
+                                    @click="pilihApprover(2)">
+                                    Pilih
+                                </button>
+                                
+                                <button type="button" 
+                                    x-show="approver2" 
+                                    class="w-full bg-red-500 text-white py-2 px-3 rounded hover:bg-red-600 cursor-pointer" 
+                                    @click="batalPilih(2)">
+                                    Batal Pilih
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -284,9 +310,9 @@
                     <!-- Action Buttons - Right Side -->
                     <div class="flex flex-row flex-wrap gap-2 justify-end">
                         <!-- Simpan Persetujuan Button - Only shown when at least one approval is missing -->
-                        @if (empty($check->approved_by1) || empty($check->approved_by2))
+                        @if($currentGuard === 'approver' && (empty($check->approver_id1) || empty($check->approver_id2)))
                             <button type="submit" 
-                                class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-300 ease-in-out"
+                                class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out"
                                 :class="{ 'opacity-50 cursor-not-allowed': !formChanged }"
                                 :disabled="!formChanged">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -297,9 +323,9 @@
                         @endif
                         
                         <!-- PDF Preview and Download Buttons - Only shown when both approvals are present -->
-                        @if (!empty($check->approved_by1) && !empty($check->approved_by2))
+                        @if (!empty($check->approver_id1) && !empty($check->approver_id2))
                             <!-- PDF Preview Button -->
-                            <a href="{{ route('giling.pdf', $check->id) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <a href="{{ route('giling.pdf', $check->hashid) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -308,7 +334,7 @@
                             </a>
                             
                             <!-- Download PDF Button -->
-                            <a href="{{ route('giling.downloadPdf', $check->id) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <a href="{{ route('giling.downloadPdf', $check->hashid) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>

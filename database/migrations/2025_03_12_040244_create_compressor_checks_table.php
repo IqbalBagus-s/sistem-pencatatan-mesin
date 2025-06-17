@@ -15,10 +15,12 @@ return new class extends Migration
             $table->id(); // Kolom id (primary key)
             $table->date('tanggal'); // Kolom tanggal
             $table->string('hari'); // Kolom hari
-            $table->string('checked_by_shift1')->nullable(); // Kolom checked_by
-            $table->string('checked_by_shift2')->nullable(); // Kolom checked_by
-            $table->string('approved_by_shift1')->nullable(); // Kolom approved_by (nullable)
-            $table->string('approved_by_shift2')->nullable(); // Kolom approved_by (nullable)
+            $table->unsignedBigInteger('checker_shift1_id')->nullable();
+            $table->unsignedBigInteger('checker_shift2_id')->nullable();
+            $table->unsignedBigInteger('approver_shift1_id')->nullable();
+            $table->unsignedBigInteger('approver_shift2_id')->nullable();
+            
+            $table->enum('status', ['disetujui', 'belum_disetujui'])->default('belum_disetujui');
             // jumlah
             $table->string('kompressor_on_kl')->nullable(); 
             $table->string('kompressor_on_kh')->nullable(); 
@@ -32,6 +34,11 @@ return new class extends Migration
             $table->string('humidity_shift2')->nullable(); 
             $table->timestamps(); // Kolom created_at dan updated_at
             $table->softDeletes();
+
+            $table->foreign('checker_shift1_id')->references('id')->on('checkers');
+            $table->foreign('checker_shift2_id')->references('id')->on('checkers');
+            $table->foreign('approver_shift1_id')->references('id')->on('approvers');
+            $table->foreign('approver_shift2_id')->references('id')->on('approvers');
         });
     }
 

@@ -9,24 +9,31 @@
 
 @section('content')
     <!-- Form Input -->
-    <form action="{{ route('air-dryer.update', $airDryer->id) }}" method="POST" autocomplete="off">
+    <form action="{{ route('air-dryer.update', $airDryer->hashid) }}" method="POST" autocomplete="off">
         @csrf
         @method('PUT')
         <div class="grid md:grid-cols-2 gap-4 mb-4">
             <!-- Input Hari dan Tanggal -->
             <div>
-                <label class="block mb-2">Hari:</label>
-                <input type="text" id="hari" name="hari" class="w-full px-3 py-2 bg-white border border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded-md" value="{{ $airDryer->hari }}" readonly>
+                <label class="block mb-2 text-sm font-medium text-gray-700">Hari:</label>
+                <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400  rounded-md text-sm flex items-center">
+                    {{ $airDryer->hari }}
+                </div>
             </div>
             <div>
-                <label class="block mb-2">Tanggal:</label>
-                <input type="date" id="tanggal" name="tanggal" class="w-full px-3 py-2 bg-white border border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded-md" value="{{ $airDryer->tanggal }}" readonly>
+                <label class="block mb-2 text-sm font-medium text-gray-700">tanggal:</label>
+                <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
+                    {{ \Carbon\Carbon::parse($airDryer->tanggal)->translatedFormat('d F Y') }}
+                </div>
             </div>
         </div>
         
         <!-- Tabel Air Dryer -->
         <div class="mb-6">
             <div class="overflow-x-auto mb-6 border border-gray-300">
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <table class="w-full border-collapse">
                     <thead class="sticky top-0 z-10 bg-sky-50">
                         <tr>

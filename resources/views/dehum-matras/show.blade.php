@@ -8,7 +8,7 @@
 
 <div class="bg-white rounded-lg shadow-md mb-5">
     <div class="p-4">
-        <form method="POST" action="{{ route('dehum-matras.approve', $check->id) }}" id="approveForm">
+        <form method="POST" action="{{ route('dehum-matras.approve', $check->hashid) }}" id="approveForm">
             @csrf
             <!-- Menampilkan Nama Checker -->
             <div class="bg-sky-50 p-4 rounded-md mb-5">
@@ -27,15 +27,15 @@
                 <!-- No Dehum Matras Display -->
                 <div class="w-full">
                     <label class="block mb-2 text-sm font-medium text-gray-700">No Dehum Matras:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
-                        Dehum Matras {{ $check->nomer_dehum_matras }}
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
+                        Dehum Matras Nomor {{ $check->nomer_dehum_matras }}
                     </div>
                 </div>
                 
                 <!-- Shift Display -->
                 <div class="w-full">
                     <label class="block mb-2 text-sm font-medium text-gray-700">Shift:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
                         Shift {{ $check->shift }}
                     </div>
                 </div>
@@ -43,12 +43,12 @@
                 <!-- Bulan Display -->
                 <div class="w-full">
                     <label class="block mb-2 text-sm font-medium text-gray-700">Bulan:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
-                        {{ \Carbon\Carbon::parse($check->bulan)->format('F Y') }}
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
+                        {{ \Carbon\Carbon::parse($check->bulan)->translatedFormat('F Y') }}
                     </div>
                 </div>
-            </div>                 
-            @php
+            </div>                   
+             @php
                 // Items yang perlu di-check untuk Dehum Matras
                 $items = [
                     1 => 'Kompressor',
@@ -64,21 +64,40 @@
                 function getCheckResult($results, $date, $itemId) {
                     // Filter hasil berdasarkan tanggal dan item_id
                     $result = $results->where('tanggal', $date)->where('item_id', $itemId)->first();
-                    return $result && isset($result['result']) ? $result['result'] : null;
+                    
+                    // Cek apakah ada checker untuk tanggal tersebut
+                    $checkerExists = $results->where('tanggal', $date)->where('checked_by', '!=', null)->where('checked_by', '!=', '')->first();
+                    
+                    // Jika tidak ada checker, return '-'
+                    if (!$checkerExists) {
+                        return '-';
+                    }
+                    
+                    // Jika ada checker dan ada result untuk item ini, return hasilnya
+                    return $result && isset($result['result']) ? $result['result'] : '-';
                 }
 
                 // Helper function untuk mendapatkan keterangan berdasarkan tanggal dan item
                 function getKeterangan($results, $date, $itemId) {
                     // Filter hasil berdasarkan tanggal dan item_id
                     $result = $results->where('tanggal', $date)->where('item_id', $itemId)->first();
+                    
+                    // Cek apakah ada checker untuk tanggal tersebut
+                    $checkerExists = $results->where('tanggal', $date)->where('checked_by', '!=', null)->where('checked_by', '!=', '')->first();
+                    
+                    // Jika tidak ada checker, return kosong
+                    if (!$checkerExists) {
+                        return '';
+                    }
+                    
                     return $result && isset($result['keterangan']) ? $result['keterangan'] : '';
                 }
 
                 // Helper function untuk mendapatkan nama checker berdasarkan tanggal
                 function getCheckerName($results, $date) {
                     // Filter hasil berdasarkan tanggal
-                    $result = $results->where('tanggal', $date)->first();
-                    return $result && isset($result['checked_by']) ? $result['checked_by'] : '';
+                    $result = $results->where('tanggal', $date)->where('checked_by', '!=', null)->where('checked_by', '!=', '')->first();
+                    return $result && isset($result['checked_by']) ? $result['checked_by'] : 'Belum dibuat';
                 }
                 
                 // Helper function untuk mendapatkan nama penanggung jawab berdasarkan tanggal
@@ -120,7 +139,7 @@
                                     
                                     @for($j = 1; $j <= 11; $j++)
                                         <td class="border border-gray-300 p-1 h-10 text-center">
-                                            {{ getCheckResult($results, $j, $i) ?: '-' }}
+                                            {{ getCheckResult($results, $j, $i) }}
                                         </td>
                                     @endfor
                                 </tr>
@@ -133,7 +152,7 @@
                                 
                                 @for($j = 1; $j <= 11; $j++)
                                     <td class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
-                                        {{ getCheckerName($results, $j) ?: '-' }}
+                                        {{ getCheckerName($results, $j) }}
                                     </td>
                                 @endfor
                             </tr>
@@ -154,7 +173,7 @@
                                             <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
                                             <div class="w-full px-2 py-1 text-sm">
                                                 <input type="text" name="approved_by_{{ $j }}" value="{{ $approvedBy }}"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                    class="w-full px-2 py-1 text-sm text-center"
                                                     readonly>
                                                 <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -164,7 +183,7 @@
                                                 <div x-show="!selected">
                                                     <button type="button" 
                                                         @click="selected = true; 
-                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            userName = '{{ $user->username }}'; 
                                                             $refs.approver{{ $j }}.value = userName;
                                                             $refs.approveNum{{ $j }}.value = '{{ $j }}';"
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center bg-green-100 hover:bg-green-200">
@@ -173,7 +192,7 @@
                                                 </div>
                                                 <div class="mt-1" x-show="selected">
                                                     <input type="text" name="approved_by_{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
-                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1"
+                                                        class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                         readonly>
                                                     <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="{{ $j }}">
                                                     <button type="button" 
@@ -224,7 +243,7 @@
                                     
                                     @for($j = 12; $j <= 22; $j++)
                                         <td class="border border-gray-300 p-1 h-10 text-center">
-                                            {{ getCheckResult($results, $j, $i) ?: '-' }}
+                                            {{ getCheckResult($results, $j, $i) }}
                                         </td>
                                     @endfor
                                 </tr>
@@ -237,7 +256,7 @@
                                 
                                 @for($j = 12; $j <= 22; $j++)
                                     <td class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
-                                        {{ getCheckerName($results, $j) ?: '-' }}
+                                        {{ getCheckerName($results, $j) }}
                                     </td>
                                 @endfor
                             </tr>
@@ -258,7 +277,7 @@
                                             <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
                                             <div class="w-full px-2 py-1 text-sm">
                                                 <input type="text" name="approved_by_{{ $j }}" value="{{ $approvedBy }}"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                    class="w-full px-2 py-1 text-sm text-center"
                                                     readonly>
                                                 <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
                                             </div>
@@ -268,7 +287,7 @@
                                                 <div x-show="!selected">
                                                     <button type="button" 
                                                         @click="selected = true; 
-                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            userName = '{{ $user->username }}'; 
                                                             $refs.approver{{ $j }}.value = userName;
                                                             $refs.approveNum{{ $j }}.value = '{{ $j }}';"
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center bg-green-100 hover:bg-green-200">
@@ -277,7 +296,7 @@
                                                 </div>
                                                 <div class="mt-1" x-show="selected">
                                                     <input type="text" name="approved_by_{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
-                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1"
+                                                        class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                         readonly>
                                                     <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="{{ $j }}">
                                                     <button type="button" 
@@ -297,81 +316,94 @@
                         </tbody>
                     </table>
                 </div>
+                
                 <!-- Tabel untuk tanggal 23-31 -->
                 <div class="overflow-x-auto mb-6">
-                    <table class="w-full border-collapse table-fixed" style="width: max-content;">
+                    <table class="border-collapse table-fixed" style="min-width: max-content;">
                         <thead>
                             <tr>
+                                <!-- Kolom No. -->
                                 <th class="border border-gray-300 bg-sky-50 p-2 w-10 sticky left-0 z-10" rowspan="2">No.</th>
-                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10" colspan="1">Tanggal</th>
-                                
+
+                                <!-- Kolom Tanggal -->
+                                <th class="border border-gray-300 bg-sky-50 p-2 w-40 sticky left-10 z-10" colspan="1">Tanggal</th>
+
+                                <!-- Kolom tanggal 23-31 -->
                                 @for ($i = 23; $i <= 31; $i++)
                                     @php $num = str_pad($i, 2, '0', STR_PAD_LEFT); @endphp
                                     <th class="border border-gray-300 bg-sky-50 p-2 w-24" colspan="1">{{ $num }}</th>
                                 @endfor
                             </tr>
                             <tr>
-                                <th class="border border-gray-300 bg-sky-50 p-2 min-w-40 sticky left-10 z-10">Item Terperiksa</th>
+                                <!-- Kolom Item Terperiksa -->
+                                <th class="border border-gray-300 bg-sky-50 p-2 w-40 sticky left-10 z-10">Item Terperiksa</th>
+
+                                <!-- Kolom hasil tiap hari -->
                                 @for ($i = 23; $i <= 31; $i++)
-                                    <th class="border border-gray-300 bg-sky-50 p-2 min-w-20">Hasil</th>
+                                    <th class="border border-gray-300 bg-sky-50 p-2 w-24">Hasil</th>
                                 @endfor
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($items as $i => $item)
                                 <tr>
-                                    <td class="border border-gray-300 text-center p-1 h-10 text-xs sticky left-0 bg-white z-10">{{ $i }}</td>
-                                    <td class="border border-gray-300 p-1 h-10 sticky left-10 bg-white z-10">
+                                    <!-- No. -->
+                                    <td class="border border-gray-300 text-center p-1 h-10 text-xs sticky left-0 bg-white z-10 w-10">{{ $i }}</td>
+
+                                    <!-- Item -->
+                                    <td class="border border-gray-300 p-1 h-10 sticky left-10 bg-white z-10 w-40">
                                         <div class="w-full h-8 px-1 py-0 text-xs flex items-center">{{ $item }}</div>
                                     </td>
-                                    
+
+                                    <!-- Hasil per tanggal -->
                                     @for($j = 23; $j <= 31; $j++)
-                                        <td class="border border-gray-300 p-1 h-10 text-center">
-                                            {{ getCheckResult($results, $j, $i) ?: '-' }}
+                                        <td class="border border-gray-300 p-1 h-10 text-center w-24">
+                                            {{ getCheckResult($results, $j, $i) }}
                                         </td>
                                     @endfor
                                 </tr>
                             @endforeach
                         </tbody>
+
+                        <!-- Dibuat Oleh -->
                         <tbody class="bg-white">
                             <tr class="bg-sky-50">
-                                <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
-                                <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10">Dibuat Oleh</td>
-                                
+                                <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10 w-10">-</td>
+                                <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-10 z-10 w-40">Dibuat Oleh</td>
+
                                 @for($j = 23; $j <= 31; $j++)
-                                    <td class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
-                                        {{ getCheckerName($results, $j) ?: '-' }}
+                                    <td class="border border-gray-300 p-1 bg-sky-50 text-center text-sm w-24">
+                                        {{ getCheckerName($results, $j) }}
                                     </td>
                                 @endfor
                             </tr>
                         </tbody>
-                        {{-- baris penanggung jawab tabel 3--}}
+
+                        <!-- Penanggung Jawab -->
                         <tbody class="bg-white">
                             <tr class="bg-green-50">
-                                <td class="border border-gray-300 text-center p-1 bg-green-50 h-10 text-xs sticky left-0 z-10" rowspan="1">-</td>
-                                <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10">Penanggung Jawab</td>
-                                
+                                <td class="border border-gray-300 text-center p-1 bg-green-50 h-10 text-xs sticky left-0 z-10 w-10">-</td>
+                                <td class="border border-gray-300 p-1 font-medium bg-green-50 text-xs sticky left-10 z-10 w-40">Penanggung Jawab</td>
+
                                 @for($j = 23; $j <= 31; $j++)
-                                    <td class="border border-gray-300 p-1 bg-green-50">
+                                    <td class="border border-gray-300 p-1 bg-green-50 w-24">
                                         @php
                                             $approvedBy = getApprovedBy($results, $j);
                                         @endphp
-                                        
+
                                         @if($approvedBy)
-                                            <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
                                             <div class="w-full px-2 py-1 text-sm">
                                                 <input type="text" name="approved_by_{{ $j }}" value="{{ $approvedBy }}"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                    class="w-full px-2 py-1 text-sm text-center"
                                                     readonly>
                                                 <input type="hidden" name="approve_num_{{ $j }}" value="{{ $j }}">
                                             </div>
                                         @else
-                                            <!-- Jika belum ada penanggung jawab, tampilkan tombol pilih -->
                                             <div x-data="{ selected: false, userName: '' }">
                                                 <div x-show="!selected">
                                                     <button type="button" 
                                                         @click="selected = true; 
-                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            userName = '{{ $user->username }}'; 
                                                             $refs.approver{{ $j }}.value = userName;
                                                             $refs.approveNum{{ $j }}.value = '{{ $j }}';"
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center bg-green-100 hover:bg-green-200">
@@ -380,7 +412,7 @@
                                                 </div>
                                                 <div class="mt-1" x-show="selected">
                                                     <input type="text" name="approved_by_{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
-                                                        class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1"
+                                                        class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                         readonly>
                                                     <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="{{ $j }}">
                                                     <button type="button" 
@@ -401,6 +433,7 @@
                     </table>
                 </div>
             </div>
+            
             {{-- catatan pemeriksaan --}}
             <div class="bg-gradient-to-r from-sky-50 to-blue-50 p-5 rounded-lg shadow-sm mb-6 border-l-4 border-blue-400">
                 <h5 class="text-lg font-semibold text-blue-700 mb-4 flex items-center">
@@ -460,13 +493,59 @@
             </div>
 
             <!-- Button Controls -->
-            <div class="flex justify-between mt-6">
-                <a href="{{ route('dehum-matras.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Kembali
-                </a>
-                <button type="submit" class="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800">
-                    Setujui
-                </button>
+            <div class="mt-8 bg-white rounded-lg p-2 sm:p-4">
+                <div class="flex flex-row flex-wrap items-center justify-between gap-2">
+                    <!-- Back Button - Left Side -->
+                    <div class="flex-shrink-0">
+                        <a href="{{ route('dehum-matras.index') }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            Kembali
+                        </a>
+                    </div>
+                    
+                    <!-- Action Buttons - Right Side -->
+                    <div class="flex flex-row flex-wrap gap-2 justify-end">
+                        <!-- Hitung jumlah hari dalam bulan -->
+                        @php
+                            $year = substr($check->bulan, 0, 4);
+                            $month = substr($check->bulan, 5, 2);
+                            $daysInMonth = cal_days_in_month(CAL_GREGORIAN, (int)$month, (int)$year);
+                            
+                            // Hitung jumlah tanggal yang sudah disetujui
+                            $approvedDatesCount = $results->where('approved_by', '!=', null)->where('approved_by', '!=', '')->unique('tanggal')->count();
+                        @endphp
+                        
+                        <!-- Conditional rendering based on approval status -->
+                        @if($approvedDatesCount < $daysInMonth)
+                            <!-- Tombol Setujui untuk yang belum disetujui atau disetujui sebagian -->
+                            <button type="submit" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Setujui
+                            </button>
+                        @else
+                            <!-- PDF Preview Button -->
+                            <a href="{{ route('dehum-matras.pdf', $check->hashid) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Preview PDF
+                            </a>
+                            
+                            <!-- Download PDF Button -->
+                            <a href="{{ route('dehum-matras.downloadPdf', $check->hashid) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Download PDF
+                            </a>
+                        @endif
+                    </div>
+                </div>
             </div>
         </form>
     </div>

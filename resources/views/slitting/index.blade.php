@@ -9,7 +9,7 @@
 @endsection
 
 @section('custom-filters')
-    @if(auth()->user() instanceof \App\Models\Approver)
+    @if($currentGuard === 'approver')
     <div>
         <label for="search" class="block font-medium text-gray-700 mb-2">Cari berdasarkan nama Checker:</label>
         <input type="text" name="search" id="search" placeholder="Masukkan nama checker..." 
@@ -132,12 +132,12 @@
                         <td class="py-3 px-4 border-b border-gray-200">
                             <div class="flex flex-col items-center space-y-1">
                                 @php
-                                    // Collect all non-empty checker names
+                                    // Collect all non-empty checker usernames from relations
                                     $checkers = collect([
-                                        $check->checked_by_minggu1,
-                                        $check->checked_by_minggu2,
-                                        $check->checked_by_minggu3,
-                                        $check->checked_by_minggu4
+                                        $check->checkerMinggu1?->username,
+                                        $check->checkerMinggu2?->username,
+                                        $check->checkerMinggu3?->username,
+                                        $check->checkerMinggu4?->username
                                     ])->filter()->unique()->values();
                                 @endphp
                                 
@@ -154,45 +154,38 @@
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             @php
-                                $weekCount = 4; // Total minggu
-                                $approvedCount = 0;
-                                
-                                // Periksa jika field approved_by_minggu1-4 terisi (tidak kosong)
-                                if(!empty($check->approved_by_minggu1)) $approvedCount++;
-                                if(!empty($check->approved_by_minggu2)) $approvedCount++;
-                                if(!empty($check->approved_by_minggu3)) $approvedCount++;
-                                if(!empty($check->approved_by_minggu4)) $approvedCount++;
+                                $approvedCount = collect([
+                                    $check->approver_minggu1_id,
+                                    $check->approver_minggu2_id,
+                                    $check->approver_minggu3_id,
+                                    $check->approver_minggu4_id,
+                                ])->filter()->count();
                             @endphp
                             
-                            @if($approvedCount == 0)
-                                <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                    Belum Disetujui
+                            @if($check->status === 'disetujui')
+                                <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Disetujui
                                 </span>
-                            @elseif($approvedCount < $weekCount)
+                            @elseif($approvedCount > 0)
                                 <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui Sebagian
                                 </span>
                             @else
-                                <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
-                                    Disetujui
+                                <span class="bg-pending text-pendingText px-4 py-1 rounded-full text-sm font-medium inline-block">
+                                    Belum Disetujui
                                 </span>
                             @endif
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             {{-- Menu lihat --}}
-                            @if(auth()->user() instanceof \App\Models\Approver)
-                                <a href="{{ route('slitting.show', $check->id) }}" title="Lihat Detail">
+                            @if($currentGuard === 'approver')
+                                <a href="{{ route('slitting.show', $check->hashid) }}" title="Lihat Detail">
                                     <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit --}}
-                            @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @php
-                                    // Perbaikan: Cek apakah disetujui sepenuhnya menggunakan $approvedCount
-                                    $isFullyApproved = ($approvedCount == $weekCount);
-                                @endphp
-                                
-                                @if(!$isFullyApproved)
-                                    <a href="{{ route('slitting.edit', $check->id) }}" title="Edit">
+                            @elseif($currentGuard === 'checker')
+                                @if($check->status === 'belum_disetujui')
+                                    <a href="{{ route('slitting.edit', $check->hashid) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
                                 @else
@@ -207,27 +200,11 @@
     </table>
 @endsection
 
-@section('pagination')
-    <div class="flex justify-center mt-4">
-        <div class="flex flex-wrap gap-1 justify-center">
-            <!-- Previous button -->
-            @if (!$checks->onFirstPage())
-                <a href="{{ $checks->previousPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">&laquo; Previous</a>
-            @endif
-            
-            <!-- Page numbers -->
-            @foreach ($checks->getUrlRange(1, $checks->lastPage()) as $page => $url)
-                <a href="{{ $url }}" class="px-3 py-2 border {{ $page == $checks->currentPage() ? 'bg-primary text-white border-primary font-bold' : 'bg-white text-primary border-gray-300 hover:bg-gray-100' }} rounded-md transition duration-200">
-                    {{ $page }}
-                </a>
-            @endforeach
-            
-            <!-- Next button -->
-            @if ($checks->hasMorePages())
-                <a href="{{ $checks->nextPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">Next &raquo;</a>
-            @endif
-        </div>
-    </div>
+@section('pagination-data')
+    @if(method_exists($checks, 'links') && $checks->hasPages())
+        {{-- Menggunakan komponen pagination yang sudah dibuat --}}
+        @include('components.pagination', ['paginator' => $checks])
+    @endif
 @endsection
 
 @section('back-route')

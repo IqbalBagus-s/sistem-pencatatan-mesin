@@ -31,8 +31,10 @@ class FormController extends Controller
             $query->where('nama_form', $request->nama_form);
         }
         
-        // Get paginated results
-        $forms = $query->orderBy('created_at', 'desc')->paginate(10);
+        // Get paginated results with filters preserved
+        $forms = $query->orderBy('created_at', 'desc')
+                    ->paginate(10)
+                    ->appends($request->query());
         
         return view('menu.forms.index', compact('forms', 'uniqueNomorForms', 'uniqueNamaForms'));
     }
@@ -59,23 +61,63 @@ class FormController extends Controller
             'nomor_form' => 'required|string|max:255',
             'nama_form' => 'required|string|max:255',
             'tanggal_efektif' => 'required|date',
+        ], [
+            'nomor_form.required' => 'Nomor form harus diisi',
+            'nomor_form.max' => 'Nomor form maksimal 255 karakter',
+            'nama_form.required' => 'Nama form harus diisi',
+            'nama_form.max' => 'Nama form maksimal 255 karakter',
+            'tanggal_efektif.required' => 'Tanggal efektif harus diisi',
+            'tanggal_efektif.date' => 'Format tanggal efektif tidak valid',
         ]);
-    
+
         if ($validator->fails()) {
             return redirect()
                 ->route('host.forms.create')
                 ->withErrors($validator)
                 ->withInput();
         }
-    
+
+        // Pengecekan duplikasi nomor_form
+        $nomorFormExists = Form::where('nomor_form', $request->nomor_form)->exists();
+        if ($nomorFormExists) {
+            return redirect()
+                ->route('host.forms.create')
+                ->withErrors(['nomor_form' => 'Nomor form sudah tersedia dalam sistem.'])
+                ->withInput();
+        }
+
+        // Pengecekan duplikasi nama_form
+        $namaFormExists = Form::where('nama_form', $request->nama_form)->exists();
+        if ($namaFormExists) {
+            return redirect()
+                ->route('host.forms.create')
+                ->withErrors(['nama_form' => 'Nama form sudah tersedia dalam sistem.'])
+                ->withInput();
+        }
+
+        // Konversi tanggal ke format Y-m-d untuk konsistensi
+        $tanggalEfektif = date('Y-m-d', strtotime($request->tanggal_efektif));
+
+        // Cek duplikasi kombinasi dengan query yang lebih tepat (kode asli Anda)
+        $exists = Form::where(function($query) use ($request, $tanggalEfektif) {
+            $query->where('nomor_form', $request->nomor_form)
+                ->where('nama_form', $request->nama_form)
+                ->whereRaw('DATE(tanggal_efektif) = ?', [$tanggalEfektif]);
+        })->exists();
+
+        if ($exists) {
+            return redirect()
+                ->route('host.forms.create')
+                ->withErrors(['duplicate' => 'Form dengan nomor form, nama form, dan tanggal efektif yang sama sudah ada dalam sistem.'])
+                ->withInput();
+        }
+
         Form::create([
             'nomor_form' => $request->nomor_form,
             'nama_form' => $request->nama_form,
-            'tanggal_efektif' => $request->tanggal_efektif,
+            'tanggal_efektif' => $tanggalEfektif,
         ]);
-    
-        // Redirect back to the create page with success message
-        // instead of going to the index page
+
         return redirect()
             ->route('host.forms.create')
             ->with('success', 'Form berhasil ditambahkan! Anda dapat menambahkan form lainnya.');
@@ -105,6 +147,13 @@ class FormController extends Controller
             'nomor_form' => 'required|string|max:255',
             'nama_form' => 'required|string|max:255',
             'tanggal_efektif' => 'required|date',
+        ], [
+            'nomor_form.required' => 'Nomor form harus diisi',
+            'nomor_form.max' => 'Nomor form maksimal 255 karakter',
+            'nama_form.required' => 'Nama form harus diisi',
+            'nama_form.max' => 'Nama form maksimal 255 karakter',
+            'tanggal_efektif.required' => 'Tanggal efektif harus diisi',
+            'tanggal_efektif.date' => 'Format tanggal efektif tidak valid',
         ]);
 
         if ($validator->fails()) {
@@ -114,10 +163,51 @@ class FormController extends Controller
                 ->withInput();
         }
 
+        // Pengecekan duplikasi nomor_form (kecuali data yang sedang diupdate)
+        $nomorFormExists = Form::where('nomor_form', $request->nomor_form)
+                            ->where('id', '!=', $form->id)
+                            ->exists();
+        if ($nomorFormExists) {
+            return redirect()
+                ->route('host.forms.edit', $form->id)
+                ->withErrors(['nomor_form' => 'Nomor form sudah tersedia dalam sistem.'])
+                ->withInput();
+        }
+
+        // Pengecekan duplikasi nama_form (kecuali data yang sedang diupdate)
+        $namaFormExists = Form::where('nama_form', $request->nama_form)
+                            ->where('id', '!=', $form->id)
+                            ->exists();
+        if ($namaFormExists) {
+            return redirect()
+                ->route('host.forms.edit', $form->id)
+                ->withErrors(['nama_form' => 'Nama form sudah tersedia dalam sistem.'])
+                ->withInput();
+        }
+
+        // Konversi tanggal ke format Y-m-d untuk konsistensi
+        $tanggalEfektif = date('Y-m-d', strtotime($request->tanggal_efektif));
+
+        // Cek duplikasi kombinasi dengan query yang lebih tepat (kode asli Anda)
+        $exists = Form::where(function($query) use ($request, $tanggalEfektif) {
+            $query->where('nomor_form', $request->nomor_form)
+                ->where('nama_form', $request->nama_form)
+                ->whereRaw('DATE(tanggal_efektif) = ?', [$tanggalEfektif]);
+        })
+        ->where('id', '!=', $form->id)
+        ->exists();
+
+        if ($exists) {
+            return redirect()
+                ->route('host.forms.edit', $form->id)
+                ->withErrors(['duplicate' => 'Form dengan nomor form, nama form, dan tanggal efektif yang sama sudah ada dalam sistem.'])
+                ->withInput();
+        }
+
         $form->update([
             'nomor_form' => $request->nomor_form,
             'nama_form' => $request->nama_form,
-            'tanggal_efektif' => $request->tanggal_efektif,
+            'tanggal_efektif' => $tanggalEfektif,
         ]);
 
         return redirect()

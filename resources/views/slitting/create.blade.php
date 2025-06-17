@@ -11,7 +11,7 @@
         <!-- Menampilkan Nama Checker -->
         <div class="bg-sky-50 p-4 rounded-md mb-5">
             <span class="text-gray-600 font-bold">Checker: </span>
-            <span class="font-bold text-blue-700">{{ Auth::user()->username }}</span>
+            <span class="font-bold text-blue-700">{{ $user->username }}</span>
         </div>
 
         <!-- Form Input -->
@@ -22,28 +22,21 @@
                 <div x-data="{ 
                     open: false, 
                     selected: null,
-                    error: false,
                     reset() {
                         this.selected = null;
                         this.open = false;
-                        this.error = true;
                     },
-                    validate() {
-                        this.error = this.selected === null;
-                        return !this.error;
-                    }
                 }" class="relative w-full">
                     <!-- Label with Required Indicator -->
                     <label class="block mb-2 text-sm font-medium text-gray-700">
-                        Pilih No Slitting: <span class="text-red-500">*</span>
+                        Pilih No Slitting:
                     </label>
                     
-                    <!-- Dropdown Button with Error State -->
+                    <!-- Dropdown Button -->
                     <button type="button" 
                         @click="open = !open" 
-                        class="w-full h-10 px-3 py-2 bg-gray-100 border rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative"
-                        :class="error ? 'border-red-500' : 'border-gray-300'">
-                        <span x-text="selected ? 'Slitting ' + selected : 'Pilih Slitting'"></span>
+                        class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white relative">
+                        <span x-text="selected ? 'Slitting Nomor ' + selected : 'Pilih Slitting'"></span>
                         
                         <!-- Selection Indicator -->
                         <div class="absolute right-3 top-1/2 -translate-y-1/2">
@@ -59,17 +52,12 @@
                         </div>
                     </button>
                     
-                    <!-- Error Message -->
-                    <div x-show="error" class="text-red-500 text-sm mt-1">
-                        Silakan pilih No Slitting
-                    </div>
-                    
                     <!-- Dropdown List -->
-                    <div x-show="open" @click.away="open = false" class="absolute left-0 mt-1 w-full bg-white border border-gray-300 shadow-lg rounded-md p-2 z-50 max-h-60 overflow-y-auto">
+                    <div x-show="open" @click.away="open = false" class="absolute left-0 mt-1 w-full bg-white border border-blue-400 shadow-lg rounded-md p-2 z-50 max-h-60 overflow-y-auto">
                         <div class="grid grid-cols-3 gap-2">
                             <template x-for="i in 3" :key="i">
                                 <div @click.stop>
-                                    <button type="button" @click="selected = i; open = false; error = false;" class="w-full px-3 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white rounded-md">
+                                    <button type="button" @click="selected = i; open = false;" class="w-full px-3 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white rounded-md">
                                         <span x-text="'Slitting ' + i"></span>
                                     </button>
                                 </div>
@@ -78,14 +66,14 @@
                     </div>
                     
                     <!-- Hidden Input untuk dikirim ke server (required) -->
-                    <input type="hidden" name="nomer_slitting" x-model="selected" required x-on:invalid="error = true">
+                    <input type="hidden" name="nomer_slitting" x-model="selected">
                 </div>
             
                 <div>
                     <label for="bulan" class="block mb-2 text-sm font-medium text-gray-700">
-                        Pilih Bulan: <span class="text-red-500">*</span>
+                        Pilih Bulan:
                     </label>
-                    <input type="month" id="bulan" name="bulan" class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
+                    <input type="month" id="bulan" name="bulan" class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" required>
                 </div>
             </div>                  
             @php
@@ -112,9 +100,9 @@
 
                 // Opsi check
                 $options = [
-                    'V' => '✓',
-                    'X' => '✗',
-                    '-' => '—',
+                    'V' => 'V',
+                    'X' => 'X',
+                    '-' => '-',
                     'OFF' => 'OFF'
                 ];
             @endphp
@@ -126,6 +114,9 @@
 
             <!-- Tabel Inspeksi Mingguan -->
             <div class="mb-6">
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <div class="overflow-x-auto mb-6 border border-gray-300">
                     <table class="w-full border-collapse">
                         <thead>
@@ -223,23 +214,25 @@
                                 
                                 <!-- Minggu 1 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
-                                        <div class="mt-1" x-show="selected">
-                                            <input type="text" name="checked_by_1" x-ref="user1" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                    <div x-data="{ selected: false, checkerId: null, checkerName: '' }">
+                                        <div class="mt-1 mb-1" x-show="selected">
+                                            <input type="text" x-ref="displayName1" x-bind:value="checkerName"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
-                                            <input type="hidden" name="check_num_1" x-ref="checkNum1" value="1">
+                                            <input type="hidden" name="checker_minggu1_id" x-ref="checkerId1" x-bind:value="checkerId">
                                         </div>
                                         <button type="button" 
                                             @click="selected = !selected; 
                                                 if(selected) {
-                                                    userName = '{{ Auth::user()->username }}'; 
-                                                    $refs.user1.value = userName;
-                                                    $refs.checkNum1.value = '1';
+                                                    checkerId = {{ $user->id }}; 
+                                                    checkerName = '{{ $user->username }}'; 
+                                                    $refs.checkerId1.value = checkerId;
+                                                    $refs.displayName1.value = checkerName;
                                                 } else {
-                                                    userName = '';
-                                                    $refs.user1.value = '';
-                                                    $refs.checkNum1.value = '';
+                                                    checkerId = null;
+                                                    checkerName = '';
+                                                    $refs.checkerId1.value = '';
+                                                    $refs.displayName1.value = '';
                                                 }"
                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                             :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
@@ -250,23 +243,25 @@
                                 
                                 <!-- Minggu 2 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
-                                        <div class="mt-1" x-show="selected">
-                                            <input type="text" name="checked_by_2" x-ref="user2" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                    <div x-data="{ selected: false, checkerId: null, checkerName: '' }">
+                                        <div class="mt-1 mb-1" x-show="selected">
+                                            <input type="text" x-ref="displayName2" x-bind:value="checkerName"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
-                                            <input type="hidden" name="check_num_2" x-ref="checkNum2" value="2">
+                                            <input type="hidden" name="checker_minggu2_id" x-ref="checkerId2" x-bind:value="checkerId">
                                         </div>
                                         <button type="button" 
                                             @click="selected = !selected; 
                                                 if(selected) {
-                                                    userName = '{{ Auth::user()->username }}'; 
-                                                    $refs.user2.value = userName;
-                                                    $refs.checkNum2.value = '2';
+                                                    checkerId = {{ $user->id }}; 
+                                                    checkerName = '{{ $user->username }}'; 
+                                                    $refs.checkerId2.value = checkerId;
+                                                    $refs.displayName2.value = checkerName;
                                                 } else {
-                                                    userName = '';
-                                                    $refs.user2.value = '';
-                                                    $refs.checkNum2.value = '';
+                                                    checkerId = null;
+                                                    checkerName = '';
+                                                    $refs.checkerId2.value = '';
+                                                    $refs.displayName2.value = '';
                                                 }"
                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                             :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
@@ -277,23 +272,25 @@
                                 
                                 <!-- Minggu 3 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
-                                        <div class="mt-1" x-show="selected">
-                                            <input type="text" name="checked_by_3" x-ref="user3" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                    <div x-data="{ selected: false, checkerId: null, checkerName: '' }">
+                                        <div class="mt-1 mb-1" x-show="selected">
+                                            <input type="text" x-ref="displayName3" x-bind:value="checkerName"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
-                                            <input type="hidden" name="check_num_3" x-ref="checkNum3" value="3">
+                                            <input type="hidden" name="checker_minggu3_id" x-ref="checkerId3" x-bind:value="checkerId">
                                         </div>
                                         <button type="button" 
                                             @click="selected = !selected; 
                                                 if(selected) {
-                                                    userName = '{{ Auth::user()->username }}'; 
-                                                    $refs.user3.value = userName;
-                                                    $refs.checkNum3.value = '3';
+                                                    checkerId = {{ $user->id }}; 
+                                                    checkerName = '{{ $user->username }}'; 
+                                                    $refs.checkerId3.value = checkerId;
+                                                    $refs.displayName3.value = checkerName;
                                                 } else {
-                                                    userName = '';
-                                                    $refs.user3.value = '';
-                                                    $refs.checkNum3.value = '';
+                                                    checkerId = null;
+                                                    checkerName = '';
+                                                    $refs.checkerId3.value = '';
+                                                    $refs.displayName3.value = '';
                                                 }"
                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                             :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
@@ -304,23 +301,25 @@
                                 
                                 <!-- Minggu 4 -->
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50">
-                                    <div x-data="{ selected: false, userName: '' }">
-                                        <div class="mt-1" x-show="selected">
-                                            <input type="text" name="checked_by_4" x-ref="user4" x-bind:value="userName"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded"
+                                    <div x-data="{ selected: false, checkerId: null, checkerName: '' }">
+                                        <div class="mt-1 mb-1" x-show="selected">
+                                            <input type="text" x-ref="displayName4" x-bind:value="checkerName"
+                                                class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center"
                                                 readonly>
-                                            <input type="hidden" name="check_num_4" x-ref="checkNum4" value="4">
+                                            <input type="hidden" name="checker_minggu4_id" x-ref="checkerId4" x-bind:value="checkerId">
                                         </div>
                                         <button type="button" 
                                             @click="selected = !selected; 
                                                 if(selected) {
-                                                    userName = '{{ Auth::user()->username }}'; 
-                                                    $refs.user4.value = userName;
-                                                    $refs.checkNum4.value = '4';
+                                                    checkerId = {{ $user->id }}; 
+                                                    checkerName = '{{ $user->username }}'; 
+                                                    $refs.checkerId4.value = checkerId;
+                                                    $refs.displayName4.value = checkerName;
                                                 } else {
-                                                    userName = '';
-                                                    $refs.user4.value = '';
-                                                    $refs.checkNum4.value = '';
+                                                    checkerId = null;
+                                                    checkerName = '';
+                                                    $refs.checkerId4.value = '';
+                                                    $refs.displayName4.value = '';
                                                 }"
                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded text-center"
                                             :class="selected ? 'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200'">
@@ -344,17 +343,6 @@
 
 @section('scripts')
 <script>
-    document.addEventListener('alpine:init', () => {
-        // Menambahkan validasi sebelum form dikirim
-        document.querySelector('form').addEventListener('submit', function(e) {
-            // Mendapatkan komponen Alpine dari dropdown
-            const dropdown = Alpine.evaluate(document.querySelector('[name="nomer_slitting"]').closest('[x-data]'), 'validate()');
-            
-            // Jika validasi gagal, hentikan pengiriman form
-            if (!dropdown) {
-                e.preventDefault();
-            }
-        });
-    });
+
 </script>
 @endsection

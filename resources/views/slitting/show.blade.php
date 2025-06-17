@@ -8,21 +8,22 @@
 
 <div class="bg-white rounded-lg shadow-md mb-5">
     <div class="p-4">
-        <form method="POST" action="{{ route('slitting.approve', $check->id) }}" id="approveForm">
+        <form method="POST" action="{{ route('slitting.approve', $check->hashid) }}" id="approveForm">
             @csrf
             <!-- Menampilkan Nama Checker -->
             <div class="bg-sky-50 p-4 rounded-md mb-5">
                 <span class="text-gray-600 font-bold">Checker: </span>
                 <span class="font-bold text-blue-700">
                     @php
-                        // Extract all unique checker names
-                        $checkers = [];
+                        // Extract all unique checker names menggunakan relasi yang benar
+                        $checkers_names = [];
                         for ($i = 1; $i <= 4; $i++) {
-                            if (!empty($check->{'checked_by_minggu'.$i})) {
-                                $checkers[] = $check->{'checked_by_minggu'.$i};
+                            $checkerRelation = 'checkerMinggu' . $i;
+                            if ($check->$checkerRelation && $check->$checkerRelation->username) {
+                                $checkers_names[] = $check->$checkerRelation->username;
                             }
                         }
-                        $checkersText = !empty($checkers) ? implode(', ', array_unique($checkers)) : 'Belum ada checker';
+                        $checkersText = !empty($checkers_names) ? implode(', ', array_unique($checkers_names)) : 'Belum ada checker';
                     @endphp
                     {{ $checkersText }}
                 </span>
@@ -33,18 +34,19 @@
                 <!-- No Slitting Display -->
                 <div class="w-full">
                     <label class="block mb-2 text-sm font-medium text-gray-700">No Slitting:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
-                        Slitting {{ $check->nomer_slitting }}
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
+                        Slitting nomor {{ $check->nomer_slitting }}
                     </div>
                 </div>
 
                 <div>
                     <label class="block mb-2 text-sm font-medium text-gray-700">Bulan:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
-                        {{ date('F Y', strtotime($check->bulan)) }}
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm flex items-center">
+                        {{ \Carbon\Carbon::parse($check->bulan)->translatedFormat('F Y') }}
                     </div>
                 </div>
-            </div>                 
+            </div>   
+                          
             @php
                 // Items yang perlu di-check (sesuai dengan halaman edit)
                 $items = [
@@ -69,13 +71,13 @@
 
                 // Opsi check dengan ikon
                 $options = [
-                    'V' => '✓',
-                    'X' => '✗',
-                    '-' => '—',
-                    'OFF' => 'OFF'
+                    'V' => '<span class="text-green-600 font-bold">V</span>',
+                    'X' => '<span class="text-red-600 font-bold">X</span>',
+                    '-' => '<span class="text-gray-600">—</span>',
+                    'OFF' => '<span class="text-gray-600">OFF</span>'
                 ];
             @endphp
-            
+
             <!-- Tabel Inspeksi Mingguan -->
             <div class="mb-6">
                 <div class="overflow-x-auto mb-6 border border-gray-300">
@@ -107,8 +109,8 @@
                                     
                                     @for($j = 1; $j <= 4; $j++)
                                         @php
-                                            // Periksa apakah ada checker untuk minggu ini
-                                            $hasChecker = !empty($check->{'checked_by_minggu'.$j});
+                                            // Periksa apakah ada checker untuk minggu ini menggunakan data yang sudah disiapkan di controller
+                                            $hasChecker = $checkers[$j]['has_data'] ?? false;
                                             
                                             if (!$hasChecker) {
                                                 // Jika tidak ada checker, tampilkan tanda "-" dan "Belum ada data"
@@ -149,7 +151,8 @@
                                 
                                 @for($j = 1; $j <= 4; $j++)
                                     @php
-                                        $checkedBy = $check->{'checked_by_minggu'.$j} ?? '';
+                                        // Gunakan data checker yang sudah disiapkan di controller
+                                        $checkedBy = $checkers[$j]['name'] ?? '';
                                     @endphp
                                     <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm h-10">
                                         <div class="w-full h-full flex items-center justify-center">
@@ -168,10 +171,12 @@
                                 @for($j = 1; $j <= 4; $j++)
                                     <td colspan="2" class="border border-gray-300 p-1 bg-green-50">
                                         @php
-                                            $approvedBy = $check->{'approved_by_minggu'.$j} ?? '';
+                                            // Gunakan data approver yang sudah disiapkan di controller
+                                            $approvedBy = $approvers[$j]['name'] ?? '';
+                                            $hasApprover = $approvers[$j]['has_data'] ?? false;
                                         @endphp
                                         
-                                        @if($approvedBy)
+                                        @if($hasApprover)
                                             <!-- Jika sudah ada penanggung jawab, tampilkan saja namanya -->
                                             <div class="w-full h-10 flex items-center justify-center text-sm">
                                                 {{ $approvedBy }}
@@ -182,7 +187,7 @@
                                                 <div x-show="!selected" class="w-full flex justify-center py-1">
                                                     <button type="button" 
                                                         @click="selected = true; 
-                                                            userName = '{{ Auth::user()->username }}'; 
+                                                            userName = '{{ $user->username }}'; 
                                                             $refs.approver{{ $j }}.value = userName;
                                                             $refs.approveNum{{ $j }}.value = '{{ $j }}';"
                                                         class="w-full max-w-xs px-2 py-1 text-sm border border-gray-300 rounded text-center bg-green-100 hover:bg-green-200">
@@ -192,7 +197,7 @@
                                                 <div x-show="selected" class="w-full py-1">
                                                     <div class="flex flex-col items-center">
                                                         <input type="text" name="approved_by_minggu{{ $j }}" x-ref="approver{{ $j }}" x-bind:value="userName"
-                                                            class="w-full max-w-xs px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1"
+                                                            class="w-full max-w-xs px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                             readonly>
                                                         <input type="hidden" name="approve_num_{{ $j }}" x-ref="approveNum{{ $j }}" value="">
                                                         <button type="button" 
@@ -235,51 +240,63 @@
             </div>
             
             <!-- Button Controls -->
-            <div class="flex justify-between mt-6">
-                <a href="{{ route('slitting.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Kembali
+<div class="mt-8 bg-white rounded-lg p-2 sm:p-4">
+    <div class="flex flex-row flex-wrap items-center justify-between gap-2">
+        <!-- Back Button - Left Side -->
+        <div class="flex-shrink-0">
+            <a href="{{ route('slitting.index') }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Kembali
+            </a>
+        </div>
+        
+        <!-- Action Buttons - Right Side -->
+        <div class="flex flex-row flex-wrap gap-2 justify-end">
+            @php
+                // Check if approver_id1-4 have filled (sesuai model slittingCheck)
+                $allApproved = true;
+                for ($j = 1; $j <= 4; $j++) {
+                    if (empty($check->{'approver_minggu'.$j.'_id'})) {
+                        $allApproved = false;
+                        break;
+                    }
+                }
+            @endphp
+            
+            @if (!$allApproved)
+                <!-- Not all checks are approved, show "Setujui" button -->
+                <button type="submit" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Setujui
+                </button>
+            @endif
+            
+            @if ($allApproved)
+                <!-- All checks are approved, show PDF Preview and Download buttons -->
+                <!-- PDF Preview Button -->
+                <a href="{{ route('slitting.pdf', $check->hashid) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    Preview PDF
                 </a>
                 
-                @php
-                    // Check if all 4 weeks have approved_by filled
-                    $allApproved = true;
-                    for ($j = 1; $j <= 4; $j++) {
-                        if (empty($check->{'approved_by_minggu'.$j})) {
-                            $allApproved = false;
-                            break;
-                        }
-                    }
-                @endphp
-                
-                @if ($allApproved)
-                    <!-- All weeks are approved, show "Sudah Disetujui" button and "Download PDF" button -->
-                    <div class="flex space-x-3">
-                        <button type="button" disabled class="bg-green-600 text-white py-2 px-4 rounded opacity-75 cursor-not-allowed">
-                            Sudah Disetujui
-                        </button>
-                        <!-- Tombol untuk review PDF -->
-                        <a href="{{ route('slitting.pdf', $check->id) }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            Preview PDF
-                        </a>
-                        <!-- Tombol untuk download PDF -->
-                        <a href="{{ route('slitting.downloadPdf', $check->id) }}" class="download-pdf-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Download PDF
-                        </a>
-                    </div>
-                @else
-                    <!-- Not all weeks are approved, show "Setujui" button -->
-                    <button type="submit" class="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800">
-                        Setujui
-                    </button>
-                @endif
-            </div>
+                <!-- Download PDF Button -->
+                <a href="{{ route('slitting.downloadPdf', $check->hashid) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Download PDF
+                </a>
+            @endif
+        </div>
+    </div>
+</div>
         </form>
     </div>
 </div>

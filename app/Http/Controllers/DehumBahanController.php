@@ -5,22 +5,42 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\DehumBahanCheck;
 use App\Models\DehumBahanResult;
+use App\Models\Form;
+use App\Models\Activity;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf; // Import Facade PDF
+use App\Traits\WithAuthentication;
 
 class DehumBahanController extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         $query = DehumBahanCheck::query();
 
-        // Filter berdasarkan nama checker jika ada
+        // Filter berdasarkan nama checker (username, bukan hanya ID)
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
             $query->where(function ($q) use ($search) {
-                $q->where('checked_by_minggu1', 'LIKE', $search)
-                ->orWhere('checked_by_minggu2', 'LIKE', $search)
-                ->orWhere('checked_by_minggu3', 'LIKE', $search)
-                ->orWhere('checked_by_minggu4', 'LIKE', $search);
+                $q->orWhereHas('checkerMinggu1', function($qc) use ($search) {
+                    $qc->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checkerMinggu2', function($qc) use ($search) {
+                    $qc->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checkerMinggu3', function($qc) use ($search) {
+                    $qc->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checkerMinggu4', function($qc) use ($search) {
+                    $qc->where('username', 'LIKE', $search);
+                });
             });
         }
 
@@ -40,33 +60,47 @@ class DehumBahanController extends Controller
             }
         }
 
+        // Urutkan berdasarkan data terbaru
+        $query->orderBy('created_at', 'desc');
+
         // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
         $checks = $query->paginate(10)->appends($request->query());
 
-        return view('dehum-bahan.index', compact('checks'));
+        return view('dehum-bahan.index', compact('checks', 'user', 'currentGuard'));
     }
 
     public function create()
     {
-        return view('dehum-bahan.create');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        return view('dehum-bahan.create', compact('user', 'currentGuard'));
     }
 
     public function store(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        $customMessages = [
+            'nomer_dehum_bahan.required' => 'Silakan pilih nomor dehum bahan terlebih dahulu!',
+            'bulan.required' => 'Silakan pilih bulan terlebih dahulu!'
+        ];
+        
         // Validate the request
         $validatedData = $request->validate([
             'nomer_dehum_bahan' => 'required|integer|min:1|max:15',
             'bulan' => 'required|date_format:Y-m',
             
-            // Validation for creator fields
-            'created_by_1' => 'nullable|string|max:255',
-            'created_date_1' => 'nullable|date',
-            'created_by_2' => 'nullable|string|max:255',
-            'created_date_2' => 'nullable|date',
-            'created_by_3' => 'nullable|string|max:255',
-            'created_date_3' => 'nullable|date',
-            'created_by_4' => 'nullable|string|max:255',
-            'created_date_4' => 'nullable|date',
+            // Validation for checker fields (ID)
+            'checker_id_minggu1' => 'nullable|integer|exists:checkers,id',
+            'tanggal_minggu1' => 'nullable|date',
+            'checker_id_minggu2' => 'nullable|integer|exists:checkers,id',
+            'tanggal_minggu2' => 'nullable|date',
+            'checker_id_minggu3' => 'nullable|integer|exists:checkers,id',
+            'tanggal_minggu3' => 'nullable|date',
+            'checker_id_minggu4' => 'nullable|integer|exists:checkers,id',
+            'tanggal_minggu4' => 'nullable|date',
             
             // Validation for checked items and checks
             'checked_items' => 'required|array',
@@ -78,7 +112,7 @@ class DehumBahanController extends Controller
             'keterangan_3' => 'nullable|array',
             'check_4' => 'nullable|array',
             'keterangan_4' => 'nullable|array',
-        ]);
+        ], $customMessages);
 
         // Check for existing record with the same nomer_dehum and bulan
         $existingRecord = DehumBahanCheck::where('nomer_dehum_bahan', $request->input('nomer_dehum_bahan'))
@@ -86,8 +120,14 @@ class DehumBahanController extends Controller
             ->first();
 
         if ($existingRecord) {
-            // If a record with the same Dehum bahan number and month exists, return an error
-            return redirect()->back()->with('error', 'Data sudah ada, silahkan buat ulang')
+            // Create a more specific error message showing which values are duplicated
+            $nomerDehum = $request->input('nomer_dehum_bahan');
+            $bulan = Carbon::parse($request->bulan . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            
+            $errorMessage = "Data sudah ada untuk Dehum Bahan nomor {$nomerDehum} pada bulan {$bulan}, silahkan buat ulang";
+            
+            // Return with detailed error message
+            return redirect()->back()->with('error', $errorMessage)
                             ->withInput();
         }
 
@@ -99,25 +139,24 @@ class DehumBahanController extends Controller
             $dehumBahanCheck = DehumBahanCheck::create([
                 'nomer_dehum_bahan' => $request->input('nomer_dehum_bahan'),
                 'bulan' => $request->input('bulan'),
-                
-                // Populate weekly dates
-                'tanggal_minggu1' => $request->input('created_date_1'),
-                'tanggal_minggu2' => $request->input('created_date_2'),
-                'tanggal_minggu3' => $request->input('created_date_3'),
-                'tanggal_minggu4' => $request->input('created_date_4'),
-                
-                // Populate weekly checkers
-                'checked_by_minggu1' => $request->input('created_by_1'),
-                'checked_by_minggu2' => $request->input('created_by_2'),
-                'checked_by_minggu3' => $request->input('created_by_3'),
-                'checked_by_minggu4' => $request->input('created_by_4'),
+                'tanggal_minggu1' => $request->input('tanggal_minggu1'),
+                'tanggal_minggu2' => $request->input('tanggal_minggu2'),
+                'tanggal_minggu3' => $request->input('tanggal_minggu3'),
+                'tanggal_minggu4' => $request->input('tanggal_minggu4'),
+                'checker_id_minggu1' => $request->input('checker_id_minggu1'),
+                'checker_id_minggu2' => $request->input('checker_id_minggu2'),
+                'checker_id_minggu3' => $request->input('checker_id_minggu3'),
+                'checker_id_minggu4' => $request->input('checker_id_minggu4'),
             ]);
 
             // Prepare and create DehumBahanResult records
             $checkedItems = $request->input('checked_items');
             
+            // Array untuk menyimpan detail items yang diproses (untuk activity log)
+            $itemsProcessed = [];
+            
             foreach ($checkedItems as $index => $item) {
-                DehumBahanResult::create([
+                $resultData = [
                     'check_id' => $dehumBahanCheck->id,
                     'checked_items' => $item,
                     
@@ -136,54 +175,130 @@ class DehumBahanController extends Controller
                     // Week 4 data
                     'minggu4' => $request->input("check_4.{$index}", null),
                     'keterangan_minggu4' => $request->input("keterangan_4.{$index}", null),
-                ]);
+                ];
+                
+                DehumBahanResult::create($resultData);
+                
+                // Simpan detail untuk activity log
+                $itemsProcessed[] = [
+                    'item' => $item,
+                    'minggu1' => $resultData['minggu1'],
+                    'minggu2' => $resultData['minggu2'],
+                    'minggu3' => $resultData['minggu3'],
+                    'minggu4' => $resultData['minggu4'],
+                    'keterangan_minggu1' => $resultData['keterangan_minggu1'],
+                    'keterangan_minggu2' => $resultData['keterangan_minggu2'],
+                    'keterangan_minggu3' => $resultData['keterangan_minggu3'],
+                    'keterangan_minggu4' => $resultData['keterangan_minggu4'],
+                ];
             }
+
+            // LOG AKTIVITAS - Tambahkan setelah data berhasil disimpan
+            $bulanFormatted = Carbon::parse($request->input('bulan') . '-01')->locale('id')->isoFormat('MMMM YYYY');
+            
+            // Kumpulkan tanggal dan checker untuk setiap minggu
+            $weeklyData = [];
+            for ($i = 1; $i <= 4; $i++) {
+                $date = $request->input("tanggal_minggu_{$i}");
+                $checker = $request->input("checker_id_minggu_{$i}");
+                
+                if ($date || $checker) {
+                    $weeklyData["minggu_{$i}"] = [
+                        'tanggal' => $date ? Carbon::parse($date)->locale('id')->isoFormat('D MMMM YYYY') : null,
+                        'checker' => $checker
+                    ];
+                }
+            }
+            
+            // Buat string deskripsi untuk tanggal
+            $tanggalString = [];
+            foreach ($weeklyData as $minggu => $data) {
+                if ($data['tanggal']) {
+                    $tanggalString[] = ucfirst(str_replace('_', ' ', $minggu)) . ': ' . $data['tanggal'];
+                }
+            }
+            $tanggalDescription = !empty($tanggalString) ? implode(', ', $tanggalString) : 'Tidak ada tanggal pemeriksaan';
+            
+            Activity::logActivity(
+                'checker',                                              // user_type
+                $user->id,                                       // user_id
+                $user->username,                                 // user_name
+                'created',                                              // action
+                'Checker ' . $user->username . ' membuat pemeriksaan Dehum Bahan Nomor ' . $request->input('nomer_dehum_bahan') . ' untuk bulan ' . $bulanFormatted,  // description
+                'dehum_bahan_check',                                    // target_type
+                $dehumBahanCheck->id,                                   // target_id
+                [
+                    'nomer_dehum_bahan' => $request->input('nomer_dehum_bahan'),
+                    'bulan' => $request->input('bulan'),
+                    'bulan_formatted' => $bulanFormatted,
+                    'weekly_data' => $weeklyData,
+                    'total_items' => count($checkedItems),
+                    'items_processed' => $itemsProcessed,
+                    'total_weeks_filled' => count($weeklyData),
+                    'status' => $dehumBahanCheck->status ?? 'belum_disetujui'
+                ]                                                       // details (JSON)
+            );
 
             // Commit the transaction
             DB::commit();
 
+            // Log untuk debugging
+            Log::info('Transaksi dehum bahan berhasil disimpan dengan ID: ' . $dehumBahanCheck->id);
+
             // Redirect with success message
-            return redirect()->route('dehum-bahan.index')->with('success', 'Dehum check data successfully saved.');
+            return redirect()->route('dehum-bahan.index')->with('success', 'Data Pencatatan sudah tersimpan!');
+            
         } catch (\Exception $e) {
             // Rollback the transaction in case of error
             DB::rollBack();
 
+            // Log error detail untuk debugging
+            Log::error('Error saat menyimpan data dehum bahan: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            Log::error('Request data: ' . json_encode($request->all()));
+
             // Redirect back with error message
-            return redirect()->back()->with('error', 'Failed to save Dehum Bahan check data: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to save Dehum Bahan check data: ' . $e->getMessage())
+                            ->withInput();
         }
     }
 
-    public function edit($id)
+    public function edit($hashid)
     {
-        $dehumCheck = DehumBahanCheck::findOrFail($id);
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
+        // Model DehumBahanCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $dehumCheck = (new DehumBahanCheck)->resolveRouteBinding($hashid);
+        
         $dehumResults = $dehumCheck->results;
-        return view('dehum-bahan.edit', compact('dehumCheck', 'dehumResults'));
+        return view('dehum-bahan.edit', compact('dehumCheck', 'dehumResults', 'user', 'currentGuard'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $hashid)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
         // Validasi data request
         $validatedData = $request->validate([
             'nomer_dehum_bahan' => 'required|integer|min:1',
             'bulan' => 'required|date_format:Y-m',
-            
-            // Validasi untuk checked_by fields
-            'checked_by_minggu1' => 'nullable|string|max:255',
+            'checker_id_minggu1' => 'nullable|integer|exists:checkers,id',
             'tanggal_minggu1' => 'nullable|date',
-            'checked_by_minggu2' => 'nullable|string|max:255',
+            'checker_id_minggu2' => 'nullable|integer|exists:checkers,id',
             'tanggal_minggu2' => 'nullable|date',
-            'checked_by_minggu3' => 'nullable|string|max:255',
+            'checker_id_minggu3' => 'nullable|integer|exists:checkers,id',
             'tanggal_minggu3' => 'nullable|date',
-            'checked_by_minggu4' => 'nullable|string|max:255',
+            'checker_id_minggu4' => 'nullable|integer|exists:checkers,id',
             'tanggal_minggu4' => 'nullable|date',
-            
-            // Validasi untuk approved_by fields
-            'approved_by_minggu1' => 'nullable|string|max:255',
-            'approved_by_minggu2' => 'nullable|string|max:255',
-            'approved_by_minggu3' => 'nullable|string|max:255',
-            'approved_by_minggu4' => 'nullable|string|max:255',
-            
-            // Validasi untuk checked items dan checks
+            'approver_id_minggu1' => 'nullable|integer|exists:approvers,id',
+            'approver_id_minggu2' => 'nullable|integer|exists:approvers,id',
+            'approver_id_minggu3' => 'nullable|integer|exists:approvers,id',
+            'approver_id_minggu4' => 'nullable|integer|exists:approvers,id',
             'checked_items' => 'required|array',
             'check_1' => 'required|array',
             'keterangan_1' => 'nullable|array',
@@ -195,13 +310,13 @@ class DehumBahanController extends Controller
             'keterangan_4' => 'nullable|array',
         ]);
 
-        // Cari record DehumBahanCheck yang akan diupdate
-        $dehumCheck = DehumBahanCheck::findOrFail($id);
+        // Gunakan resolveRouteBinding yang sudah ada di trait
+        $dehumCheck = (new DehumBahanCheck)->resolveRouteBinding($hashid);
 
         // Cek apakah ada record lain dengan nomor dehum dan bulan yang sama (kecuali record saat ini)
         $existingRecord = DehumBahanCheck::where('nomer_dehum_bahan', $request->input('nomer_dehum_bahan'))
             ->where('bulan', $request->input('bulan'))
-            ->where('id', '!=', $id)
+            ->where('id', '!=', $dehumCheck->id)
             ->first();
 
         if ($existingRecord) {
@@ -218,24 +333,18 @@ class DehumBahanController extends Controller
             $dehumCheck->update([
                 'nomer_dehum_bahan' => $request->input('nomer_dehum_bahan'),
                 'bulan' => $request->input('bulan'),
-                
-                // Update tanggal mingguan
                 'tanggal_minggu1' => $request->input('tanggal_minggu1'),
                 'tanggal_minggu2' => $request->input('tanggal_minggu2'),
                 'tanggal_minggu3' => $request->input('tanggal_minggu3'),
                 'tanggal_minggu4' => $request->input('tanggal_minggu4'),
-                
-                // Update pemeriksa mingguan
-                'checked_by_minggu1' => $request->input('checked_by_minggu1'),
-                'checked_by_minggu2' => $request->input('checked_by_minggu2'),
-                'checked_by_minggu3' => $request->input('checked_by_minggu3'),
-                'checked_by_minggu4' => $request->input('checked_by_minggu4'),
-                
-                // Update status persetujuan
-                'approved_by_minggu1' => $request->input('approved_by_minggu1'),
-                'approved_by_minggu2' => $request->input('approved_by_minggu2'),
-                'approved_by_minggu3' => $request->input('approved_by_minggu3'),
-                'approved_by_minggu4' => $request->input('approved_by_minggu4'),
+                'checker_id_minggu1' => $request->input('checker_id_minggu1'),
+                'checker_id_minggu2' => $request->input('checker_id_minggu2'),
+                'checker_id_minggu3' => $request->input('checker_id_minggu3'),
+                'checker_id_minggu4' => $request->input('checker_id_minggu4'),
+                'approver_id_minggu1' => $request->input('approver_id_minggu1'),
+                'approver_id_minggu2' => $request->input('approver_id_minggu2'),
+                'approver_id_minggu3' => $request->input('approver_id_minggu3'),
+                'approver_id_minggu4' => $request->input('approver_id_minggu4'),
             ]);
 
             // Ambil existing DehumBahanResult records untuk check ini
@@ -307,7 +416,7 @@ class DehumBahanController extends Controller
             DB::commit();
 
             // Redirect dengan pesan sukses
-            return redirect()->route('dehum-bahan.index')->with('success', 'Data pengecekan dehum berhasil diperbarui.');
+            return redirect()->route('dehum-bahan.index')->with('success', 'Data pengecekan dehum bahan berhasil diperbarui.');
         } catch (\Exception $e) {
             // Rollback transaksi jika terjadi error
             DB::rollBack();
@@ -317,28 +426,39 @@ class DehumBahanController extends Controller
         }
     }
 
-    public function show($check_id)
+    public function show($dehumBahan)
     {
-        // Find the main dehum bahan record
-        $dehumBahanRecord = DehumBahanCheck::findOrFail($check_id);
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
+        // Check if $dehumBahan is string or model instance
+        if (is_string($dehumBahan)) {
+            // If it's still a string, use the trait's resolve method
+            $dehumBahanRecord = (new DehumBahanCheck())->resolveRouteBinding($dehumBahan);
+        } else {
+            // If it's already a model instance
+            $dehumBahanRecord = $dehumBahan;
+        }
         
         // Map the field names from the database to match template expectations
         $viewData = [
             'id' => $dehumBahanRecord->id,
+            'hashid' => $dehumBahanRecord->hashid, // Add hashid property
             'nomer_dehum_bahan' => $dehumBahanRecord->nomer_dehum_bahan,
             'bulan' => $dehumBahanRecord->bulan,
-            'created_by_1' => $dehumBahanRecord->checked_by_minggu1,
-            'created_by_2' => $dehumBahanRecord->checked_by_minggu2,
-            'created_by_3' => $dehumBahanRecord->checked_by_minggu3,
-            'created_by_4' => $dehumBahanRecord->checked_by_minggu4,
+            'checker_1' => $dehumBahanRecord->checkerMinggu1?->username,
+            'checker_2' => $dehumBahanRecord->checkerMinggu2?->username,
+            'checker_3' => $dehumBahanRecord->checkerMinggu3?->username,
+            'checker_4' => $dehumBahanRecord->checkerMinggu4?->username,
             'created_date_1' => $dehumBahanRecord->tanggal_minggu1,
             'created_date_2' => $dehumBahanRecord->tanggal_minggu2,
             'created_date_3' => $dehumBahanRecord->tanggal_minggu3,
             'created_date_4' => $dehumBahanRecord->tanggal_minggu4,
-            'approved_by_minggu1' => $dehumBahanRecord->approved_by_minggu1,
-            'approved_by_minggu2' => $dehumBahanRecord->approved_by_minggu2,
-            'approved_by_minggu3' => $dehumBahanRecord->approved_by_minggu3,
-            'approved_by_minggu4' => $dehumBahanRecord->approved_by_minggu4
+            'approver_1' => $dehumBahanRecord->approverMinggu1?->username,
+            'approver_2' => $dehumBahanRecord->approverMinggu2?->username,
+            'approver_3' => $dehumBahanRecord->approverMinggu3?->username,
+            'approver_4' => $dehumBahanRecord->approverMinggu4?->username,
         ];
 
         // Prepare the checked items
@@ -361,8 +481,8 @@ class DehumBahanController extends Controller
             6 => ['Dew Point']
         ];
 
-        // Fetch associated results
-        $dehumBahanResults = DehumBahanResult::where('check_id', $check_id)->get();
+        // Fetch associated results using the record's actual ID
+        $dehumBahanResults = DehumBahanResult::where('check_id', $dehumBahanRecord->id)->get();
         
         // Debug untuk melihat semua item di database (uncomment jika perlu)
         // $checkItemsList = $dehumBahanResults->pluck('checked_items')->toArray();
@@ -394,35 +514,242 @@ class DehumBahanController extends Controller
 
         return view('dehum-bahan.show', [
             'dehumBahanRecord' => $dehumBahanRecordObj,
-            'items' => $items
+            'items' => $items,
+            'user' => $user,
+            'currentGuard' => $currentGuard
         ]);
     }
 
-    public function approve(Request $request, $id)
+    public function approve(Request $request, $dehumBahan)
     {
+        $user = $this->ensureAuthenticatedUser(['approver']);
+        if (!is_object($user)) return $user;
+        if (!$this->isAuthenticatedAs('approver')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
+        }
+        
         // Validate the request
         $validatedData = $request->validate([
-            'approved_by_minggu1' => 'nullable|string|max:255',
-            'approved_by_minggu2' => 'nullable|string|max:255',
-            'approved_by_minggu3' => 'nullable|string|max:255',
-            'approved_by_minggu4' => 'nullable|string|max:255'
+            'approver_id_minggu1' => 'nullable|integer|exists:approvers,id',
+            'approver_id_minggu2' => 'nullable|integer|exists:approvers,id', 
+            'approver_id_minggu3' => 'nullable|integer|exists:approvers,id',
+            'approver_id_minggu4' => 'nullable|integer|exists:approvers,id',
+            // Tambahkan field nama approver juga jika diperlukan
+            'approved_by_minggu1' => 'nullable|string',
+            'approved_by_minggu2' => 'nullable|string',
+            'approved_by_minggu3' => 'nullable|string', 
+            'approved_by_minggu4' => 'nullable|string',
         ]);
 
-        // Find the existing DehumBahan record
-        $dehumBahanRecord = DehumBahanCheck::findOrFail($id);
+        // Handle parameter - could be string (hashid) or model instance
+        if (is_string($dehumBahan)) {
+            // If it's still a string, use the trait's resolve method
+            $dehumBahanRecord = (new DehumBahanCheck())->resolveRouteBinding($dehumBahan);
+        } else {
+            // If it's already a model instance
+            $dehumBahanRecord = $dehumBahan;
+        }
 
-        // Update the approval fields
-        // Note: We use the exact field names from the database
-        $dehumBahanRecord->approved_by_minggu1 = $validatedData['approved_by_minggu1'] ?? null;
-        $dehumBahanRecord->approved_by_minggu2 = $validatedData['approved_by_minggu2'] ?? null;
-        $dehumBahanRecord->approved_by_minggu3 = $validatedData['approved_by_minggu3'] ?? null;
-        $dehumBahanRecord->approved_by_minggu4 = $validatedData['approved_by_minggu4'] ?? null;
+        // Update hanya field yang ada dalam request dan tidak null
+        for ($i = 1; $i <= 4; $i++) {
+            $approverIdField = "approver_id_minggu{$i}";
+            if ($request->filled($approverIdField)) {
+                $dehumBahanRecord->{$approverIdField} = $request->{$approverIdField};
+            }
+        }
 
         // Save the record
         $dehumBahanRecord->save();
 
-        // Redirect back with a success message
+        // Redirect back with success message
         return redirect()->route('dehum-bahan.index')
-            ->with('success', 'Dehum Bahan record approved successfully.');
+            ->with('success', 'Persetujuan berhasil disimpan!');
+    }
+
+    public function reviewPdf($hashid) 
+    {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
+        // Gunakan trait untuk mendapatkan model berdasarkan hashid
+        $dehumBahanCheck = app(DehumBahanCheck::class)->resolveRouteBinding($hashid);
+        
+        // Ambil data form terkait
+        $form = Form::findOrFail(8); 
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil detail hasil pemeriksaan untuk dehum bahan
+        $dehumBahanResults = DehumBahanResult::where('check_id', $dehumBahanCheck->id)->get();
+        
+        // Definisikan items yang akan ditampilkan di PDF
+        $items = [
+            1 => 'Filter',
+            2 => 'Selang',
+            3 => 'Kontraktor',
+            4 => 'Temperatur Control',
+            5 => 'MCB',
+            6 => 'Dew Point'  // Tambahkan item ini
+        ];
+        
+        // Definisikan mapping untuk menangani kemungkinan variasi nama
+        $itemMapping = [
+            1 => ['Filter'],
+            2 => ['Selang'],
+            3 => ['Kontraktor'],
+            4 => ['Temperatur Control', 'Temperatur Kontrol'],  // Tambahkan kedua variasi
+            5 => ['MCB'],
+            6 => ['Dew Point']
+        ];
+        
+        // Siapkan semua field check dan keterangan untuk empat minggu
+        for ($j = 1; $j <= 4; $j++) {
+            // Inisialisasi array untuk menyimpan hasil check dan keterangan per minggu
+            ${'check_' . $j} = [];
+            ${'keterangan_' . $j} = [];
+            
+            // Isi array dengan data dari dehumBahanResults menggunakan pendekatan yang lebih fleksibel
+            foreach ($items as $i => $item) {
+                $result = null;
+                // Coba semua kemungkinan nama untuk item ini
+                foreach ($itemMapping[$i] as $possibleName) {
+                    $result = $dehumBahanResults->first(function($value) use ($possibleName) {
+                        return stripos($value->checked_items, $possibleName) !== false;
+                    });
+                    
+                    if ($result) break; // Jika ditemukan, hentikan pencarian
+                }
+                
+                ${'check_' . $j}[$i] = $result ? $result->{'minggu' . $j} : '';
+                ${'keterangan_' . $j}[$i] = $result ? $result->{'keterangan_minggu' . $j} : '';
+            }
+            
+            // Tambahkan array ke dehumBahanCheck object
+            $dehumBahanCheck->{'check_' . $j} = ${'check_' . $j};
+            $dehumBahanCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+        }
+        
+        // Setelah $dehumBahanCheck didefinisikan di reviewPdf, tambahkan:
+        for ($i = 1; $i <= 4; $i++) {
+            $dehumBahanCheck->{'checker_' . $i} = $dehumBahanCheck->{'checkerMinggu' . $i}?->username;
+            $dehumBahanCheck->{'approver_' . $i} = $dehumBahanCheck->{'approverMinggu' . $i}?->username;
+        }
+        
+        // Render view sebagai HTML untuk preview PDF
+        $view = view('dehum-bahan.review_pdf', [
+            'dehumBahanCheck' => $dehumBahanCheck,
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'items' => $items,
+            'user' => $user,
+            'currentGuard' => $currentGuard
+        ]);
+        
+        // Return view untuk preview
+        return $view;
+    }
+
+    public function downloadPdf($hashid)
+    {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
+        // Gunakan trait untuk mendapatkan model berdasarkan hashid
+        $dehumBahanCheck = app(DehumBahanCheck::class)->resolveRouteBinding($hashid);
+        
+        // Ambil data form terkait
+        $form = Form::findOrFail(8); 
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil detail hasil pemeriksaan untuk dehum bahan
+        $dehumBahanResults = DehumBahanResult::where('check_id', $dehumBahanCheck->id)->get();
+        
+        // Definisikan items yang akan ditampilkan di PDF
+        $items = [
+            1 => 'Filter',
+            2 => 'Selang',
+            3 => 'Kontraktor',
+            4 => 'Temperatur Control',
+            5 => 'MCB',
+            6 => 'Dew Point'
+        ];
+        
+        // Definisikan mapping untuk menangani kemungkinan variasi nama
+        $itemMapping = [
+            1 => ['Filter'],
+            2 => ['Selang'],
+            3 => ['Kontraktor'],
+            4 => ['Temperatur Control', 'Temperatur Kontrol'],
+            5 => ['MCB'],
+            6 => ['Dew Point']
+        ];
+        
+        // Siapkan semua field check dan keterangan untuk empat minggu
+        for ($j = 1; $j <= 4; $j++) {
+            // Inisialisasi array untuk menyimpan hasil check dan keterangan per minggu
+            ${'check_' . $j} = [];
+            ${'keterangan_' . $j} = [];
+            
+            // Isi array dengan data dari dehumBahanResults menggunakan pendekatan yang lebih fleksibel
+            foreach ($items as $i => $item) {
+                $result = null;
+                // Coba semua kemungkinan nama untuk item ini
+                foreach ($itemMapping[$i] as $possibleName) {
+                    $result = $dehumBahanResults->first(function($value) use ($possibleName) {
+                        return stripos($value->checked_items, $possibleName) !== false;
+                    });
+                    
+                    if ($result) break; // Jika ditemukan, hentikan pencarian
+                }
+                
+                ${'check_' . $j}[$i] = $result ? $result->{'minggu' . $j} : '';
+                ${'keterangan_' . $j}[$i] = $result ? $result->{'keterangan_minggu' . $j} : '';
+            }
+            
+            // Tambahkan array ke dehumBahanCheck object
+            $dehumBahanCheck->{'check_' . $j} = ${'check_' . $j};
+            $dehumBahanCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+        }
+        
+        // Setelah $dehumBahanCheck didefinisikan di downloadPdf, tambahkan:
+        for ($i = 1; $i <= 4; $i++) {
+            $dehumBahanCheck->{'checker_' . $i} = $dehumBahanCheck->{'checkerMinggu' . $i}?->username;
+            $dehumBahanCheck->{'approver_' . $i} = $dehumBahanCheck->{'approverMinggu' . $i}?->username;
+        }
+        
+        $bulan = Carbon::createFromFormat('Y-m', $dehumBahanCheck->bulan)->translatedFormat('F Y');
+
+        // Generate nama file PDF
+        $filename = 'Dehum_bahan_nomer_' . $dehumBahanCheck->nomer_dehum_bahan . '_bulan_' . $bulan . '.pdf';
+        
+        // Render view sebagai HTML
+        $html = view('dehum-bahan.review_pdf', [
+            'dehumBahanCheck' => $dehumBahanCheck,
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'items' => $items,
+            'user' => $user,
+            'currentGuard' => $currentGuard
+        ])->render();
+        
+        // Inisialisasi Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        
+        // Atur ukuran dan orientasi halaman
+        $dompdf->setPaper('A4', 'landscape');
+        
+        // Render PDF (mengubah HTML menjadi PDF)
+        $dompdf->render();
+        
+        // Download file PDF
+        return $dompdf->stream($filename, [
+            'Attachment' => false, // Set true untuk download otomatis
+        ]);
     }
 }

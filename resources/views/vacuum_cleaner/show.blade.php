@@ -8,7 +8,7 @@
 
 <div class="bg-white rounded-lg shadow-md mb-5">
     <div class="p-4">
-        <form method="POST" action="{{ route('vacuum-cleaner.approve', $check->id) }}" id="approveForm" autocomplete="off"
+        <form method="POST" action="{{ route('vacuum-cleaner.approve', $check->hashid) }}" id="approveForm" autocomplete="off"
             x-data="{ 
                 minggu2Selected: {{ $check->approver_minggu2 ? 'true' : 'false' }}, 
                 minggu4Selected: {{ $check->approver_minggu4 ? 'true' : 'false' }},
@@ -37,23 +37,26 @@
             </div>
 
             <!-- Info Display -->
-            <div class="grid md:grid-cols-3 gap-4 mb-4">
-                <!-- No Vacuum Cleaner Display -->
-                <div class="w-full">
-                    <label class="block mb-2 text-sm font-medium text-gray-700">No Vacuum Cleaner:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
-                        Vacuum Cleaner {{ $check->nomer_vacum_cleaner }}
+            <div class="grid md:grid-cols-2 gap-4 mb-4">
+                <!-- Info Vacuum Cleaner yang dipilih -->
+                <div class="relative w-full">
+                    <label class="block mb-2 text-sm font-medium text-gray-700">
+                        No Vacuum cleaner: 
+                    </label>
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm text-left flex items-center">
+                        <span>Vacuum Cleaner Nomor {{ $check->nomer_vacum_cleaner }}</span>
                     </div>
                 </div>
-                
-                <!-- Bulan Display -->
-                <div class="w-full">
-                    <label class="block mb-2 text-sm font-medium text-gray-700">Bulan:</label>
-                    <div class="w-full h-10 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm flex items-center">
-                        {{ \Carbon\Carbon::parse($check->bulan)->format('F Y') }}
+            
+                <div>
+                    <label for="bulan" class="block mb-2 text-sm font-medium text-gray-700">
+                        Bulan:
+                    </label>
+                    <div class="w-full h-10 px-3 py-2 bg-white border border-blue-400 rounded-md text-sm text-left flex items-center">
+                        <span>{{ \Carbon\Carbon::parse($check->bulan)->locale('id')->isoFormat('MMMM YYYY') }}</span>
                     </div>
                 </div>
-            </div>
+            </div>  
             
             @php
                 // Items yang perlu di-check sesuai dengan itemsMap dari controller
@@ -61,10 +64,10 @@
 
                 // Opsi check
                 $options = [
-                    'V' => '✓',
-                    'X' => '✗',
-                    '-' => '—',
-                    'OFF' => 'OFF'
+                    'V' => '<span class="text-green-600 font-bold">V</span>',
+                    'X' => '<span class="text-red-600 font-bold">X</span>',
+                    '-' => '<span class="text-gray-600">—</span>',
+                    'OFF' => '<span class="text-gray-600">OFF</span>'
                 ];
                 
                 // Helper function untuk mendapatkan nama checker berdasarkan minggu
@@ -98,7 +101,21 @@
                 }
                 
                 // Helper function untuk mendapatkan hasil berdasarkan minggu dan item_id
-                function getCheckResult($groupedResults, $minggu, $itemId) {
+                function getCheckResult($groupedResults, $minggu, $itemId, $check) {
+                    // Cek apakah checker sudah terisi
+                    $checkerName = '';
+                    if ($minggu == 2) {
+                        $checkerName = $check->checker_minggu2 ?: '';
+                    } else if ($minggu == 4) {
+                        $checkerName = $check->checker_minggu4 ?: '';
+                    }
+                    
+                    // Jika checker belum terisi, return '-'
+                    if (empty($checkerName)) {
+                        return '-';
+                    }
+                    
+                    // Jika checker sudah terisi, ambil hasil dari database
                     if (isset($groupedResults[$minggu])) {
                         $result = $groupedResults[$minggu]->where('item_id', $itemId)->first();
                         return $result && isset($result['result']) ? $result['result'] : null;
@@ -107,7 +124,21 @@
                 }
                 
                 // Helper function untuk mendapatkan keterangan berdasarkan minggu dan item_id
-                function getKeterangan($groupedResults, $minggu, $itemId) {
+                function getKeterangan($groupedResults, $minggu, $itemId, $check) {
+                    // Cek apakah checker sudah terisi
+                    $checkerName = '';
+                    if ($minggu == 2) {
+                        $checkerName = $check->checker_minggu2 ?: '';
+                    } else if ($minggu == 4) {
+                        $checkerName = $check->checker_minggu4 ?: '';
+                    }
+                    
+                    // Jika checker belum terisi, return 'data belum diisi'
+                    if (empty($checkerName)) {
+                        return 'data belum diisi';
+                    }
+                    
+                    // Jika checker sudah terisi, ambil keterangan dari database
                     if (isset($groupedResults[$minggu])) {
                         $result = $groupedResults[$minggu]->where('item_id', $itemId)->first();
                         return $result && isset($result['keterangan']) ? $result['keterangan'] : '';
@@ -119,6 +150,9 @@
             <!-- Tabel Inspeksi -->
             <div class="mb-6">
                 <!-- Tabel untuk minggu kedua -->
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <div class="overflow-x-auto mb-6 border border-gray-300">
                     <table class="w-full border-collapse">
                         <thead>
@@ -142,28 +176,32 @@
                                     </td>
                                     <td class="border border-gray-300 p-1 h-10 text-center w-16">
                                         @php
-                                            $result = getCheckResult($groupedResults, 2, $i);
-                                            echo isset($options[$result]) ? $options[$result] : '';
+                                            $result = getCheckResult($groupedResults, 2, $i, $check);
+                                            echo isset($options[$result]) ? $options[$result] : '<span class="text-gray-400 italic">-</span>';
                                         @endphp
                                     </td>
                                     <td class="border border-gray-300 p-1 h-10 text-sm w-64">
-                                        {{ getKeterangan($groupedResults, 2, $i) }}
+                                        @php
+                                            $keterangan = getKeterangan($groupedResults, 2, $i, $check);
+                                        @endphp
+                                        <span class="{{ $keterangan === 'data belum diisi' ? 'text-gray-400 italic' : '' }}">
+                                            {{ $keterangan }}
+                                        </span>
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                         <tbody class="bg-white">
                             <tr class="bg-sky-50">
-                                <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="2">-</td>
+                                <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10">-</td>
                                 <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-12 z-10">Dibuat Oleh</td>
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
                                     {{ getCheckerName($check, 2) ?: '-' }}
-                                </td>
-                            </tr>
-                            <tr class="bg-sky-50">
-                                <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-12 z-10">Tanggal</td>
-                                <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
-                                    {{ getCheckDate($check, 2) ?: '-' }}
+                                    <br>
+                                    @php
+                                        $checkDate = getCheckDate($check, 2);
+                                    @endphp
+                                    {{ $checkDate ? \Carbon\Carbon::parse($checkDate)->translatedFormat('d F Y') : '-' }}
                                 </td>
                             </tr>
                         </tbody>
@@ -181,7 +219,7 @@
                                         <!-- Jika sudah ada penanggung jawab, tampilkan namanya -->
                                         <div class="w-full px-2 py-1 text-sm">
                                             <input type="text" name="approved_by_minggu2" value="{{ $approvedBy }}"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                class="w-full px-2 py-1 text-sm bg-sky-50 rounded text-center"
                                                 readonly>
                                             <input type="hidden" name="approve_minggu2" value="2">
                                         </div>
@@ -199,8 +237,8 @@
                                             
                                             <!-- Form fields ketika dipilih -->
                                             <div class="mt-1" x-show="minggu2Selected === true">
-                                                <input type="text" name="approved_by_minggu2" value="{{ Auth::user()->username }}"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1"
+                                                <input type="text" name="approved_by_minggu2" value="{{ $user->username }}"
+                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                     x-bind:disabled="!minggu2Selected"
                                                     readonly>
                                                 <input type="hidden" name="approve_minggu2" value="2" x-bind:disabled="!minggu2Selected">
@@ -219,6 +257,9 @@
                 </div>
                 
                 <!-- Tabel untuk minggu keempat -->
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <div class="overflow-x-auto mb-6 border border-gray-300">
                     <table class="w-full border-collapse">
                         <thead>
@@ -242,28 +283,32 @@
                                     </td>
                                     <td class="border border-gray-300 p-1 h-10 text-center w-16">
                                         @php
-                                            $result = getCheckResult($groupedResults, 4, $i);
-                                            echo isset($options[$result]) ? $options[$result] : '';
+                                            $result = getCheckResult($groupedResults, 4, $i, $check);
+                                            echo isset($options[$result]) ? $options[$result] : '<span class="text-gray-400 italic">-</span>';
                                         @endphp
                                     </td>
                                     <td class="border border-gray-300 p-1 h-10 text-sm w-64">
-                                        {{ getKeterangan($groupedResults, 4, $i) }}
+                                        @php
+                                            $keterangan = getKeterangan($groupedResults, 4, $i, $check);
+                                        @endphp
+                                        <span class="{{ $keterangan === 'data belum diisi' ? 'text-gray-400 italic' : '' }}">
+                                            {{ $keterangan }}
+                                        </span>
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                         <tbody class="bg-white">
                             <tr class="bg-sky-50">
-                                <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10" rowspan="2">-</td>
+                                <td class="border border-gray-300 text-center p-1 bg-sky-50 h-10 text-xs sticky left-0 z-10">-</td>
                                 <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-12 z-10">Dibuat Oleh</td>
                                 <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
                                     {{ getCheckerName($check, 4) ?: '-' }}
-                                </td>
-                            </tr>
-                            <tr class="bg-sky-50">
-                                <td class="border border-gray-300 p-1 font-medium bg-sky-50 text-xs sticky left-12 z-10">Tanggal</td>
-                                <td colspan="2" class="border border-gray-300 p-1 bg-sky-50 text-center text-sm">
-                                    {{ getCheckDate($check, 4) ?: '-' }}
+                                    <br>
+                                    @php
+                                        $checkDate = getCheckDate($check, 4);
+                                    @endphp
+                                    {{ $checkDate ? \Carbon\Carbon::parse($checkDate)->translatedFormat('d F Y') : '-' }}
                                 </td>
                             </tr>
                         </tbody>
@@ -281,7 +326,7 @@
                                         <!-- Jika sudah ada penanggung jawab, tampilkan namanya -->
                                         <div class="w-full px-2 py-1 text-sm">
                                             <input type="text" name="approved_by_minggu4" value="{{ $approvedBy }}"
-                                                class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center"
+                                                class="w-full px-2 py-1 text-sm bg-sky-50 rounded text-center"
                                                 readonly>
                                             <input type="hidden" name="approve_minggu4" value="4">
                                         </div>
@@ -299,8 +344,8 @@
                                             
                                             <!-- Form fields ketika dipilih -->
                                             <div class="mt-1" x-show="minggu4Selected === true">
-                                                <input type="text" name="approved_by_minggu4" value="{{ Auth::user()->username }}"
-                                                    class="w-full px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-center mb-1"
+                                                <input type="text" name="approved_by_minggu4" value="{{ $user->username }}"
+                                                    class="w-full px-2 py-1 text-sm bg-white border border-gray-300 rounded text-center mb-1"
                                                     x-bind:disabled="!minggu4Selected"
                                                     readonly>
                                                 <input type="hidden" name="approve_minggu4" value="4" x-bind:disabled="!minggu4Selected">
@@ -348,6 +393,28 @@
                         <span>Setelah membersihkan, dimohon untuk mengisi FORM CHECKLIST VACUUM CLEANER yang sudah disediakan.</span>
                     </li>
                 </ul>
+
+                <div class="mt-4 p-3 bg-white rounded-lg col-span-1 md:col-span-2 lg:col-span-3 mb-4">
+                    <p class="font-semibold text-blue-800 mb-1">Keterangan Status:</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-700">
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-green-100 text-green-700 text-center font-bold mr-2 rounded">V</span>
+                            <span>Baik/Normal</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-red-100 text-red-700 text-center font-bold mr-2 rounded">X</span>
+                            <span>Tidak Baik/Abnormal</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-white text-gray-700 text-center font-bold mr-2 rounded">-</span>
+                            <span>Tidak Diisi</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="inline-block w-5 h-5 bg-white text-gray-700 text-center font-bold mr-2 rounded">OFF</span>
+                            <span>Mesin Mati</span>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="mt-4 pt-3 border-t border-blue-100">
                     <h6 class="font-medium text-blue-600 mb-2">Daftar Vacuum Cleaner:</h6>
@@ -369,15 +436,70 @@
             </div>
             
             <!-- Button Controls -->
-            <div class="flex justify-between mt-6">
-                <a href="{{ route('vacuum-cleaner.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Kembali
-                </a>
-                <button type="submit" 
-                        class="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800"
-                        @click="return submit()">
-                    Setujui
-                </button>
+            <div class="flex flex-row flex-wrap items-center justify-between gap-2 mt-6">
+                <!-- Tombol Kembali -->
+                <div class="flex-shrink-0">
+                    <a href="{{ route('vacuum-cleaner.index') }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Kembali
+                    </a>
+                </div>
+
+                <!-- Tombol Aksi -->
+                <div class="flex flex-row flex-wrap gap-2 justify-end">
+                    @php
+                        // Logika status persetujuan yang benar
+                        $approver_minggu2_filled = !empty($check->approver_minggu2);
+                        $approver_minggu4_filled = !empty($check->approver_minggu4);
+                        
+                        // Tentukan status berdasarkan kondisi
+                        if ($approver_minggu2_filled && $approver_minggu4_filled) {
+                            // Keduanya terisi = Disetujui (tampilkan PDF buttons)
+                            $isFullyApproved = true;
+                            $isPartiallyApproved = false;
+                        } elseif ($approver_minggu2_filled || $approver_minggu4_filled) {
+                            // Salah satu terisi = Disetujui Sebagian (tampilkan tombol Setujui)
+                            $isFullyApproved = false;
+                            $isPartiallyApproved = true;
+                        } else {
+                            // Keduanya kosong = Belum Disetujui (tampilkan tombol Setujui)
+                            $isFullyApproved = false;
+                            $isPartiallyApproved = false;
+                        }
+                    @endphp
+
+                    @if ($isFullyApproved)
+                        <!-- Tampilkan tombol PDF jika sudah disetujui penuh -->
+                        <!-- Tombol Preview PDF -->
+                        <a href="{{ route('vacuum-cleaner.pdf', $check->hashid) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            Preview PDF
+                        </a>
+
+                        <!-- Tombol Download PDF -->
+                        <a href="{{ route('vacuum-cleaner.downloadPdf', $check->hashid) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Download PDF
+                        </a>
+                    @else
+                        <!-- Tampilkan tombol Setujui jika belum disetujui atau disetujui sebagian -->
+                        <button type="submit" 
+                                class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out"
+                                @click="return submit()">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Setujui
+                        </button>
+                    @endif
+                </div>
             </div>
         </form>
     </div>

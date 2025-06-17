@@ -9,7 +9,7 @@
 @endsection
 
 @section('custom-filters')
-    @if(auth()->user() instanceof \App\Models\Approver)
+    @if($currentGuard === 'approver')
     <div>
         <label for="search" class="block font-medium text-gray-700 mb-2">Cari berdasarkan nama Checker:</label>
         <input type="text" name="search" id="search" placeholder="Masukkan nama checker..." 
@@ -67,7 +67,7 @@
                                 : 'text-gray-700 hover:bg-blue-100 hover:text-blue-800'"
                             class="w-full px-2 py-1.5 text-xs rounded-md transition-colors duration-200 ease-in-out"
                         >
-                            <span x-text="'Dehum ' + dehum"></span>
+                            <span x-text="'DB ' + dehum"></span>
                         </button>
                     </div>
                 </template>
@@ -131,22 +131,19 @@
                             class="py-3 px-4 border-b border-gray-200">
                         </td>
                         @php
-                            $checkedByFields = [
-                                $check->checked_by_minggu1,
-                                $check->checked_by_minggu2,
-                                $check->checked_by_minggu3,
-                                $check->checked_by_minggu4
-                            ];
-
-                            // Remove duplicates and filter out null/empty values
-                            $uniqueCheckedBy = array_unique(array_filter($checkedByFields));
+                            $checkerNames = array_filter([
+                                $check->checkerMinggu1?->username,
+                                $check->checkerMinggu2?->username,
+                                $check->checkerMinggu3?->username,
+                                $check->checkerMinggu4?->username,
+                            ]);
+                            $uniqueCheckerNames = array_unique($checkerNames);
                         @endphp
-
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if(!empty($uniqueCheckedBy))
-                                @foreach($uniqueCheckedBy as $checkedBy)
+                            @if(!empty($uniqueCheckerNames))
+                                @foreach($uniqueCheckerNames as $checkerName)
                                     <div class="bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm mb-1 inline-block">
-                                        {{ $checkedBy }}
+                                        {{ $checkerName }}
                                     </div>
                                 @endforeach
                             @else
@@ -157,23 +154,18 @@
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             @php
-                                $approvedWeeks = [
-                                    $check->approved_by_minggu1,
-                                    $check->approved_by_minggu2,
-                                    $check->approved_by_minggu3,
-                                    $check->approved_by_minggu4
-                                ];
-                                
-                                $totalApproved = count(array_filter($approvedWeeks));
-                                $isFullyApproved = $totalApproved === 4;
-                                $isPartiallyApproved = $totalApproved > 0 && $totalApproved < 4;
+                                $approvedCount = collect([
+                                    $check->approverMinggu1?->username,
+                                    $check->approverMinggu2?->username,
+                                    $check->approverMinggu3?->username,
+                                    $check->approverMinggu4?->username,
+                                ])->filter()->count();
                             @endphp
-
-                            @if($isFullyApproved)
+                            @if($check->status === 'disetujui')
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui
                                 </span>
-                            @elseif($isPartiallyApproved)
+                            @elseif($approvedCount > 0)
                                 <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui Sebagian
                                 </span>
@@ -185,18 +177,14 @@
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             {{-- Menu lihat --}}
-                            @if(auth()->user() instanceof \App\Models\Approver)
-                                <a href="{{ route('dehum-bahan.show', $check->id) }}" title="Lihat Detail">
-                                    @if($isFullyApproved)
-                                        <i class="fas fa-eye text-primary opacity-70" title="Sudah disetujui sepenuhnya"></i>
-                                    @else
-                                        <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
-                                    @endif
+                            @if($currentGuard === 'approver')
+                                <a href="{{ route('dehum-bahan.show', $check->hashid) }}" title="Lihat Detail">
+                                    <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit --}}
-                            @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @if(!$isFullyApproved)
-                                    <a href="{{ route('dehum-bahan.edit', $check->id) }}" title="Edit">
+                            @elseif($currentGuard === 'checker')
+                                @if($check->status === 'belum_disetujui')
+                                    <a href="{{ route('dehum-bahan.edit', $check->hashid) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
                                 @else
@@ -211,27 +199,11 @@
     </table>
 @endsection
 
-@section('pagination')
-    <div class="flex justify-center mt-4">
-        <div class="flex flex-wrap gap-1 justify-center">
-            <!-- Previous button -->
-            @if (!$checks->onFirstPage())
-                <a href="{{ $checks->previousPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">&laquo; Previous</a>
-            @endif
-            
-            <!-- Page numbers -->
-            @foreach ($checks->getUrlRange(1, $checks->lastPage()) as $page => $url)
-                <a href="{{ $url }}" class="px-3 py-2 border {{ $page == $checks->currentPage() ? 'bg-primary text-white border-primary font-bold' : 'bg-white text-primary border-gray-300 hover:bg-gray-100' }} rounded-md transition duration-200">
-                    {{ $page }}
-                </a>
-            @endforeach
-            
-            <!-- Next button -->
-            @if ($checks->hasMorePages())
-                <a href="{{ $checks->nextPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">Next &raquo;</a>
-            @endif
-        </div>
-    </div>
+@section('pagination-data')
+    @if(method_exists($checks, 'links') && $checks->hasPages())
+        {{-- Menggunakan komponen pagination yang sudah dibuat --}}
+        @include('components.pagination', ['paginator' => $checks])
+    @endif
 @endsection
 
 @section('back-route')

@@ -15,8 +15,8 @@
             <!-- Tentang Projek Ini - di tengah pada mobile, kiri pada desktop -->
             <div class="text-center md:text-left max-w-md mb-4 md:mb-0">
                 <h3 class="font-bold text-sm md:text-base text-gray-800 mb-2">Tentang Projek Ini</h3>
-                <p class="text-xs md:text-sm text-gray-600 mb-1">Lorem ipsum dolor sit amet consectetur adipiscing elit magna tincidunt.</p>
-                <p class="text-xs md:text-sm text-gray-600">Donec ultrices velit nulla pharetra pulvinar diam commodo feugiat.</p>
+                <p class="text-xs md:text-sm text-gray-600 mb-1">Dibuat untuk proyek magang di PT Asia Pramulia,</p>
+                <p class="text-xs md:text-sm text-gray-600">aplikasi ini membantu pencatatan dan pemantauan mesin secara digital.</p>
             </div>
             
             <!-- Tim Pembuat - di tengah pada mobile, kanan pada desktop -->
@@ -30,6 +30,14 @@
                             </div>
                         </a>
                         <a href="https://iqbalbagus-s.github.io/my-portfolio/" target="_blank" class="text-xs text-gray-600 hover:text-blue-500">Iqbal</a>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <a href="https:https://fasilkom.upnjatim.ac.id/" target="_blank" class="block">
+                            <div class="w-8 h-8 bg-gray-300 rounded-full overflow-hidden mb-1">
+                                <img src="/images/logo-UPN.png" alt="UPN VETERAN JAWA TIMUR" class="w-full h-full object-cover">
+                            </div>
+                        </a>
+                        <a href="https://iqbalbagus-s.github.io/my-portfolio/" target="_blank" class="text-xs text-center text-gray-600 hover:text-blue-500">FASILKOM<br>UPNVJT</a>
                     </div>
                     <div class="flex flex-col items-center">
                         <a href="https://reiirei.github.io/MyPortofolio/" target="_blank" class="block">
@@ -47,5 +55,5 @@
 
 <!-- Copyright -->
 <div class="w-full bg-blue-600 py-2 text-center" style="border-radius: 12px 12px 0 0;">
-    <p class="font-semibold text-xs sm:text-sm md:text-base text-white">2025 © PT Asia Pramulia</p>
+    <p class="font-semibold text-xs sm:text-sm md:text-base text-white"> {{ date('Y') }} © PT Asia Pramulia</p>
 </div>

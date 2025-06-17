@@ -6,20 +6,31 @@ use Illuminate\Http\Request;
 use App\Models\AirDryerCheck;
 use App\Models\AirDryerResult;
 use App\Models\Form;
+use App\Models\Activity;
+use Vinkla\Hashids\Facades\Hashids;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Traits\WithAuthentication;
 
 class AirDryerController extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
-        $query = AirDryerCheck::orderBy('created_at', 'desc');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user; // If it's a redirect response
+
+        // Tentukan guard yang sedang aktif
+        $currentGuard = $this->getCurrentGuard();
+
+        $query = AirDryerCheck::with(['checker', 'approver'])->orderBy('created_at', 'desc');
 
         // Filter berdasarkan peran user (Checker hanya bisa melihat data sendiri)
-        if (Auth::user() instanceof \App\Models\Checker) {
-            $query->where('checked_by', Auth::user()->username);
+        if ($this->isAuthenticatedAs('checker')) {
+            $query->where('checker_id', $user->id);
         }
 
         // Filter berdasarkan bulan jika ada
@@ -32,19 +43,23 @@ class AirDryerController extends Controller
 
         // Filter berdasarkan nama checker jika ada
         if ($request->filled('search')) {
-            $query->where('checked_by', 'LIKE', '%' . $request->search . '%');
+            $query->whereHas('checker', function ($q) use ($request) {
+                $q->where('username', 'LIKE', '%' . $request->search . '%');
+            });
         }
 
         // Ambil data dengan paginasi dan pastikan parameter tetap diteruskan
         $checks = $query->paginate(10)->appends($request->query());
 
-        return view('air_dryer.index', compact('checks'));
+        return view('air_dryer.index', compact('checks', 'user', 'currentGuard'));
     }
-
 
     public function create()
     {
-        return view('air_dryer.create');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user; // If it's a redirect response
+
+        return view('air_dryer.create', compact('user'));
     }
 
     public function store(Request $request)
@@ -54,6 +69,9 @@ class AirDryerController extends Controller
             'tanggal' => 'required|date',
             'hari' => 'required|string',
         ]);
+
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user; // If it's a redirect response
 
         // Check if record for this date already exists
         $existingRecord = AirDryerCheck::whereDate('tanggal', $request->tanggal)
@@ -74,7 +92,7 @@ class AirDryerController extends Controller
             $airDryerCheck = AirDryerCheck::create([
                 'tanggal' => $request->tanggal,
                 'hari' => $request->hari,
-                'checked_by' => Auth::user()->username,
+                'checker_id' => $user->id, // gunakan ID checker
                 'keterangan' => $request->catatan,
             ]);
 
@@ -94,60 +112,68 @@ class AirDryerController extends Controller
                 ]);
             }
 
-            // Commit transaksi jika semua operasi berhasil
-            DB::commit();
+            // LOG AKTIVITAS
+            $formattedDate = Carbon::parse($request->tanggal)->locale('id')->isoFormat('D MMMM YYYY');
+            Activity::logActivity(
+                'checker',
+                $user->id,
+                $user->username,
+                'created',
+                'Checker ' . $user->username . ' membuat pemeriksaan Air Dryer untuk tanggal ' . $formattedDate,
+                'air_dryer_check',
+                $airDryerCheck->id,
+                [
+                    'tanggal' => $request->tanggal,
+                    'hari' => $request->hari,
+                    'total_mesin' => 8,
+                    'keterangan' => $request->catatan ?? 'Tidak ada catatan',
+                    'status' => $airDryerCheck->status
+                ]
+            );
 
+            DB::commit();
             return redirect()->route('air-dryer.index')
                 ->with('success', 'Data pemeriksaan Air Dryer berhasil disimpan!');
                 
         } catch (\Exception $e) {
-            // Rollback transaksi jika terjadi kesalahan
             DB::rollBack();
-            
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage())
                 ->withInput();
         }
     }
 
-    public function edit($id)
+    public function edit(AirDryerCheck $airDryer)
     {
-        // Ambil data pemeriksaan air dryer berdasarkan ID
-        $airDryer = AirDryerCheck::findOrFail($id);
-        
-        // Ambil semua detail hasil pemeriksaan untuk setiap mesin
-        $details = AirDryerResult::where('check_id', $id)->get();
-        
-        // Kirim data ke view
-        return view('air_dryer.edit', compact('airDryer', 'details'));
-    }
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user; // If it's a redirect response
 
-    public function update(Request $request, $id)
+        $details = AirDryerResult::where('check_id', $airDryer->id)->get();
+        
+        return view('air_dryer.edit', compact('airDryer', 'details', 'user'));
+    }
+    
+    public function update(Request $request, AirDryerCheck $airDryer)
     {
-        // Validasi input
+        // Validasi input (tanpa tanggal dan hari)
         $request->validate([
-            'tanggal' => 'required|date',
-            'hari' => 'required|string',
+            'catatan' => 'nullable|string',
         ]);
         
         // Mulai transaksi database
         DB::beginTransaction();
         
         try {
-            // Update data pemeriksaan utama
-            $airDryer = AirDryerCheck::findOrFail($id);
+            // Hanya update keterangan/catatan
             $airDryer->update([
-                'tanggal' => $request->tanggal,
-                'hari' => $request->hari,
                 'keterangan' => $request->catatan,
-                // Tidak update checked_by karena ini adalah user yang membuat record
             ]);
             
             // Update detail untuk setiap mesin
             for ($i = 1; $i <= 8; $i++) {
                 AirDryerResult::updateOrCreate(
                     [
-                        'check_id' => $id,
+                        'check_id' => $airDryer->id, // Menggunakan ID dari model instance
                         'nomor_mesin' => 'AD' . $i
                     ],
                     [
@@ -179,90 +205,96 @@ class AirDryerController extends Controller
         }
     }
 
-    public function show($id)
+    public function show(AirDryerCheck $airDryer)
     {
-        // Ambil data pemeriksaan air dryer berdasarkan ID
-        $airDryer = AirDryerCheck::findOrFail($id);
-        
-        // Ambil semua detail hasil pemeriksaan untuk setiap mesin
-        $details = AirDryerResult::where('check_id', $id)->get();
-        
-        // Kirim data ke view
-        return view('air_dryer.show', compact('airDryer', 'details'));
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user; // If it's a redirect response
+
+        // Menggunakan $airDryer->id karena Laravel sudah resolve hashid ke model instance
+        $details = AirDryerResult::where('check_id', $airDryer->id)->get();
+        return view('air_dryer.show', compact('airDryer', 'details', 'user'));
     }
 
-    public function approve(Request $request, $id)
+    public function approve(Request $request, AirDryerCheck $airDryer)
     {
-        // Ambil data pemeriksaan air dryer berdasarkan ID
-        $airDryer = AirDryerCheck::findOrFail($id);
-        
-        // Update approved_by field dengan username approver yang login
-        $airDryer->update([
-            'approved_by' => Auth::user()->username
-        ]);
-        
-        // Redirect ke halaman index dengan pesan sukses
-        return redirect()->route('air-dryer.index')
-            ->with('success', 'Data pemeriksaan Air Dryer berhasil disetujui!');
+        try {
+            $user = $this->ensureAuthenticatedUser(['approver']);
+            if (!is_object($user)) return $user; // If it's a redirect response
+
+            // Verifikasi bahwa user adalah approver
+            if (!$this->isAuthenticatedAs('approver')) {
+                return redirect()->back()
+                    ->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
+            }
+
+            // Menggunakan $airDryer langsung karena sudah resolved dari hashid
+            $airDryer->approve($user->id);
+            
+            return redirect()->route('air-dryer.index')
+                ->with('success', 'Data pemeriksaan Air Dryer berhasil disetujui!');
+                
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menyetujui data: ' . $e->getMessage());
+        }
     }
 
-    public function reviewPdf($id)
+    public function reviewPdf(AirDryerCheck $airDryer)
     {
-        // Ambil data pemeriksaan air dryer berdasarkan ID
-        $airDryer = AirDryerCheck::findOrFail($id);
-
-        // Ambil data form terkait
-        $form = Form::findOrFail(4); // Pastikan relasi atau ID sesuai
-
-        // Format tanggal efektif
+        $form = Form::findOrFail(4); 
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
-
-        // Ambil semua detail hasil pemeriksaan untuk setiap mesin
-        $details = AirDryerResult::where('check_id', $id)->get();
-
-        // Render view sebagai HTML untuk preview PDF
+        
+        // Menggunakan $airDryer->id karena Laravel sudah resolve hashid ke model instance
+        $details = AirDryerResult::where('check_id', $airDryer->id)->get();
+        
         $view = view('air_dryer.review_pdf', compact('airDryer', 'details', 'form', 'formattedTanggalEfektif'));
-
-        // Return view untuk preview
         return $view;
     }
 
-    public function downloadPdf($id)
+    public function downloadPdf(AirDryerCheck $airDryer)
     {
-        // Ambil data pemeriksaan air dryer berdasarkan ID
-        $airDryer = AirDryerCheck::findOrFail($id);
-
-        // Ambil data form terkait
-        $form = Form::findOrFail(4); // Pastikan relasi atau ID sesuai
-
-        // Format tanggal efektif
+        $form = Form::findOrFail(4); 
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
         
-        // Ambil semua detail hasil pemeriksaan untuk setiap mesin
-        $details = AirDryerResult::where('check_id', $id)->get();
+        // Menggunakan $airDryer->id karena Laravel sudah resolve hashid ke model instance
+        $details = AirDryerResult::where('check_id', $airDryer->id)->get();
         
-        // Generate nama file PDF
-        $filename = 'AirDryer_' . $id . '_' . date('Y-m-d') . '.pdf';
+        // Format tanggal untuk nama file
+        $tanggal = new \DateTime($airDryer->tanggal);
+        $tanggalFormatted = $tanggal->format('d_F_Y');
         
-        // Render view sebagai HTML
+        $bulanIndonesia = [
+            'January' => 'Januari',
+            'February' => 'Februari',
+            'March' => 'Maret',
+            'April' => 'April',
+            'May' => 'Mei',
+            'June' => 'Juni',
+            'July' => 'Juli',
+            'August' => 'Agustus',
+            'September' => 'September',
+            'October' => 'Oktober',
+            'November' => 'November',
+            'December' => 'Desember'
+        ];
+        
+        foreach ($bulanIndonesia as $english => $indonesia) {
+            $tanggalFormatted = str_replace($english, $indonesia, $tanggalFormatted);
+        }
+        
+        $filename = 'Airdryer_tanggal_' . $tanggalFormatted . '.pdf';
+        
+        // Generate HTML untuk PDF
         $html = view('air_dryer.review_pdf', compact('airDryer', 'details', 'form', 'formattedTanggalEfektif'))->render();
         
-        // Inisialisasi Dompdf
         $dompdf = new \Dompdf\Dompdf();
         $dompdf->loadHtml($html);
-        
-        // Atur ukuran dan orientasi halaman (opsional)
         $dompdf->setPaper('A4', 'landscape');
-        
-        // Render PDF (mengubah HTML menjadi PDF)
         $dompdf->render();
         
-        // Download file PDF
         return $dompdf->stream($filename, [
-            'Attachment' => false, // Set true untuk download, false untuk preview di browser
+            'Attachment' => false,
         ]);
     }
-
-
 
 }

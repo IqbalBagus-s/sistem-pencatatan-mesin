@@ -29,12 +29,17 @@
             <!-- Status field -->
             <div>
                 <label for="status" class="block font-medium text-gray-700 mb-1">Status:</label>
-                <select id="status" name="status" x-model="status" @change="submitForm()"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-                    <option value="">Semua Status</option>
-                    <option value="aktif">Aktif</option>
-                    <option value="tidak aktif">Tidak Aktif</option>
-                </select>
+                <div class="relative">
+                    <select id="status" name="status" x-model="status" @change="submitForm()"
+                        class="w-full px-3 py-2 appearance-none border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                        <option value="">Semua Status</option>
+                        <option value="aktif">Aktif</option>
+                        <option value="tidak aktif">Tidak Aktif</option>
+                    </select>
+                    <div class="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
             </div>
 
             <!-- Buttons group -->
@@ -101,29 +106,11 @@
     </table>
 @endsection
 
-@section('pagination')
-    <div class="flex justify-center mt-4">
-        <div class="flex flex-wrap gap-1 justify-center">
-            <!-- Previous button -->
-            @if(method_exists($checkers, 'links') && $checkers->previousPageUrl())
-                <a href="{{ $checkers->previousPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">&laquo; Sebelumnya</a>
-            @endif
-            
-            <!-- Page numbers -->
-            @if(method_exists($checkers, 'links') && method_exists($checkers, 'getUrlRange'))
-                @foreach ($checkers->getUrlRange(1, $checkers->lastPage()) as $page => $url)
-                    <a href="{{ $url }}" class="px-3 py-2 border {{ $page == $checkers->currentPage() ? 'bg-primary text-white border-primary font-bold' : 'bg-white text-primary border-gray-300 hover:bg-gray-100' }} rounded-md transition duration-200">
-                        {{ $page }}
-                    </a>
-                @endforeach
-            @endif
-            
-            <!-- Next button -->
-            @if(method_exists($checkers, 'links') && $checkers->hasMorePages())
-                <a href="{{ $checkers->nextPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">Selanjutnya &raquo;</a>
-            @endif
-        </div>
-    </div>
+@section('pagination-data')
+    @if(method_exists($checkers, 'links') && $checkers->hasPages())
+        {{-- Menggunakan komponen pagination yang sudah dibuat --}}
+        @include('components.pagination', ['paginator' => $checkers])
+    @endif
 @endsection
 
 @section('back-route')

@@ -9,22 +9,60 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Models\CapliningCheck;
 use App\Models\CapliningResult;
+use App\Models\Form;
+use App\Models\Activity;
+use Barryvdh\DomPDF\Facade\Pdf;// Import Facade PDF
+use App\Traits\WithAuthentication;
 
 class CapliningController extends Controller
 {
+    use WithAuthentication;
+
     public function index(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
         $query = CapliningCheck::query();
-    
-        // Filter berdasarkan nama checker atau approver
+
+        // Filter berdasarkan nama checker atau approver (username, bukan checked_by/approved_by)
         if ($request->filled('search')) {
             $search = '%' . $request->search . '%';
             $query->where(function($q) use ($search) {
-                $q->where('checked_by', 'LIKE', $search)
-                ->orWhere('approved_by', 'LIKE', $search);
+                $q->orWhereHas('checker1', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checker2', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checker3', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checker4', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('checker5', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                // Jika ingin bisa cari nama approver juga, tambahkan baris berikut:
+                $q->orWhereHas('approver1', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approver2', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approver3', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approver4', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
+                $q->orWhereHas('approver5', function($sub) use ($search) {
+                    $sub->where('username', 'LIKE', $search);
+                });
             });
         }
-    
+
         // Filter berdasarkan nomor caplining
         if ($request->filled('search_caplining')) {
             $query->where('nomer_caplining', $request->search_caplining);
@@ -36,10 +74,10 @@ class CapliningController extends Controller
                 $tanggal = $request->tanggal;
                 $query->where(function($q) use ($tanggal) {
                     $q->whereDate('tanggal_check1', $tanggal)
-                      ->orWhereDate('tanggal_check2', $tanggal)
-                      ->orWhereDate('tanggal_check3', $tanggal)
-                      ->orWhereDate('tanggal_check4', $tanggal)
-                      ->orWhereDate('tanggal_check5', $tanggal);
+                    ->orWhereDate('tanggal_check2', $tanggal)
+                    ->orWhereDate('tanggal_check3', $tanggal)
+                    ->orWhereDate('tanggal_check4', $tanggal)
+                    ->orWhereDate('tanggal_check5', $tanggal);
                 });
             } catch (\Exception $e) {
                 return redirect()->back()->with('error', 'Format tanggal tidak valid.');
@@ -85,56 +123,39 @@ class CapliningController extends Controller
             
             $check->checkedItemsCount = $checkedItems;
             
-            // PERBAIKAN: Verifikasi status approval dengan perbandingan yang lebih teliti
-            $allFilled = true;
-            $hasApproval = false;
-            $missingApprovals = false;
-    
-            // Cek setiap pasangan checked_by dan approved_by
-            for ($i = 1; $i <= 5; $i++) {
-                $checkerField = "checked_by{$i}";
-                $approverField = "approved_by{$i}";
-                
-                // Jika ada checker tetapi tidak ada approver
-                if (!empty($check->$checkerField) && empty($check->$approverField)) {
-                    $allFilled = false;
-                    $missingApprovals = true;
-                }
-                
-                // Jika ada approver, tandai bahwa setidaknya ada satu approval
-                if (!empty($check->$approverField)) {
-                    $hasApproval = true;
-                }
-            }
-            
-            // Tentukan status approval berdasarkan kondisi yang diverifikasi
-            if (!$hasApproval) {
-                $check->approvalStatus = 'not_approved'; // Belum ada approval sama sekali
-                $check->isApproved = false;
-            } elseif ($missingApprovals) {
-                $check->approvalStatus = 'partially_approved'; // Ada approval tapi tidak lengkap
-                $check->isApproved = false;
-            } else {
-                $check->approvalStatus = 'fully_approved'; // Semua yang perlu diapprove sudah diapprove
-                $check->isApproved = true;
-            }
-            
-            // Kumpulkan daftar semua approver untuk penggunaan lain jika diperlukan
-            $check->allApprovers = collect([
+            // PERBAIKAN: Verifikasi status approval berdasarkan approved_by1-5
+            $approvedFields = collect([
                 $check->approved_by1,
                 $check->approved_by2,
                 $check->approved_by3,
                 $check->approved_by4,
                 $check->approved_by5
-            ])->filter()->values()->toArray();
+            ])->filter(); // menghapus nilai null/empty
+            
+            $totalApproved = $approvedFields->count();
+            
+            // Tentukan status approval berdasarkan jumlah field approved_by yang terisi
+            if ($totalApproved === 0) {
+                $check->approvalStatus = 'not_approved'; // Belum ada approval sama sekali
+                $check->isApproved = false;
+            } elseif ($totalApproved < 5) {
+                $check->approvalStatus = 'partially_approved'; // Ada approval tapi tidak lengkap
+                $check->isApproved = false;
+            } else {
+                $check->approvalStatus = 'fully_approved'; // Semua approved_by1-5 sudah terisi
+                $check->isApproved = true;
+            }
+            
+            // Kumpulkan daftar semua approver untuk penggunaan lain jika diperlukan
+            $check->allApprovers = $approvedFields->values()->toArray();
             
             // Menghitung dan menyimpan rentang tanggal
             $tanggalFormatted = $this->getFormattedTanggalRange($check);
             $check->hasTanggal = !is_null($tanggalFormatted);
             $check->tanggalFormatted = $tanggalFormatted;
         }
-    
-        return view('caplining.index', compact('checks'));
+
+        return view('caplining.index', compact('checks', 'user', 'currentGuard'));
     }
 
     private function getFormattedTanggalRange($check)
@@ -191,15 +212,27 @@ class CapliningController extends Controller
 
     public function create()
     {
-        return view('caplining.create');
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        return view('caplining.create', compact('user', 'currentGuard'));
     }
 
     public function store(Request $request)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
+        // Custom error messages
+        $customMessages = [
+            'nomer_caplining.required' => 'Silakan pilih nomor caplining terlebih dahulu!',
+        ];
+        
         // Validasi input
         $validated = $request->validate([
             'nomer_caplining' => 'required|integer|between:1,6',
-        ]);
+        ], $customMessages);
 
         // Debug: Cek data yang diterima dari form
         Log::info('Data dari form caplining:', $request->all());
@@ -302,6 +335,9 @@ class CapliningController extends Controller
                 'nomer_caplining' => $request->nomer_caplining,
             ];
             
+            // Array untuk menyimpan tanggal yang diformat untuk activity log
+            $tanggalFormatted = [];
+            
             // Set tanggal dan user data untuk masing-masing kolom check
             for ($i = 1; $i <= 5; $i++) {
                 // Simpan tanggal yang dipilih
@@ -309,21 +345,27 @@ class CapliningController extends Controller
                     $formattedDate = $formatTanggalForDB($request->{"tanggal_$i"});
                     $data["tanggal_check$i"] = $formattedDate;
                     
+                    // Simpan tanggal yang diformat untuk activity log
+                    $tanggalFormatted["tanggal_check$i"] = $request->{"tanggal_$i"};
+                    
                     Log::info("Tanggal $i: " . $request->{"tanggal_$i"} . " -> " . $data["tanggal_check$i"]);
                 } else {
                     $data["tanggal_check$i"] = null;
                 }
                 
-                // Simpan checked_by jika ada
-                if ($request->has("checked_by$i")) {
-                    $data["checked_by$i"] = $request->{"checked_by$i"};
+                // Simpan checker_id jika ada (menggunakan ID bukan username)
+                if ($request->has("checker_id$i") && !empty($request->{"checker_id$i"})) {
+                    $data["checker_id$i"] = $request->{"checker_id$i"};
+                    Log::info("Checker ID $i: " . $data["checker_id$i"]);
                 } else {
-                    $data["checked_by$i"] = null;
+                    $data["checker_id$i"] = null;
                 }
                 
-                // Untuk approved_by, ini mungkin diisi secara terpisah
-                if ($request->has("approved_by$i")) {
-                    $data["approved_by$i"] = $request->{"approved_by$i"};
+                // Untuk approver_id, ini mungkin diisi secara terpisah
+                if ($request->has("approver_id$i") && !empty($request->{"approver_id$i"})) {
+                    $data["approver_id$i"] = $request->{"approver_id$i"};
+                } else {
+                    $data["approver_id$i"] = null;
                 }
             }
             
@@ -399,6 +441,38 @@ class CapliningController extends Controller
                 Log::info("Item #{$itemId} ({$itemName}) berhasil disimpan dengan ID: " . $result->id);
             }
             
+            // LOG AKTIVITAS - Tambahkan setelah data berhasil disimpan
+            $tanggalList = array_filter($tanggalFormatted); // Hapus yang null
+            $tanggalString = !empty($tanggalList) ? implode(', ', $tanggalList) : 'Tidak ada tanggal';
+            
+            // Ambil informasi checker yang melakukan pemeriksaan untuk log
+            $checkerIds = [];
+            for ($i = 1; $i <= 5; $i++) {
+                if (!empty($data["checker_id$i"])) {
+                    $checkerIds[] = $data["checker_id$i"];
+                }
+            }
+            $uniqueCheckerIds = array_unique($checkerIds);
+            
+            Activity::logActivity(
+                'checker',                                              // user_type
+                $user->id,                                             // user_id
+                $user->username,                                       // user_name
+                'created',                                             // action
+                'Checker ' . $user->username . ' membuat pemeriksaan Caplining Nomor ' . $request->nomer_caplining . ' untuk tanggal: ' . $tanggalString,  // description
+                'caplining_check',                                     // target_type
+                $capliningCheck->id,                                   // target_id
+                [
+                    'nomer_caplining' => $request->nomer_caplining,
+                    'tanggal_checks' => $tanggalFormatted,
+                    'checker_ids' => $uniqueCheckerIds,
+                    'total_items' => count($items),
+                    'items_checked' => array_values($items),
+                    'jumlah_tanggal_diinput' => count($tanggalList),
+                    'status' => $capliningCheck->status ?? 'belum_disetujui'
+                ]                                                      // details (JSON)
+            );
+            
             // Commit transaksi
             DB::commit();
             
@@ -421,13 +495,24 @@ class CapliningController extends Controller
         }
     }
 
-    public function edit($id)
+    public function edit($hashid)
     {
-        // Ambil data utama caplining check
-        $check = CapliningCheck::findOrFail($id);
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
+        // Model CapliningCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $check = (new CapliningCheck)->resolveRouteBinding($hashid);
+        
+        // Load relasi setelah mendapatkan instance model
+        $check->load([
+            'checker1', 'checker2', 'checker3', 'checker4', 'checker5',
+            'approver1', 'approver2', 'approver3', 'approver4', 'approver5'
+        ]);
         
         // Ambil data hasil pemeriksaan
-        $results = CapliningResult::where('check_id', $id)->get();
+        $results = CapliningResult::where('check_id', $check->id)->get();
         
         // Siapkan data untuk view dalam format yang mudah digunakan
         $formattedData = collect();
@@ -484,8 +569,24 @@ class CapliningController extends Controller
                     
                     // Hanya tambahkan ke formattedData jika ada tanggal check untuk kolom ini
                     $tanggalField = "tanggal_check$i";
+                    $checkerIdField = "checker_id$i";
+                    $approverIdField = "approver_id$i";
                     
                     if ($check->$tanggalField) {
+                        // Ambil username checker dari relasi
+                        $checkerUsername = null;
+                        $checkerRelation = "checker$i";
+                        if ($check->$checkerRelation) {
+                            $checkerUsername = $check->$checkerRelation->username;
+                        }
+                        
+                        // Ambil username approver dari relasi
+                        $approverUsername = null;
+                        $approverRelation = "approver$i";
+                        if ($check->$approverRelation) {
+                            $approverUsername = $check->$approverRelation->username;
+                        }
+                        
                         $formattedData->push([
                             'check_number' => $i,
                             'item_id' => $itemId,
@@ -494,8 +595,10 @@ class CapliningController extends Controller
                             'tanggal_raw' => $check->$tanggalField,
                             'result' => $itemResult->$checkField,
                             'keterangan' => $itemResult->$keteranganField,
-                            'checked_by' => $check->{"checked_by$i"},
-                            'approved_by' => $check->{"approved_by$i"} ?? ''
+                            'checker_id' => $check->$checkerIdField,
+                            'checked_by' => $checkerUsername,
+                            'approver_id' => $check->$approverIdField,
+                            'approved_by' => $approverUsername
                         ]);
                     }
                 }
@@ -505,16 +608,32 @@ class CapliningController extends Controller
         // Tambahkan informasi untuk tanggal yang mungkin belum memiliki item spesifik
         for ($i = 1; $i <= 5; $i++) {
             $tanggalField = "tanggal_check$i";
-            $checkedByField = "checked_by$i";
-            $approvedByField = "approved_by$i";
+            $checkerIdField = "checker_id$i";
+            $approverIdField = "approver_id$i";
             
             if ($check->$tanggalField && !$formattedData->where('check_number', $i)->count()) {
+                // Ambil username checker dari relasi
+                $checkerUsername = null;
+                $checkerRelation = "checker$i";
+                if ($check->$checkerRelation) {
+                    $checkerUsername = $check->$checkerRelation->username;
+                }
+                
+                // Ambil username approver dari relasi
+                $approverUsername = null;
+                $approverRelation = "approver$i";
+                if ($check->$approverRelation) {
+                    $approverUsername = $check->$approverRelation->username;
+                }
+                
                 $formattedData->push([
                     'check_number' => $i,
                     'tanggal' => $formatDisplayTanggal($check->$tanggalField),
                     'tanggal_raw' => $check->$tanggalField,
-                    'checked_by' => $check->$checkedByField,
-                    'approved_by' => $check->$approvedByField ?? ''
+                    'checker_id' => $check->$checkerIdField,
+                    'checked_by' => $checkerUsername,
+                    'approver_id' => $check->$approverIdField,
+                    'approved_by' => $approverUsername
                 ]);
             }
         }
@@ -524,25 +643,40 @@ class CapliningController extends Controller
         
         // Log untuk debugging
         Log::info('Data caplining untuk edit:', [
-            'check_id' => $id,
+            'check_id' => $check->id,
             'nomer_caplining' => $check->nomer_caplining,
-            'total_items' => $formattedData->count()
+            'total_items' => $formattedData->count(),
+            'checkers' => $check->getAllCheckers(),
+            'approvers' => $check->getAllApprovers()
         ]);
         
-        return view('caplining.edit', compact('check', 'groupedData', 'items'));
+        return view('caplining.edit', compact('check', 'groupedData', 'items', 'user', 'currentGuard'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $hashid)
     {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
+        // Custom error messages
+        $customMessages = [
+            'nomer_caplining.required' => 'Silakan pilih nomor caplining terlebih dahulu!',
+        ];
+        
         // Validasi input
         $validated = $request->validate([
-            'nomer_caplining' => 'required|integer|between:1,20',
-        ]);
+            'nomer_caplining' => 'required|integer|between:1,6',
+        ], $customMessages);
 
-        // Cari data caplining yang akan diupdate
-        $capCheck = CapliningCheck::findOrFail($id);
+        // Debug: Cek data yang diterima dari form
+        Log::info('Data dari form caplining update:', $request->all());
 
-        // Fungsi format tanggal internal (harus sama seperti di fungsi store)
+        // Model CapliningCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $capliningCheck = (new CapliningCheck)->resolveRouteBinding($hashid);
+
+        // Fungsi format tanggal internal
         $formatTanggalForDB = function($tanggal) {
             if (empty($tanggal)) {
                 return null;
@@ -567,100 +701,153 @@ class CapliningController extends Controller
             return null;
         };
 
+        // Array untuk menyimpan tanggal yang diinput
+        $tanggalChecks = [];
+        
+        // Kumpulkan semua tanggal yang diinput untuk validasi
+        for ($i = 1; $i <= 5; $i++) {
+            if ($request->has("tanggal_$i") && !empty($request->{"tanggal_$i"})) {
+                $formattedDate = $formatTanggalForDB($request->{"tanggal_$i"});
+                if ($formattedDate) {
+                    $tanggalChecks[] = $formattedDate;
+                }
+            }
+        }
+        
+        // Validasi 1: Cek apakah ada tanggal duplikat dalam input yang sama (internal record)
+        $duplicatesInInput = array_diff_assoc($tanggalChecks, array_unique($tanggalChecks));
+        if (!empty($duplicatesInInput)) {
+            // Format tanggal duplikat kembali ke format yang dimengerti user
+            $duplicateDatesFormatted = [];
+            foreach (array_unique($duplicatesInInput) as $duplicateDate) {
+                $date = \Carbon\Carbon::parse($duplicateDate);
+                $bulanSingkat = [
+                    1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 
+                    6 => 'Jun', 7 => 'Jul', 8 => 'Ags', 9 => 'Sep', 10 => 'Okt', 
+                    11 => 'Nov', 12 => 'Des'
+                ];
+                $formattedDate = $date->format('d') . ' ' . $bulanSingkat[$date->format('n')] . ' ' . $date->format('Y');
+                $duplicateDatesFormatted[] = $formattedDate;
+            }
+            
+            Log::info('Tanggal duplikat dalam input yang sama: ', $duplicateDatesFormatted);
+            
+            $errorMsg = 'Tidak boleh ada tanggal yang sama dalam satu record. Tanggal duplikat: ' . implode(', ', $duplicateDatesFormatted);
+            
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['tanggal_duplicate_internal' => $errorMsg])
+                ->with('error', $errorMsg);
+        }
+        
+        // Validasi 2: Cek apakah tanggal sudah ada di database untuk nomer_caplining yang sama (exclude current record)
+        $existingDates = [];
+        if (!empty($tanggalChecks)) {
+            // Query untuk mencari tanggal yang sudah ada (exclude current record)
+            $existingRecords = CapliningCheck::where('nomer_caplining', $request->nomer_caplining)
+                ->where('id', '!=', $capliningCheck->id) // exclude current record
+                ->where(function($query) use ($tanggalChecks) {
+                    foreach ($tanggalChecks as $date) {
+                        $query->orWhere('tanggal_check1', $date)
+                            ->orWhere('tanggal_check2', $date)
+                            ->orWhere('tanggal_check3', $date)
+                            ->orWhere('tanggal_check4', $date)
+                            ->orWhere('tanggal_check5', $date);
+                    }
+                })
+                ->get();
+            
+            // Jika ada tanggal yang sudah ada, kumpulkan untuk pesan error
+            if ($existingRecords->count() > 0) {
+                foreach ($existingRecords as $record) {
+                    for ($i = 1; $i <= 5; $i++) {
+                        $dateField = "tanggal_check$i";
+                        if ($record->$dateField && in_array($record->$dateField, $tanggalChecks)) {
+                            // Format tanggal kembali ke format yang dimengerti user
+                            $date = \Carbon\Carbon::parse($record->$dateField);
+                            $bulanSingkat = [
+                                1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 
+                                6 => 'Jun', 7 => 'Jul', 8 => 'Ags', 9 => 'Sep', 10 => 'Okt', 
+                                11 => 'Nov', 12 => 'Des'
+                            ];
+                            $formattedDate = $date->format('d') . ' ' . $bulanSingkat[$date->format('n')] . ' ' . $date->format('Y');
+                            $existingDates[] = $formattedDate;
+                        }
+                    }
+                }
+            }
+            
+            // Jika ada tanggal yang sudah ada, kembalikan error
+            if (!empty($existingDates)) {
+                // Log informasi detail tentang error
+                Log::info('Tanggal duplikat terdeteksi pada update: ', $existingDates);
+                
+                // Membuat pesan error yang lebih eksplisit
+                $errorMsg = 'Data di tanggal ' . implode(', ', array_unique($existingDates)) . ' telah ada';
+                
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['tanggal_duplicate' => $errorMsg])
+                    ->with('error', $errorMsg);
+            }
+        }
+
         // Mulai transaksi database
         DB::beginTransaction();
 
         try {
-            // Kumpulkan tanggal-tanggal pemeriksaan dan pelaksana check
-            $tanggalData = [];
-            $checkedByData = [];
-            $tanggalChecks = [];
+            // Data utama untuk tabel caplining_checks
+            $data = [
+                'nomer_caplining' => $request->nomer_caplining,
+            ];
             
+            // Array untuk menyimpan tanggal yang diformat untuk activity log
+            $tanggalFormatted = [];
+            
+            // Set tanggal dan user data untuk masing-masing kolom check
             for ($i = 1; $i <= 5; $i++) {
-                // Ambil tanggal dari request jika ada
+                // Simpan tanggal yang dipilih
                 if ($request->has("tanggal_$i") && !empty($request->{"tanggal_$i"})) {
                     $formattedDate = $formatTanggalForDB($request->{"tanggal_$i"});
-                    $tanggalData["tanggal_check$i"] = $formattedDate;
-                    $checkedByData["checked_by$i"] = $request->{"checked_by$i"};
-                    if ($formattedDate) {
-                        $tanggalChecks[] = $formattedDate;
-                    }
+                    $data["tanggal_check$i"] = $formattedDate;
                     
-                    // Log untuk debugging
-                    Log::info("Tanggal $i: " . $request->{"tanggal_$i"} . " -> " . $tanggalData["tanggal_check$i"]);
-                } elseif ($request->has("tanggal_raw_$i") && !empty($request->{"tanggal_raw_$i"})) {
-                    // Untuk tanggal yang tidak diubah
-                    $tanggalData["tanggal_check$i"] = $request->{"tanggal_raw_$i"};
-                    $checkedByData["checked_by$i"] = $request->{"checked_by$i"};
-                    $tanggalChecks[] = $request->{"tanggal_raw_$i"};
+                    // Simpan tanggal yang diformat untuk activity log
+                    $tanggalFormatted["tanggal_check$i"] = $request->{"tanggal_$i"};
+                    
+                    Log::info("Update Tanggal $i: " . $request->{"tanggal_$i"} . " -> " . $data["tanggal_check$i"]);
                 } else {
-                    // Tidak ada tanggal
-                    $tanggalData["tanggal_check$i"] = null;
-                    $checkedByData["checked_by$i"] = null;
-                }
-            }
-
-            // Validasi tanggal - cek apakah tanggal sudah ada di database untuk nomer_caplining yang sama
-            $existingDates = [];
-            if (!empty($tanggalChecks)) {
-                // Query untuk mencari tanggal yang sudah ada di caplining lain
-                $existingRecords = CapliningCheck::where('nomer_caplining', $request->nomer_caplining)
-                    ->where('id', '!=', $id) // Kecualikan record yang sedang diedit
-                    ->where(function($query) use ($tanggalChecks) {
-                        foreach ($tanggalChecks as $date) {
-                            $query->orWhere('tanggal_check1', $date)
-                                ->orWhere('tanggal_check2', $date)
-                                ->orWhere('tanggal_check3', $date)
-                                ->orWhere('tanggal_check4', $date)
-                                ->orWhere('tanggal_check5', $date);
-                        }
-                    })
-                    ->get();
-                
-                // Jika ada tanggal yang sudah ada, kumpulkan untuk pesan error
-                if ($existingRecords->count() > 0) {
-                    foreach ($existingRecords as $record) {
-                        for ($i = 1; $i <= 5; $i++) {
-                            $dateField = "tanggal_check$i";
-                            if ($record->$dateField && in_array($record->$dateField, $tanggalChecks)) {
-                                // Format tanggal kembali ke format yang dimengerti user
-                                $date = \Carbon\Carbon::parse($record->$dateField);
-                                $bulanSingkat = [
-                                    1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 
-                                    6 => 'Jun', 7 => 'Jul', 8 => 'Ags', 9 => 'Sep', 10 => 'Okt', 
-                                    11 => 'Nov', 12 => 'Des'
-                                ];
-                                $formattedDate = $date->format('d') . ' ' . $bulanSingkat[$date->format('n')] . ' ' . $date->format('Y');
-                                $existingDates[] = $formattedDate;
-                            }
-                        }
-                    }
+                    $data["tanggal_check$i"] = null;
                 }
                 
-                // Jika ada tanggal yang sudah ada, kembalikan error
-                if (!empty($existingDates)) {
-                    // Log informasi detail tentang error
-                    Log::info('Tanggal duplikat terdeteksi pada update: ', $existingDates);
-                    
-                    // Membuat pesan error yang lebih eksplisit, seperti di fungsi store
-                    $errorMsg = 'Data di tanggal ' . implode(', ', array_unique($existingDates)) . ' telah ada';
-                    
-                    // Rollback transaksi
-                    DB::rollBack();
-                    
-                    return redirect()->back()
-                        ->withInput()
-                        ->withErrors(['tanggal_duplicate' => $errorMsg])
-                        ->with('error', $errorMsg);
+                // Simpan checker_id jika ada (menggunakan ID bukan username)
+                if ($request->has("checker_id$i") && !empty($request->{"checker_id$i"})) {
+                    $data["checker_id$i"] = $request->{"checker_id$i"};
+                    Log::info("Update Checker ID $i: " . $data["checker_id$i"]);
+                } else {
+                    $data["checker_id$i"] = null;
+                }
+                
+                // Untuk approver_id, ini mungkin diisi secara terpisah
+                if ($request->has("approver_id$i") && !empty($request->{"approver_id$i"})) {
+                    $data["approver_id$i"] = $request->{"approver_id$i"};
+                } else {
+                    $data["approver_id$i"] = null;
                 }
             }
-
-            // Update data utama CapliningCheck
-            $capCheck->update(array_merge([
-                'nomer_caplining' => $request->nomer_caplining,
-            ], $tanggalData, $checkedByData));
-
-            // Definisikan items yang diperiksa
+            
+            // Update record CapliningCheck
+            $capliningCheck->update($data);
+            
+            // Log untuk memastikan record berhasil diupdate
+            Log::info('Record caplining check diupdate dengan ID: ' . $capliningCheck->id);
+            
+            // Ambil ID dari record yang diupdate
+            $checkId = $capliningCheck->id;
+            
+            // Hapus hasil pemeriksaan lama
+            CapliningResult::where('check_id', $checkId)->delete();
+            
+            // Definisikan item yang diperiksa
             $items = [
                 1 => 'Kelistrikan',
                 2 => 'MCB',
@@ -683,71 +870,86 @@ class CapliningController extends Controller
                 19 => 'Suction Pad',
                 20 => 'Sensor',
             ];
-
-            // Ambil data hasil pemeriksaan yang sudah ada
-            $existingResults = CapliningResult::where('check_id', $id)
-                ->get()
-                ->keyBy('checked_items');
-
-            // Proses setiap item untuk setiap kolom check (1-5)
+            
+            // Proses setiap item
             foreach ($items as $itemId => $itemName) {
-                // Ambil atau buat record untuk item ini
-                $itemRecord = $existingResults->get($itemName);
+                // Data untuk tabel hasil
+                $resultData = [
+                    'check_id' => $checkId,
+                    'checked_items' => $itemName,
+                ];
                 
-                if (!$itemRecord) {
-                    $itemRecord = new CapliningResult([
-                        'check_id' => $id,
-                        'checked_items' => $itemName
-                    ]);
-                }
-
-                // Update data untuk setiap kolom check (1-5)
+                // Set nilai check untuk setiap kolom pemeriksaan (1-5)
                 for ($i = 1; $i <= 5; $i++) {
-                    $checkField = "check$i";
-                    $keteranganField = "keterangan$i";
-
-                    // Update hasil check jika ada input
-                    if (isset($request->{"check_$i"}) && isset($request->{"check_$i"}[$itemId])) {
-                        $itemRecord->$checkField = $request->{"check_$i"}[$itemId];
+                    // Simpan data check dan keterangan terlepas dari status tanggal
+                    // Cek apakah ada data check untuk item ini
+                    $checkKey = "check_$i";
+                    if (isset($request->$checkKey) && isset($request->$checkKey[$itemId])) {
+                        $resultData["check$i"] = $request->$checkKey[$itemId];
+                    } else {
+                        $resultData["check$i"] = '-';
                     }
-
-                    // Update keterangan jika ada input
-                    if (isset($request->{"keterangan_$i"}) && isset($request->{"keterangan_$i"}[$itemId])) {
-                        $itemRecord->$keteranganField = $request->{"keterangan_$i"}[$itemId];
+                    
+                    // Cek apakah ada keterangan untuk item ini
+                    $keteranganKey = "keterangan_$i";
+                    if (isset($request->$keteranganKey) && isset($request->$keteranganKey[$itemId])) {
+                        $resultData["keterangan$i"] = $request->$keteranganKey[$itemId];
+                    } else {
+                        $resultData["keterangan$i"] = null;
                     }
+                    
+                    // Debug log
+                    Log::info("Update Item #$itemId ($itemName) - Check$i: " . $resultData["check$i"] . 
+                            ", Keterangan$i: " . $resultData["keterangan$i"]);
                 }
-
-                // Simpan perubahan
-                $itemRecord->save();
+                
+                // Buat record hasil pemeriksaan baru
+                $result = CapliningResult::create($resultData);
+                
+                // Log untuk memastikan record hasil berhasil dibuat
+                Log::info("Update Item #{$itemId} ({$itemName}) berhasil disimpan dengan ID: " . $result->id);
             }
-
+            
             // Commit transaksi
             DB::commit();
-
+            
+            Log::info('Transaksi caplining update berhasil disimpan');
+            
             return redirect()->route('caplining.index')
-                ->with('success', 'Data mesin caplining berhasil diperbarui!');
-
+                ->with('success', 'Data berhasil diupdate!');
+                
         } catch (\Exception $e) {
             // Rollback transaksi jika terjadi kesalahan
             DB::rollBack();
-
+            
             // Log error detail untuk debugging
-            Log::error('Error saat memperbarui data caplining: ' . $e->getMessage());
+            Log::error('Error saat mengupdate data caplining: ' . $e->getMessage());
             Log::error($e->getTraceAsString());
-
+            
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
-    public function show($id)
+    public function show($hashid)
     {
-        // Ambil data utama caplining check
-        $check = CapliningCheck::findOrFail($id);
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
+        // Model CapliningCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $check = (new CapliningCheck)->resolveRouteBinding($hashid);
+        
+        // Load relasi setelah mendapatkan instance model
+        $check->load([
+            'checker1', 'checker2', 'checker3', 'checker4', 'checker5',
+            'approver1', 'approver2', 'approver3', 'approver4', 'approver5'
+        ]);
         
         // Ambil data hasil pemeriksaan
-        $resultsData = CapliningResult::where('check_id', $id)->get();
+        $resultsData = CapliningResult::where('check_id', $check->id)->get();
         
         // Siapkan data untuk view dalam format yang sesuai dengan template show
         $results = collect();
@@ -804,13 +1006,27 @@ class CapliningController extends Controller
                     $tanggalField = "tanggal_check$i";
                     
                     if ($check->$tanggalField) {
+                        // Ambil username checker dari relasi
+                        $checkerUsername = null;
+                        $checkerRelation = "checker$i";
+                        if ($check->$checkerRelation) {
+                            $checkerUsername = $check->$checkerRelation->username;
+                        }
+                        
+                        // Ambil username approver dari relasi
+                        $approverUsername = null;
+                        $approverRelation = "approver$i";
+                        if ($check->$approverRelation) {
+                            $approverUsername = $check->$approverRelation->username;
+                        }
+                        
                         $results->push([
                             'tanggal_check' => $i,
                             'item_id' => $itemId,
-                            'result' => $itemResult->$checkField ?? null,
-                            'keterangan' => $itemResult->$keteranganField ?? '',
-                            'checked_by' => $check->{"checked_by$i"},
-                            'approved_by' => $check->{"approved_by$i"} ?? '',
+                            'result' => $itemResult->$checkField,
+                            'keterangan' => $itemResult->$keteranganField,
+                            'checked_by' => $checkerUsername,
+                            'approved_by' => $approverUsername ?? '',
                             'tanggal' => $formatDisplayTanggal($check->$tanggalField)
                         ]);
                     }
@@ -819,60 +1035,461 @@ class CapliningController extends Controller
         }
         
         // Tambahkan informasi untuk tanggal yang mungkin belum memiliki item spesifik
+        // tetapi sudah memiliki checker atau approver
         for ($i = 1; $i <= 5; $i++) {
             $tanggalField = "tanggal_check$i";
-            $checkedByField = "checked_by$i";
-            $approvedByField = "approved_by$i";
             
-            if ($check->$tanggalField && !$results->where('tanggal_check', $i)->where('checked_by', '!=', null)->count()) {
+            if ($check->$tanggalField && !$results->where('tanggal_check', $i)->count()) {
+                // Ambil username checker dari relasi
+                $checkerUsername = null;
+                $checkerRelation = "checker$i";
+                if ($check->$checkerRelation) {
+                    $checkerUsername = $check->$checkerRelation->username;
+                }
+                
+                // Ambil username approver dari relasi
+                $approverUsername = null;
+                $approverRelation = "approver$i";
+                if ($check->$approverRelation) {
+                    $approverUsername = $check->$approverRelation->username;
+                }
+                
                 $results->push([
                     'tanggal_check' => $i,
                     'tanggal' => $formatDisplayTanggal($check->$tanggalField),
-                    'checked_by' => $check->$checkedByField,
-                    'approved_by' => $check->$approvedByField ?? ''
+                    'checked_by' => $checkerUsername,
+                    'approved_by' => $approverUsername ?? ''
                 ]);
             }
         }
         
         // Log untuk debugging
         Log::info('Data caplining untuk detail view:', [
-            'check_id' => $id,
+            'check_id' => $check->id,
+            'hashid' => $check->hashid, // Tambahkan hashid untuk debugging
             'nomer_caplining' => $check->nomer_caplining,
-            'total_items' => $results->count()
+            'total_items' => $results->count(),
+            'checkers' => $check->getAllCheckers(),
+            'approvers' => $check->getAllApprovers()
         ]);
         
-        return view('caplining.show', compact('check', 'results', 'items'));
+        return view('caplining.show', compact('check', 'results', 'items', 'user', 'currentGuard'));
     }
 
-    public function approve(Request $request, $id)
+    public function approve(Request $request, $hashid)
     {
-        // Find the caplining check record
-        $check = CapliningCheck::findOrFail($id);
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
         
-        // Initialize data array for update
-        $updateData = [];
+        // Model CapliningCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $capliningCheck = (new CapliningCheck)->resolveRouteBinding($hashid);
         
-        // Loop through potential approval fields
-        for ($i = 1; $i <= 5; $i++) {
-            // Check if this check number was submitted
-            if ($request->has("approve_num_{$i}") && $request->filled("approved_by_{$i}")) {
-                // Get the approved by value
-                $approvedBy = $request->input("approved_by_{$i}");
-                
-                // Add to update data
-                $updateData["approved_by{$i}"] = $approvedBy;
-            }
-        }
+        // Mulai transaksi database
+        DB::beginTransaction();
         
-        // Update the record if there are any changes
-        if (!empty($updateData)) {
-            $check->update($updateData);
+        try {
+            // Data untuk update approver
+            $updateData = [];
+            $approvedColumns = [];
             
-            return redirect()->route('caplining.index')
-                ->with('success', 'Persetujuan berhasil disimpan.');
+            // Proses untuk setiap kolom approver (1-5)
+            for ($i = 1; $i <= 5; $i++) {
+                $approverIdField = "approver_id$i";
+                
+                // Jika ada data approver_id yang dikirim dari form
+                if ($request->has($approverIdField) && !empty($request->$approverIdField)) {
+                    $updateData[$approverIdField] = $request->$approverIdField;
+                    $approvedColumns[] = $i;
+                    
+                    Log::info("Approver ID $i: " . $request->$approverIdField . " untuk user: " . $user->username . " pada record hashid: " . $hashid);
+                }
+            }
+            
+            // Update data jika ada approver yang dipilih
+            if (!empty($updateData)) {
+                $capliningCheck->update($updateData);
+                
+                DB::commit();
+                
+                Log::info('Persetujuan caplining berhasil disimpan:', [
+                    'hashid' => $hashid,
+                    'record_id' => $capliningCheck->id,
+                    'approved_columns' => $approvedColumns,
+                    'user' => $user->username
+                ]);
+                
+                return redirect()->route('caplining.index')
+                    ->with('success', 'Persetujuan berhasil disimpan untuk kolom check: ' . implode(', ', $approvedColumns));
+            } else {
+                DB::rollBack();
+                
+                return redirect()->back()
+                    ->with('warning', 'Tidak ada persetujuan yang dipilih.');
+            }
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Error saat menyimpan persetujuan caplining: ' . $e->getMessage());
+            Log::error('Hashid: ' . $hashid);
+            Log::error($e->getTraceAsString());
+            
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menyimpan persetujuan: ' . $e->getMessage());
+        }
+    }
+
+    public function reviewPdf($hashid) 
+    {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
+        // Model CapliningCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $capliningCheck = (new CapliningCheck)->resolveRouteBinding($hashid);
+        
+        // Load relasi setelah mendapatkan instance model
+        $capliningCheck->load([
+            'checker1', 'checker2', 'checker3', 'checker4', 'checker5',
+            'approver1', 'approver2', 'approver3', 'approver4', 'approver5'
+        ]);
+        
+        // DEBUG: Log untuk memastikan relasi berhasil dimuat
+        Log::info('Debug Relasi Checker/Approver:', [
+            'hashid' => $hashid,
+            'check_id' => $capliningCheck->id,
+            'checker1_loaded' => $capliningCheck->checker1 ? 'Yes' : 'No',
+            'checker1_name' => $capliningCheck->checker1 ? $capliningCheck->checker1->nama : 'NULL',
+            'checker1_id' => $capliningCheck->checker_id1,
+            'approver1_loaded' => $capliningCheck->approver1 ? 'Yes' : 'No',
+            'approver1_name' => $capliningCheck->approver1 ? $capliningCheck->approver1->nama : 'NULL',
+            'approver1_id' => $capliningCheck->approver_id1,
+        ]);
+        
+        // Ambil data form terkait
+        $form = Form::findOrFail(11); 
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil detail hasil pemeriksaan untuk caplining
+        $capliningResults = CapliningResult::where('check_id', $capliningCheck->id)->get();
+        
+        // Definisikan items yang akan ditampilkan di PDF
+        $items = [
+            1 => 'Kelistrikan',
+            2 => 'MCB',
+            3 => 'PLC',
+            4 => 'Power Supply',
+            5 => 'Relay',
+            6 => 'Selenoid',
+            7 => 'Selang Angin',
+            8 => 'Regulator',
+            9 => 'Pir',
+            10 => 'Motor',
+            11 => 'Vanbelt',
+            12 => 'Conveyor',
+            13 => 'Motor Conveyor',
+            14 => 'Vibrator',
+            15 => 'Motor Vibrator',
+            16 => 'Gear Box',
+            17 => 'Rantai',
+            18 => 'Stang Penggerak',
+            19 => 'Suction Pad',
+            20 => 'Sensor',
+        ];
+        
+        // Mapping untuk variasi nama
+        $itemMapping = [
+            1 => ['Kelistrikan'],
+            2 => ['MCB'],
+            3 => ['PLC'],
+            4 => ['Power Supply'],
+            5 => ['Relay'],
+            6 => ['Selenoid'],
+            7 => ['Selang Angin'],
+            8 => ['Regulator'],
+            9 => ['Pir'],
+            10 => ['Motor'],
+            11 => ['Vanbelt'],
+            12 => ['Conveyor'],
+            13 => ['Motor Conveyor'],
+            14 => ['Vibrator'],
+            15 => ['Motor Vibrator'],
+            16 => ['Gear Box'],
+            17 => ['Rantai'],
+            18 => ['Stang Penggerak'],
+            19 => ['Suction Pad'],
+            20 => ['Sensor'],
+        ];
+        
+        // Siapkan data check dan keterangan untuk setiap check (1-5)
+        for ($j = 1; $j <= 5; $j++) {
+            ${'check_' . $j} = [];
+            ${'keterangan_' . $j} = [];
+            
+            // Isi array dengan data dari capliningResults
+            foreach ($items as $i => $item) {
+                $result = null;
+                foreach ($itemMapping[$i] as $possibleName) {
+                    $result = $capliningResults->first(function($value) use ($possibleName) {
+                        return stripos($value->checked_items, $possibleName) !== false;
+                    });
+                    
+                    if ($result) break;
+                }
+                
+                ${'check_' . $j}[$i] = $result ? $result->{'check' . $j} : '';
+                ${'keterangan_' . $j}[$i] = $result ? $result->{'keterangan' . $j} : '';
+            }
+            
+            // Tambahkan array ke capliningCheck object
+            $capliningCheck->{'check_' . $j} = ${'check_' . $j};
+            $capliningCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
         }
         
-        return redirect()->route('caplining.index')
-            ->with('info', 'Tidak ada perubahan yang disimpan.');
+        // Siapkan nama checker dan approver menggunakan relasi dari model
+        $checkerNames = [];
+        $approverNames = [];
+        
+        for ($j = 1; $j <= 5; $j++) {
+            // Untuk Checker - gunakan relasi yang sudah ada
+            $checker = $capliningCheck->{"checker{$j}"};
+            $checkerNames[$j] = $checker && $checker->username ? $checker->username : '-';
+            
+            // Untuk Approver - gunakan relasi yang sudah ada
+            $approver = $capliningCheck->{"approver{$j}"};
+            $approverNames[$j] = $approver && $approver->username ? $approver->username : '-';
+        }
+        
+        // Log untuk debugging
+        Log::info('Data caplining untuk review PDF:', [
+            'hashid' => $hashid,
+            'check_id' => $capliningCheck->id,
+            'nomer_caplining' => $capliningCheck->nomer_caplining,
+            'total_items' => count($items),
+            'checkers' => $checkerNames,
+            'approvers' => $approverNames,
+            'raw_checker_ids' => [
+                'checker_id1' => $capliningCheck->checker_id1,
+                'checker_id2' => $capliningCheck->checker_id2,
+                'checker_id3' => $capliningCheck->checker_id3,
+                'checker_id4' => $capliningCheck->checker_id4,
+                'checker_id5' => $capliningCheck->checker_id5,
+            ],
+            'raw_approver_ids' => [
+                'approver_id1' => $capliningCheck->approver_id1,
+                'approver_id2' => $capliningCheck->approver_id2,
+                'approver_id3' => $capliningCheck->approver_id3,
+                'approver_id4' => $capliningCheck->approver_id4,
+                'approver_id5' => $capliningCheck->approver_id5,
+            ]
+        ]);
+        
+        // Render view untuk preview PDF
+        $view = view('caplining.review_pdf', [
+            'capliningCheck' => $capliningCheck,
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'items' => $items,
+            'checkerNames' => $checkerNames,
+            'approverNames' => $approverNames,
+            'user' => $user,
+            'currentGuard' => $currentGuard
+        ]);
+        
+        return $view;
+    }
+
+    public function downloadPdf($hashid)
+    {
+        $user = $this->ensureAuthenticatedUser();
+        if (!is_object($user)) return $user;
+        $currentGuard = $this->getCurrentGuard();
+        
+        // Model CapliningCheck akan otomatis resolve hashid menjadi model instance
+        // karena menggunakan trait Hashidable
+        $capliningCheck = (new CapliningCheck)->resolveRouteBinding($hashid);
+        
+        // Load relasi setelah mendapatkan instance model
+        $capliningCheck->load([
+            'checker1', 'checker2', 'checker3', 'checker4', 'checker5',
+            'approver1', 'approver2', 'approver3', 'approver4', 'approver5'
+        ]);
+        
+        // DEBUG: Log untuk memastikan relasi berhasil dimuat
+        Log::info('Debug Relasi Checker/Approver:', [
+            'hashid' => $hashid,
+            'check_id' => $capliningCheck->id,
+            'checker1_loaded' => $capliningCheck->checker1 ? 'Yes' : 'No',
+            'checker1_name' => $capliningCheck->checker1 ? $capliningCheck->checker1->nama : 'NULL',
+            'checker1_id' => $capliningCheck->checker_id1,
+            'approver1_loaded' => $capliningCheck->approver1 ? 'Yes' : 'No',
+            'approver1_name' => $capliningCheck->approver1 ? $capliningCheck->approver1->nama : 'NULL',
+            'approver1_id' => $capliningCheck->approver_id1,
+        ]);
+        
+        // Ambil data form terkait
+        $form = Form::findOrFail(11); 
+        
+        // Format tanggal efektif
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Ambil detail hasil pemeriksaan untuk caplining
+        $capliningResults = CapliningResult::where('check_id', $capliningCheck->id)->get();
+        
+        // Definisikan items yang akan ditampilkan di PDF
+        $items = [
+            1 => 'Kelistrikan',
+            2 => 'MCB',
+            3 => 'PLC',
+            4 => 'Power Supply',
+            5 => 'Relay',
+            6 => 'Selenoid',
+            7 => 'Selang Angin',
+            8 => 'Regulator',
+            9 => 'Pir',
+            10 => 'Motor',
+            11 => 'Vanbelt',
+            12 => 'Conveyor',
+            13 => 'Motor Conveyor',
+            14 => 'Vibrator',
+            15 => 'Motor Vibrator',
+            16 => 'Gear Box',
+            17 => 'Rantai',
+            18 => 'Stang Penggerak',
+            19 => 'Suction Pad',
+            20 => 'Sensor',
+        ];
+        
+        // Mapping untuk variasi nama
+        $itemMapping = [
+            1 => ['Kelistrikan'],
+            2 => ['MCB'],
+            3 => ['PLC'],
+            4 => ['Power Supply'],
+            5 => ['Relay'],
+            6 => ['Selenoid'],
+            7 => ['Selang Angin'],
+            8 => ['Regulator'],
+            9 => ['Pir'],
+            10 => ['Motor'],
+            11 => ['Vanbelt'],
+            12 => ['Conveyor'],
+            13 => ['Motor Conveyor'],
+            14 => ['Vibrator'],
+            15 => ['Motor Vibrator'],
+            16 => ['Gear Box'],
+            17 => ['Rantai'],
+            18 => ['Stang Penggerak'],
+            19 => ['Suction Pad'],
+            20 => ['Sensor'],
+        ];
+        
+        // Siapkan data check dan keterangan untuk setiap check (1-5)
+        for ($j = 1; $j <= 5; $j++) {
+            ${'check_' . $j} = [];
+            ${'keterangan_' . $j} = [];
+            
+            // Isi array dengan data dari capliningResults
+            foreach ($items as $i => $item) {
+                $result = null;
+                foreach ($itemMapping[$i] as $possibleName) {
+                    $result = $capliningResults->first(function($value) use ($possibleName) {
+                        return stripos($value->checked_items, $possibleName) !== false;
+                    });
+                    
+                    if ($result) break;
+                }
+                
+                ${'check_' . $j}[$i] = $result ? $result->{'check' . $j} : '';
+                ${'keterangan_' . $j}[$i] = $result ? $result->{'keterangan' . $j} : '';
+            }
+            
+            // Tambahkan array ke capliningCheck object
+            $capliningCheck->{'check_' . $j} = ${'check_' . $j};
+            $capliningCheck->{'keterangan_' . $j} = ${'keterangan_' . $j};
+        }
+        
+        // Siapkan nama checker dan approver menggunakan relasi dari model
+        $checkerNames = [];
+        $approverNames = [];
+        
+        for ($j = 1; $j <= 5; $j++) {
+            // Untuk Checker - gunakan relasi yang sudah ada dengan username seperti di reviewPdf
+            $checker = $capliningCheck->{"checker{$j}"};
+            $checkerNames[$j] = $checker && $checker->username ? $checker->username : '-';
+            
+            // Untuk Approver - gunakan relasi yang sudah ada dengan username seperti di reviewPdf
+            $approver = $capliningCheck->{"approver{$j}"};
+            $approverNames[$j] = $approver && $approver->username ? $approver->username : '-';
+        }
+        
+        // Log untuk debugging
+        Log::info('Data caplining untuk download PDF:', [
+            'hashid' => $hashid,
+            'check_id' => $capliningCheck->id,
+            'nomer_caplining' => $capliningCheck->nomer_caplining,
+            'total_items' => count($items),
+            'checkers' => $checkerNames,
+            'approvers' => $approverNames,
+            'raw_checker_ids' => [
+                'checker_id1' => $capliningCheck->checker_id1,
+                'checker_id2' => $capliningCheck->checker_id2,
+                'checker_id3' => $capliningCheck->checker_id3,
+                'checker_id4' => $capliningCheck->checker_id4,
+                'checker_id5' => $capliningCheck->checker_id5,
+            ],
+            'raw_approver_ids' => [
+                'approver_id1' => $capliningCheck->approver_id1,
+                'approver_id2' => $capliningCheck->approver_id2,
+                'approver_id3' => $capliningCheck->approver_id3,
+                'approver_id4' => $capliningCheck->approver_id4,
+                'approver_id5' => $capliningCheck->approver_id5,
+            ]
+        ]);
+        
+        // Dapatkan rentang tanggal menggunakan fungsi yang sudah ada
+        $tanggalRange = $this->getFormattedTanggalRange($capliningCheck);
+        
+        // Generate nama file PDF
+        $filename = 'Caplining_nomer_' . $capliningCheck->nomer_caplining;
+        
+        // Tambahkan rentang tanggal ke filename jika tersedia
+        if ($tanggalRange) {
+            $cleanTanggalRange = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $tanggalRange);
+            $filename .= '_' . $cleanTanggalRange;
+        }
+        
+        $filename .= '.pdf';
+        
+        // Render view sebagai HTML
+        $html = view('caplining.review_pdf', [
+            'capliningCheck' => $capliningCheck,
+            'form' => $form,
+            'formattedTanggalEfektif' => $formattedTanggalEfektif,
+            'items' => $items,
+            'checkerNames' => $checkerNames,
+            'approverNames' => $approverNames,
+            'user' => $user,
+            'currentGuard' => $currentGuard
+        ])->render();
+        
+        // Inisialisasi Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        
+        // Atur ukuran dan orientasi halaman
+        $dompdf->setPaper('A4', 'portrait');
+        
+        // Render PDF
+        $dompdf->render();
+        
+        // Download file PDF
+        return $dompdf->stream($filename, [
+            'Attachment' => false,
+        ]);
     }
 }

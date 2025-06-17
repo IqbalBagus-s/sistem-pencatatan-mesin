@@ -12,11 +12,13 @@
         <div class="grid md:grid-cols-2 gap-4 mb-4">
             <div class="bg-sky-50 p-4 rounded-md">
                 <span class="text-gray-600 font-bold">Checker: </span>
-                <span class="font-bold text-blue-700">{{ $airDryer->checked_by }}</span>
+                <span class="font-bold text-blue-700">{{ $airDryer->checker?->username }}</span>
             </div>
             <div class="bg-sky-50 p-4 rounded-md">
                 <span class="text-gray-600 font-bold">Approver: </span>
-                <span class="font-bold text-blue-700">{{ $airDryer->approved_by }}</span>
+                <span class="font-bold text-blue-700">
+                    {{ $airDryer->approver?->username ?: ($user->username ?? $user->name) }}
+                </span>
             </div>
         </div>
 
@@ -39,6 +41,9 @@
         <!-- Tabel Air Dryer -->
         <div class="mb-6">
             <div class="overflow-x-auto border border-gray-300 rounded-lg">
+                <div class="md:hidden text-sm text-gray-500 italic mb-2">
+                    ← Geser ke kanan untuk melihat semua kolom →
+                </div>
                 <table class="w-full border-collapse">
                     <thead>
                         <tr class="bg-sky-50">
@@ -219,9 +224,9 @@
                 <!-- Action Buttons - Right Side -->
                 <div class="flex flex-row flex-wrap gap-2 justify-end">
                     <!-- Conditional rendering based on approval status -->
-                    @if (empty($airDryer->approved_by))
+                    @if ($airDryer->status === 'belum_disetujui')
                         <!-- Approval Button -->
-                        <form action="{{ route('air-dryer.approve', $airDryer->id) }}" method="POST">
+                        <form action="{{ route('air-dryer.approve', $airDryer->hashid) }}" method="POST">
                             @csrf
                             <button type="submit" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -232,7 +237,7 @@
                         </form>
                     @else
                         <!-- PDF Preview Button -->
-                        <a href="{{ route('air-dryer.pdf', $airDryer->id) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                        <a href="{{ route('air-dryer.pdf', $airDryer->hashid) }}" target="_blank" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -241,7 +246,7 @@
                         </a>
                         
                         <!-- Download PDF Button -->
-                        <a href="{{ route('air-dryer.downloadPdf', $airDryer->id) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
+                        <a href="{{ route('air-dryer.downloadPdf', $airDryer->hashid) }}" class="flex items-center justify-center text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 ease-in-out">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>

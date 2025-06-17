@@ -9,7 +9,7 @@
 @endsection
 
 @section('custom-filters')
-    @if(auth()->user() instanceof \App\Models\Approver)
+    @if($currentGuard === 'approver')
     <div>
         <label for="search" class="block font-medium text-gray-700 mb-2">Cari berdasarkan nama Checker:</label>
         <input type="text" name="search" id="search" placeholder="Masukkan nama checker..." 
@@ -146,17 +146,24 @@
                                     @endforeach
                                 </div>
                             @else
-                                <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
+                                <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm inline-block">
                                     Belum Diisi
                                 </span>
                             @endif
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
-                            @if($isFullyApproved)
+                            @php
+                                $approvedCount = collect([
+                                    $check->approver_minggu2_id,
+                                    $check->approver_minggu4_id,
+                                ])->filter()->count();
+                            @endphp
+                            
+                            @if($check->status === 'disetujui')
                                 <span class="bg-approved text-approvedText px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui
                                 </span>
-                            @elseif($isPartiallyApproved)
+                            @elseif($approvedCount > 0)
                                 <span class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-medium inline-block">
                                     Disetujui Sebagian
                                 </span>
@@ -168,14 +175,14 @@
                         </td>
                         <td class="py-3 px-4 border-b border-gray-200">
                             {{-- Menu lihat untuk Approver --}}
-                            @if(auth()->user() instanceof \App\Models\Approver)
-                                <a href="{{ route('vacuum-cleaner.show', $check->id) }}" title="Lihat Detail">
+                            @if($currentGuard === 'approver')
+                                <a href="{{ route('vacuum-cleaner.show', $check->hashid) }}" title="Lihat Detail">
                                     <i class="fas fa-eye text-primary" title="Lihat Detail"></i>
                                 </a>
                             {{-- Menu edit untuk Checker --}}
-                            @elseif(auth()->user() instanceof \App\Models\Checker)
-                                @if(!$isFullyApproved)
-                                    <a href="{{ route('vacuum-cleaner.edit', $check->id) }}" title="Edit">
+                            @elseif($currentGuard === 'checker')
+                                @if($check->status === 'belum_disetujui')
+                                    <a href="{{ route('vacuum-cleaner.edit', $check->hashid) }}" title="Edit">
                                         <i class="fas fa-pen text-amber-500 text-lg hover:text-amber-600 cursor-pointer"></i>
                                     </a>
                                 @else
@@ -190,27 +197,11 @@
     </table>
 @endsection
 
-@section('pagination')
-    <div class="flex justify-center mt-4">
-        <div class="flex flex-wrap gap-1 justify-center">
-            <!-- Previous button -->
-            @if (!$checks->onFirstPage())
-                <a href="{{ $checks->previousPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">&laquo; Previous</a>
-            @endif
-            
-            <!-- Page numbers -->
-            @foreach ($checks->getUrlRange(1, $checks->lastPage()) as $page => $url)
-                <a href="{{ $url }}" class="px-3 py-2 border {{ $page == $checks->currentPage() ? 'bg-primary text-white border-primary font-bold' : 'bg-white text-primary border-gray-300 hover:bg-gray-100' }} rounded-md transition duration-200">
-                    {{ $page }}
-                </a>
-            @endforeach
-            
-            <!-- Next button -->
-            @if ($checks->hasMorePages())
-                <a href="{{ $checks->nextPageUrl() }}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-primary hover:bg-gray-100 transition duration-200">Next &raquo;</a>
-            @endif
-        </div>
-    </div>
+@section('pagination-data')
+    @if(method_exists($checks, 'links') && $checks->hasPages())
+        {{-- Menggunakan komponen pagination yang sudah dibuat --}}
+        @include('components.pagination', ['paginator' => $checks])
+    @endif
 @endsection
 
 @section('back-route')
