@@ -18,7 +18,7 @@ return new class extends Migration
             // Kolom check 1 sampai check 5 dan keterangan 1 sampai keterangan 5
             for ($i = 1; $i <= 5; $i++) {
                 $table->string('check' . $i, 30)->nullable();
-                $table->string('keterangan' . $i, 30)->nullable();
+                $table->string('keterangan' . $i, 100)->nullable();
             }
             
             $table->timestamps();
