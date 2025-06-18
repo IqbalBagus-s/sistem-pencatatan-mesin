@@ -408,77 +408,7 @@ class CompressorController extends Controller
         return redirect()->route('compressor.index')->with('success', 'Data berhasil diperbarui!');
     }
 
-public function show(CompressorCheck $compressor)
-{
-    $user = $this->ensureAuthenticatedUser();
-    if (!is_object($user)) return $user;
-
-    // Get current guard
-    $currentGuard = $this->getCurrentGuard();
-
-    // $compressor sudah otomatis di-resolve dari hashid oleh trait Hashidable
-    $check = $compressor->load(['checkerShift1', 'checkerShift2', 'approverShift1', 'approverShift2']);
-    $id = $compressor->id;
-    
-    // Ambil data low kompressor
-    $lowResults = CompressorResultkl::where('check_id', $id)
-        ->whereIn('checked_items', [
-            "Temperatur motor", "Temperatur screw", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
-            "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
-            "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
-            "Ampere", "Skun", "Service hour", "Load hours", "Temperatur ADT"
-        ])
-        ->get();
-    
-    // Ambil data high kompressor
-    $highResults = CompressorResultkh::where('check_id', $id)
-        ->whereIn('checked_items', [
-            "Temperatur Motor", "Temperatur Piston", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
-            "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
-            "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
-            "Ampere", "Skun", "Service hour", "Load hours", "Inlet Preasure", "Outlet Preasure"
-        ])
-        ->get();
-    
-    // Kirim ID approver yang sedang login (jika guard approver)
-    $approverId = null;
-    if ($currentGuard === 'approver') {
-        $approverId = $user->id;
-    }
-    
-    // Tampilkan view dengan data yang diperlukan
-    return view('compressor.show', compact('check', 'lowResults', 'highResults', 'user', 'currentGuard', 'approverId'));
-}
-
-public function approve(Request $request, CompressorCheck $compressor)
-{
-    $user = $this->ensureAuthenticatedUser(['approver']);
-    if (!is_object($user)) return $user;
-
-    // Verifikasi bahwa user adalah approver
-    if (!$this->isAuthenticatedAs('approver')) {
-        return redirect()->back()
-            ->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
-    }
-
-    // $compressor sudah otomatis di-resolve dari hashid oleh trait Hashidable
-    $check = $compressor;
-
-    // Update field yang tersedia
-    if ($request->shift1) {
-        $check->approver_shift1_id = $request->shift1;
-    }
-
-    if ($request->shift2) {
-        $check->approver_shift2_id = $request->shift2;
-    }
-
-    $check->save(); // Simpan perubahan ke database
-
-    return redirect()->route('compressor.index')->with('success', 'Persetujuan berhasil disimpan.');
-}
-
-    public function reviewPdf($id) 
+    public function show(CompressorCheck $compressor)
     {
         $user = $this->ensureAuthenticatedUser();
         if (!is_object($user)) return $user;
@@ -486,14 +416,9 @@ public function approve(Request $request, CompressorCheck $compressor)
         // Get current guard
         $currentGuard = $this->getCurrentGuard();
 
-        // Ambil data pemeriksaan kompressor berdasarkan ID
-        $check = CompressorCheck::with(['checkerShift1', 'checkerShift2', 'approverShift1', 'approverShift2'])->findOrFail($id);
-        
-        // Ambil data form terkait
-        $form = Form::findOrFail(9); 
-        
-        // Format tanggal efektif
-        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        // $compressor sudah otomatis di-resolve dari hashid oleh trait Hashidable
+        $check = $compressor->load(['checkerShift1', 'checkerShift2', 'approverShift1', 'approverShift2']);
+        $id = $compressor->id;
         
         // Ambil data low kompressor
         $lowResults = CompressorResultkl::where('check_id', $id)
@@ -515,34 +440,52 @@ public function approve(Request $request, CompressorCheck $compressor)
             ])
             ->get();
         
-        // Render view sebagai HTML untuk preview PDF
-        return view('compressor.review_pdf', [
-            'check' => $check,
-            'form' => $form,
-            'formattedTanggalEfektif' => $formattedTanggalEfektif,
-            'lowResults' => $lowResults,
-            'highResults' => $highResults,
-            'user' => $user,
-            'currentGuard' => $currentGuard
-        ]);
+        // Kirim ID approver yang sedang login (jika guard approver)
+        $approverId = null;
+        if ($currentGuard === 'approver') {
+            $approverId = $user->id;
+        }
+        
+        // Tampilkan view dengan data yang diperlukan
+        return view('compressor.show', compact('check', 'lowResults', 'highResults', 'user', 'currentGuard', 'approverId'));
     }
 
-    public function downloadPdf($id)
+    public function approve(Request $request, CompressorCheck $compressor)
     {
-        $user = $this->ensureAuthenticatedUser();
+        $user = $this->ensureAuthenticatedUser(['approver']);
         if (!is_object($user)) return $user;
 
-        // Get current guard
-        $currentGuard = $this->getCurrentGuard();
+        // Verifikasi bahwa user adalah approver
+        if (!$this->isAuthenticatedAs('approver')) {
+            return redirect()->back()
+                ->with('error', 'Anda tidak memiliki hak akses untuk menyetujui data.');
+        }
 
-        // Ambil data pemeriksaan kompressor berdasarkan ID
-        $check = CompressorCheck::with(['checkerShift1', 'checkerShift2', 'approverShift1', 'approverShift2'])->findOrFail($id);
-        
-        // Ambil data form terkait
-        $form = Form::findOrFail(9); 
-        
-        // Format tanggal efektif
+        // $compressor sudah otomatis di-resolve dari hashid oleh trait Hashidable
+        $check = $compressor;
+
+        // Update field yang tersedia
+        if ($request->shift1) {
+            $check->approver_shift1_id = $request->shift1;
+        }
+
+        if ($request->shift2) {
+            $check->approver_shift2_id = $request->shift2;
+        }
+
+        $check->save(); // Simpan perubahan ke database
+
+        return redirect()->route('compressor.index')->with('success', 'Persetujuan berhasil disimpan.');
+    }
+
+    public function reviewPdf(CompressorCheck $compressor)
+    {
+        $form = Form::findOrFail(9); // Sesuaikan dengan ID form untuk compressor
         $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Load relasi yang diperlukan
+        $check = $compressor->load(['checkerShift1', 'checkerShift2', 'approverShift1', 'approverShift2']);
+        $id = $compressor->id;
         
         // Ambil data low kompressor
         $lowResults = CompressorResultkl::where('check_id', $id)
@@ -564,10 +507,43 @@ public function approve(Request $request, CompressorCheck $compressor)
             ])
             ->get();
         
-        // Format tanggal dari model CompressorCheck
-        $tanggal = new \DateTime($check->tanggal);
+        $view = view('compressor.review_pdf', compact('check', 'lowResults', 'highResults', 'form', 'formattedTanggalEfektif'));
+        return $view;
+    }
+
+    public function downloadPdf(CompressorCheck $compressor)
+    {
+        $form = Form::findOrFail(1); // Sesuaikan dengan ID form untuk compressor
+        $formattedTanggalEfektif = $form->tanggal_efektif->format('d/m/Y');
+        
+        // Load relasi yang diperlukan
+        $check = $compressor->load(['checkerShift1', 'checkerShift2', 'approverShift1', 'approverShift2']);
+        $id = $compressor->id;
+        
+        // Ambil data low kompressor
+        $lowResults = CompressorResultkl::where('check_id', $id)
+            ->whereIn('checked_items', [
+                "Temperatur motor", "Temperatur screw", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
+                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
+                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
+                "Ampere", "Skun", "Service hour", "Load hours", "Temperatur ADT"
+            ])
+            ->get();
+        
+        // Ambil data high kompressor
+        $highResults = CompressorResultkh::where('check_id', $id)
+            ->whereIn('checked_items', [
+                "Temperatur Motor", "Temperatur Piston", "Temperatur oil", "Temperatur outlet", "Temperatur mcb",
+                "Compresor oil", "Air filter", "Oil filter", "Oil separator", "Oil radiator", 
+                "Suara mesin", "Loading", "Unloading/idle", "Temperatur kabel", "Voltage", 
+                "Ampere", "Skun", "Service hour", "Load hours", "Inlet Preasure", "Outlet Preasure"
+            ])
+            ->get();
+        
+        // Format tanggal untuk nama file
+        $tanggal = new \DateTime($compressor->tanggal);
         $tanggalFormatted = $tanggal->format('d_F_Y');
-        // Ubah nama bulan ke Bahasa Indonesia
+        
         $bulanIndonesia = [
             'January' => 'Januari',
             'February' => 'Februari',
@@ -582,38 +558,23 @@ public function approve(Request $request, CompressorCheck $compressor)
             'November' => 'November',
             'December' => 'Desember'
         ];
-        // Ganti nama bulan dalam bahasa Inggris dengan nama bulan dalam Bahasa Indonesia
+        
         foreach ($bulanIndonesia as $english => $indonesia) {
             $tanggalFormatted = str_replace($english, $indonesia, $tanggalFormatted);
         }
         
-        // Generate nama file PDF
         $filename = 'Compressor_tanggal_' . $tanggalFormatted . '.pdf';
         
-        // Render view sebagai HTML
-        $html = view('compressor.review_pdf', [
-            'check' => $check,
-            'form' => $form,
-            'formattedTanggalEfektif' => $formattedTanggalEfektif,
-            'lowResults' => $lowResults,
-            'highResults' => $highResults,
-            'user' => $user,
-            'currentGuard' => $currentGuard
-        ])->render();
+        // Generate HTML untuk PDF
+        $html = view('compressor.review_pdf', compact('check', 'lowResults', 'highResults', 'form', 'formattedTanggalEfektif'))->render();
         
-        // Inisialisasi Dompdf
         $dompdf = new \Dompdf\Dompdf();
         $dompdf->loadHtml($html);
-        
-        // Atur ukuran dan orientasi halaman
         $dompdf->setPaper('A4', 'landscape');
-        
-        // Render PDF (mengubah HTML menjadi PDF)
         $dompdf->render();
         
-        // Download file PDF
         return $dompdf->stream($filename, [
-            'Attachment' => false, // Set true untuk download otomatis
+            'Attachment' => false,
         ]);
     }
 }
