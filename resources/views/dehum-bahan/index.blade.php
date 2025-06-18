@@ -32,7 +32,7 @@
         
         <!-- Rest of the code remains the same -->
         <button type="button" @click="open = !open" class="w-full h-10 px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 relative">
-            <span x-text="selected ? 'Dehum ' + selected : 'Pilih Dehum Bahan'" class="text-gray-800"></span>
+            <span x-text="selected ? 'Dehum Bahan ' + selected : 'Pilih Dehum Bahan'" class="text-gray-800"></span>
             
             <!-- Selection Indicator -->
             <div class="absolute right-3 top-1/2 -translate-y-1/2">
